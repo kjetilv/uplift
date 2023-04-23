@@ -1,0 +1,26 @@
+FROM --platform=linux/⎨arch⎬ ubuntu:22.04 AS ⎨buildsite⎬
+VOLUME [ "/out" ]
+RUN apt-get update
+RUN apt-get install -y build-essential gcc zlib1g-dev libz-dev
+⎨if(disturi)⎬
+ADD ⎨disturi⎬ /graal.tar.gz
+RUN tar xvzf graal.tar.gz
+⎨else⎬
+ADD dist.tar.gz /
+⎨endif⎬
+RUN chmod 777 /⎨distdir⎬/bin/*
+ENV PATH /⎨distdir⎬/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+RUN gu install native-image
+
+FROM ⎨buildsite⎬ AS ⎨target⎬
+ADD shadow.jar /shadow.jar
+CMD native-image \
+ --static \
+ --verbose \
+ --no-fallback \
+ -g \
+ -H:+ReportExceptionStackTraces \
+ --enable-url-protocols=https \
+ --target=linux-⎨arch⎬ \
+ -jar /shadow.jar \
+ -o /out/⎨target⎬
