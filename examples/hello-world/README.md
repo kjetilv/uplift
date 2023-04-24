@@ -1,4 +1,4 @@
-# Hello, web!
+# Hello, world!
 
 This function writes hello world to stdout and exists.
 You can find it in the cloud watch logs after you've

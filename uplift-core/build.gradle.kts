@@ -10,7 +10,6 @@ allprojects {
         gradlePluginPortal()
         mavenCentral()
     }
-
 }
 
 subprojects {
