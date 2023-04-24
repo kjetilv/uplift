@@ -10,7 +10,7 @@ plugins {
     id("com.github.kjetilv.uplift.plugins.native") version "0.1.0-SNAPSHOT"
 }
 
-repositories{
+repositories {
     mavenLocal()
     mavenCentral()
 }
@@ -47,10 +47,10 @@ apply<UpliftPlugin>()
 
 tasks.getByName<UpliftTask>(name = "uplift") {
     configure(
-        account = "123",
-        region = "eu-north-1",
-        stack = "uplift-hello-world"
+            account = "123",
+            region = "eu-north-1",
+            stack = "uplift-hello-world"
     ).stackWith(
-        "uplift.examples.helloworld.HelloWorldBuilder"
+            "uplift.examples.helloworld.HelloWorldBuilder"
     )
-}
+}.dependsOn("native-lambda", "jar")

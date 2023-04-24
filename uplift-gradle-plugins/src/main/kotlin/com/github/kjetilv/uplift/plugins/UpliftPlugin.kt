@@ -17,10 +17,9 @@ class UpliftPlugin : Plugin<Project> {
                         stackbuilderJar.set(jarFile)
                     } ?: throw IllegalStateException("No output from jar task was found")
                 stackbuilderClass.set("")
-                dependsOn("native-lambda", "jar")
             }
         }
-        project.tasks.register("uplift-destroy",)
+        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java)
     }
 
     private fun resolveAwsAuth() =

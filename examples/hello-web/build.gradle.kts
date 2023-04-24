@@ -56,4 +56,4 @@ tasks.getByName<UpliftTask>(name = "uplift") {
     ).stackWith(
         "uplift.examples.helloweb.HelloWebBuilder"
     )
-}
+}.dependsOn("native-lambda", "jar")
