@@ -6,9 +6,9 @@ class FLogger implements Logger {
 
     private final String name;
 
-    private final uplift.flogs.Logger l;
+    private final com.github.kjetilv.uplift.flogs.Logger l;
 
-    FLogger(String name, uplift.flogs.Logger l) {
+    FLogger(String name, com.github.kjetilv.uplift.flogs.Logger l) {
         this.name = name;
         this.l = l;
     }
