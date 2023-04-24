@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="19">
+      <module name="uplift.uplift-asynchttp" target="17" />
+      <module name="uplift.uplift-asynchttp.main" target="17" />
+      <module name="uplift.uplift-asynchttp.test" target="17" />
+      <module name="uplift.uplift-flambda" target="17" />
+      <module name="uplift.uplift-flambda.main" target="17" />
+      <module name="uplift.uplift-flambda.test" target="17" />
+      <module name="uplift.uplift-flogs" target="17" />
+      <module name="uplift.uplift-flogs.main" target="17" />
+      <module name="uplift.uplift-flogs.test" target="17" />
+      <module name="uplift.uplift-json" target="17" />
+      <module name="uplift.uplift-json.main" target="17" />
+      <module name="uplift.uplift-json.test" target="17" />
+      <module name="uplift.uplift-kernel" target="17" />
+      <module name="uplift.uplift-kernel.main" target="17" />
+      <module name="uplift.uplift-kernel.test" target="17" />
+      <module name="uplift.uplift-lambda" target="17" />
+      <module name="uplift.uplift-lambda.main" target="17" />
+      <module name="uplift.uplift-lambda.test" target="17" />
+      <module name="uplift.uplift-s3" target="17" />
+      <module name="uplift.uplift-s3.main" target="17" />
+      <module name="uplift.uplift-s3.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

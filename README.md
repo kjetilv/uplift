@@ -1,2 +1,3 @@
-# uplift
-Native images to the cloud
+## uplift ☁️
+
+Native images, to the cloud! 

@@ -1,4 +1,4 @@
-rootProject.name = "uplift"
+rootProject.name = "uplift-core"
 
 pluginManagement {
     repositories {

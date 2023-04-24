@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/examples/hello-web" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/examples/hello-web" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/examples/hello-world" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/examples/hello-world" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/uplift-core" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/uplift-core" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-asynchttp" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-flambda" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-flogs" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-json" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-kernel" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-lambda" />
+            <option value="$PROJECT_DIR$/uplift-core/uplift-s3" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/uplift-gradle-plugins" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/uplift-gradle-plugins" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
