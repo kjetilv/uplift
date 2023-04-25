@@ -24,5 +24,4 @@ public interface Env {
 
     String credentialsFullUri();
 
-    String s3Bucket();
 }

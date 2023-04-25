@@ -1,5 +1,9 @@
 package com.github.kjetilv.uplift.s3;
 
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.EnvLookup;
+import com.github.kjetilv.uplift.kernel.io.Range;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -7,17 +11,10 @@ import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.io.Range;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 
@@ -26,15 +23,16 @@ public interface S3Accessor {
 
     static S3Accessor fromEnvironment(Env env, Executor executor) {
         HttpClient client = HttpClient.newBuilder()
-            .executor(executor)
-            .version(HTTP_1_1)
-            .build();
+                .executor(executor)
+                .version(HTTP_1_1)
+                .build();
         return new DefaultS3Accessor(
-            env,
-            client,
-            env.s3Bucket(),
-            null
-        );
+                env,
+                client,
+                Optional.ofNullable(
+                        EnvLookup.get("taninim.bucket", "TANINIM_BUCKET")
+                ).orElse("taninim-water"),
+                null);
     }
 
     default void put(String contents, String remoteName) {
@@ -60,8 +58,8 @@ public interface S3Accessor {
 
     default Map<String, Long> remoteSizes(String prefix) {
         return remoteInfos(prefix).entrySet().stream().collect(Collectors.toMap(
-            Map.Entry::getKey,
-            entry -> entry.getValue().size()
+                Map.Entry::getKey,
+                entry -> entry.getValue().size()
         ));
     }
 
@@ -117,9 +115,9 @@ public interface S3Accessor {
     void remove(Collection<String> objects);
 
     record RemoteInfo(
-        String key,
-        Instant lastModified,
-        long size
+            String key,
+            Instant lastModified,
+            long size
     ) {
 
         @Override
