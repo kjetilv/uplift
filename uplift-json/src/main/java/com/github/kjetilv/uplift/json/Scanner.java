@@ -8,7 +8,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.kjetilv.uplift.json.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
+import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
+import static com.github.kjetilv.uplift.json.TokenType.BOOL;
+import static com.github.kjetilv.uplift.json.TokenType.COLON;
+import static com.github.kjetilv.uplift.json.TokenType.COMMA;
+import static com.github.kjetilv.uplift.json.TokenType.END_ARRAY;
+import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
+import static com.github.kjetilv.uplift.json.TokenType.NIL;
+import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
 final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 

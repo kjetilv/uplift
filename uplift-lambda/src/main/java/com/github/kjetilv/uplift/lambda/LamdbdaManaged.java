@@ -30,6 +30,13 @@ public final class LamdbdaManaged implements Runnable {
         this.handler = requireNonNull(handler, "handler");
     }
 
+    @Override
+    public void run() {
+        try (LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper = looper()) {
+            looper.run();
+        }
+    }
+
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
         Executor executor = settings.lambdaExecutor();
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client =
@@ -46,14 +53,7 @@ public final class LamdbdaManaged implements Runnable {
                 client,
                 settings.time()
             );
-        return Lambda.looper(handler, source, sink, settings.time());
-    }
-
-    @Override
-    public void run() {
-        try (LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper = looper()) {
-            looper.run();
-        }
+        return LambdaLoopers.looper(handler, source, sink, settings.time());
     }
 
     private static Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(

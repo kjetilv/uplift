@@ -164,10 +164,10 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     @SuppressWarnings("MagicNumber")
     private static boolean shouldlog(Duration timeSinceLast, long count) {
         return timeSinceLast.getSeconds() > 60 ||
-            count <= 5 ||
-            count % 5 == 0 && count <= 25 ||
-            count % 10 == 0 && count <= 100 ||
-            count % 25 == 0;
+               count <= 5 ||
+               count % 5 == 0 && count <= 25 ||
+               count % 10 == 0 && count <= 100 ||
+               count % 25 == 0;
     }
 
     @SuppressWarnings("SameParameterValue")

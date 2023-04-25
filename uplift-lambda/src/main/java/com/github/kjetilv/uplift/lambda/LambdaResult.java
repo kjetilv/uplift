@@ -8,10 +8,10 @@ import static com.github.kjetilv.uplift.lambda.Utils.encodeResponseBody;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 
 public record LambdaResult(
-        int statusCode,
-        Map<String, String> headers,
-        byte[] body,
-        boolean binary
+    int statusCode,
+    Map<String, String> headers,
+    byte[] body,
+    boolean binary
 ) {
 
     @SafeVarargs

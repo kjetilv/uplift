@@ -4,9 +4,9 @@ class StringSource extends AbstractSource {
 
     private final String source;
 
-    private int start = 0;
+    private int start;
 
-    private int current = 0;
+    private int current;
 
     StringSource(String source) {
         this.source = source;
@@ -22,11 +22,6 @@ class StringSource extends AbstractSource {
     @Override
     public char chomp() {
         return chompAndAdvance();
-    }
-
-    @Override
-    public int position() {
-        return current;
     }
 
     @Override

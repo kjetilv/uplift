@@ -9,8 +9,8 @@ import java.util.Optional;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 
-import static java.util.Objects.requireNonNull;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
+import static java.util.Objects.requireNonNull;
 
 public final class LambdaPayload {
 
@@ -160,8 +160,8 @@ public final class LambdaPayload {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + method + " " + path +
-            (queryParameters == null || queryParameters.isEmpty() ? "" : "﹖" + queryParameters) +
-            (body == null || body.isBlank() ? "" : " ⨁ " + printBody(body)) +
-            "]]";
+               (queryParameters == null || queryParameters.isEmpty() ? "" : "﹖" + queryParameters) +
+               (body == null || body.isBlank() ? "" : " ⨁ " + printBody(body)) +
+               "]]";
     }
 }

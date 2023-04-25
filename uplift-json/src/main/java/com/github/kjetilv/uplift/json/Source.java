@@ -14,8 +14,6 @@ interface Source {
 
     int column();
 
-    int position();
-
     char peek();
 
     char peekNext();

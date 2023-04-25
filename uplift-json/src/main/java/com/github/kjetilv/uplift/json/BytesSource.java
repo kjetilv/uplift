@@ -12,8 +12,6 @@ class BytesSource extends AbstractSource {
 
     private int next2;
 
-    private int position = 0;
-
     @SuppressWarnings("StringBufferField")
     private StringBuilder currentLexeme = new StringBuilder();
 
@@ -36,26 +34,17 @@ class BytesSource extends AbstractSource {
 
     @Override
     public char chomp() {
-        try {
-            char chomped = chomped(toChar(next1));
-            currentLexeme.append(chomped);
-            next1 = next2;
-            if (next1 >= 0) {
-                try {
-                    next2 = stream.read();
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to read from " + stream, e);
-                }
+        char chomped = chomped(toChar(next1));
+        currentLexeme.append(chomped);
+        next1 = next2;
+        if (next1 >= 0) {
+            try {
+                next2 = stream.read();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to read from " + stream, e);
             }
-            return chomped;
-        } finally {
-            position++;
         }
-    }
-
-    @Override
-    public int position() {
-        return position;
+        return chomped;
     }
 
     @Override

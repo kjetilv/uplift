@@ -13,10 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.lambda.Invocation;
-import com.github.kjetilv.uplift.lambda.Lambda;
-import com.github.kjetilv.uplift.lambda.LambdaPayload;
-import com.github.kjetilv.uplift.lambda.LambdaResult;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +25,7 @@ class LambdaLoopTest {
         Collection<String> responses = new ArrayList<>();
         AtomicReference<Throwable> failed = new AtomicReference<>();
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
-        Lambda.looper(
+        LambdaLoopers.looper(
             () ->
                 responses.size() > 3
                     ? Optional.empty()
