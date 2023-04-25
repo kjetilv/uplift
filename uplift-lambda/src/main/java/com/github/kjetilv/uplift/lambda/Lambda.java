@@ -7,9 +7,10 @@ import com.github.kjetilv.uplift.kernel.Time;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 
+@SuppressWarnings("unused")
 public final class Lambda {
 
-    public static void simple(LambdaHandler lambdaHandler) {
+    public static void simply(LambdaHandler lambdaHandler) {
         LambdaClientSettings clientSettings = new LambdaClientSettings(
             Env.actual(),
             Duration.ofMinutes(1),

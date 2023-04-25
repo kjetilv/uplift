@@ -34,7 +34,7 @@ configure<JavaPluginExtension> {
 
 tasks.withType<ShadowJar> {
     manifest {
-        attributes(mapOf(Pair("Main-Class", "uplift.examples.helloworld.Main")))
+        attributes(mapOf(Pair("Main-Class", "uplift.examples.helloworld.HelloWorld")))
     }
     mergeServiceFiles()
     minimize()

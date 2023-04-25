@@ -1,7 +1,9 @@
 package com.github.kjetilv.uplift.lambda;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.github.kjetilv.uplift.lambda.Utils.encodeResponseBody;
@@ -13,6 +15,20 @@ public record LambdaResult(
     byte[] body,
     boolean binary
 ) {
+
+    public LambdaResult(int statusCode, Map<String, String> headers, byte[] body, boolean binary) {
+        this.statusCode = statusCode > 0 ? statusCode : 200;
+        this.headers = headers == null
+            ? Collections.emptyMap()
+            : Collections.unmodifiableMap(new LinkedHashMap<>(headers));
+        this.body = body == null ? NONE : body.clone();
+        this.binary = binary;
+    }
+
+    @SafeVarargs
+    public static LambdaResult json(String body, Map.Entry<String, String>... headers) {
+        return json(0, body, headers);
+    }
 
     @SafeVarargs
     public static LambdaResult json(int status, String body, Map.Entry<String, String>... headers) {

@@ -62,6 +62,10 @@ public final class LambdaPayload {
         return isMethod("POST");
     }
 
+    public String path() {
+        return path(null);
+    }
+
     public String path(String prefix) {
         if (prefix == null || prefix.isBlank()) {
             return path;
