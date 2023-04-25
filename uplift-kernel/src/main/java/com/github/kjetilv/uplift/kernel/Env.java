@@ -4,6 +4,7 @@ import java.net.URI;
 
 import com.github.kjetilv.uplift.kernel.aws.DefaultEnv;
 
+@SuppressWarnings("unused")
 public interface Env {
 
     static Env actual() {

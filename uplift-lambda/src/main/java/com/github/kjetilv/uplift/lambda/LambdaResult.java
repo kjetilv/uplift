@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,11 +8,16 @@ import static com.github.kjetilv.uplift.lambda.Utils.encodeResponseBody;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 
 public record LambdaResult(
-    int statusCode,
-    Map<String, String> headers,
-    byte[] body,
-    boolean binary
+        int statusCode,
+        Map<String, String> headers,
+        byte[] body,
+        boolean binary
 ) {
+
+    @SafeVarargs
+    public static LambdaResult json(int status, String body, Map.Entry<String, String>... headers) {
+        return json(status, body == null ? NONE : body.getBytes(StandardCharsets.UTF_8), headers);
+    }
 
     @SafeVarargs
     public static LambdaResult json(int status, byte[] body, Map.Entry<String, String>... headers) {
@@ -38,6 +44,8 @@ public record LambdaResult(
         map.put("headers", headers());
         return map;
     }
+
+    private static final byte[] NONE = new byte[0];
 
     private static Map<String, String> newCorsHeaders() {
         Map<String, String> headers = new HashMap<>();

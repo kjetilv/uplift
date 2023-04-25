@@ -1,11 +1,7 @@
 plugins {
     kotlin("jvm") version "1.8.20"
     `java-gradle-plugin`
-    `maven-publish`
 }
-
-group = "com.github.kjetilv.uplift"
-version = "0.1.0-SNAPSHOT"
 
 gradlePlugin {
     plugins {
@@ -18,10 +14,6 @@ gradlePlugin {
             implementationClass = "com.github.kjetilv.uplift.plugins.UpliftPlugin"
         }
     }
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -37,5 +29,5 @@ dependencies {
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    jvmTarget = "17"
+    jvmTarget = "11"
 }
