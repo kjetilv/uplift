@@ -13,7 +13,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "java")
+    val sub = project.name != "uplift-gradle-plugins"
     apply(plugin = "maven-publish")
 
     tasks {
@@ -22,19 +22,21 @@ subprojects {
         }
     }
 
-    configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+    if (sub) {
+        apply(plugin = "java")
 
-        withSourcesJar()
-    }
+        configure<JavaPluginExtension> {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
 
-    publishing {
-        repositories {
-            mavenLocal()
+            withSourcesJar()
         }
-        publications {
-            if (project.name != "uplift-gradle-plugins") {
+
+        publishing {
+            repositories {
+                mavenLocal()
+            }
+            publications {
                 create<MavenPublication>("mavenJava") {
                     pom {
                         name.set("uplift")
