@@ -1,58 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="19">
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-asynchttp" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-asynchttp.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-asynchttp.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flambda" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flambda.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flambda.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flogs" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flogs.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-flogs.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-gradle-plugins" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-gradle-plugins.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-gradle-plugins.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-json" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-json.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-json.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-kernel" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-kernel.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-kernel.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-lambda" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-lambda.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-lambda.test" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-s3" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-s3.main" target="17" />
-      <module name="com.github.kjetilv.uplift.uplift-core.uplift-s3.test" target="17" />
-      <module name="uplift-core.uplift-asynchttp" target="17" />
-      <module name="uplift-core.uplift-asynchttp.main" target="17" />
-      <module name="uplift-core.uplift-asynchttp.test" target="17" />
-      <module name="uplift-core.uplift-flambda" target="17" />
-      <module name="uplift-core.uplift-flambda.main" target="17" />
-      <module name="uplift-core.uplift-flambda.test" target="17" />
-      <module name="uplift-core.uplift-flogs" target="17" />
-      <module name="uplift-core.uplift-flogs.main" target="17" />
-      <module name="uplift-core.uplift-flogs.test" target="17" />
-      <module name="uplift-core.uplift-gradle-plugins" target="17" />
-      <module name="uplift-core.uplift-gradle-plugins.main" target="17" />
-      <module name="uplift-core.uplift-gradle-plugins.test" target="17" />
-      <module name="uplift-core.uplift-json" target="17" />
-      <module name="uplift-core.uplift-json.main" target="17" />
-      <module name="uplift-core.uplift-json.test" target="17" />
-      <module name="uplift-core.uplift-kernel" target="17" />
-      <module name="uplift-core.uplift-kernel.main" target="17" />
-      <module name="uplift-core.uplift-kernel.test" target="17" />
-      <module name="uplift-core.uplift-lambda" target="17" />
-      <module name="uplift-core.uplift-lambda.main" target="17" />
-      <module name="uplift-core.uplift-lambda.test" target="17" />
-      <module name="uplift-core.uplift-s3" target="17" />
-      <module name="uplift-core.uplift-s3.main" target="17" />
-      <module name="uplift-core.uplift-s3.test" target="17" />
-      <module name="uplift-gradle-plugins" target="11" />
-      <module name="uplift-gradle-plugins.main" target="11" />
-      <module name="uplift-gradle-plugins.test" target="11" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="17" />
   </component>
 </project>
