@@ -17,6 +17,11 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     private static final Logger log = LoggerFactory.getLogger(HttpChannelHandler.class);
 
+    @FunctionalInterface
+    public interface Server {
+
+        HttpResponse handle(HttpRequest req);
+    }
     private final Server server;
 
     public HttpChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
@@ -57,6 +62,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
                 .orElse(Processing.FAIL);
     }
 
+    @SuppressWarnings("resource")
     private void write(HttpResponse res) {
         BufferedWriter<ByteBuffer> writer = responseWriter();
         byte[] bytes = res.toResponseHeader().getBytes(UTF_8);
@@ -96,11 +102,5 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
             return Processing.REJECTED;
         }
         return Processing.FAIL;
-    }
-
-    @FunctionalInterface
-    public interface Server {
-
-        HttpResponse handle(HttpRequest req);
     }
 }

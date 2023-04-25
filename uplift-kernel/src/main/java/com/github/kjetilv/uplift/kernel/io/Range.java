@@ -89,10 +89,10 @@ public record Range(
     @Override
     public String toString() {
         return getClass().getSimpleName() +
-            "[" +
-            (start == null ? "" : Print.bytes(start)) +
-            '-' +
-            (exclusiveEnd == null ? "" : Print.bytes(exclusiveEnd)) +
-            "]";
+               "[" +
+               (start == null ? "" : Print.bytes(start)) +
+               '-' +
+               (exclusiveEnd == null ? "" : Print.bytes(exclusiveEnd)) +
+               "]";
     }
 }

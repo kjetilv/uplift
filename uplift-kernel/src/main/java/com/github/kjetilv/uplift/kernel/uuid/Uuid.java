@@ -34,7 +34,7 @@ public interface Uuid {
 
     static Uuid from(String spec) {
         int length = spec.length();
-        if (length < Uuid.DIGEST_LENGTH) {
+        if (length < DIGEST_LENGTH) {
             throw new IllegalStateException("Malformed: " + spec);
         }
         return new DefaultUuid(spec);
@@ -49,7 +49,7 @@ public interface Uuid {
     }
 
     static Uuid random() {
-        return Uuid.from(UUID.randomUUID());
+        return from(UUID.randomUUID());
     }
 
     default String digest() {
@@ -57,7 +57,7 @@ public interface Uuid {
     }
 
     default UUID uuid() {
-        return Uuid.uuid(digest());
+        return uuid(digest());
     }
 
     private static boolean isUuid(String spec) {
@@ -71,8 +71,8 @@ public interface Uuid {
 
     private static boolean isUuidChar(int c) {
         return 'A' <= c && c <= 'Z' ||
-            'a' <= c && c <= 'z' ||
-            '0' <= c && c <= '9' ||
-            c == '_' || c == '-';
+               'a' <= c && c <= 'z' ||
+               '0' <= c && c <= '9' ||
+               c == '_' || c == '-';
     }
 }

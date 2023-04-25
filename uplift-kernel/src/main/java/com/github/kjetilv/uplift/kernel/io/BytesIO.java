@@ -113,7 +113,7 @@ public final class BytesIO {
     public static int writeUuid(DataOutput output, UUID uuid) {
         requireNonNull(uuid, "uuid");
         return writeLong(output, uuid.getMostSignificantBits()) +
-            writeLong(output, uuid.getLeastSignificantBits());
+               writeLong(output, uuid.getLeastSignificantBits());
     }
 
     public static int writeUuids(DataOutput output, List<? extends Uuid> list) {
@@ -168,7 +168,7 @@ public final class BytesIO {
 
     public static String unzipString(byte[] gzipped) {
         try (
-            InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzipped));
+            InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzipped))
         ) {
             return readUTF8(inputStream);
         } catch (Exception e) {
@@ -176,14 +176,15 @@ public final class BytesIO {
         }
     }
 
+    public static byte[] nonNull(byte[] body) {
+        return body == null || body.length == 0 ? NOBODY : body;
+    }
+
     private BytesIO() {
 
     }
-
     private static final int ATE_KAY = 8192;
-
     private static final Base64.Encoder ENCODER = Base64.getEncoder();
-
     private static final Base64.Decoder DECODER = Base64.getDecoder();
 
     private static int readInt(DataInput input) {
@@ -218,9 +219,5 @@ public final class BytesIO {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write " + size + "tracks", e);
         }
-    }
-
-    public static byte[] nonNull(byte[] body) {
-        return body == null || body.length == 0 ? NOBODY : body;
     }
 }

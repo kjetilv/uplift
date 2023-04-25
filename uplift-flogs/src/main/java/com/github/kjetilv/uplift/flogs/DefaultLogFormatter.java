@@ -34,12 +34,12 @@ public final class DefaultLogFormatter extends SimpleFormatter {
 
     private final Function<Long, Optional<String>> threadNamer;
 
-    DefaultLogFormatter() {
-        this(null);
-    }
-
     public DefaultLogFormatter(Function<Long, Optional<String>> threadNamer) {
         this.threadNamer = threadNamer;
+    }
+
+    DefaultLogFormatter() {
+        this(null);
     }
 
     @Override

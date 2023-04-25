@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.asynchttp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("unused")
 public record Transfer(
     long totalSize,
     int bufferSize
@@ -28,10 +29,10 @@ public record Transfer(
                         return transferred;
                     }
                     throw new IllegalStateException("EOS after transferring " +
-                        transferred +
-                        "/" +
-                        totalSize +
-                        " bytes");
+                                                    transferred +
+                                                    "/" +
+                                                    totalSize +
+                                                    " bytes");
                 }
                 if (bytesRead == 0) {
                     emptyTurnarunds++;
@@ -60,20 +61,20 @@ public record Transfer(
                     if (transferred + writableBytes > totalSize) {
                         throw new IllegalStateException(
                             "Transferring " +
-                                writableBytes +
-                                " bytes on top of already transferred " +
-                                transferred +
-                                ", would exceed " +
-                                totalSize +
-                                " wanted, to " +
-                                writer +
-                                " for " +
-                                totalSize +
-                                " bytes " +
-                                "in " +
-                                turnarounds +
-                                " turnarounds, empty turnarounds: " +
-                                emptyTurnarundsTotal);
+                            writableBytes +
+                            " bytes on top of already transferred " +
+                            transferred +
+                            ", would exceed " +
+                            totalSize +
+                            " wanted, to " +
+                            writer +
+                            " for " +
+                            totalSize +
+                            " bytes " +
+                            "in " +
+                            turnarounds +
+                            " turnarounds, empty turnarounds: " +
+                            emptyTurnarundsTotal);
                     }
 
                     try {
@@ -81,8 +82,8 @@ public record Transfer(
                     } catch (Exception e) {
                         throw new IllegalStateException(
                             "Failed to write " + bytesRead + " bytes to " + writer + " for " + totalSize + " " +
-                                "bytes, transferred " + transferred + " in " + turnarounds + " turnarounds, " +
-                                "empty turnarounds: " + emptyTurnarundsTotal, e);
+                            "bytes, transferred " + transferred + " in " + turnarounds + " turnarounds, " +
+                            "empty turnarounds: " + emptyTurnarundsTotal, e);
                     } finally {
                         transferred += writableBytes;
                         turnarounds++;
@@ -97,15 +98,15 @@ public record Transfer(
                     if (transferred > totalSize) {
                         throw new IllegalStateException(
                             "Transferred " + transferred + " bytes of " + totalSize + " wanted, " +
-                                "to " + writer + " for " + totalSize + " bytes " +
-                                "in " + turnarounds + " turnarounds, empty turnarounds: " + emptyTurnarundsTotal);
+                            "to " + writer + " for " + totalSize + " bytes " +
+                            "in " + turnarounds + " turnarounds, empty turnarounds: " + emptyTurnarundsTotal);
                     }
                 }
             }
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to write " + totalSize + " bytes to " + writer +
-                    ", transferred " + transferred + " in " + turnarounds + " turnarounds", e);
+                ", transferred " + transferred + " in " + turnarounds + " turnarounds", e);
         }
     }
 

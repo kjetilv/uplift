@@ -5,6 +5,7 @@ import java.nio.channels.AsynchronousByteChannel;
 import java.time.Instant;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public abstract class BufferStateChannelHandler<C extends AbstractChannelHandler<BufferState, C>>
     extends AbstractChannelHandler<BufferState, C> {
 

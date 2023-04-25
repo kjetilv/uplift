@@ -11,15 +11,11 @@ import com.github.kjetilv.uplift.asynchttp.HttpRequest;
 import com.github.kjetilv.uplift.asynchttp.HttpResponse;
 import com.github.kjetilv.uplift.asynchttp.IOServer;
 import com.github.kjetilv.uplift.asynchttp.ServerRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Emulates AWS lambda service.
  */
 public final class LocalLambda implements Closeable, Runnable, HttpChannelHandler.Server {
-
-    private static final Logger log = LoggerFactory.getLogger(LocalLambda.class);
 
     private final IOServer lambdaServer;
 
@@ -60,7 +56,6 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
         InetSocketAddress apiAddress = this.apiServer.address();
         this.apiUri = URI.create(String.format("http://localhost:%1$d", apiAddress.getPort()));
-
     }
 
     @Override

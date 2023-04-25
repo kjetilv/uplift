@@ -66,7 +66,7 @@ public final class ManagedExecutors {
 
     private static final int MAX_QUEUE_LENGTH_DEFAULT = 10;
 
-    private final static AtomicLong THREAD_COUNT = new AtomicLong();
+    private static final AtomicLong THREAD_COUNT = new AtomicLong();
 
     private static ThreadFactory threadFactory(String prefix) {
         return run -> {

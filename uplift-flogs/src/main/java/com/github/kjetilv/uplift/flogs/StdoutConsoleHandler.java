@@ -8,8 +8,6 @@ import static java.util.logging.Level.FINE;
 
 final class StdoutConsoleHandler extends ConsoleHandler {
 
-    private static final String UTF_8 = StandardCharsets.UTF_8.name();
-
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     StdoutConsoleHandler(Formatter formatter) {
         try {
@@ -21,4 +19,5 @@ final class StdoutConsoleHandler extends ConsoleHandler {
         setLevel(FINE);
         setFormatter(formatter);
     }
+    private static final String UTF_8 = StandardCharsets.UTF_8.name();
 }

@@ -24,5 +24,4 @@ public interface Env {
     String authorizationToken();
 
     String credentialsFullUri();
-
 }

@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public final class ByteChannelStreamBridgingReader implements BufferedReader<ByteBuffer> {
 
     private final InputStream in;

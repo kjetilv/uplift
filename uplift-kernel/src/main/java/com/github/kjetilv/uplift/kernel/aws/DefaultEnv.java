@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.kernel.aws;
 
+import java.net.URI;
+
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.EnvLookup;
-
-import java.net.URI;
 
 public final class DefaultEnv implements Env {
 

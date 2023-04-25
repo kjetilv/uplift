@@ -1,4 +1,3 @@
-
 package org.slf4j;
 
 import java.util.Iterator;
@@ -27,7 +26,6 @@ public interface Marker {
     boolean contains(Marker other);
 
     boolean contains(String name);
-
-    boolean equals(Object o);
     int hashCode();
+    boolean equals(Object o);
 }

@@ -55,7 +55,7 @@ final class WriteableHandler implements CompletionHandler<Integer, Object> {
     public void failed(Throwable exc, Object attachment) {
         if (
             exc instanceof IOException && "Broken pipe".equals(exc.getMessage()) ||
-                exc instanceof AsynchronousCloseException as
+            exc instanceof AsynchronousCloseException
         ) {
             log.debug("Client closed connection: {}", exc.toString());
         } else {

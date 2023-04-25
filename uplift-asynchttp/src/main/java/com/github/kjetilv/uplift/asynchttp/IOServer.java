@@ -7,11 +7,9 @@ import java.util.function.Function;
 
 public interface IOServer extends Closeable {
 
-    void join();
-
     @Override
     void close();
-
+    void join();
     InetSocketAddress address();
 
     <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(

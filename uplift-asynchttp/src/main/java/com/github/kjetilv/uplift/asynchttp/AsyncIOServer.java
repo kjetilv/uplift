@@ -64,11 +64,6 @@ final class AsyncIOServer implements IOServer {
     }
 
     @Override
-    public void join() {
-        awaitTermination(true);
-    }
-
-    @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
             try {
@@ -84,6 +79,11 @@ final class AsyncIOServer implements IOServer {
     }
 
     @Override
+    public void join() {
+        awaitTermination(true);
+    }
+
+    @Override
     public InetSocketAddress address() {
         if (localAddress instanceof InetSocketAddress address) {
             return address;
@@ -96,7 +96,7 @@ final class AsyncIOServer implements IOServer {
         Function<? super AsynchronousByteChannel, ? extends ChannelHandler<S, C>> handler
     ) {
         if (!closed.get() && serverSocketChannel.isOpen()) {
-            serverSocketChannel.accept(null, new ChannelReader<S, C>(handler));
+            serverSocketChannel.accept(null, new ChannelReader<>(handler));
         }
         return this;
     }

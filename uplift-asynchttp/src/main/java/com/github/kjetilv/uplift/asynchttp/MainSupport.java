@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.github.kjetilv.uplift.kernel.io.ParseBits;
 
+@SuppressWarnings("unused")
 public final class MainSupport {
 
     public static final int DEFAULT_PORT = 80;
@@ -89,7 +90,7 @@ public final class MainSupport {
     ) {
         int idx = arg.indexOf(splitter);
         return idx > 0
-            ? MainSupport.entry(arg, idx, parser)
+            ? entry(arg, idx, parser)
             : Optional.of(Map.entry(arg, "true"));
     }
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public abstract class AbstractChannelHandler<S extends ChannelState, C extends AbstractChannelHandler<S, C>>
     implements ChannelHandler<S, C> {
 

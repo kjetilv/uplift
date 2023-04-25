@@ -34,6 +34,10 @@ public final class ByteBuffers {
         }
     }
 
+    private ByteBuffers() {
+
+    }
+
     private static Supplier<Optional<String>> nextLineSupplier(BufferedReader lineReader) {
         return () -> {
             try {
@@ -42,9 +46,5 @@ public final class ByteBuffers {
                 throw new IllegalStateException("Failed to read line", e);
             }
         };
-    }
-
-    private ByteBuffers() {
-
     }
 }

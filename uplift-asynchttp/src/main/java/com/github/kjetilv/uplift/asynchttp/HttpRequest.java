@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
 
+import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
 
 public record HttpRequest(
     String method,
@@ -123,7 +123,7 @@ public record HttpRequest(
             ))
             .entrySet()
             .stream()
-            .collect(CaseInsensitiveHashMap.caseInsensitive(
+            .collect(caseInsensitive(
                 Map.Entry::getKey,
                 entry ->
                     entry.getValue().stream().map(pair -> pair[1]).toList()
@@ -137,8 +137,8 @@ public record HttpRequest(
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" +
-            method + " " + path + " " + queryParams + " " + headers +
-            (body == null || body.length == 0 ? "" : " body: " + body.length) +
-            "]";
+               method + " " + path + " " + queryParams + " " + headers +
+               (body == null || body.length == 0 ? "" : " body: " + body.length) +
+               "]";
     }
 }

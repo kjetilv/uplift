@@ -10,6 +10,7 @@ import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
 
 import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
 
+@SuppressWarnings("unused")
 public record HttpResponse(
     int status,
     Map<String, List<String>> headers,

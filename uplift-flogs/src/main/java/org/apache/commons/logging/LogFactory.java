@@ -6,9 +6,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({ "unused", "WeakerAccess" })
 public final class LogFactory {
 
-    private LogFactory() {
-    }
-
     public static Log getLog(Class<?> clazz) {
         return getLog(clazz.getName());
     }
@@ -107,5 +104,8 @@ public final class LogFactory {
                 l.warn(String.valueOf(message), t);
             }
         };
+    }
+
+    private LogFactory() {
     }
 }

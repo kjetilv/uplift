@@ -372,14 +372,14 @@ public final class Logger {
         String className = split[split.length - 1];
         AtomicInteger count = new AtomicInteger(1);
         return Arrays.stream(split)
-            .limit(split.length - 1)
-            .map(p -> {
-                int len = p.length();
-                return len < count.get()
-                    ? p
-                    : p.substring(0, Math.min(len, count.incrementAndGet()));
-            })
-            .collect(Collectors.joining(".")) + "." + className;
+                   .limit(split.length - 1)
+                   .map(p -> {
+                       int len = p.length();
+                       return len < count.get()
+                           ? p
+                           : p.substring(0, Math.min(len, count.incrementAndGet()));
+                   })
+                   .collect(Collectors.joining(".")) + "." + className;
     }
 
     @Override

@@ -76,7 +76,7 @@ public final class Maps {
         I l,
         Function<? super V, ? extends T> id
     ) {
-        Map<T, List<V>> map = Maps.groupBy(l, id);
+        Map<T, List<V>> map = groupBy(l, id);
         return map.entrySet().stream()
             .filter(entry -> entry.getValue().size() > 1)
             .toList();
