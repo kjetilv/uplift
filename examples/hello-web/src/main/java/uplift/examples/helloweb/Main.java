@@ -3,13 +3,13 @@ package uplift.examples.helloweb;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-import uplift.kernel.Env;
-import uplift.kernel.Time;
-import uplift.lambda.LambdaClientSettings;
-import uplift.lambda.LambdaResult;
-import uplift.lambda.LamdbdaManaged;
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.Time;
+import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
+import com.github.kjetilv.uplift.lambda.LambdaResult;
+import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
 
-import static uplift.kernel.ManagedExecutors.executor;
+import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 
 public final class Main {
 
