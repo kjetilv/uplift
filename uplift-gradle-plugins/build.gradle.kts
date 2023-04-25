@@ -7,8 +7,6 @@ plugins {
 group = "com.github.kjetilv.uplift"
 version = "0.1.0-SNAPSHOT"
 
-java.sourceCompatibility = JavaVersion.VERSION_11
-
 gradlePlugin {
     plugins {
         create("lambda-native") {
@@ -39,5 +37,5 @@ dependencies {
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    jvmTarget = "11"
+    jvmTarget = "17"
 }
