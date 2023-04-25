@@ -27,7 +27,6 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_17
 
         withSourcesJar()
-        withJavadocJar()
     }
 
     publishing {
