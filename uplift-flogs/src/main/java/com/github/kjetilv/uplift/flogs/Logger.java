@@ -354,8 +354,8 @@ public final class Logger {
         logRecord.setInstant(Instant.now());
         logRecord.setThrown(throwable);
         Thread thread = Thread.currentThread();
-        logRecord.setLongThreadID(thread.threadId());
-        if (args == null || args.length <= 0) {
+        logRecord.setLongThreadID(thread.getId());
+        if (args == null || args.length == 0) {
             return logRecord;
         }
         for (int i = 0; i < args.length; i++) {
