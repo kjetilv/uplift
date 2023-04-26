@@ -78,7 +78,7 @@ public final class ManagedExecutors {
                     LoggerFactory.getLogger(ManagedExecutors.class).warn("{}: Uncaught exception {}", name, run, e);
                 }
             }, name);
-            THREAD_NAMES.put(thread.threadId(), name);
+            THREAD_NAMES.put(thread.getId(), name);
             return thread;
         };
     }

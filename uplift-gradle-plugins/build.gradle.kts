@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.21"
     `java-gradle-plugin`
 }
 
@@ -29,5 +29,5 @@ dependencies {
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    jvmTarget = "17"
+    jvmTarget = "${property("javaVersion")}"
 }

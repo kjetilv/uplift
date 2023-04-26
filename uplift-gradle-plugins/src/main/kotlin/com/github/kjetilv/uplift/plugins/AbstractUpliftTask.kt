@@ -86,7 +86,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
         Files.copy(pom, pomCopy)
         Files.write(pom, replacedContent(pomCopy))
         clearRecursive(pomCopy)
-        runCdk(command = "cdk bootstrap")
+        runCdk(command = "cdk bootstrap --trust ${account.get()}")
     }
 
     private fun replacedContent(pomCopy: Path?): List<String> =

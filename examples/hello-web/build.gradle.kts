@@ -50,7 +50,7 @@ apply<UpliftPlugin>()
 
 tasks.getByName<UpliftTask>(name = "uplift") {
     configure(
-        account = "123",
+        account = "732946774009",
         region = "eu-north-1",
         stack = "uplift-hello-web"
     ).stackWith(

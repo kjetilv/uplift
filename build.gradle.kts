@@ -22,16 +22,18 @@ subprojects {
         }
     }
 
-    if (sub) {
-        apply(plugin = "java")
+    apply(plugin = "java")
 
+    JavaVersion.valueOf("VERSION_${property("javaVersion")}").also { javaVersion ->
         configure<JavaPluginExtension> {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
 
             withSourcesJar()
         }
+    }
 
+    if (sub) {
         publishing {
             repositories {
                 mavenLocal()
