@@ -183,8 +183,11 @@ public final class BytesIO {
     private BytesIO() {
 
     }
+
     private static final int ATE_KAY = 8192;
+
     private static final Base64.Encoder ENCODER = Base64.getEncoder();
+
     private static final Base64.Decoder DECODER = Base64.getDecoder();
 
     private static int readInt(DataInput input) {

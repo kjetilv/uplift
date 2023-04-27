@@ -7,6 +7,14 @@ import java.time.temporal.TemporalAccessor;
 
 class AbstractSigner {
 
+    static String formatDateTime(TemporalAccessor now) {
+        return AwsAuths.DATETIME_FORMATTER.format(now);
+    }
+
+    static String formatDatestamp(TemporalAccessor now) {
+        return AwsAuths.DATESTAMP_FORMATTER.format(now);
+    }
+
     private final URI endpointUrl;
 
     private final String httpMethod;
@@ -40,13 +48,5 @@ class AbstractSigner {
 
     protected static ZonedDateTime now() {
         return Instant.now().atZone(AwsAuths.UTC);
-    }
-
-    static String formatDateTime(TemporalAccessor now) {
-        return AwsAuths.DATETIME_FORMATTER.format(now);
-    }
-
-    static String formatDatestamp(TemporalAccessor now) {
-        return AwsAuths.DATESTAMP_FORMATTER.format(now);
     }
 }

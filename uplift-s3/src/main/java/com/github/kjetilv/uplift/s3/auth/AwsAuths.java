@@ -148,11 +148,11 @@ final class AwsAuths {
         String bodyHash
     ) {
         return httpMethod + "\n" +
-            getCanonicalizedResourcePath(endpoint) + "\n" +
-            queryParameters + "\n" +
-            canonicalizedHeaders + "\n" +
-            canonicalizedHeaderNames + "\n" +
-            bodyHash;
+               getCanonicalizedResourcePath(endpoint) + "\n" +
+               queryParameters + "\n" +
+               canonicalizedHeaders + "\n" +
+               canonicalizedHeaderNames + "\n" +
+               bodyHash;
     }
 
     static String getStringToSign(
@@ -161,9 +161,9 @@ final class AwsAuths {
         String canonicalRequest
     ) {
         return SCHEME + "-" + ALGORITHM + "\n" +
-            dateTime + "\n" +
-            scope + "\n" +
-            BinaryUtils.toHex(sha256(canonicalRequest));
+               dateTime + "\n" +
+               scope + "\n" +
+               BinaryUtils.toHex(sha256(canonicalRequest));
     }
 
     private AwsAuths() {

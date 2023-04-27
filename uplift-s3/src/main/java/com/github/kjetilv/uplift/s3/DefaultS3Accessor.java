@@ -29,9 +29,9 @@ import com.github.kjetilv.uplift.s3.util.Xml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.Objects.requireNonNull;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
+import static java.util.Objects.requireNonNull;
 
 public final class DefaultS3Accessor implements S3Accessor {
 

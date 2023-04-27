@@ -20,7 +20,7 @@ public final class Xml {
 
             private final String end = "</" + field + ">";
 
-            private int index = 0;
+            private int index;
 
             @Override
             public boolean tryAdvance(Consumer<? super String> action) {

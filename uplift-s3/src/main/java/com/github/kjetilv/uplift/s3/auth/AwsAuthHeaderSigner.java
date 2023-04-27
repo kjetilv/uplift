@@ -115,9 +115,9 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
         String signatureAuthorizationHeader = "Signature=" + BinaryUtils.toHex(signature);
 
         String authorizationHeader = AwsAuths.SCHEME + "-" + AwsAuths.ALGORITHM + " "
-            + credentialsAuthorizationHeader + ", "
-            + signedHeadersAuthorizationHeader + ", "
-            + signatureAuthorizationHeader;
+                                     + credentialsAuthorizationHeader + ", "
+                                     + signedHeadersAuthorizationHeader + ", "
+                                     + signatureAuthorizationHeader;
         headers.remove("Host");
         return authorizationHeader;
     }

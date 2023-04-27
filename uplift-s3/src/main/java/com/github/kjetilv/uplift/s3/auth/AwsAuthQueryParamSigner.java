@@ -51,6 +51,7 @@ public final class AwsAuthQueryParamSigner extends AbstractSigner {
      *                        for non-streaming uploads.
      * @param awsAccessKey    The user's AWS Access Key.
      * @param awsSecretKey    The user's AWS Secret Key.
+     *
      * @return The computed authorization string for the request. This value
      *     needs to be set as the header 'Authorization' on the subsequent
      *     HTTP request.
@@ -130,10 +131,10 @@ public final class AwsAuthQueryParamSigner extends AbstractSigner {
         // form up the authorization parameters for the caller to place in the query string
 
         return "X-Amz-Algorithm=" + queryParameters.get("X-Amz-Algorithm") +
-            "&X-Amz-Credential=" + queryParameters.get("X-Amz-Credential") +
-            "&X-Amz-Date=" + queryParameters.get("X-Amz-Date") +
-            "&X-Amz-Expires=" + queryParameters.get("X-Amz-Expires") +
-            "&X-Amz-SignedHeaders=" + queryParameters.get("X-Amz-SignedHeaders") +
-            "&X-Amz-Signature=" + BinaryUtils.toHex(signature);
+               "&X-Amz-Credential=" + queryParameters.get("X-Amz-Credential") +
+               "&X-Amz-Date=" + queryParameters.get("X-Amz-Date") +
+               "&X-Amz-Expires=" + queryParameters.get("X-Amz-Expires") +
+               "&X-Amz-SignedHeaders=" + queryParameters.get("X-Amz-SignedHeaders") +
+               "&X-Amz-Signature=" + BinaryUtils.toHex(signature);
     }
 }
