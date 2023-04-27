@@ -87,6 +87,7 @@
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
       <option name="KEEP_BLANK_LINES_BETWEEN_PACKAGE_DECLARATION_AND_HEADER" value="1" />
       <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />
+      <option name="BLANK_LINES_AROUND_FIELD" value="1" />
       <option name="BLANK_LINES_AROUND_METHOD_IN_INTERFACE" value="0" />
       <option name="BLANK_LINES_AFTER_CLASS_HEADER" value="1" />
       <option name="BLANK_LINES_AFTER_ANONYMOUS_CLASS_HEADER" value="1" />
@@ -95,6 +96,7 @@
       <option name="SPACE_WITHIN_EMPTY_ARRAY_INITIALIZER_BRACES" value="true" />
       <option name="SPACE_BEFORE_ARRAY_INITIALIZER_LBRACE" value="true" />
       <option name="CALL_PARAMETERS_WRAP" value="5" />
+      <option name="PREFER_PARAMETERS_WRAP" value="true" />
       <option name="CALL_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
       <option name="METHOD_PARAMETERS_WRAP" value="5" />
       <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
@@ -114,7 +116,7 @@
       <option name="KEEP_SIMPLE_CLASSES_IN_ONE_LINE" value="true" />
       <option name="FOR_STATEMENT_WRAP" value="5" />
       <option name="ARRAY_INITIALIZER_WRAP" value="5" />
-      <option name="ASSIGNMENT_WRAP" value="5" />
+      <option name="ASSIGNMENT_WRAP" value="1" />
       <option name="WRAP_COMMENTS" value="true" />
       <option name="ASSERT_STATEMENT_WRAP" value="5" />
       <option name="ASSERT_STATEMENT_COLON_ON_NEXT_LINE" value="true" />

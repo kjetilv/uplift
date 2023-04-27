@@ -31,6 +31,7 @@ final class Params {
     private Params() {
 
     }
+
     private static final String PATTERN = "([\\w\\-]*)";
 
     private static String unstarred(String pattern) {

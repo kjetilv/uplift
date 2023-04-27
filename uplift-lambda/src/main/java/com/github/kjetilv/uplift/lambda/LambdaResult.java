@@ -16,15 +16,6 @@ public record LambdaResult(
     boolean binary
 ) {
 
-    public LambdaResult(int statusCode, Map<String, String> headers, byte[] body, boolean binary) {
-        this.statusCode = statusCode > 0 ? statusCode : 200;
-        this.headers = headers == null
-            ? Collections.emptyMap()
-            : Collections.unmodifiableMap(new LinkedHashMap<>(headers));
-        this.body = body == null ? NONE : body.clone();
-        this.binary = binary;
-    }
-
     @SafeVarargs
     public static LambdaResult json(String body, Map.Entry<String, String>... headers) {
         return json(0, body, headers);
@@ -47,6 +38,15 @@ public record LambdaResult(
 
     public static LambdaResult status(int statusCode) {
         return new LambdaResult(statusCode, null, null, false);
+    }
+
+    public LambdaResult(int statusCode, Map<String, String> headers, byte[] body, boolean binary) {
+        this.statusCode = statusCode > 0 ? statusCode : 200;
+        this.headers = headers == null
+            ? Collections.emptyMap()
+            : Collections.unmodifiableMap(new LinkedHashMap<>(headers));
+        this.body = body == null ? NONE : body.clone();
+        this.binary = binary;
     }
 
     public Map<String, Object> toMap(boolean post) {
