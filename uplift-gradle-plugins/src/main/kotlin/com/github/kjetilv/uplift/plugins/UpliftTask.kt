@@ -17,9 +17,9 @@ abstract class UpliftTask : AbstractUpliftTask() {
         runCdk(command = "cdk deploy ${stack.get()} --require-approval=never")
 
     private fun report() =
-        verifiedAccount(account.orNull).also {
+        verifiedAccount(account.nonBlank).also {
             project.logger.info(
-                "Uplifting for account `$it` in region `${verifiedRegion(region.orNull)}`"
+                "Uplifting for account `$it` in region `${verifiedRegion(region.nonBlank)}`"
             )
         }
 
