@@ -6,6 +6,8 @@ import org.gradle.api.provider.Property
 import java.io.File
 import java.nio.file.Path
 
+internal operator fun <T> Property<T>.remAssign(value: T): Unit = set(value)
+
 internal val Project.shortGroupName
     get() =
         (base().let { group ->

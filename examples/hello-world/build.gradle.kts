@@ -47,10 +47,10 @@ apply<UpliftPlugin>()
 
 tasks.getByName<UpliftTask>(name = "uplift") {
     configure(
-            account = "123",
-            region = "eu-north-1",
-            stack = "uplift-hello-world"
+        account = "${project.property("account")}",
+        region = "${project.property("region")}",
+        stack = "uplift-hello-world"
     ).stackWith(
-            "uplift.examples.helloworld.HelloWorldBuilder"
+        "uplift.examples.helloworld.HelloWorldBuilder"
     )
 }.dependsOn("native-lambda", "jar")

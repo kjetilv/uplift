@@ -8,15 +8,16 @@ import java.nio.file.Path
 class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.tasks.register("uplift", UpliftTask::class.java) {
-            it.run {
-                arch.set(resolveArchitecture())
-                awsAuth.set(resolveAwsAuth())
+        project.tasks.register("uplift", UpliftTask::class.java) { task ->
+            task.run {
+                arch %= resolveArchitecture()
+                profile %= "default"
+                awsAuth %= resolveAwsAuth()
                 project.tasks.findByName("jar")?.outputs?.files?.singleFile?.toPath()
                     ?.also { jarFile ->
-                        stackbuilderJar.set(jarFile)
+                        stackbuilderJar %= jarFile
                     } ?: throw IllegalStateException("No output from jar task was found")
-                stackbuilderClass.set("")
+                stackbuilderClass %= ""
             }
         }
         project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java)

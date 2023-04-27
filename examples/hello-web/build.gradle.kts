@@ -10,7 +10,7 @@ plugins {
     id("com.github.kjetilv.uplift.plugins.native") version "0.1.0-SNAPSHOT"
 }
 
-repositories{
+repositories {
     mavenLocal()
     mavenCentral()
 }
@@ -50,8 +50,8 @@ apply<UpliftPlugin>()
 
 tasks.getByName<UpliftTask>(name = "uplift") {
     configure(
-        account = "732946774009",
-        region = "eu-north-1",
+        account = "${project.property("account")}",
+        region = "${project.property("region")}",
         stack = "uplift-hello-web"
     ).stackWith(
         "uplift.examples.helloweb.HelloWebBuilder"

@@ -31,6 +31,9 @@ abstract class AbstractUpliftTask : DefaultTask() {
     abstract val account: Property<String>
 
     @get:Input
+    abstract val profile: Property<String>
+
+    @get:Input
     abstract val region: Property<String>
 
     @get:Input
@@ -46,8 +49,19 @@ abstract class AbstractUpliftTask : DefaultTask() {
     protected val uplift: Path
         get() = project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
 
+    protected fun verifiedAccount(account: String?) =
+        account?.takeIf { it.length > 3 && it.chars().allMatch(Character::isDigit) }
+            ?: throw IllegalStateException("Invalid account: $account")
+
+    protected fun verifiedRegion(region: String?) =
+        region ?: throw IllegalStateException("No region set")
+
     protected fun runCdk(cwd: Path = uplift, command: String) =
-        runDocker(cwd, "cdk-site:latest", "$command --ci=true")
+        runDocker(
+            cwd,
+            "cdk-site:latest",
+            "$command ${profile.orNull?.let { " --profile=$it" }} --ci=true"
+        )
 
     @Suppress("SameParameterValue")
     private fun runDocker(cwd: Path, container: String, finalCommand: String) {
@@ -65,7 +79,6 @@ abstract class AbstractUpliftTask : DefaultTask() {
 
     private val cdkApp: Path
         get() = project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
-
     private val resolvedStackbuilderJar: Path
         get() = stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
@@ -86,7 +99,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
         Files.copy(pom, pomCopy)
         Files.write(pom, replacedContent(pomCopy))
         clearRecursive(pomCopy)
-        runCdk(command = "cdk bootstrap --trust ${account.get()}")
+        runCdk(command = "cdk bootstrap")
     }
 
     private fun replacedContent(pomCopy: Path?): List<String> =
