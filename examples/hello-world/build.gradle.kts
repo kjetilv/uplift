@@ -19,6 +19,8 @@ group = "com.github.kjetilv.uplift.examples"
 version = "0.1.0-SNAPSHOT"
 
 dependencies {
+    implementation("com.github.kjetilv.uplift:uplift-cdk:0.1.0-SNAPSHOT")
+
     implementation("software.amazon.awscdk:aws-cdk-lib:2.73.0")
     implementation("software.constructs:constructs:10.1.301")
 

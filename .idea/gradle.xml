@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/uplift-asynchttp" />
+            <option value="$PROJECT_DIR$/uplift-cdk" />
             <option value="$PROJECT_DIR$/uplift-flambda" />
             <option value="$PROJECT_DIR$/uplift-flogs" />
             <option value="$PROJECT_DIR$/uplift-gradle-plugins" />

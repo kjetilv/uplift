@@ -17,5 +17,6 @@ include("uplift-json")
 include("uplift-s3")
 include("uplift-flambda")
 include("uplift-lambda")
+include("uplift-cdk")
 include("uplift-gradle-plugins")
 
