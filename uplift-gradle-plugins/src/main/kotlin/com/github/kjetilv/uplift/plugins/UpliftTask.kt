@@ -7,7 +7,6 @@ abstract class UpliftTask : AbstractUpliftTask() {
 
     @TaskAction
     fun perform() {
-        report()
         initialize()
         collectLambdaZips()
         deploy()
@@ -15,13 +14,6 @@ abstract class UpliftTask : AbstractUpliftTask() {
 
     private fun deploy() =
         runCdk(command = "cdk deploy ${stack.get()} --require-approval=never")
-
-    private fun report() =
-        verifiedAccount(account.nonBlank).also {
-            project.logger.info(
-                "Uplifting for account `$it` in region `${verifiedRegion(region.nonBlank)}`"
-            )
-        }
 
     private fun collectLambdaZips() =
         lambdas()?.forEach { lambdaZip ->
@@ -37,8 +29,8 @@ abstract class UpliftTask : AbstractUpliftTask() {
         stack: String,
     ) =
         this.apply {
-            this.account %= verifiedAccount(account)
-            this.region %= verifiedRegion(region)
+            this.account %= account
+            this.region %= region
             this.stack %= stack
         }
 

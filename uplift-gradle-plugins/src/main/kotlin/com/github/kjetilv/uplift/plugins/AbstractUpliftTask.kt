@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
@@ -46,15 +48,8 @@ abstract class AbstractUpliftTask : DefaultTask() {
     abstract val stackbuilderClass: Property<String>
 
     @get:Internal
-    protected val uplift: Path
+    protected val uplift
         get() = project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
-
-    protected fun verifiedAccount(account: String?) =
-        account?.takeIf { it.length > 3 && it.chars().allMatch(Character::isDigit) }
-            ?: throw IllegalStateException("Invalid account: $account")
-
-    protected fun verifiedRegion(region: String?) =
-        region ?: throw IllegalStateException("No region set")
 
     protected fun runCdk(cwd: Path = uplift, command: String) =
         runDocker(
@@ -64,7 +59,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
         )
 
     @Suppress("SameParameterValue")
-    private fun runDocker(cwd: Path, container: String, finalCommand: String) {
+    private fun runDocker(cwd: Path, container: String, finalCommand: String) =
         exe(cwd,
             "docker run " +
                     "-v ${awsAuth.get()}:/root/.aws " +
@@ -75,11 +70,11 @@ abstract class AbstractUpliftTask : DefaultTask() {
                         "-e $key=$value "
                     } +
                     "$container $finalCommand")
-    }
 
-    private val cdkApp: Path
+    private val cdkApp
         get() = project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
-    private val resolvedStackbuilderJar: Path
+
+    private val resolvedStackbuilderJar
         get() = stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
     private fun bootstrapCdk() {
@@ -102,22 +97,23 @@ abstract class AbstractUpliftTask : DefaultTask() {
         runCdk(command = "cdk bootstrap")
     }
 
-    private fun replacedContent(pomCopy: Path?): List<String> =
+    private fun replacedContent(pomCopy: Path?) =
         Files.lines(pomCopy, StandardCharsets.UTF_8).collect(Collectors.toList()).flatMap { line ->
             line.takeIf {
                 it.contains("<mainClass>")
             }?.let { main ->
-                val indent = indent(main)
-                listOf(
-                    main.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
-                    "$indent<systemProperties>",
-                    property("$indent  ", "account", account),
-                    property("$indent  ", "region", region),
-                    property("$indent  ", "stack", stack),
-                    property("$indent  ", "stackbuilderJar", resolvedStackbuilderJar.fileName),
-                    property("$indent  ", "stackbuilderClass", stackbuilderClass),
-                    "$indent</systemProperties>"
-                )
+                indent(main).let { indent ->
+                    listOf(
+                        main.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
+                        "$indent<systemProperties>",
+                        property("$indent  ", "account", account),
+                        property("$indent  ", "region", region),
+                        property("$indent  ", "stack", stack),
+                        property("$indent  ", "stackbuilderJar", resolvedStackbuilderJar.fileName),
+                        property("$indent  ", "stackbuilderClass", stackbuilderClass),
+                        "$indent</systemProperties>"
+                    )
+                }
             } ?: listOf(line)
         }
 
@@ -131,20 +127,23 @@ abstract class AbstractUpliftTask : DefaultTask() {
 
     private fun clearRecursive(vararg paths: Path): Unit = clearRecursive(paths.toList())
 
-    private fun clearRecursive(paths: List<Path>): Unit = paths.forEach { path ->
-        path.takeIf(Files::isDirectory)?.also { dir ->
-            dir.also {
-                Files.list(it).forEach { file ->
-                    clearRecursive(file)
+    private fun clearRecursive(paths: List<Path>): Unit =
+        paths.forEach { path ->
+            path.takeIf(Files::isDirectory)?.also { dir ->
+                dir.also {
+                    Files.list(it).forEach { file ->
+                        clearRecursive(file)
+                    }
+                }.let {
+                    dir.also(Files::delete)
                 }
-            }.let {
-                dir.also(Files::delete)
-            }
-        } ?: path.also(Files::delete)
-    }
+            } ?: path.also(Files::delete)
+        }
 
     protected fun initialize() {
-        writeDockerFile(arch.get(), uplift)
+        Files.write(
+            uplift.resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
+        )
 
         exe(cwd = uplift, command = "docker build --tag cdk-site:latest $uplift")
 
@@ -154,13 +153,5 @@ abstract class AbstractUpliftTask : DefaultTask() {
             logger.info("No CDK set up in $cdkApp, bootstrapping a new one...")
             bootstrapCdk()
         }
-    }
-
-    private fun writeDockerFile(arch: String, path: Path) {
-        Files.write(
-            path.resolve("Dockerfile"), renderResource(
-                "Dockerfile-cdk.st4", "arch" to arch
-            )
-        )
     }
 }
