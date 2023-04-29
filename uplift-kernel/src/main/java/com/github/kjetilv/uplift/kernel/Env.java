@@ -15,9 +15,17 @@ public interface Env {
 
     String awsLambdaRuntimeApi();
 
-    String accessKey();
+    default String accessKey() {
+        return accessKey(null);
+    }
 
-    String secretKey();
+    String accessKey(String profile);
+
+    default String secretKey() {
+        return secretKey(null);
+    }
+
+    String secretKey(String profile);
 
     String sessionToken();
 

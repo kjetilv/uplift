@@ -1,12 +1,15 @@
 package com.github.kjetilv.uplift.kernel.util;
 
+import java.security.Key;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +21,12 @@ public final class Maps {
         return map == null || map.isEmpty() ? Collections.emptyMap() : map;
     }
 
+    public static <K, V> Stream<V> get(Map<K, V> map, Predicate<K> keyLike) {
+        return map.entrySet().stream()
+            .filter(e -> keyLike.test(e.getKey()))
+            .map(Map.Entry::getValue);
+    }
+
     public static <K, V> Map<K, List<V>> groupBy(
         Collection<? extends V> items,
         Function<? super V, ? extends K> mapping
@@ -26,6 +35,18 @@ public final class Maps {
             mapping,
             LinkedHashMap::new,
             Collectors.toList()
+        )));
+    }
+
+    public static <K, V> Map<K, V> indexBy(
+        Collection<? extends V> items,
+        Function<? super V, ? extends K> mapping
+    ) {
+        return Collections.unmodifiableMap(items.stream().collect(Collectors.toMap(
+            mapping,
+            Function.identity(),
+            noCombine(),
+            LinkedHashMap::new
         )));
     }
 
@@ -51,11 +72,15 @@ public final class Maps {
         return c.stream().collect(Collectors.toMap(
             key,
             val,
-            (v1, v2) -> {
-                throw new IllegalStateException("No combine: " + v1 + " / " + v2);
-            },
+            noCombine(),
             LinkedHashMap::new
         ));
+    }
+
+    private static <V> BinaryOperator<V> noCombine() {
+        return (v1, v2) -> {
+            throw new IllegalStateException("No combine: " + v1 + " / " + v2);
+        };
     }
 
     public static <K, V> Map.Entry<K, Optional<? extends V>> ent(K key, V value) {

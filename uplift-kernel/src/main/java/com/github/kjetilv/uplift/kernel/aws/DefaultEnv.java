@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.kernel.aws;
 
 import java.net.URI;
+import java.util.Optional;
 
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.EnvLookup;
@@ -19,13 +20,23 @@ public final class DefaultEnv implements Env {
     }
 
     @Override
-    public String accessKey() {
-        return EnvLookup.get("aws.accessKeyId", "AWS_ACCESS_KEY_ID", true);
+    public String accessKey(String profile) {
+        return Optional.ofNullable(
+                EnvLookup.get("aws.accessKeyId", "AWS_ACCESS_KEY_ID")
+            ).or(() ->
+                AwsLookup.get(profile).map(AwsAuth::key))
+            .orElseThrow(() ->
+                new IllegalStateException("No access key found"));
     }
 
     @Override
-    public String secretKey() {
-        return EnvLookup.get("aws.secretAccessKey", "AWS_SECRET_ACCESS_KEY", true);
+    public String secretKey(String profile) {
+        return Optional.ofNullable(
+                EnvLookup.get("aws.secretAccessKey", "AWS_SECRET_ACCESS_KEY")
+            ).or(() ->
+                AwsLookup.get(profile).map(AwsAuth::secret))
+            .orElseThrow(() ->
+                new IllegalStateException("No secret key found"));
     }
 
     @Override

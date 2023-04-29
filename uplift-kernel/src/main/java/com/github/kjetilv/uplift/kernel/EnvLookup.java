@@ -20,8 +20,9 @@ public final class EnvLookup {
     }
 
     public static String get(String systemProperty, String environmentVariable, boolean required) {
-        Optional<String> value = systemProperty(systemProperty).or(() ->
-            environmentVariable(environmentVariable));
+        Optional<String> value = systemProperty(systemProperty)
+            .or(() ->
+                environmentVariable(environmentVariable));
         value.ifPresentOrElse(
             v -> log(systemProperty, environmentVariable, v),
             () -> logMissing(systemProperty, environmentVariable, required)
