@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.kernel.util;
 
-import java.security.Key;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
