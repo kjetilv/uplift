@@ -32,3 +32,6 @@ bin/
 ### Gradle ###
 .gradle
 **/build/*
+
+.github_user
+.github_token

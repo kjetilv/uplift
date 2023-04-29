@@ -9,6 +9,14 @@ allprojects {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/kjetilv/uplift")
+            credentials {
+                username = resolveUsername()
+                password = resolveToken()
+            }
+        }
     }
 }
 
@@ -28,7 +36,6 @@ subprojects {
         configure<JavaPluginExtension> {
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion
-
             withSourcesJar()
         }
     }
@@ -37,9 +44,17 @@ subprojects {
         publishing {
             repositories {
                 mavenLocal()
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/kjetilv/uplift")
+                    credentials {
+                        username = resolveUsername()
+                        password = resolveToken()
+                    }
+                }
             }
             publications {
-                create<MavenPublication>("mavenJava") {
+                register<MavenPublication>("upliftPublication") {
                     pom {
                         name.set("uplift")
                         description.set("Uplift")
@@ -64,3 +79,10 @@ subprojects {
         }
     }
 }
+
+fun resolveUsername() = System.getenv("USERNAME") ?: read(".github_user")
+
+fun resolveToken() = System.getenv("TOKEN") ?: read(".github_token")
+
+fun read(file: String): String =
+    project.rootDir.resolve(file).readLines().firstOrNull() ?: "No file $file found"
