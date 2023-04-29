@@ -17,6 +17,10 @@ import java.util.stream.Collectors
 
 abstract class AbstractUpliftTask : DefaultTask() {
 
+    init {
+        group = "uplift"
+    }
+
     @get:Input
     abstract val arch: Property<String>
 
@@ -92,12 +96,12 @@ abstract class AbstractUpliftTask : DefaultTask() {
         val pom = cdkApp.resolve("pom.xml")
         val pomCopy = cdkApp.resolve("pom.xml.orig")
         Files.copy(pom, pomCopy)
-        Files.write(pom, replacedContent(pomCopy))
+        Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
         runCdk(command = "cdk bootstrap")
     }
 
-    private fun replacedContent(pomCopy: Path?) =
+    private fun templated(pomCopy: Path?) =
         Files.lines(pomCopy, StandardCharsets.UTF_8).collect(Collectors.toList()).flatMap { line ->
             line.takeIf {
                 it.contains("<mainClass>")
@@ -106,11 +110,11 @@ abstract class AbstractUpliftTask : DefaultTask() {
                     listOf(
                         main.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
                         "$indent<systemProperties>",
-                        property("$indent  ", "account", account),
-                        property("$indent  ", "region", region),
-                        property("$indent  ", "stack", stack),
-                        property("$indent  ", "stackbuilderJar", resolvedStackbuilderJar.fileName),
-                        property("$indent  ", "stackbuilderClass", stackbuilderClass),
+                        property("$indent  ", "uplift.account", account),
+                        property("$indent  ", "uplift.region", region),
+                        property("$indent  ", "uplift.stack", stack),
+                        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar.fileName),
+                        property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
                         "$indent</systemProperties>"
                     )
                 }
@@ -121,7 +125,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
         property(indent, key, property.get())
 
     private fun property(indent: String, key: String, value: Any?) =
-        "$indent  <systemProperty><key>uplift.$key</key><value>$value</value></systemProperty>"
+        "$indent  <systemProperty><key>$key</key><value>$value</value></systemProperty>"
 
     private fun indent(main: String) = main.takeWhile(Char::isWhitespace)
 

@@ -11,8 +11,8 @@ public class HelloWebBuilder implements Consumer<Stack> {
 
     @Override
     public void accept(Stack stack) {
-        new UpliftStacks().add(
-            Stacker.lambda("hello-web").withUrl()
-        ).applyTo(stack);
+        UpliftStacks.modules("hello-web")
+            .modify(Stacker::withUrl)
+            .accept(stack);
     }
 }

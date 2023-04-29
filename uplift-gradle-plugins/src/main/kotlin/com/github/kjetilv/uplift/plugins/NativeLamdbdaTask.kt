@@ -11,6 +11,9 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 abstract class NativeLamdbdaTask : DefaultTask() {
+    init {
+        group = "uplift"
+    }
 
     @get:Input
     abstract val identifier: Property<String>
