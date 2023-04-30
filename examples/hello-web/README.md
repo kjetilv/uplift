@@ -4,4 +4,4 @@ This function is a lot like hello world, but it will actually write something ba
 
 Publish uplift to local repo before running:
 
-`./gradlew publishToLocalMavenRepo`
+`./gradlew publishToMavenLocal`

@@ -10,4 +10,4 @@ enough for proof of life.
 
 Publish uplift to local repo before running:
 
-`./gradlew publishToLocalMavenRepo`
+`./gradlew publishToMavenLocal`
