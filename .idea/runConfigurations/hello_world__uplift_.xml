@@ -9,7 +9,6 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/examples/hello-world" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="--stacktrace -Paccount=$Prompt$" />
       <option name="taskDescriptions">
         <list />
       </option>

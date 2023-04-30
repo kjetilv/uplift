@@ -98,7 +98,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
         Files.copy(pom, pomCopy)
         Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
-        runCdk(command = "cdk bootstrap")
+        runCdk(command = "cdk bootstrap aws://${account.get()}/${region.get()}")
     }
 
     private fun templated(pomCopy: Path?) =

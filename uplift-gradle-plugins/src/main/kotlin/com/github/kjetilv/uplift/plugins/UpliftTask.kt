@@ -7,8 +7,8 @@ abstract class UpliftTask : AbstractUpliftTask() {
 
     @TaskAction
     fun perform() {
-        initialize()
         collectLambdaZips()
+        initialize()
         deploy()
     }
 
