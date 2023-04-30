@@ -14,14 +14,14 @@ abstract class UpliftTask : AbstractUpliftTask() {
 
     private fun deploy() =
         runDocker(
-            uplift,
+            upliftDir(),
             "cdk-site:latest",
-            "cdk deploy $profileOption --require-approval=never ${stack.get()}"
+            "cdk deploy ${profileOption()} --require-approval=never ${stack.get()}"
         )
 
     private fun collectLambdaZips() =
         lambdas()?.forEach { lambdaZip ->
-            copyTo(lambdaZip, uplift)
+            copyTo(lambdaZip, upliftDir())
         } ?: throw IllegalStateException(
             "No zips configured, and no zips found in ${dependsOn.joinToString(", ", transform = Any::toString)}"
         )

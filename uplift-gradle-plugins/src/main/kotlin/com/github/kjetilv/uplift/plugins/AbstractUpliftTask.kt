@@ -9,7 +9,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,63 +50,56 @@ abstract class AbstractUpliftTask : DefaultTask() {
     @get:Input
     abstract val stackbuilderClass: Property<String>
 
-    @get:Internal
-    protected val uplift
-        get() = project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
-
-    protected fun runCdk(cwd: Path = uplift, command: String) =
-        runDocker(
-            cwd,
-            "cdk-site:latest",
-            "$command $profileOption"
-        )
+    internal fun upliftDir(): Path =
+        project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
 
     @Suppress("SameParameterValue")
     internal fun runDocker(cwd: Path, container: String, cmd: String) =
         exe(cwd,
             "docker run " +
                     "-v ${awsAuth.get()}:/root/.aws " +
-                    "-v $cdkApp:/opt/app " +
-                    "-v $uplift:/lambdas " +
+                    "-v ${cdkApp()}:/opt/app " +
+                    "-v ${upliftDir()}:/lambdas " +
                     (env.get()
                         ?: emptyMap()).entries.joinToString { (key, value) ->
                         "-e $key=$value "
                     } +
                     "$container $cmd")
 
-    internal val profileOption get() = profile.orNull?.let { "--profile=$it" }
+    internal fun profileOption() =
+        profile.orNull?.let { "--profile=$it" }
 
-    private val cdkApp
-        get() = project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
+    internal fun cdkApp() =
+        project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
 
-    private val resolvedStackbuilderJar
-        get() = stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
+    internal fun resolvedStackbuilderJar() =
+        stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
     private fun bootstrapCdk() {
-        clearRecursive(cdkApp)
+        clearRecursive(cdkApp())
         runDocker(
-            uplift,
+            upliftDir(),
             "cdk-site:latest",
             "cdk init --language=java --generate-only"
         )
-        clearRecursive(listOf("src/main/java/com", "src/test/java/com").map<String, Path>(cdkApp::resolve))
+        clearRecursive(listOf("src/main/java/com", "src/test/java/com").map(cdkApp()::resolve))
 
-        val jar = resolvedStackbuilderJar
-        copyTo(jar, cdkApp)
+        val jar = resolvedStackbuilderJar()
+        copyTo(jar, cdkApp())
         val writeCdkCode = loadResource("CloudApp.java").split('\n')
-        val sourcePackage = cdkApp.resolve("src/main/java/lambda/uplift/app")
+        val sourcePackage = cdkApp().resolve("src/main/java/lambda/uplift/app")
         Files.createDirectories(sourcePackage)
         Files.write(sourcePackage.resolve("CloudApp.java"), writeCdkCode)
 
-        val pom = cdkApp.resolve("pom.xml")
-        val pomCopy = cdkApp.resolve("pom.xml.orig")
+        val pom = cdkApp().resolve("pom.xml")
+        val pomCopy = cdkApp().resolve("pom.xml.orig")
         Files.copy(pom, pomCopy)
         Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
         runDocker(
-            uplift,
+            upliftDir(),
             "cdk-site:latest",
-            "cdk bootstrap $profileOption aws://${account.get()}/${region.get()}"
+            "cdk bootstrap ${profileOption()} aws://${account.get()}/${region.get()}"
         )
     }
 
@@ -123,7 +115,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
                         property("$indent  ", "uplift.account", account),
                         property("$indent  ", "uplift.region", region),
                         property("$indent  ", "uplift.stack", stack),
-                        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar.fileName),
+                        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar().fileName),
                         property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
                         "$indent</systemProperties>"
                     )
@@ -156,15 +148,15 @@ abstract class AbstractUpliftTask : DefaultTask() {
 
     protected fun initialize() {
         Files.write(
-            uplift.resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
+            upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
         )
 
-        exe(cwd = uplift, cmd = "docker build --tag cdk-site:latest $uplift")
+        exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
 
-        if (cdkApp.resolve("cdk.out").isActualDirectory) {
-            logger.info("CDK already set up in $cdkApp, reusing it. To reset, remove directory or do a clean build")
+        if (cdkApp().resolve("cdk.out").isActualDirectory) {
+            logger.info("CDK already set up in ${cdkApp()}, reusing it. To reset, remove directory or do a clean build")
         } else {
-            logger.info("No CDK set up in $cdkApp, bootstrapping a new one...")
+            logger.info("No CDK set up in ${cdkApp()}, bootstrapping a new one...")
             bootstrapCdk()
         }
     }
