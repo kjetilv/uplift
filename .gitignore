@@ -35,3 +35,5 @@ bin/
 
 .github_user
 .github_token
+
+examples/**/gradle.properties
