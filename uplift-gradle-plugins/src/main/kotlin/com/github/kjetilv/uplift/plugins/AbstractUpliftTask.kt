@@ -149,7 +149,7 @@ abstract class AbstractUpliftTask : DefaultTask() {
             uplift.resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
         )
 
-        exe(cwd = uplift, command = "docker build --tag cdk-site:latest $uplift")
+        exe(cwd = uplift, cmd = "docker build --tag cdk-site:latest $uplift")
 
         if (cdkApp.resolve("cdk.out").isActualDirectory) {
             logger.info("CDK already set up in $cdkApp, reusing it. To reset, remove directory or do a clean build")
