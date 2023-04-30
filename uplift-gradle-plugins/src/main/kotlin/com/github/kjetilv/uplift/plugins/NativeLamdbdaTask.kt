@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -10,6 +11,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
+@CacheableTask
 abstract class NativeLamdbdaTask : DefaultTask() {
     init {
         group = "uplift"

@@ -7,6 +7,10 @@ abstract class UpliftDestroyTask : AbstractUpliftTask() {
     @TaskAction
     fun perform() {
         initialize()
-        runCdk(command = "cdk destroy ${stack.get()} --require-approval=never")
+        runDocker(
+            uplift,
+            "cdk-site:latest",
+            "cdk destroy --require-approval=never $profileOption ${stack.get()}"
+        )
     }
 }

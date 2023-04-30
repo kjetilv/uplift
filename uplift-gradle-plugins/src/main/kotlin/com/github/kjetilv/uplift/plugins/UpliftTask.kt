@@ -13,7 +13,11 @@ abstract class UpliftTask : AbstractUpliftTask() {
     }
 
     private fun deploy() =
-        runCdk(command = "cdk deploy ${stack.get()} --require-approval=never")
+        runDocker(
+            uplift,
+            "cdk-site:latest",
+            "cdk deploy $profileOption --require-approval=never ${stack.get()}"
+        )
 
     private fun collectLambdaZips() =
         lambdas()?.forEach { lambdaZip ->

@@ -59,11 +59,11 @@ abstract class AbstractUpliftTask : DefaultTask() {
         runDocker(
             cwd,
             "cdk-site:latest",
-            "$command ${profile.orNull?.let { " --profile=$it" }} --ci=true"
+            "$command $profileOption"
         )
 
     @Suppress("SameParameterValue")
-    private fun runDocker(cwd: Path, container: String, finalCommand: String) =
+    internal fun runDocker(cwd: Path, container: String, cmd: String) =
         exe(cwd,
             "docker run " +
                     "-v ${awsAuth.get()}:/root/.aws " +
@@ -73,7 +73,9 @@ abstract class AbstractUpliftTask : DefaultTask() {
                         ?: emptyMap()).entries.joinToString { (key, value) ->
                         "-e $key=$value "
                     } +
-                    "$container $finalCommand")
+                    "$container $cmd")
+
+    internal val profileOption get() = profile.orNull?.let { "--profile=$it" }
 
     private val cdkApp
         get() = project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
@@ -83,7 +85,11 @@ abstract class AbstractUpliftTask : DefaultTask() {
 
     private fun bootstrapCdk() {
         clearRecursive(cdkApp)
-        runCdk(command = "cdk init --language=java --generate-only")
+        runDocker(
+            uplift,
+            "cdk-site:latest",
+            "cdk init --language=java --generate-only"
+        )
         clearRecursive(listOf("src/main/java/com", "src/test/java/com").map<String, Path>(cdkApp::resolve))
 
         val jar = resolvedStackbuilderJar
@@ -98,7 +104,11 @@ abstract class AbstractUpliftTask : DefaultTask() {
         Files.copy(pom, pomCopy)
         Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
-        runCdk(command = "cdk bootstrap aws://${account.get()}/${region.get()}")
+        runDocker(
+            uplift,
+            "cdk-site:latest",
+            "cdk bootstrap $profileOption aws://${account.get()}/${region.get()}"
+        )
     }
 
     private fun templated(pomCopy: Path?) =

@@ -7,3 +7,7 @@ invoked the function, which you can do from any HTTP client – indeed, any brow
 This is not enough to make the lambda machine happy –
 it will report an error to your browser – but it is
 enough for proof of life. 
+
+Publish uplift to local repo before running:
+
+`./gradlew publishToLocalMavenRepo`
