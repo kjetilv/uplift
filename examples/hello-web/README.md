@@ -2,9 +2,7 @@
 
 This function will reply with a friendly hello as a JSON string.
 
-Publish uplift to local repo before running:
-
-`./gradlew publishToMavenLocal`
+Publish [uplift](../../) to local repo before running.
 
 Then add a `gradle.properties` file to set your account, the desired region 
 and the profile to use, e.g.:

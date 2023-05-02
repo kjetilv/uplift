@@ -9,21 +9,27 @@ class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.tasks.register("uplift", UpliftDeployTask::class.java) { task ->
-            task.run {
-                account %= "${project.propertyOrNull("account") ?: ""}"
-                region %= "${project.propertyOrNull("region") ?: ""}"
-                profile %= "${project.propertyOrNull("profile") ?: "default"}"
-                stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
-                arch %= resolveArchitecture()
-                awsAuth %= resolveAwsAuth()
-                jarOutput(project)?.also { jarFile ->
-                    stackbuilderJar %= jarFile
-                }
-                stackbuilderClass %= ""
-            }
+            configureFor(project, task)
         }
-        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java)
+        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) { task ->
+            configureFor(project, task)
+        }
     }
+
+    private fun configureFor(project: Project, task: UpliftTask) =
+        task.apply {
+            account %= "${project.propertyOrNull("account") ?: ""}"
+            region %= "${project.propertyOrNull("region") ?: ""}"
+            profile %= "${project.propertyOrNull("profile") ?: "default"}"
+            stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
+            arch %= resolveArchitecture()
+            awsAuth %= resolveAwsAuth()
+            jarOutput(project)?.also { jarFile ->
+                stackbuilderJar %= jarFile
+            }
+            stackbuilderClass %= ""
+        }
+
 
     private fun composeName(project: Project) =
         normalize(
