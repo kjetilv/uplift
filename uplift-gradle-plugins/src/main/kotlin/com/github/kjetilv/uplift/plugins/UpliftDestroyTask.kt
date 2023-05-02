@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.tasks.TaskAction
 
-abstract class UpliftDestroyTask : AbstractUpliftTask() {
+abstract class UpliftDestroyTask : UpliftTask() {
 
     @TaskAction
     fun perform() {

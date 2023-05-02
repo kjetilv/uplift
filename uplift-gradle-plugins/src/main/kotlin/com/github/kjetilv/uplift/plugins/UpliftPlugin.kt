@@ -8,12 +8,15 @@ import java.nio.file.Path
 class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.tasks.register("uplift", UpliftTask::class.java) { task ->
+        project.tasks.register("uplift", UpliftDeployTask::class.java) { task ->
             task.run {
+                account %= "${project.propertyOrNull("account") ?: ""}"
+                region %= "${project.propertyOrNull("region") ?: ""}"
+                profile %= "${project.propertyOrNull("profile") ?: "default"}"
+                stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
                 arch %= resolveArchitecture()
-                profile %= "default"
                 awsAuth %= resolveAwsAuth()
-                jarOutput(project, "jar")?.also { jarFile ->
+                jarOutput(project)?.also { jarFile ->
                     stackbuilderJar %= jarFile
                 }
                 stackbuilderClass %= ""
@@ -22,7 +25,17 @@ class UpliftPlugin : Plugin<Project> {
         project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java)
     }
 
-    private fun jarOutput(project: Project, it: String) = project.tasks.findByName(it)?.outputs?.files?.singleFile?.toPath()
+    private fun composeName(project: Project) =
+        normalize(
+            if (project.name.startsWith(project.group.toString())) project.name
+            else "${project.group}-${project.name}"
+        )
+
+    private fun normalize(s: String) =
+        s.toCharArray().joinToString("") { c -> if (Character.isLetterOrDigit(c)) "$c" else "-" }
+
+    private fun jarOutput(project: Project) =
+        project.tasks.findByName("jar")?.outputs?.files?.singleFile?.toPath()
 
     private fun resolveAwsAuth() =
         Path.of(System.getProperty("user.home")).resolve(".aws").toAbsolutePath().toString()

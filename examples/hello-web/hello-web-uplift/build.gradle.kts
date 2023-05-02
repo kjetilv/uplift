@@ -13,16 +13,10 @@ dependencies {
 
 apply<UpliftPlugin>()
 
-tasks.getByName<UpliftTask>(name = "uplift") {
-    configure(
-        account = "${project.property("account")}",
-        region = "${project.property("region")}",
-        profile = "${project.property("profile") ?: "default"}",
-        stack = "uplift-hello-web"
-    ).stackWith(
-        "uplift.examples.helloweb.HelloWebBuilder"
+tasks.getByName("uplift") {
+    dependsOn(
+        ":hello-web-service:native-lambda",
+        "jar"
     )
-}.dependsOn(
-    ":hello-web-service:native-lambda",
-    "jar")
+}
 

@@ -8,6 +8,8 @@ import java.nio.file.Path
 
 internal operator fun <T> Property<T>.remAssign(value: T): Unit = set(value)
 
+internal fun Project.propertyOrNull(name: String) = takeIf { hasProperty(name) }?.let { this.property(name) }
+
 internal val Project.shortGroupName
     get() =
         (base().let { group ->
