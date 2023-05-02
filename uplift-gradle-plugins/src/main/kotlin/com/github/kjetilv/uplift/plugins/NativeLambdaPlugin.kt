@@ -13,6 +13,7 @@ class NativeLambdaPlugin : Plugin<Project> {
             it.run {
                 zipFile.set(target.resolve("${project.name}.zip"))
                 identifier.set(project.name)
+                jarTask.set("shadowJar")
                 arch.set(System.getProperty("os.arch"))
                 jdkVersion.set("19")
                 graalVersion.set("22.3.1")
@@ -26,10 +27,6 @@ class NativeLambdaPlugin : Plugin<Project> {
                     )
                 )
                 javaHome.set("graalvm-ce-java${jdkVersion.get()}-${graalVersion.get()}")
-
-                project.tasks.findByName("shadowJar")?.also {
-                    dependsOn("shadowJar")
-                }
             }
         }
     }

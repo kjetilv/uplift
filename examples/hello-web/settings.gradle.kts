@@ -9,3 +9,6 @@ pluginManagement {
         }
     }
 }
+
+include("hello-web-service")
+include("hello-web-uplift")

@@ -1,11 +1,18 @@
 package lambda.uplift.app;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
@@ -109,20 +116,47 @@ public final class CloudApp {
 
     private static URLClassLoader getUrlClassLoader() {
         return new URLClassLoader(
-            new URL[] { stackloaderURL() },
+            all(stackloaderURL(), additional()),
             Thread.currentThread().getContextClassLoader()
         );
+    }
+
+    @SafeVarargs
+    private static URL[] all(List<URL>... arrays) {
+        return Arrays.stream(arrays).flatMap(List::stream).toArray(URL[]::new);
+    }
+
+    private static List<URL> additional() {
+        try (Stream<Path> list = Files.list(Path.of(System.getProperty("user.dir")))) {
+            return list.filter(Files::isRegularFile)
+                .filter(file ->
+                    file.getFileName().toString().endsWith(".jar"))
+                .map(toUrl())
+                .toList();
+        } catch (IOException e) {
+            throw new IllegalStateException("COuld not list additkonal jars", e);
+        }
     }
 
     private static String className(String name) {
         return name.substring(0, name.indexOf(".class")).replace('/', '.');
     }
 
-    private static URL stackloaderURL() {
+    private static List<URL> stackloaderURL() {
         try {
-            return Path.of(JAR).toUri().toURL();
+            return List.of(Path.of(JAR).toUri().toURL());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load " + JAR, e);
         }
+    }
+
+    private static Function<Path, URL> toUrl() {
+        return path -> {
+            try {
+                return path.toUri().toURL();
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException("Bad URI: " + path, e);
+            }
+        };
     }
 }

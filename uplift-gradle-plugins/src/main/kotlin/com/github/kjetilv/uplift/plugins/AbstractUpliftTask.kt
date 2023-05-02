@@ -3,6 +3,7 @@
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -75,15 +76,14 @@ abstract class AbstractUpliftTask : DefaultTask() {
     internal fun resolvedStackbuilderJar() =
         stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
-    private fun bootstrapCdk() {
+    internal fun bootstrapCdk() {
         clearRecursive(cdkApp())
         runDocker(
             upliftDir(),
             "cdk-site:latest",
             "cdk init --language=java --generate-only"
         )
-        clearRecursive(listOf("src/main/java/com", "src/test/java/com").map(cdkApp()::resolve))
-
+        clearRecursive(listOf(cdkApp().resolve("src/main/java/com"), cdkApp().resolve("src/test/java/com")))
         val jar = resolvedStackbuilderJar()
         copyTo(jar, cdkApp())
         val writeCdkCode = loadResource("CloudApp.java").split('\n')
@@ -92,10 +92,10 @@ abstract class AbstractUpliftTask : DefaultTask() {
         Files.write(sourcePackage.resolve("CloudApp.java"), writeCdkCode)
 
         val pom = cdkApp().resolve("pom.xml")
-        val pomCopy = cdkApp().resolve("pom.xml.orig")
-        Files.copy(pom, pomCopy)
+        val pomCopy = Files.copy(pom, cdkApp().resolve("pom.xml.orig"))
         Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
+
         runDocker(
             upliftDir(),
             "cdk-site:latest",
@@ -103,24 +103,23 @@ abstract class AbstractUpliftTask : DefaultTask() {
         )
     }
 
+    internal fun initialize() {
+        Files.write(
+            upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
+        )
+
+        exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
+        bootstrapCdk()
+    }
+
     private fun templated(pomCopy: Path?) =
         Files.lines(pomCopy, StandardCharsets.UTF_8).collect(Collectors.toList()).flatMap { line ->
-            line.takeIf {
-                it.contains("<mainClass>")
-            }?.let { main ->
-                indent(main).let { indent ->
-                    listOf(
-                        main.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
-                        "$indent<systemProperties>",
-                        property("$indent  ", "uplift.account", account),
-                        property("$indent  ", "uplift.region", region),
-                        property("$indent  ", "uplift.stack", stack),
-                        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar().fileName),
-                        property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
-                        "$indent</systemProperties>"
-                    )
-                }
-            } ?: listOf(line)
+            if (line.contains("<mainClass>"))
+                addedMain(indent(line), line)
+            else if (line.contains("</dependencies>"))
+                addedDeps(indent(line), line)
+            else
+                listOf(line)
         }
 
     private fun property(indent: String, key: String, property: Property<*>) =
@@ -146,18 +145,38 @@ abstract class AbstractUpliftTask : DefaultTask() {
             } ?: path.also(Files::delete)
         }
 
-    protected fun initialize() {
-        Files.write(
-            upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
-        )
+    private fun addedMain(indent: String, line: String) = listOf(
+        line.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
+        "$indent<systemProperties>",
+        property("$indent  ", "uplift.account", account),
+        property("$indent  ", "uplift.region", region),
+        property("$indent  ", "uplift.stack", stack),
+        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar().fileName),
+        property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
+        "$indent</systemProperties>"
+    )
 
-        exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
+    private fun addedDeps(indent: String, line: String) =
+        dependencies().filterNotNull().filterNot(::isAws).flatMap { dep ->
+            dep.run {
+                listOf(
+                    "",
+                    "$indent    <dependency>",
+                    "$indent      <groupId>$group</groupId>",
+                    "$indent      <artifactId>$name</artifactId>",
+                    "$indent      <version>$version</version>",
+                    "$indent    </dependency>"
+                )
+            }
+        } + listOf(line)
 
-        if (cdkApp().resolve("cdk.out").isActualDirectory) {
-            logger.info("CDK already set up in ${cdkApp()}, reusing it. To reset, remove directory or do a clean build")
-        } else {
-            logger.info("No CDK set up in ${cdkApp()}, bootstrapping a new one...")
-            bootstrapCdk()
-        }
-    }
+    private fun isAws(dep: Dependency) =
+        setOf(
+            "software.amazon.awscdk" to "aws-cdk-lib",
+            "software.constructs" to "constructs"
+        ).contains(dep.group to dep.name)
+
+    private fun dependencies() =
+        project.configurations.findByName("compileClasspath")?.incoming?.dependencies?.stream()?.toList()?.toList()
+            ?: emptyList()
 }

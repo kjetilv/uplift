@@ -31,11 +31,13 @@ abstract class UpliftTask : AbstractUpliftTask() {
         account: String,
         region: String,
         stack: String,
+        profile: String = "default"
     ) =
         this.apply {
             this.account %= account
             this.region %= region
             this.stack %= stack
+            this.profile %= profile
         }
 
     @Suppress("unused")
@@ -51,5 +53,6 @@ abstract class UpliftTask : AbstractUpliftTask() {
         }
 
     private fun lambdas(): List<Path>? =
-        lambdaZips.get().takeIf { it.isNotEmpty() }?.toList() ?: dependencyOutputs()?.filter(Path::isZip)
+        lambdaZips.get().takeIf { it.isNotEmpty() }?.toList()
+            ?: dependencyOutputs().filter(Path::isZip).takeIf { it.isNotEmpty() }
 }

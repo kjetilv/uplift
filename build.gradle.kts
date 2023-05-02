@@ -28,7 +28,6 @@ subprojects {
         configure<JavaPluginExtension> {
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion
-            toolchain.languageVersion.set(JavaLanguageVersion.of(17))
             withSourcesJar()
         }
     }

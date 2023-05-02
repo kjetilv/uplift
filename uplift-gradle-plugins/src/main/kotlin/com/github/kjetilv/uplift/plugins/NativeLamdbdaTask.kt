@@ -21,6 +21,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     abstract val identifier: Property<String>
 
     @get:Input
+    abstract val jarTask: Property<String>
+
+    @get:Input
     abstract val arch: Property<String>
 
     @get:Input
@@ -54,8 +57,8 @@ abstract class NativeLamdbdaTask : DefaultTask() {
         Files.write(uplift.resolve("Dockerfile"), split)
         logger.info("Created new DockerFile for ${buildsite.get()}")
 
-        val shadow = dependencyOutputs()?.firstOrNull { it.isJar }
-            ?: throw IllegalStateException("No shadowJar found in dependencies")
+        val shadow = outputs(requestedTask() + dependencyTasks()).firstOrNull { it.isJar }
+            ?: throw IllegalStateException("No suitable jar found in dependencies")
 
         copyTo(shadow, uplift, target = "shadow.jar")
         if (javaDist.get().scheme == "file") {
@@ -68,6 +71,8 @@ abstract class NativeLamdbdaTask : DefaultTask() {
 
         zipFile(uplift.resolve(identifier.get()), zipFile = zipFile.get())
     }
+
+    private fun requestedTask() = (jarTask.nonBlank?.let(::listOf) ?: emptyList())
 
     private val uplift: Path
         get() = project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)

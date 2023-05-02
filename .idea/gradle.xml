@@ -25,14 +25,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/examples/hello-web" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/examples/hello-world" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/examples/hello-world" />
+            <option value="$PROJECT_DIR$/examples/hello-web/hello-web-service" />
+            <option value="$PROJECT_DIR$/examples/hello-web/hello-web-uplift" />
           </set>
         </option>
       </GradleProjectSettings>

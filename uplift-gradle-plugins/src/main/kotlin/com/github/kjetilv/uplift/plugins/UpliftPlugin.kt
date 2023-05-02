@@ -13,15 +13,16 @@ class UpliftPlugin : Plugin<Project> {
                 arch %= resolveArchitecture()
                 profile %= "default"
                 awsAuth %= resolveAwsAuth()
-                project.tasks.findByName("jar")?.outputs?.files?.singleFile?.toPath()
-                    ?.also { jarFile ->
-                        stackbuilderJar %= jarFile
-                    } ?: throw IllegalStateException("No output from jar task was found")
+                jarOutput(project, "jar")?.also { jarFile ->
+                    stackbuilderJar %= jarFile
+                }
                 stackbuilderClass %= ""
             }
         }
         project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java)
     }
+
+    private fun jarOutput(project: Project, it: String) = project.tasks.findByName(it)?.outputs?.files?.singleFile?.toPath()
 
     private fun resolveAwsAuth() =
         Path.of(System.getProperty("user.home")).resolve(".aws").toAbsolutePath().toString()

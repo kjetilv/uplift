@@ -25,9 +25,15 @@ private fun Project.base() =
 
 internal val Property<String>.nonBlank: String? get() = orNull?.toString()?.takeIf { it.isNotBlank() }
 
-internal fun Task.dependencyOutputs(): List<Path>? = dependsOn.toList().flatMap { dep ->
-    files(dep)?.toList()?.mapNotNull(File::toPath)?.toList() ?: emptyList()
-}.takeIf { it.isNotEmpty() }
+internal fun Task.dependencyOutputs() = outputs(dependencyTasks())
+
+internal fun Task.outputs(dependencyTasks: List<Any>) =
+    dependencyTasks.flatMap { dep ->
+        files(dep)?.toList()?.mapNotNull(File::toPath)?.toList() ?: emptyList()
+    }.takeIf { it.isNotEmpty() }
+        ?: emptyList()
+
+internal fun Task.dependencyTasks() = dependsOn.toList().map(Any::toString)
 
 private fun Task.files(dependOn: Any): MutableSet<File>? =
     this.project.tasks.findByPath(dependOn.toString())?.outputs?.files?.files
