@@ -13,7 +13,20 @@ dependencies {
 
 apply<UpliftPlugin>()
 
-tasks.getByName("uplift") {
+tasks.withType<UpliftTask> {
+// Uncomment and fix, or provide suitable gradle.properties
+//    configure(
+//        account = "...",
+//        region = "mars-east-1",
+//        profile = "default",
+//        stack = "mystack"
+//    )
+//    env(
+//        "FOO" to "bar"
+//    )
+//    stackWith(
+//        "uplift.examples.helloweb.HelloWebBuilder"
+//    )
     dependsOn(
         ":hello-web-service:native-lambda",
         "jar"

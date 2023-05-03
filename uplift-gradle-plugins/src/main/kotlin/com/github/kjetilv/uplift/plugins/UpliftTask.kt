@@ -51,6 +51,30 @@ abstract class UpliftTask : DefaultTask() {
     @get:Input
     abstract val stackbuilderClass: Property<String>
 
+    @Suppress("unused")
+    fun env(vararg envs: Pair<String, String>): UpliftTask = this.apply {
+        env.set(mapOf(*envs))
+    }
+
+    @Suppress("unused")
+    fun configure(
+        account: String? = null,
+        region: String? = null,
+        stack: String? = null,
+        profile: String? = null
+    ): UpliftTask = this.apply {
+        account?.also(this.account::set)
+        region?.also(this.region::set)
+        stack?.also(this.stack::set)
+        profile?.also(this.profile::set)
+    }
+
+    @Suppress("unused")
+    fun stackWith(name: String) =
+        this.apply {
+            stackbuilderClass %= name
+        }
+
     internal fun upliftDir(): Path =
         project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
 
