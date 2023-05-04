@@ -80,16 +80,19 @@ abstract class UpliftTask : DefaultTask() {
 
     @Suppress("SameParameterValue")
     internal fun runDocker(cwd: Path, container: String, cmd: String) =
-        exe(cwd,
+        exe(
+            cwd,
             "docker run " +
-                    "-v ${awsAuth.get()}:/root/.aws " +
-                    "-v ${cdkApp()}:/opt/app " +
-                    "-v ${upliftDir()}:/lambdas " +
-                    (env.get()
-                        ?: emptyMap()).entries.joinToString { (key, value) ->
-                        "-e $key=$value "
-                    } +
-                    "$container $cmd")
+                    volumes(
+                        awsAuth.get() to "/root/.aws",
+                        cdkApp() to "/opt/app",
+                        upliftDir() to "/lambdas"
+                    ) +
+                    environment(
+                        env.get()
+                    ) +
+                    "$container $cmd"
+        )
 
     internal fun profileOption() =
         profile.orNull?.let { "--profile=$it" }
@@ -155,6 +158,16 @@ abstract class UpliftTask : DefaultTask() {
             else
                 listOf(line)
         }
+
+    private fun volumes(vararg vols: Pair<*, *>) =
+        vols.joinToString("") { (local, contained) ->
+            "-v $local:$contained "
+        }
+
+    private fun environment(env: Map<String, String>?) =
+        env?.entries?.joinToString("") { (key, value) ->
+            "-e $key=$value "
+        } ?: ""
 
     private fun property(indent: String, key: String, property: Property<*>) =
         property(indent, key, property.get())
