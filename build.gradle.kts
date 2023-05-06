@@ -23,7 +23,7 @@ subprojects {
 
     apply(plugin = "java")
 
-    JavaVersion.valueOf("VERSION_${property("javaVersion") ?: "17"}")
+    JavaVersion.valueOf("VERSION_${resolveProperty("javaVersion", defValue = "17")}")
         .also { javaVersion ->
             configure<JavaPluginExtension> {
                 sourceCompatibility = javaVersion
@@ -72,8 +72,9 @@ subprojects {
     }
 }
 
-fun resolveProperty(property: String, variable: String) =
+fun resolveProperty(property: String, variable: String? = null, defValue: String? = null) =
     System.getProperty(property)
-        ?: System.getenv(variable)
+        ?: variable?.let { System.getenv(it) }
         ?: project.property(property)?.toString()
+        ?: defValue
         ?: property
