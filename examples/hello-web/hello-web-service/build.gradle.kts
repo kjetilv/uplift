@@ -5,12 +5,12 @@ import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.github.kjetilv.uplift.plugins.native") version "0.1.0"
+    id("com.github.kjetilv.uplift.plugins.native") version "0.1.1-SNAPSHOT"
 }
 
 dependencies {
-    implementation("com.github.kjetilv.uplift:uplift-kernel:0.1.0")
-    implementation("com.github.kjetilv.uplift:uplift-lambda:0.1.0")
+    implementation("com.github.kjetilv.uplift:uplift-kernel:0.1.1-SNAPSHOT")
+    implementation("com.github.kjetilv.uplift:uplift-lambda:0.1.1-SNAPSHOT")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
