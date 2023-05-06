@@ -29,5 +29,8 @@ dependencies {
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {
-    jvmTarget = property("javaVersion")?.toString() ?: "17"
+    jvmTarget = project.takeIf { it.hasProperty("javaVersion") }
+        ?.property("javaVersion")
+        ?.toString()
+        ?: "17"
 }

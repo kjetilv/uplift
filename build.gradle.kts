@@ -75,6 +75,6 @@ subprojects {
 fun resolveProperty(property: String, variable: String? = null, defValue: String? = null) =
     System.getProperty(property)
         ?: variable?.let { System.getenv(it) }
-        ?: project.property(property)?.toString()
+        ?: project.takeIf { it.hasProperty(property) }?.property(property)?.toString()
         ?: defValue
         ?: property
