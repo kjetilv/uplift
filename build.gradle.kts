@@ -77,4 +77,4 @@ fun resolveProperty(property: String, variable: String? = null, defValue: String
         ?: variable?.let { System.getenv(it) }
         ?: project.takeIf { it.hasProperty(property) }?.property(property)?.toString()
         ?: defValue
-        ?: property
+        ?: "$\\{$property}"
