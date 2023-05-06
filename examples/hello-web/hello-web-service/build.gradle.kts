@@ -22,10 +22,6 @@ configure<JavaPluginExtension> {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-apply {
-    plugin("com.github.johnrengelman.shadow")
-}
-
 tasks.withType<ShadowJar> {
     manifest {
         attributes(mapOf(Pair("Main-Class", "uplift.examples.helloweb.HelloWeb")))
@@ -34,8 +30,6 @@ tasks.withType<ShadowJar> {
     minimize()
     dependsOn("build")
 }
-
-apply<NativeLambdaPlugin>()
 
 tasks.withType<NativeLamdbdaTask> {
     dependsOn("shadowJar")

@@ -14,14 +14,13 @@ allprojects {
 
 subprojects {
     apply(plugin = "maven-publish")
+    apply(plugin = "java")
 
     tasks {
         withType<Test> {
-            useJUnitPlatform()
+            this.useJUnitPlatform()
         }
     }
-
-    apply(plugin = "java")
 
     JavaVersion.valueOf("VERSION_${resolveProperty("javaVersion", defValue = "17")}")
         .also { javaVersion ->
