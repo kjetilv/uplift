@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "com.github.kjetilv.uplift"
-    version = "0.1.0-SNAPSHOT"
+    version = "0.1.0"
 
     repositories {
         gradlePluginPortal()

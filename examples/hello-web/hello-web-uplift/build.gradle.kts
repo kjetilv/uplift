@@ -2,7 +2,7 @@ import com.github.kjetilv.uplift.plugins.UpliftTask
 
 plugins {
     java
-    id("com.github.kjetilv.uplift.plugins.uplift") version "0.1.0-SNAPSHOT"
+    id("com.github.kjetilv.uplift.plugins.uplift") version "0.1.0"
 }
 
 dependencies {
