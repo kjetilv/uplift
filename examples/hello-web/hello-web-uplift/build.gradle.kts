@@ -51,9 +51,7 @@ fun admonish() {
             ?.let { list ->
                 logger.error("\nMISSING SETUP FOR UPLIFT\n\nYou need to provide value${
                     if (list.size > 1) "s" else ""
-                } for propert${
-                    if (list.size > 1) "ies" else "y"
-                } ${
+                } for propert${if (list.size > 1) "ies" else "y"} ${
                     list.joinToString { "`${it.key}`" }
                 }!\n\nTo set, either plug them right into this build file, or set them as gradle properties.\n" +
                         "(E.g. add a gradle.properties file in ${System.getProperty("user.dir")})\n" +

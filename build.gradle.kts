@@ -13,7 +13,6 @@ allprojects {
 }
 
 subprojects {
-    val sub = project.name != "uplift-gradle-plugins"
     apply(plugin = "maven-publish")
 
     tasks {
@@ -24,15 +23,16 @@ subprojects {
 
     apply(plugin = "java")
 
-    JavaVersion.valueOf("VERSION_${property("javaVersion")}").also { javaVersion ->
-        configure<JavaPluginExtension> {
-            sourceCompatibility = javaVersion
-            targetCompatibility = javaVersion
-            withSourcesJar()
+    JavaVersion.valueOf("VERSION_${property("javaVersion") ?: "17"}")
+        .also { javaVersion ->
+            configure<JavaPluginExtension> {
+                sourceCompatibility = javaVersion
+                targetCompatibility = javaVersion
+                withSourcesJar()
+            }
         }
-    }
 
-    if (sub) {
+    if (project.name != "uplift-gradle-plugins") {
         publishing {
             repositories {
                 mavenLocal()
@@ -40,8 +40,8 @@ subprojects {
                     name = "GitHubPackages"
                     url = uri("https://maven.pkg.github.com/kjetilv/uplift")
                     credentials {
-                        username = resolveUsername()
-                        password = resolveToken()
+                        username = resolveProperty("githubUser", "GITHUB_ACTOR")
+                        password = resolveProperty("githubToken", "GITHUB_TOKEN")
                     }
                 }
             }
@@ -72,11 +72,8 @@ subprojects {
     }
 }
 
-fun resolveUsername() = System.getenv("GITHUB_ACTOR") ?: read(".github_user")
-
-fun resolveToken() = System.getenv("GITHUB_TOKEN") ?: read(".github_token")
-
-fun read(file: String): String =
-    project.rootDir.listFiles()?.firstOrNull {
-        it.name.equals(file)
-    }?.readLines()?.firstOrNull() ?: "No file $file found"
+fun resolveProperty(property: String, variable: String) =
+    System.getProperty(property)
+        ?: System.getenv(variable)
+        ?: project.property(property)?.toString()
+        ?: property

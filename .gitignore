@@ -33,7 +33,5 @@ bin/
 .gradle
 **/build/*
 
-.github_user
-.github_token
-
 examples/**/gradle.properties
+gradle.properties
