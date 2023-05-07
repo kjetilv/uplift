@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.plugins
 import org.gradle.api.DefaultTask
 import java.nio.file.Path
 
-internal fun DefaultTask.exe(cwd: Path, cmd: String) {
+internal fun DefaultTask.exe(cwd: Path, cmd: String) =
     project.exec { spec ->
         spec.run {
             workingDir = cwd.toFile()
@@ -15,6 +15,5 @@ internal fun DefaultTask.exe(cwd: Path, cmd: String) {
             logger.info("Completed: $cmd")
         }
     }
-}
 
 private fun String.toCommand() = this.split(" ")

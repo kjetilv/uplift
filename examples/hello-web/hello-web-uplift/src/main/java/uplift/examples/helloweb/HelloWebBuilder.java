@@ -23,7 +23,7 @@ public class HelloWebBuilder implements Consumer<Stack> {
     @Override
     public void accept(Stack stack) {
         IFunction helloWorldFunction = Function.Builder.create(stack, "uplift-hello-web")
-            .functionName("uplift-hello-web-fun")
+            .functionName("uplift-hello-web-function")
             .code(Code.fromAsset("/lambdas/hello-web-service.zip"))
             .handler("bootstrap")
             .logRetention(ONE_DAY)
@@ -33,7 +33,7 @@ public class HelloWebBuilder implements Consumer<Stack> {
             .timeout(Duration.seconds(20))
             .build();
 
-        FunctionUrl.Builder.create(stack, "uplift-hello-web-fun-url")
+        FunctionUrl.Builder.create(stack, "uplift-hello-web-function-url")
             .function(helloWorldFunction)
             .authType(FunctionUrlAuthType.NONE)
             .cors(FunctionUrlCorsOptions.builder()

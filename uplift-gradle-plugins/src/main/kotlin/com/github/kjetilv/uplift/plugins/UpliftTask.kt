@@ -10,6 +10,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecResult
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,6 +32,7 @@ abstract class UpliftTask : DefaultTask() {
     abstract val env: MapProperty<String, String>
 
     @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val lambdaZips: ListProperty<Path>
 
     @get:Input
@@ -46,15 +51,42 @@ abstract class UpliftTask : DefaultTask() {
     abstract val stack: Property<String>
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val stackbuilderJar: Property<Path>
 
     @get:Input
     abstract val stackbuilderClass: Property<String>
 
+    @TaskAction
+    fun upliftPerform() {
+        selfCheck()
+        initialize()
+        perform()
+    }
+
     @Suppress("unused")
     fun env(vararg envs: Pair<String, String>): UpliftTask = this.apply {
         env.set(mapOf(*envs))
     }
+
+    protected fun upliftDir(): Path =
+        project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
+
+    protected fun clearCdkApp() = clearRecursive(cdkApp())
+
+    protected fun runCdk(cmd: String): ExecResult = exe(
+        upliftDir(),
+        "docker run " +
+                volumes(
+                    awsAuth.get() to "/root/.aws",
+                    cdkApp() to "/opt/app",
+                    upliftDir() to "/lambdas"
+                ) +
+                environment(
+                    env.get()
+                ) +
+                "${"cdk-site:latest"} $cmd"
+    )
 
     @Suppress("unused")
     fun configure(
@@ -75,35 +107,32 @@ abstract class UpliftTask : DefaultTask() {
             stackbuilderClass %= name
         }
 
-    internal fun upliftDir(): Path =
-        project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
+    protected abstract fun perform()
 
-    @Suppress("SameParameterValue")
-    internal fun runDocker(cwd: Path, container: String, cmd: String) =
-        exe(
-            cwd,
-            "docker run " +
-                    volumes(
-                        awsAuth.get() to "/root/.aws",
-                        cdkApp() to "/opt/app",
-                        upliftDir() to "/lambdas"
-                    ) +
-                    environment(
-                        env.get()
-                    ) +
-                    "$container $cmd"
-        )
+    protected fun bootstrapCdk() {
+        runCdk("cdk bootstrap ${profileOption()} aws://${account.get()}/${region.get()}")
+    }
 
-    internal fun profileOption() =
+    protected fun profileOption() =
         profile.orNull?.let { "--profile=$it" }
 
-    internal fun cdkApp() =
-        project.buildDir.toPath().resolve("cdk-app").also(Files::createDirectories)
+    protected fun cdkApp(): Path = project.cdkApp()
 
-    internal fun resolvedStackbuilderJar() =
+    private fun resolvedStackbuilderJar() =
         stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
-    internal fun selfCheck() {
+    protected fun collectLambdaZips() =
+        lambdas()?.forEach { lambdaZip ->
+            copyTo(lambdaZip, upliftDir())
+        } ?: throw IllegalStateException(
+            "No zips configured, and no zips found in ${dependsOn.joinToString(", ", transform = Any::toString)}"
+        )
+
+    protected fun deploy() {
+        runCdk("cdk deploy ${profileOption()} --require-approval=never ${stack.get()}")
+    }
+
+    private fun selfCheck() {
         listOf(
             account, region, profile, stack
         ).filterNot { it.nonBlank != null }.takeIf { it.isNotEmpty() }?.also {
@@ -113,40 +142,28 @@ abstract class UpliftTask : DefaultTask() {
         }
     }
 
-    internal fun bootstrapCdk() {
-        clearRecursive(cdkApp())
-        runDocker(
-            upliftDir(),
-            "cdk-site:latest",
-            "cdk init --language=java --generate-only"
-        )
-        clearRecursive(listOf(cdkApp().resolve("src/main/java/com"), cdkApp().resolve("src/test/java/com")))
-        val jar = resolvedStackbuilderJar()
-        copyTo(jar, cdkApp())
+    protected fun initCdkApp() {
+        clearCdkApp()
+        runCdk("cdk init --language=java --generate-only")
+        copyTo(resolvedStackbuilderJar(), cdkApp())
+
         val writeCdkCode = loadResource("CloudApp.java").split('\n')
         val sourcePackage = cdkApp().resolve("src/main/java/lambda/uplift/app")
         Files.createDirectories(sourcePackage)
         Files.write(sourcePackage.resolve("CloudApp.java"), writeCdkCode)
+        clearRecursive(listOf(cdkApp().resolve("src/main/java/com"), cdkApp().resolve("src/test/java/com")))
 
         val pom = cdkApp().resolve("pom.xml")
         val pomCopy = Files.copy(pom, cdkApp().resolve("pom.xml.orig"))
         Files.write(pom, templated(pomCopy))
         clearRecursive(pomCopy)
-
-        runDocker(
-            upliftDir(),
-            "cdk-site:latest",
-            "cdk bootstrap ${profileOption()} aws://${account.get()}/${region.get()}"
-        )
     }
 
-    internal fun initialize() {
+    private fun initialize() {
         Files.write(
             upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
         )
-
         exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
-        bootstrapCdk()
     }
 
     private fun templated(pomCopy: Path?) =
@@ -158,6 +175,10 @@ abstract class UpliftTask : DefaultTask() {
             else
                 listOf(line)
         }
+
+    private fun lambdas(): List<Path>? =
+        lambdaZips.get().takeIf { it.isNotEmpty() }?.toList()
+            ?: dependencyOutputs().filter(Path::isZip).takeIf { it.isNotEmpty() }
 
     private fun volumes(vararg vols: Pair<*, *>) =
         vols.joinToString("") { (local, contained) ->
@@ -177,9 +198,9 @@ abstract class UpliftTask : DefaultTask() {
 
     private fun indent(main: String) = main.takeWhile(Char::isWhitespace)
 
-    private fun clearRecursive(vararg paths: Path): Unit = clearRecursive(paths.toList())
+    protected fun clearRecursive(vararg paths: Path): Unit = clearRecursive(paths.toList())
 
-    private fun clearRecursive(paths: List<Path>): Unit =
+    protected fun clearRecursive(paths: List<Path>): Unit =
         paths.forEach { path ->
             path.takeIf(Files::isDirectory)?.also { dir ->
                 dir.also {

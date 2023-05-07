@@ -15,18 +15,19 @@ tasks.withType<UpliftTask> {
     admonish() // TODO Remove this when you have your properties in order
 
 // // TODO One way to do it: Uncomment and fix, or provide suitable gradle.properties
-//    configure(
+    configure(
 //        account = "<your 12-digit AWS account id>"",
 //        region = "<your preferred region>",
 //        profile = "<AWS profile holding key/secret>",
-//        stack = hello-web-hello-web-uplift" // This is the not-so-nice default
-//    )
+        stack = "hello-web-uplift" // This is the not-so-nice default
+    )
 //    env(
 //        "FOO" to "bar"
 //    )
 //    stackWith(
 //        "uplift.examples.helloweb.HelloWebBuilder"
 //    )
+
     dependsOn(
         ":hello-web-service:native-lambda",
         "jar"
