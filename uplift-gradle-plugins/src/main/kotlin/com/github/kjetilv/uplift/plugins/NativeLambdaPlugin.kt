@@ -15,7 +15,7 @@ class NativeLambdaPlugin : Plugin<Project> {
                 identifier.set(project.name)
                 jarTask.set("shadowJar")
                 arch.set(System.getProperty("os.arch"))
-                jdkVersion.set("19")
+                jdkVersion.set("17")
                 graalVersion.set("22.3.1")
                 buildsite.set("${project.shortGroupName}-buildsite")
                 javaDist.set(
