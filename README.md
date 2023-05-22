@@ -19,16 +19,16 @@ If it also helps others, good. User feedback? Even better. But, user support wil
 ### Runtime libraries
 
 * `uplift-kernel` contains various utilities
-* `uplift-flogs` contains a faked implementations of the dreaded slfj4 and apache commons loggers, which will forward to Java logging. No other logging
+* `uplift-flogs` contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces. These will forward to the Java logging library. No other logging
   libraries needed,
   and no dynamic classloading needed to get started. The application can use the familiar slf4j API.
-* `uplift-json` contains a minimal JSON parser, which can read and write `Map` and `List` structures. No Jakcson, but no startup time here either.
+* `uplift-json` contains a minimal JSON parser, which can read and write `Map` and `List` structures. No Jackson, but none of its startup time here either.
 * `uplift-s3` contains home-made, artisan code to talk to S3. No need for AWS libraries, for most use cases.
 * `uplift-lambda` handles setup of the infrastructure between AWS Lambda and your application, providing a simple functional hook which receives a lambda
   payload, and returns a response. No AWS libraries in use here, either.
 
 Using these libraries is optional, but they can help keep time and space
-constraints. In particular, time taken to boot a Java-based runtime.
+constraints. In particular, the time taken to start up a Java-based runtime.
 
 ### Testing libraries
 
@@ -55,12 +55,11 @@ The plugins will handle docker moves required to download and build native image
 
 Some example apps:
 
-* `hello-world` will simply print hello world to stdout, meaning you can trigger it from a browser and find proof of life in the logs
-* `hello-web` will actually respond to an HTTP request from the browser
+* `hello-web` is a simple, web-based hello world.  It will respond to a GET HTTP request from the browser, with a friendly hello.
 
 ## What's all that then (Roadmap)
 
-Ideas? New ...
+Ideas? Maybe something new in the way of ... 
 
 ### Libraries
 
