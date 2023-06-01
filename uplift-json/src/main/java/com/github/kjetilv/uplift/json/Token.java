@@ -22,8 +22,8 @@ record Token(
         return this.type != type;
     }
 
-    private String value() {
-        if (type().print()) {
+    private String printableValue() {
+        if (type().printable()) {
             int length = lexeme.length();
             String printed =
                 length > 10 ? lexeme.substring(0, 9) + "⋯" + " [" + length + "]" : lexeme;
@@ -34,6 +34,6 @@ record Token(
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + value() + type + " @ " + line + ":" + column + "]";
+        return getClass().getSimpleName() + "[" + printableValue() + type + " @ " + line + ":" + column + "]";
     }
 }

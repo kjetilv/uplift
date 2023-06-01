@@ -176,9 +176,7 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     private static Object number(String value) {
         if (value.contains(".")) {
-            return value.endsWith(".")
-                ? Long.parseLong(value.substring(0, value.length() - 1))
-                : new BigDecimal(value);
+            return new BigDecimal(value);
         }
         return Long.parseLong(value);
     }

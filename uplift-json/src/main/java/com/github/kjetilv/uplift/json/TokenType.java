@@ -22,17 +22,17 @@ enum TokenType {
 
     NIL;
 
-    private final boolean print;
+    private final boolean printable;
 
     TokenType() {
         this(false);
     }
 
-    TokenType(boolean print) {
-        this.print = print;
+    TokenType(boolean printable) {
+        this.printable = printable;
     }
 
-    boolean print() {
-        return print;
+    boolean printable() {
+        return printable;
     }
 }
