@@ -12,7 +12,7 @@ final class JsonWriter {
     @SuppressWarnings("ChainOfInstanceofChecks")
     static void write(Object object, Sink sink) {
         if (object == null) {
-            sink.accept("null");
+            writeNull(sink);
             return;
         }
         if (object instanceof Optional<?> optional) {
@@ -77,8 +77,12 @@ final class JsonWriter {
             value ->
                 write(value, sink),
             () ->
-                sink.accept("null")
+                writeNull(sink)
         );
+    }
+
+    private static Sink writeNull(Sink sink) {
+        return sink.accept("null");
     }
 
     private static void writeDecimal(BigDecimal dec, Sink sink) {
