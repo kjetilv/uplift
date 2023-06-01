@@ -1,14 +1,17 @@
 package com.github.kjetilv.uplift.json;
 
 import java.net.MalformedURLException;
+import java.nio.channels.ScatteringByteChannel;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import static com.github.kjetilv.uplift.json.Tests.assertParseException;
 import static com.github.kjetilv.uplift.json.TokenType.BOOL;
 import static com.github.kjetilv.uplift.json.TokenType.COMMA;
 import static com.github.kjetilv.uplift.json.TokenType.END_ARRAY;
 import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
+import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
 import static com.github.kjetilv.uplift.json.TokenType.STRING;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -50,8 +53,99 @@ class JsonTest {
             }
             """,
             e ->
-                Tests.assertParseException(e, BOOL, 2, STRING)
+                assertParseException(e, BOOL, 2, STRING)
         );
+    }
+
+    @Test
+    void negationsOnlyPrepended() {
+        Tests.failedParse(
+            """
+            {
+              "bar": 5-5
+            }
+            """,
+            e ->
+                assertParseException(e, NUMBER, 2, COMMA, END_OBJECT)
+        );
+    }
+
+    @Test
+    void malformednumbers1() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": .-
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
+    }
+
+    @Test
+    void malformednumbers2() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": -
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
+    }
+
+    @Test
+    void malformednumbers3() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": 0-.
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
+    }
+
+    @Test
+    void malformednumbers4() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": -.
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
+    }
+
+    @Test
+    void malformednumbers5() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": .-
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
+    }
+
+    @Test
+    void malformednumbers6() {
+        try {
+            fail("Should not scan: " + Json.INSTANCE.read("""
+            {
+              "bar": 0.-
+            }
+            """));
+       } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Failed to scan"));
+        }
     }
 
     @Test
@@ -64,7 +158,7 @@ class JsonTest {
             }
             """,
             e ->
-                Tests.assertParseException(e, STRING, 3, COMMA, END_OBJECT)
+                assertParseException(e, STRING, 3, COMMA, END_OBJECT)
         );
     }
 
@@ -78,7 +172,7 @@ class JsonTest {
             }
             """,
             e ->
-                Tests.assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
         );
     }
 

@@ -56,4 +56,9 @@ class StringSource extends AbstractSource {
             current++;
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[start=" + start + ", current=" + current + "]";
+    }
 }

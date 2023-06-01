@@ -12,10 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.ParseException;
-import com.github.kjetilv.uplift.json.ReadException;
-import com.github.kjetilv.uplift.json.TokenType;
 import org.assertj.core.api.InstanceOfAssertFactories;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -117,7 +113,7 @@ final class Tests {
 
                       "halfdig": 3.0,
                       "dighalf": 0.3,
-                      "flote":   3.14,
+                      "flote":   -3.14,
                       "streng" :   "dette er en test",
                       "problemStreng": "\\"foo\\""
                     },
@@ -185,7 +181,7 @@ final class Tests {
             if (e.getCause() instanceof ParseException parseException) {
                 failer.accept(parseException);
             } else {
-                fail("Unexpected exception: " + e);
+                fail("Unexpected exception", e);
             }
         }
     }
@@ -212,7 +208,8 @@ final class Tests {
         Collection<TokenType> set = EnumSet.copyOf(Arrays.asList(expected));
         assertEquals(line, e.getToken().line());
         assertEquals(unexpected, e.getToken().type());
-        assertEquals(set.size(), e.getExpected().size());
+        assertEquals(set.size(), e.getExpected().size(),
+            () -> set + " /= " + e.getExpected());
         assertTrue(e.getExpected().containsAll(set));
     }
 
@@ -226,8 +223,8 @@ final class Tests {
     }
 
     private static void failedRead(
-            String source,
-            Consumer<? super ReadException> failer, Json instance
+        String source,
+        Consumer<? super ReadException> failer, Json instance
     ) {
         try {
             fail("Unexpected success: " + instance.read(

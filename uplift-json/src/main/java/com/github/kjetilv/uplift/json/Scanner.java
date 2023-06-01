@@ -65,7 +65,7 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
             case 't' -> expectedTokenTail(TRUE_TAIL, BOOL, CANONICAL_TRUE);
             case 'f' -> expectedTokenTail(FALSE_TAIL, BOOL, CANONICAL_FALSE);
             case 'n' -> expectedTokenTail(NULL_TAIL, NIL, CANONICAL_NULL);
-            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
+            case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
             case ' ', '\r', '\t' -> spaces(false);
             case '\n' -> spaces(true);
@@ -156,6 +156,17 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return new Token(type, lexeme, literal, source.line(), source.column() - lexeme.length());
     }
 
+    private Object number(String value) {
+        if (value.contains(".")) {
+            try {
+                return new BigDecimal(value);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to parse: " + value, e);
+            }
+        }
+        return Long.parseLong(value);
+    }
+
     private static final char[] TRUE_TAIL = "rue".toCharArray();
 
     private static final char[] FALSE_TAIL = "alse".toCharArray();
@@ -174,18 +185,16 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return StreamSupport.stream(new Scanner(source), false);
     }
 
-    private static Object number(String value) {
-        if (value.contains(".")) {
-            return new BigDecimal(value);
-        }
-        return Long.parseLong(value);
-    }
-
     private static boolean isDigit(char c) {
         return Character.isDigit(c) || c == '.';
     }
 
     private static boolean isWS(char c) {
         return Character.isWhitespace(c);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + source + "]";
     }
 }
