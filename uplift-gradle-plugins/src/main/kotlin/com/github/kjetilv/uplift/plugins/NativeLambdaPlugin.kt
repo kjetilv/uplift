@@ -20,10 +20,7 @@ class NativeLambdaPlugin : Plugin<Project> {
                 buildsite.set("${project.shortGroupName}-buildsite")
                 javaDist.set(
                     URI.create(
-                        "https://github.com/graalvm/graalvm-ce-builds/releases/download" +
-                                "/vm-${graalVersion.get()}" +
-                                "/graalvm-ce-java${jdkVersion.get()}-linux-${arch.get()}-${graalVersion.get()}" +
-                                ".tar.gz"
+                        "https://download.oracle.com/graalvm/20/latest/graalvm-jdk-20_linux-${arch.get()}_bin.tar.gz"
                     )
                 )
                 javaHome.set("graalvm-ce-java${jdkVersion.get()}-${graalVersion.get()}")

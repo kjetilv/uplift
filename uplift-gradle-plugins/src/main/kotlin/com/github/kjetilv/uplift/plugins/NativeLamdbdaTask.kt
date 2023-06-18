@@ -52,8 +52,7 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             "buildsite" to buildsite.get(),
             "target" to identifier.get(),
             "arch" to arch.get(),
-            "disturi" to javaDist.get().takeIf { it.scheme != "file" }?.toASCIIString(),
-            "distdir" to javaHome.get()
+            "disturi" to javaDist.get().takeIf { it.scheme != "file" }?.toASCIIString()
         )
         Files.write(uplift.resolve("Dockerfile"), split)
         logger.info("Created new DockerFile for ${buildsite.get()}")

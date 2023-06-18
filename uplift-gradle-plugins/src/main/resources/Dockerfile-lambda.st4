@@ -2,19 +2,22 @@ FROM --platform=linux/⎨arch⎬ ubuntu:22.04 AS ⎨buildsite⎬
 VOLUME [ "/out" ]
 RUN apt-get update
 RUN apt-get install -y build-essential gcc zlib1g-dev libz-dev
+RUN mkdir /graalvm
 ⎨if(disturi)⎬
+WORKDIR /graalvm
 ADD ⎨disturi⎬ /graal.tar.gz
-RUN tar xvzf graal.tar.gz
+RUN tar xvzf /graal.tar.gz
+RUN rm /graal.tar.gz
+WORKDIR /
 ⎨else⎬
-ADD dist.tar.gz /
+ADD dist.tar.gz /graalvm
 ⎨endif⎬
-RUN chmod 777 /⎨distdir⎬/bin/*
-ENV PATH /⎨distdir⎬/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-RUN gu install native-image
+RUN chmod 777 /graalvm/*/bin/*
+RUN /graalvm/*/bin/gu install native-image
 
 FROM ⎨buildsite⎬ AS ⎨target⎬
 ADD shadow.jar /shadow.jar
-CMD native-image \
+CMD /graalvm/*/bin/native-image \
  --static \
  --verbose \
  --no-fallback \
