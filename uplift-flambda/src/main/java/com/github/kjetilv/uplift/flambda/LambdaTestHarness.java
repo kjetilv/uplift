@@ -7,7 +7,9 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
@@ -37,14 +39,20 @@ public class LambdaTestHarness implements Closeable {
     private HttpChannelHandler.R r;
 
     public LambdaTestHarness(String name, LambdaHandler lambdaHandler) {
-        this(name, lambdaHandler, null);
+        this(name, lambdaHandler, null, null);
     }
 
-    public LambdaTestHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors) {
+    public LambdaTestHarness(String name, LambdaHandler lambdaHandler,  Supplier<Instant> time) {
+        this(name, lambdaHandler, null, time);
+    }
+
+    public LambdaTestHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
+        Objects.requireNonNull(lambdaHandler, "lambdaHandler");
+
         testExecutor = executor(name, 4);
         serverExec = executor(name + "-S", 5);
         lambdaExec = executor(name + "-L", 5);
-        this.name = name;
+        this.name = name == null ? lambdaHandler.getClass().getSimpleName() : name;
 
         localLambda = new LocalLambda(new LocalLambdaSettings(
             0,
@@ -54,7 +62,7 @@ public class LambdaTestHarness implements Closeable {
             lambdaExec,
             serverExec,
             cors == null ? CORS_DEFAULTS : cors,
-            Instant::now
+            time == null ? Instant::now : time
         ));
 
         LambdaClientSettings lambdaClientSettings = new LambdaClientSettings(
@@ -62,18 +70,15 @@ public class LambdaTestHarness implements Closeable {
             Duration.ofSeconds(10),
             lambdaExec,
             serverExec,
-            Instant::now
+            time == null ? Instant::now : time
         );
         LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
             localLambda.getLambdaUri(),
             lambdaClientSettings,
             lambdaHandler
         );
-
         looper = lamdbdaManaged.looper();
-
         testExecutor.submit(looper);
-
         r = localLambda.r();
     }
 
