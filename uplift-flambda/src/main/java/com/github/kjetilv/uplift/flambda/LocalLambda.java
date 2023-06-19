@@ -15,6 +15,7 @@ import com.github.kjetilv.uplift.asynchttp.ServerRunner;
 /**
  * Emulates AWS lambda service.
  */
+@SuppressWarnings("unused")
 public final class LocalLambda implements Closeable, Runnable, HttpChannelHandler.Server {
 
     private final IOServer lambdaServer;
