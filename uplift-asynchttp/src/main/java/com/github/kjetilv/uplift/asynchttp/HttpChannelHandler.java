@@ -1,9 +1,13 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import java.net.URI;
+import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -17,11 +21,39 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     private static final Logger log = LoggerFactory.getLogger(HttpChannelHandler.class);
 
-    @FunctionalInterface
     public interface Server {
 
-        HttpResponse handle(HttpRequest req);
+        HttpRes handle(HttpReq req);
     }
+
+    @SuppressWarnings("unused")
+    public interface R {
+
+        R path(URI uri);
+
+        R path(String uri);
+
+        default CompletableFuture<HttpResponse<String>> req(String method) {
+            return req(method, false);
+        }
+
+        default CompletableFuture<HttpResponse<String>> req(String method, Map<String, String> headers) {
+            return req(method, headers, null, false);
+        }
+
+        default CompletableFuture<HttpResponse<String>> req(String method, String body, boolean json) {
+            return req(method, null, body, json);
+        }
+
+        CompletableFuture<HttpResponse<String>> req(String method, Object body);
+
+        CompletableFuture<HttpResponse<String>> req(String method, String body);
+
+        CompletableFuture<HttpResponse<String>> req(
+            String method, Map<String, String> headers, String body, boolean json
+        );
+    }
+
     private final Server server;
 
     public HttpChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
@@ -50,10 +82,10 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     @Override
     protected Processing process(HttpChannelState state) {
-        Optional<HttpRequest> completed =
+        Optional<HttpReq> completed =
             HttpBytes.read(state.requestBuffer())
-                .map(HttpRequest::readRequest)
-                .filter(HttpRequest::complete);
+                .map(HttpReq::readRequest)
+                .filter(HttpReq::complete);
         return completed.isEmpty()
             ? Processing.INCOMPLETE
             : completed.map(request ->
@@ -63,7 +95,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
     }
 
     @SuppressWarnings("resource")
-    private void write(HttpResponse res) {
+    private void write(HttpRes res) {
         BufferedWriter<ByteBuffer> writer = responseWriter();
         byte[] bytes = res.toResponseHeader().getBytes(UTF_8);
         writer.write(new WritableBuffer<>(ByteBuffer.wrap(bytes), bytes.length));
@@ -72,12 +104,12 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
         }
     }
 
-    private static HttpResponse response(
-        HttpRequest req,
+    private static HttpRes response(
+        HttpReq req,
         Server server,
-        Consumer<? super HttpResponse> writer
+        Consumer<? super HttpRes> writer
     ) {
-        HttpResponse res = null;
+        HttpRes res = null;
         try {
             log.info("Handling {}", req);
             res = server.handle(req);
@@ -93,7 +125,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
     }
 
     @SuppressWarnings("MagicNumber")
-    private static Processing processing(HttpResponse res) {
+    private static Processing processing(HttpRes res) {
         int status = res.status();
         if (200 <= status && status < 400) {
             return Processing.OK;

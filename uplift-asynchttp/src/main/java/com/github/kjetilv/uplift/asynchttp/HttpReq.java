@@ -15,7 +15,7 @@ import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseIns
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
-public record HttpRequest(
+public record HttpReq(
     String method,
     String path,
     Map<String, List<String>> queryParams,
@@ -23,7 +23,7 @@ public record HttpRequest(
     byte[] body
 ) {
 
-    static HttpRequest readRequest(HttpBytes bytes) {
+    static HttpReq readRequest(HttpBytes bytes) {
         String reqLine = new String(bytes.req(), UTF_8);
         int methodMark = reqLine.indexOf(' ');
         String method = method(reqLine, methodMark);
@@ -31,10 +31,10 @@ public record HttpRequest(
         Map<String, List<String>> queryParams = queryParams(reqLine, methodMark);
         String headersPart = new String(bytes.headers(), UTF_8);
         Map<String, List<String>> headers = headers(headersPart);
-        return new HttpRequest(method, url, queryParams, headers, bytes.body());
+        return new HttpReq(method, url, queryParams, headers, bytes.body());
     }
 
-    public HttpRequest(
+    public HttpReq(
         String method,
         String path,
         Map<String, List<String>> queryParams,
@@ -78,7 +78,7 @@ public record HttpRequest(
     private static Map<String, List<String>> headers(String headers) {
         return Arrays.stream(headers.split("\n"))
             .map(String::trim)
-            .map(HttpRequest::headerEntry)
+            .map(HttpReq::headerEntry)
             .collect(caseInsensitive(Map.Entry::getKey, Map.Entry::getValue));
     }
 

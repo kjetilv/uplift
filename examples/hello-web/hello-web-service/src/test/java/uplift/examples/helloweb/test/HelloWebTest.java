@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
+import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.flambda.CorsSettings;
 import com.github.kjetilv.uplift.flambda.EmptyEnv;
 import com.github.kjetilv.uplift.flambda.LocalLambda;
@@ -25,12 +26,13 @@ import org.junit.jupiter.api.Test;
 import uplift.examples.helloweb.HelloWeb;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class HelloWebTest {
 
-    private ExecutorService testExecutor;
-
     private final AtomicReference<Instant> time = new AtomicReference<>();
+
+    private ExecutorService testExecutor;
 
     private LocalLambda localLambda;
 
@@ -39,6 +41,8 @@ class HelloWebTest {
     private ExecutorService serverExec;
 
     private LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
+
+    private HttpChannelHandler.R r;
 
     @BeforeEach
     void setup() {
@@ -80,11 +84,17 @@ class HelloWebTest {
         looper = lamdbdaManaged.looper();
 
         testExecutor.submit(looper);
+
+        r = localLambda.r();
     }
 
     @Test
     void helloYou() {
-
+        r.path("/you").req("GET")
+            .thenApply(HttpResponse::body)
+            .thenAccept(body ->
+                assertThat(body).isEqualTo("Hello, /you"))
+            .join();
     }
 
     @AfterEach

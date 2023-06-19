@@ -7,8 +7,8 @@ import java.net.URI;
 import com.github.kjetilv.uplift.asynchttp.ChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelState;
-import com.github.kjetilv.uplift.asynchttp.HttpRequest;
-import com.github.kjetilv.uplift.asynchttp.HttpResponse;
+import com.github.kjetilv.uplift.asynchttp.HttpReq;
+import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.asynchttp.IOServer;
 import com.github.kjetilv.uplift.asynchttp.ServerRunner;
 
@@ -74,8 +74,12 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         join();
     }
 
+    public HttpChannelHandler.R r() {
+        return new RImpl(getApiUri());
+    }
+
     @Override
-    public HttpResponse handle(HttpRequest req) {
+    public HttpRes handle(HttpReq req) {
         LambdaRequest request = new LambdaRequest(req);
         LambdaResponse response = lambdaHandler.lambdaResponse(request);
         return response.toHttpResponse();

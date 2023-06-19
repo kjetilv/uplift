@@ -16,8 +16,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
-import com.github.kjetilv.uplift.asynchttp.HttpRequest;
-import com.github.kjetilv.uplift.asynchttp.HttpResponse;
+import com.github.kjetilv.uplift.asynchttp.HttpReq;
+import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     @Override
-    public HttpResponse handle(HttpRequest req) {
+    public HttpRes handle(HttpReq req) {
         if (req.isGet()) {
             return nextRequestResponse();
         }
@@ -74,7 +74,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         return responsesReceived.get(fetched.id());
     }
 
-    private HttpResponse nextRequestResponse() {
+    private HttpRes nextRequestResponse() {
         LambdaRequest nextRequest = null;
         while (nextRequest == null) {
             try {
@@ -91,10 +91,10 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         }
         requestsFetched.put(nextRequest.id(), nextRequest);
         byte[] body = lambdaRequest(nextRequest);
-        return new HttpResponse(OK, requestHeaders(nextRequest), body);
+        return new HttpRes(OK, requestHeaders(nextRequest), body);
     }
 
-    private HttpResponse passResponse(HttpRequest req) {
+    private HttpRes passResponse(HttpReq req) {
         LambdaResponse response = lambdaResponse(req.body());
         responsesReceived.put(id(req.path()), response);
         return NO_CONTENT;
@@ -124,13 +124,13 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         .registerModule(new JavaTimeModule())
         .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 
-    private static final HttpResponse INTERNAL_ERROR = new HttpResponse(500);
+    private static final HttpRes INTERNAL_ERROR = new HttpRes(500);
 
-    private static final HttpResponse SERVICE_UNAVAILABLE = new HttpResponse(503);
+    private static final HttpRes SERVICE_UNAVAILABLE = new HttpRes(503);
 
-    private static final HttpResponse BAD_REQUEST = new HttpResponse(400);
+    private static final HttpRes BAD_REQUEST = new HttpRes(400);
 
-    private static final HttpResponse NO_CONTENT = new HttpResponse(204);
+    private static final HttpRes NO_CONTENT = new HttpRes(204);
 
     private static Map<String, List<String>> requestHeaders(LambdaRequest nextRequest) {
         return Map.of(

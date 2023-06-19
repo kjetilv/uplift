@@ -4,21 +4,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.github.kjetilv.uplift.asynchttp.HttpRequest;
+import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 
 import static java.util.Objects.requireNonNull;
 
-public record LambdaRequest(
-    String id,
-    HttpRequest request
-) {
+public record LambdaRequest(String id, HttpReq request) {
 
-    public LambdaRequest(HttpRequest httpRequest) {
-        this(null, httpRequest);
+    public LambdaRequest(HttpReq httpReq) {
+        this(null, httpReq);
     }
 
-    public LambdaRequest(String id, HttpRequest request) {
+    public LambdaRequest(String id, HttpReq request) {
         this.id = id;
         this.request = requireNonNull(request, "request");
     }

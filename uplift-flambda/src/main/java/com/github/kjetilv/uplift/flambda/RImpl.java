@@ -9,39 +9,33 @@ import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 
 @SuppressWarnings("unused")
-public record R(URI uri) {
+public record RImpl(URI uri) implements HttpChannelHandler.R {
 
-    public R path(URI uri) {
-        return new R(this.uri.resolve(uri));
+    @Override
+    public HttpChannelHandler.R path(URI uri) {
+        return new RImpl(this.uri.resolve(uri));
     }
 
-    public R path(String uri) {
-        return new R(this.uri.resolve(uri));
+    @Override
+    public HttpChannelHandler.R path(String uri) {
+        return new RImpl(this.uri.resolve(uri));
     }
 
-    public CompletableFuture<HttpResponse<String>> req(String method, Map<String, String> headers) {
-        return req(method, headers, null, false);
-    }
-
+    @Override
     public CompletableFuture<HttpResponse<String>> req(String method, Object body) {
         return req(method, json(body), true);
     }
 
+    @Override
     public CompletableFuture<HttpResponse<String>> req(String method, String body) {
         return req(method, body, walksLikeADuck(body.trim()));
     }
 
-    public CompletableFuture<HttpResponse<String>> req(String method, String body, boolean json) {
-        return req(method, null, body, json);
-    }
-
-    private CompletableFuture<HttpResponse<String>> req(String method) {
-        return req(method, false);
-    }
-
-    private CompletableFuture<HttpResponse<String>> req(
+    @Override
+    public CompletableFuture<HttpResponse<String>> req(
         String method, Map<String, String> headers, String body, boolean json
     ) {
         try {

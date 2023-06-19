@@ -11,34 +11,34 @@ import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
 import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
 
 @SuppressWarnings("unused")
-public record HttpResponse(
+public record HttpRes(
     int status,
     Map<String, List<String>> headers,
     byte[] body
 ) {
 
-    public HttpResponse(byte[] body) {
+    public HttpRes(byte[] body) {
         this(0, body);
     }
 
-    public HttpResponse(int status, byte[] body) {
+    public HttpRes(int status, byte[] body) {
         this(status, null, body);
     }
 
-    public HttpResponse(int status, Map<String, List<String>> headers, byte[] body) {
+    public HttpRes(int status, Map<String, List<String>> headers, byte[] body) {
         this.status = httpStatus(status);
         this.headers = CaseInsensitiveHashMap.wrap(headers);
         this.body = BytesIO.nonNull(body);
     }
 
-    public HttpResponse(int status) {
+    public HttpRes(int status) {
         this(status, Collections.emptyMap(), NOBODY);
     }
 
-    public HttpResponse updateHeaders(
+    public HttpRes updateHeaders(
         Function<? super Map<String, List<String>>, ? extends Map<String, List<String>>> headerModifier
     ) {
-        return new HttpResponse(status(), headerModifier.apply(headers()), body());
+        return new HttpRes(status(), headerModifier.apply(headers()), body());
     }
 
     public int size() {
