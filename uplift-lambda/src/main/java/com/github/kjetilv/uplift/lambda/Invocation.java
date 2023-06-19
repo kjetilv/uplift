@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -75,6 +76,34 @@ public record Invocation<Q, R>(
             null,
             null
         );
+    }
+
+    public Invocation(
+        Instant created,
+        Q request,
+        Throwable requestFailure,
+        boolean aborted,
+        Instant updated,
+        String id,
+        LambdaPayload payload,
+        LambdaResult result,
+        Q completionRequest,
+        CompletionStage<R> completionFuture,
+        R completionResponse,
+        Throwable responseFailure
+    ) {
+        this.created = Objects.requireNonNull(created, "created");
+        this.request = request;
+        this.requestFailure = requestFailure;
+        this.aborted = aborted;
+        this.updated = updated;
+        this.id = id;
+        this.payload = payload;
+        this.result = result;
+        this.completionRequest = completionRequest;
+        this.completionFuture = completionFuture;
+        this.completionResponse = completionResponse;
+        this.responseFailure = responseFailure;
     }
 
     Invocation<Q, R> abort() {

@@ -44,7 +44,10 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
         this.fetch = requireNonNull(fetch, "send");
         this.endpoint = requireNonNull(endpoint, "api");
         this.jsonParser = requireNonNull(jsonParser, "jsonParser");
-        this.time = time;
+        this.time = () -> {
+            Instant instant = time.get();
+            return instant == null ? Instant.now() : instant;
+        };
         try {
             this.request = HttpRequest.newBuilder().uri(endpoint).build();
         } catch (Exception e) {

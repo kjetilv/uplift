@@ -2,8 +2,6 @@ package com.github.kjetilv.uplift.lambda;
 
 import java.time.Instant;
 
-import com.github.kjetilv.uplift.lambda.Invocation;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,7 +10,7 @@ class InvocationTest {
 
     @Test
     void noneIsEmpty() {
-        Assertions.assertThat(Invocation.none("str", Instant.now()).isEmpty()).isTrue();
+        assertThat(Invocation.none("str", Instant.now()).isEmpty()).isTrue();
     }
 
     @Test

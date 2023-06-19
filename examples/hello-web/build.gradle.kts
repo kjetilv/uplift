@@ -6,4 +6,10 @@ allprojects {
         mavenLocal()
         mavenCentral()
     }
+
+    tasks {
+        withType<Test> {
+            this.useJUnitPlatform()
+        }
+    }
 }

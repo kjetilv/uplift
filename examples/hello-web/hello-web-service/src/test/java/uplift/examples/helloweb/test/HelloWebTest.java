@@ -1,6 +1,7 @@
 package uplift.examples.helloweb.test;
 
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
@@ -23,6 +24,7 @@ import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import uplift.examples.helloweb.HelloWeb;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
@@ -45,10 +47,11 @@ class HelloWebTest {
     private HttpChannelHandler.R r;
 
     @BeforeEach
-    void setup() {
-        testExecutor = executor("test", 4);
-        serverExec = executor("aws-yell-S", 5);
-        lambdaExec = executor("aws-yell-L", 5);
+    void setup(TestInfo testInfo) {
+        String name = testName(testInfo);
+        testExecutor = executor(name, 4);
+        serverExec = executor(name + "-S", 5);
+        lambdaExec = executor(name + "-L", 5);
 
         CorsSettings cors = new CorsSettings(
             List.of("*"),
@@ -88,15 +91,6 @@ class HelloWebTest {
         r = localLambda.r();
     }
 
-    @Test
-    void helloYou() {
-        r.path("/you").req("GET")
-            .thenApply(HttpResponse::body)
-            .thenAccept(body ->
-                assertThat(body).isEqualTo("Hello, /you"))
-            .join();
-    }
-
     @AfterEach
     void teardown() {
         looper.close();
@@ -106,5 +100,18 @@ class HelloWebTest {
         Stream.of(serverExec, lambdaExec, testExecutor)
             .forEach(ExecutorService::shutdown);
         serverExec = lambdaExec = testExecutor = null;
+    }
+
+    @Test
+    void helloYou() {
+        r.path("/you").req("GET")
+            .thenApply(HttpResponse::body)
+            .thenAccept(body ->
+                assertThat(body).isEqualTo("\"Hello, /you!\""))
+            .join();
+    }
+
+    private String testName(TestInfo testInfo) {
+        return testInfo.getTestMethod().map(Method::getName).orElseGet(() -> getClass().getSimpleName());
     }
 }
