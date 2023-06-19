@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.kjetilv.uplift.plugins.NativeLambdaPlugin
 import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
 
 plugins {

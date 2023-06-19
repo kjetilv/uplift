@@ -4,7 +4,7 @@ import java.net.URI;
 
 import com.github.kjetilv.uplift.kernel.Env;
 
-@SuppressWarnings("NewExceptionWithoutArguments")
+@SuppressWarnings({ "NewExceptionWithoutArguments", "unused" })
 public class EmptyEnv implements Env {
 
     @Override
