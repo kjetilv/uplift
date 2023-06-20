@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;

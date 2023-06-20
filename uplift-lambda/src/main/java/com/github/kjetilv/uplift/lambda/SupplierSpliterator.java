@@ -8,7 +8,6 @@ import java.util.Spliterators;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -31,7 +30,7 @@ final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<Comp
 
     private final LongAdder failedComplete = new LongAdder();
 
-    SupplierSpliterator(Supplier<Optional<CompletionStage<T>>> provider, BooleanSupplier closed) {
+    SupplierSpliterator(Supplier<Optional<CompletionStage<T>>> provider) {
         super(Long.MAX_VALUE, Spliterator.DISTINCT);
         this.provider = Objects.requireNonNull(provider, "provider");
     }

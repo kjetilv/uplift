@@ -9,14 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 final class Streamer<T> implements Closeable {
-
-    private static final Logger log = LoggerFactory.getLogger(Streamer.class);
-
-    private final Supplier<Optional<CompletionStage<T>>> provider;
 
     private final AtomicBoolean opened = new AtomicBoolean();
 
@@ -25,8 +18,7 @@ final class Streamer<T> implements Closeable {
     private final SupplierSpliterator<T> spliterator;
 
     Streamer(Supplier<Optional<CompletionStage<T>>> provider) {
-        this.provider = Objects.requireNonNull(provider, "provider");
-        this.spliterator = new SupplierSpliterator<>(provider, closed::get);
+        this.spliterator = new SupplierSpliterator<>(Objects.requireNonNull(provider, "provider"));
     }
 
     @Override
@@ -45,7 +37,7 @@ final class Streamer<T> implements Closeable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + provider +
+        return getClass().getSimpleName() + "[" + spliterator +
                (opened.get() ? ", open" : "") +
                (closed.get() ? ", closed" : "") +
                "]";

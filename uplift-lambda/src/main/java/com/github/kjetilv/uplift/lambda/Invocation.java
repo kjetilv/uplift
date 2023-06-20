@@ -42,7 +42,7 @@ public record Invocation<Q, R>(
     }
 
     public static <Q, R> Invocation<Q, R> create(String id, Q initRequest, LambdaPayload payload, Instant created) {
-        return new Invocation<Q, R>(
+        return new Invocation<>(
             created,
             initRequest,
             null, false,
@@ -104,23 +104,6 @@ public record Invocation<Q, R>(
         this.completionFuture = completionFuture;
         this.completionResponse = completionResponse;
         this.responseFailure = responseFailure;
-    }
-
-    Invocation<Q, R> abort() {
-        return new Invocation<>(
-            created,
-            request,
-            requestFailure,
-            aborted,
-            null,
-            id,
-            payload,
-            result,
-            completionRequest,
-            completionFuture,
-            completionResponse,
-            responseFailure
-        );
     }
 
     Invocation<Q, R> process(LambdaHandler handler, Supplier<Instant> time) {
