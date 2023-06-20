@@ -67,7 +67,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
         Supplier<Instant> time
     ) {
         super(channel, maxRequestLength, time);
-        this.server = requireNonNull(server, "logic");
+        this.server = requireNonNull(server, "server");
     }
 
     @Override

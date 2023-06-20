@@ -4,12 +4,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -33,11 +35,16 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
 
     private final HttpRequest request;
 
+    private final LongAdder requestsMade = new LongAdder();
+
+    private final LongAdder requestsFailed = new LongAdder();
+
     private final AtomicBoolean closed = new AtomicBoolean();
 
     HttpInvocationSource(
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch,
         URI endpoint,
+        Duration timeout,
         Function<InputStream, Map<String, Object>> jsonParser,
         Supplier<Instant> time
     ) {
@@ -49,9 +56,16 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
             return instant == null ? Instant.now() : instant;
         };
         try {
-            this.request = HttpRequest.newBuilder().uri(endpoint).build();
+            HttpRequest.Builder builder = HttpRequest.newBuilder().uri(endpoint);
+            if (timeout.compareTo(Duration.ZERO) > 0) {
+                builder.timeout(timeout);
+            }
+            this.request = builder.build();
         } catch (Exception e) {
+            requestsFailed.increment();
             throw new IllegalStateException("Invalid URI: " + endpoint, e);
+        } finally {
+            requestsMade.increment();
         }
     }
 
@@ -67,11 +81,15 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
         if (closed.get()) {
             return Optional.empty();
         }
-        return Optional.of(fetch.apply(request).thenApply(response ->
+        return Optional.of(fetch.apply(request)
+            .thenApply(response ->
                 invocationId(response).map(id ->
                         invocation(response, id))
                     .orElseGet(this::failed))
-            .exceptionally(this::handle));
+            .exceptionally(throwable ->
+                closed.get()
+                    ? Invocation.none(request, time.get())
+                    : Invocation.failed(request, throwable, time.get())));
     }
 
     private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
@@ -83,12 +101,6 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
 
     private Invocation<HttpRequest, HttpResponse<InputStream>> failed() {
         return Invocation.failed(request, null, time.get());
-    }
-
-    private Invocation<HttpRequest, HttpResponse<InputStream>> handle(Throwable throwable) {
-        return closed.get()
-            ? Invocation.none(request, time.get())
-            : Invocation.failed(request, throwable, time.get());
     }
 
     private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
@@ -155,6 +167,8 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[@" + endpoint + "]";
+        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
+               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
+               "]";
     }
 }

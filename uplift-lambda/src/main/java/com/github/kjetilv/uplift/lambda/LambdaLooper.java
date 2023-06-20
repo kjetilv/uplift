@@ -71,7 +71,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     public void run() {
         log.info("Loop started");
         try (
-            Streamer<CompletionStage<Invocation<Q, R>>> streamer = openStream();
+            Streamer<Invocation<Q, R>> streamer = openStream();
             Stream<CompletionStage<Invocation<Q, R>>> stream = streamer.open()
         ) {
             stream.map(stage ->
@@ -97,7 +97,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
         source.close();
     }
 
-    private Streamer<CompletionStage<Invocation<Q, R>>> openStream() {
+    private Streamer<Invocation<Q, R>> openStream() {
         return new Streamer<>(source::next);
     }
 

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -10,7 +11,6 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
-import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -73,14 +73,20 @@ final class AsyncIOServer implements IOServer {
             }
             channelGroup.shutdown();
             if (!channelGroup.isTerminated()) {
-                awaitTermination(false);
+                if (!awaitTermination(GRACE_PERIOD)) {
+                    try {
+                        channelGroup.shutdownNow();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to terminate: " + channelGroup, e);
+                    }
+                }
             }
         }
     }
 
     @Override
     public void join() {
-        awaitTermination(true);
+        awaitTermination(0);
     }
 
     @Override
@@ -101,21 +107,23 @@ final class AsyncIOServer implements IOServer {
         return this;
     }
 
-    @SuppressWarnings("LoopConditionNotUpdatedInsideLoop")
-    private void awaitTermination(boolean forever) {
-        boolean terminated;
+    private boolean awaitTermination(int seconds) {
+        boolean forever = seconds == 0;
         try {
-            do {
-                terminated = channelGroup.awaitTermination(seconds(forever), TimeUnit.SECONDS);
-                if (terminated) {
-                    return;
-                }
-            } while (forever);
+            if (channelGroup.awaitTermination(forever ? Long.MAX_VALUE : seconds, TimeUnit.SECONDS)) {
+                return true;
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.warn("Interrupted while waiting{}: {} ", forever ? " forever" : "", channelGroup, e);
+            log.warn(
+                "Interrupted while waiting {}{}: {} ",
+                forever ? "forever" : seconds,
+                forever ? "" : "s",
+                channelGroup,
+                e);
         }
         log.warn("Did not terminate: {}", this);
+        return false;
     }
 
     private final class ChannelReader<S extends ChannelState, C extends ChannelHandler<S, C>>
@@ -184,9 +192,7 @@ final class AsyncIOServer implements IOServer {
 
     private static final int MINIMUM_REQUEST_SIZE = 1024;
 
-    private static long seconds(boolean forever) {
-        return Duration.ofSeconds(forever ? Long.MAX_VALUE : 1).toSeconds();
-    }
+    private static final int GRACE_PERIOD = 10;
 
     private static InetAddress getInetAddress() {
         try {

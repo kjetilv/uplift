@@ -44,6 +44,7 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
             new HttpInvocationSource(
                 client,
                 lambdaUri,
+                settings.responseTimeout(),
                 Json.INSTANCE::jsonMap,
                 settings.time()
             );
@@ -59,13 +60,19 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
         Executor executor,
         Duration connectTimeout
     ) {
-        HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(connectTimeout)
-            .version(HTTP_1_1)
-            .executor(executor)
-            .build();
+        HttpClient httpClient = httpClient(executor, connectTimeout);
         return request ->
             httpClient.sendAsync(request, ofInputStream(), null);
+    }
+
+    private static HttpClient httpClient(Executor executor, Duration connectTimeout) {
+        HttpClient.Builder builder = HttpClient.newBuilder()
+            .version(HTTP_1_1)
+            .executor(executor);
+        if (connectTimeout.compareTo(Duration.ZERO) > 0) {
+            builder.connectTimeout(connectTimeout);
+        }
+        return builder.build();
     }
 
     @Override

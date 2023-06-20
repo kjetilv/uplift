@@ -26,17 +26,17 @@ public class LambdaTestHarness implements Closeable {
 
     private final String name;
 
-    private ExecutorService testExecutor;
+    private final ExecutorService testExec;
 
-    private LocalLambda localLambda;
+    private final LocalLambda localLambda;
 
-    private ExecutorService lambdaExec;
+    private final ExecutorService lambdaExec;
 
-    private ExecutorService serverExec;
+    private final ExecutorService serverExec;
 
-    private LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
+    private final LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
 
-    private HttpChannelHandler.R r;
+    private final HttpChannelHandler.R r;
 
     public LambdaTestHarness(String name, LambdaHandler lambdaHandler) {
         this(name, lambdaHandler, null, null);
@@ -48,12 +48,13 @@ public class LambdaTestHarness implements Closeable {
 
     public LambdaTestHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
-
-        testExecutor = executor(name, 4);
-        serverExec = executor(name + "-S", 5);
-        lambdaExec = executor(name + "-L", 5);
         this.name = name == null ? lambdaHandler.getClass().getSimpleName() : name;
 
+        serverExec = executor(this.name + "-S", 5);
+        lambdaExec = executor(this.name + "-L", 5);
+        testExec = executor(this.name, 4);
+
+        Supplier<Instant> timeRetriever = time == null ? Instant::now : time;
         localLambda = new LocalLambda(new LocalLambdaSettings(
             0,
             0,
@@ -62,15 +63,16 @@ public class LambdaTestHarness implements Closeable {
             lambdaExec,
             serverExec,
             cors == null ? CORS_DEFAULTS : cors,
-            time == null ? Instant::now : time
+            timeRetriever
         ));
+
+        testExec.submit(localLambda);
 
         LambdaClientSettings lambdaClientSettings = new LambdaClientSettings(
             new EmptyEnv(),
-            Duration.ofSeconds(10),
             lambdaExec,
             serverExec,
-            time == null ? Instant::now : time
+            timeRetriever
         );
         LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
             localLambda.getLambdaUri(),
@@ -78,19 +80,19 @@ public class LambdaTestHarness implements Closeable {
             lambdaHandler
         );
         looper = lamdbdaManaged.looper();
-        testExecutor.submit(looper);
+
+        testExec.submit(looper);
         r = localLambda.r();
     }
 
     @Override
     public void close() {
-        looper.close();
-        looper = null;
         localLambda.close();
-        localLambda = null;
-        Stream.of(serverExec, lambdaExec, testExecutor)
+        Stream.of(serverExec, lambdaExec, testExec)
             .forEach(ExecutorService::shutdown);
-        serverExec = lambdaExec = testExecutor = null;
+
+        looper.close();
+        localLambda.join();
     }
 
     public HttpChannelHandler.R r() {
@@ -105,6 +107,6 @@ public class LambdaTestHarness implements Closeable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + name + "@" + localLambda.getLambdaUri() + "]";
+        return getClass().getSimpleName() + "[" + name + " @ " + localLambda.getLambdaUri() + "]";
     }
 }

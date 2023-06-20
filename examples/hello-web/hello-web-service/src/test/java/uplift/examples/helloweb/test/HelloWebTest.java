@@ -24,7 +24,9 @@ class HelloWebTest {
 
     @AfterEach
     void teardown() {
-        lambdaTestHarness.close();
+        if (lambdaTestHarness != null) {
+            lambdaTestHarness.close();
+        }
     }
 
     @Test

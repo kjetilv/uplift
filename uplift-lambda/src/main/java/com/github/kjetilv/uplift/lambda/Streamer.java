@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import java.io.Closeable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -15,29 +16,38 @@ final class Streamer<T> implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(Streamer.class);
 
-    private final Supplier<Optional<T>> provider;
+    private final Supplier<Optional<CompletionStage<T>>> provider;
+
+    private final AtomicBoolean opened = new AtomicBoolean();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    Streamer(Supplier<Optional<T>> provider) {
+    private final SupplierSpliterator<T> spliterator;
+
+    Streamer(Supplier<Optional<CompletionStage<T>>> provider) {
         this.provider = Objects.requireNonNull(provider, "provider");
+        this.spliterator = new SupplierSpliterator<>(provider, closed::get);
     }
 
     @Override
     public void close() {
-        if (closed.compareAndSet(false, true)) {
-            log.info("Closed: {}", this);
+        if (closed.compareAndSet(false, true)){
+            spliterator.close();
         }
     }
 
-    Stream<T> open() {
-        return closed.get()
-            ? Stream.empty()
-            : StreamSupport.stream(new SupplierSpliterator<T>(provider, closed::get), false);
+    Stream<CompletionStage<T>> open() {
+        if (opened.compareAndSet(false, true)) {
+            return StreamSupport.stream(spliterator, false);
+        }
+        throw new IllegalStateException("Already opened: " + this);
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + provider + (closed.get() ? ", closed" : "") + "]";
+        return getClass().getSimpleName() + "[" + provider +
+               (opened.get() ? ", open" : "") +
+               (closed.get() ? ", closed" : "") +
+               "]";
     }
 }
