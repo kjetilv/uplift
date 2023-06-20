@@ -3,6 +3,7 @@ package uplift.examples.helloweb.test;
 import java.lang.reflect.Method;
 import java.net.http.HttpResponse;
 
+import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.flambda.LambdaTestHarness;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +19,8 @@ class HelloWebTest {
 
     @BeforeEach
     void setup(TestInfo testInfo) {
-        String name = testName(testInfo);
-        lambdaTestHarness = new LambdaTestHarness(name, new HelloWeb());
+        this.lambdaTestHarness =
+            new LambdaTestHarness(testName(testInfo), new HelloWeb());
     }
 
     @AfterEach
@@ -31,11 +32,17 @@ class HelloWebTest {
 
     @Test
     void helloYou() {
-        lambdaTestHarness.r().path("/you").req("GET")
+        helloCall("you")
+            .req("GET")
             .thenApply(HttpResponse::body)
             .thenAccept(body ->
-                assertThat(body).isEqualTo("\"Hello, /you!\""))
+                assertThat(body)
+                    .isEqualTo(helloResponse("you")))
             .join();
+    }
+
+    private HttpChannelHandler.R helloCall(String you) {
+        return lambdaTestHarness.r().path("/" + you);
     }
 
     private String testName(TestInfo testInfo) {
@@ -43,5 +50,9 @@ class HelloWebTest {
             .map(Method::getName)
             .orElseGet(() ->
                 getClass().getSimpleName());
+    }
+
+    private static String helloResponse(String name) {
+        return "\"Hello, /" + name + "!\"";
     }
 }
