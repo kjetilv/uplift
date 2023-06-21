@@ -7,8 +7,6 @@ import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaPayload;
 import com.github.kjetilv.uplift.lambda.LambdaResult;
 
-import static com.github.kjetilv.uplift.lambda.LambdaResult.json;
-
 public final class HelloWeb implements LambdaHandler {
 
     public static void main(String[] args) {
@@ -17,7 +15,12 @@ public final class HelloWeb implements LambdaHandler {
 
     @Override
     public LambdaResult handle(LambdaPayload lambdaPayload) {
-        String name = Optional.ofNullable(lambdaPayload.path()).orElse("url with no path");
-        return json("\"Hello, " + name + "!\"");
+        String name = path(lambdaPayload);
+        String greeting = Greeter.greet(name);
+        return LambdaResult.json(greeting);
+    }
+
+    private static String path(LambdaPayload lambdaPayload) {
+        return Optional.ofNullable(lambdaPayload.path()).orElse("url with no path");
     }
 }
