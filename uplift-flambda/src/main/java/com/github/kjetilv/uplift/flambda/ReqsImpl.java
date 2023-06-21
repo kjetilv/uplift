@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +36,16 @@ record ReqsImpl(URI uri) implements Reqs {
 
     @Override
     public CompletableFuture<HttpResponse<String>> execute(
-        String method, Map<String, String> headers, String body, boolean json
+        String method,
+        URI uri,
+        Map<String, String> headers,
+        String body,
+        boolean json
     ) {
+        Objects.requireNonNull(method, "method");
+        URI uri1 = uri == null ? uri() : uri().resolve(uri);
         try {
-            HttpRequest.Builder base = HttpRequest.newBuilder(uri);
+            HttpRequest.Builder base = HttpRequest.newBuilder(uri1);
             if (headers != null) {
                 headers.forEach(base::header);
             }
@@ -50,7 +57,11 @@ record ReqsImpl(URI uri) implements Reqs {
             if (body != null && json) {
                 base.header("Content-Type", "application/json");
             }
-            return HttpClient.newBuilder().build().sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
+            return HttpClient.newBuilder()
+                .build()
+                .sendAsync(
+                    base.build(),
+                    HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

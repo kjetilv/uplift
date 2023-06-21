@@ -53,14 +53,26 @@ public interface Reqs {
     }
 
     default CompletableFuture<HttpResponse<String>> execute(String method, String body, boolean json) {
-        return execute(method, null, body, json);
+        return execute(method, (URI) null, null, body, json);
     }
 
     CompletableFuture<HttpResponse<String>> execute(String method, Object body);
 
     CompletableFuture<HttpResponse<String>> execute(String method, String body);
 
-    CompletableFuture<HttpResponse<String>> execute(
+    default CompletableFuture<HttpResponse<String>> execute(
         String method, Map<String, String> headers, String body, boolean json
+    ) {
+        return execute(method, (URI) null, headers, body, json);
+    }
+
+    default CompletableFuture<HttpResponse<String>> execute(
+        String method, String uri, Map<String, String> headers, String body, boolean json
+    ) {
+        return execute(method, URI.create(uri), headers, body, json);
+    }
+
+    CompletableFuture<HttpResponse<String>> execute(
+        String method, URI uri, Map<String, String> headers, String body, boolean json
     );
 }
