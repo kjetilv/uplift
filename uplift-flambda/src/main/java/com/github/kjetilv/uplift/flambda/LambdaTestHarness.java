@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.lambda.DefaultLamdbdaManaged;
 import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
@@ -35,7 +34,7 @@ public class LambdaTestHarness implements Closeable {
 
     private final LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
 
-    private final HttpChannelHandler.R r;
+    private final Reqs r;
 
     public LambdaTestHarness(String name, LambdaHandler lambdaHandler) {
         this(name, lambdaHandler, null, null);
@@ -94,7 +93,7 @@ public class LambdaTestHarness implements Closeable {
         localLambda.join();
     }
 
-    public HttpChannelHandler.R r() {
+    public Reqs reqs() {
         return r;
     }
 

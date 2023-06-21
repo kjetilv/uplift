@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.flambda;
 
 import java.lang.reflect.Method;
 
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,8 +43,8 @@ public abstract class LambdaTestCase {
         throw new UnsupportedOperationException("Override either this method or #lambdaTestHarness");
     }
 
-    protected HttpChannelHandler.R r() {
-        return lambdaTestHarness.r();
+    protected Reqs reqs() {
+        return lambdaTestHarness.reqs();
     }
 
     private static String testName(TestInfo testInfo) {

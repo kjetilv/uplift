@@ -9,33 +9,32 @@ import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 
 @SuppressWarnings("unused")
-public record RImpl(URI uri) implements HttpChannelHandler.R {
+record ReqsImpl(URI uri) implements Reqs {
 
     @Override
-    public HttpChannelHandler.R path(URI uri) {
-        return new RImpl(this.uri.resolve(uri));
+    public Reqs path(URI uri) {
+        return new ReqsImpl(this.uri.resolve(uri));
     }
 
     @Override
-    public HttpChannelHandler.R path(String uri) {
-        return new RImpl(this.uri.resolve(uri));
+    public Reqs path(String uri) {
+        return new ReqsImpl(this.uri.resolve(uri));
     }
 
     @Override
-    public CompletableFuture<HttpResponse<String>> req(String method, Object body) {
-        return req(method, json(body), true);
+    public CompletableFuture<HttpResponse<String>> execute(String method, Object body) {
+        return execute(method, json(body), true);
     }
 
     @Override
-    public CompletableFuture<HttpResponse<String>> req(String method, String body) {
-        return req(method, body, walksLikeADuck(body.trim()));
+    public CompletableFuture<HttpResponse<String>> execute(String method, String body) {
+        return execute(method, body, walksLikeADuck(body.trim()));
     }
 
     @Override
-    public CompletableFuture<HttpResponse<String>> req(
+    public CompletableFuture<HttpResponse<String>> execute(
         String method, Map<String, String> headers, String body, boolean json
     ) {
         try {
@@ -57,7 +56,7 @@ public record RImpl(URI uri) implements HttpChannelHandler.R {
         }
     }
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     private static String json(Object value) {
         try {

@@ -26,34 +26,6 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
         HttpRes handle(HttpReq req);
     }
 
-    @SuppressWarnings("unused")
-    public interface R {
-
-        R path(URI uri);
-
-        R path(String uri);
-
-        default CompletableFuture<HttpResponse<String>> req(String method) {
-            return req(method, false);
-        }
-
-        default CompletableFuture<HttpResponse<String>> req(String method, Map<String, String> headers) {
-            return req(method, headers, null, false);
-        }
-
-        default CompletableFuture<HttpResponse<String>> req(String method, String body, boolean json) {
-            return req(method, null, body, json);
-        }
-
-        CompletableFuture<HttpResponse<String>> req(String method, Object body);
-
-        CompletableFuture<HttpResponse<String>> req(String method, String body);
-
-        CompletableFuture<HttpResponse<String>> req(
-            String method, Map<String, String> headers, String body, boolean json
-        );
-    }
-
     private final Server server;
 
     public HttpChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
