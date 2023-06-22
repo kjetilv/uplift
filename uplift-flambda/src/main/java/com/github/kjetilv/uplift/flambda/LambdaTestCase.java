@@ -7,19 +7,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 
+@SuppressWarnings("unused")
 public abstract class LambdaTestCase {
 
-    private LambdaTestHarness lambdaTestHarness;
+    private LambdaHarness lambdaHarness;
 
     @BeforeEach
     public void beforeEach(TestInfo testInfo) {
-        lambdaTestHarness = lambdaTestHarness(testInfo);
+        lambdaHarness = lambdaHarness(testInfo);
     }
 
     @AfterEach
     public void afterEach() {
-        lambdaTestHarness.close();
-        lambdaTestHarness = null;
+        lambdaHarness.close();
+        lambdaHarness = null;
     }
 
     /**
@@ -29,12 +30,12 @@ public abstract class LambdaTestCase {
      *
      * @return Lambda test harness
      */
-    protected LambdaTestHarness lambdaTestHarness(TestInfo testInfo) {
-        return new LambdaTestHarness(testName(testInfo), lambdaHandler());
+    protected LambdaHarness lambdaHarness(TestInfo testInfo) {
+        return new LambdaHarness(testName(testInfo), lambdaHandler());
     }
 
     /**
-     * This method will be called if you don't override {@link #lambdaTestHarness(TestInfo)}.
+     * This method will be called if you don't override {@link #lambdaHarness(TestInfo)}.
      *
      * @return A new lambda handler
      */
@@ -44,7 +45,7 @@ public abstract class LambdaTestCase {
     }
 
     protected Reqs reqs() {
-        return lambdaTestHarness.reqs();
+        return lambdaHarness.reqs();
     }
 
     private static String testName(TestInfo testInfo) {

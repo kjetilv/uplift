@@ -77,7 +77,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         return lambdaHandler.lambdaResponse(new LambdaRequest(req)).toHttpResponse();
     }
 
-    public Reqs r() {
+    public Reqs reqs() {
         return new ReqsImpl(getApiUri());
     }
 

@@ -20,7 +20,7 @@ import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 
 @SuppressWarnings("unused")
-public class LambdaTestHarness implements Closeable {
+public class LambdaHarness implements Closeable {
 
     private final String name;
 
@@ -34,26 +34,38 @@ public class LambdaTestHarness implements Closeable {
 
     private final LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
 
-    private final Reqs r;
+    private final Reqs reqs;
 
-    public LambdaTestHarness(String name, LambdaHandler lambdaHandler) {
+    public LambdaHarness(LambdaHandler lambdaHandler) {
+        this(null, lambdaHandler);
+    }
+
+    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
         this(name, lambdaHandler, null, null);
     }
 
-    public LambdaTestHarness(String name, LambdaHandler lambdaHandler,  Supplier<Instant> time) {
+    public LambdaHarness(String name, LambdaHandler lambdaHandler, Supplier<Instant> time) {
         this(name, lambdaHandler, null, time);
     }
 
-    public LambdaTestHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
+    public LambdaHarness(LambdaHandler lambdaHandler, CorsSettings cors) {
+        this(null, lambdaHandler, cors);
+    }
+
+    public LambdaHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors) {
+        this(name, lambdaHandler, cors, null);
+    }
+
+    public LambdaHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
         this.name = name == null ? lambdaHandler.getClass().getSimpleName() : name;
 
-        serverExec = executor(this.name + "-S", 5);
-        lambdaExec = executor(this.name + "-L", 5);
-        testExec = executor(this.name, 4);
+        this.serverExec = executor(this.name + "-S", 5);
+        this.lambdaExec = executor(this.name + "-L", 5);
+        this.testExec = executor(this.name, 4);
 
         Supplier<Instant> timeRetriever = time == null ? Instant::now : time;
-        localLambda = new LocalLambda(new LocalLambdaSettings(
+        this.localLambda = new LocalLambda(new LocalLambdaSettings(
             0,
             0,
             8 * 8192,
@@ -64,7 +76,7 @@ public class LambdaTestHarness implements Closeable {
             timeRetriever
         ));
 
-        testExec.submit(localLambda);
+        this.testExec.submit(localLambda);
 
         LambdaClientSettings lambdaClientSettings = new LambdaClientSettings(
             new EmptyEnv(),
@@ -77,10 +89,10 @@ public class LambdaTestHarness implements Closeable {
             lambdaClientSettings,
             lambdaHandler
         );
-        looper = lamdbdaManaged.looper();
+        this.looper = lamdbdaManaged.looper();
 
-        testExec.submit(looper);
-        r = localLambda.r();
+        this.testExec.submit(looper);
+        this.reqs = this.localLambda.reqs();
     }
 
     @Override
@@ -94,7 +106,7 @@ public class LambdaTestHarness implements Closeable {
     }
 
     public Reqs reqs() {
-        return r;
+        return reqs;
     }
 
     public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
