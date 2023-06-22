@@ -97,16 +97,16 @@ public class LambdaHarness implements Closeable {
 
     @Override
     public void close() {
-        localLambda.close();
-        Stream.of(serverExec, lambdaExec, testExec)
+        this.localLambda.close();
+        Stream.of(this.serverExec, this.lambdaExec, this.testExec)
             .forEach(ExecutorService::shutdown);
 
-        looper.close();
-        localLambda.join();
+        this.looper.close();
+        this.localLambda.join();
     }
 
     public Reqs reqs() {
-        return reqs;
+        return this.reqs;
     }
 
     public static final CorsSettings CORS_DEFAULTS = new CorsSettings(

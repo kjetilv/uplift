@@ -76,11 +76,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
         }
     }
 
-    private static HttpRes response(
-        HttpReq req,
-        Server server,
-        Consumer<? super HttpRes> writer
-    ) {
+    private static HttpRes response(HttpReq req, Server server, Consumer<? super HttpRes> writer) {
         HttpRes res = null;
         try {
             log.info("Handling {}", req);
