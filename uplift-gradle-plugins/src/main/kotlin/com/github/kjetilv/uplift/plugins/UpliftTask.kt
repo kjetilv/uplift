@@ -7,12 +7,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.process.ExecResult
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -118,9 +113,6 @@ abstract class UpliftTask : DefaultTask() {
 
     protected fun cdkApp(): Path = project.cdkApp()
 
-    private fun resolvedStackbuilderJar() =
-        stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
-
     protected fun collectLambdaZips() =
         lambdas()?.forEach { lambdaZip ->
             copyTo(lambdaZip, upliftDir())
@@ -130,16 +122,6 @@ abstract class UpliftTask : DefaultTask() {
 
     protected fun deploy() {
         runCdk("cdk deploy ${profileOption()} --require-approval=never ${stack.get()}")
-    }
-
-    private fun selfCheck() {
-        listOf(
-            account, region, profile, stack
-        ).filterNot { it.nonBlank != null }.takeIf { it.isNotEmpty() }?.also {
-            throw IllegalStateException(
-                "Missing config! Either use `configure` method, or provide gradle.properties:\n ${it.joinToString("\n ")}"
-            )
-        }
     }
 
     protected fun initCdkApp() {
@@ -159,6 +141,43 @@ abstract class UpliftTask : DefaultTask() {
         clearRecursive(pomCopy)
     }
 
+    protected fun clearRecursive(paths: List<Path>): Unit =
+        paths.forEach { path ->
+            path.takeIf(Files::isDirectory)?.also { dir ->
+                dir.also {
+                    Files.list(it).forEach { file ->
+                        clearRecursive(file)
+                    }
+                }.let {
+                    dir.also(Files::delete)
+                }
+            } ?: path.also(Files::delete)
+        }
+
+    protected fun clearRecursive(vararg paths: Path): Unit =
+        clearRecursive(paths.toList())
+
+    private fun <T> nonEmpty(): (List<T>) -> Boolean = { it.isNotEmpty() }
+
+    private fun resolvedStackbuilderJar() =
+        stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
+
+    private fun selfCheck() {
+        listOf(
+            account, region, profile, stack
+        ).filterNot { it.nonBlank != null }.takeIf(nonEmpty())?.also {
+            throw IllegalStateException(
+                "Missing config! Either use `configure` method, or provide gradle.properties:\n ${it.joinToString("\n ")}"
+            )
+        }
+    }
+
+    private fun lambdas(): List<Path>? =
+        lambdaZips.get().takeIf(nonEmpty())?.toList()
+            ?: dependencyOutputs()
+                .filter(Path::isZip)
+                .takeIf(nonEmpty())
+
     private fun initialize() {
         Files.write(
             upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
@@ -175,10 +194,6 @@ abstract class UpliftTask : DefaultTask() {
             else
                 listOf(line)
         }
-
-    private fun lambdas(): List<Path>? =
-        lambdaZips.get().takeIf { it.isNotEmpty() }?.toList()
-            ?: dependencyOutputs().filter(Path::isZip).takeIf { it.isNotEmpty() }
 
     private fun volumes(vararg vols: Pair<*, *>) =
         vols.joinToString("") { (local, contained) ->
@@ -197,21 +212,6 @@ abstract class UpliftTask : DefaultTask() {
         "$indent  <systemProperty><key>$key</key><value>$value</value></systemProperty>"
 
     private fun indent(main: String) = main.takeWhile(Char::isWhitespace)
-
-    protected fun clearRecursive(vararg paths: Path): Unit = clearRecursive(paths.toList())
-
-    protected fun clearRecursive(paths: List<Path>): Unit =
-        paths.forEach { path ->
-            path.takeIf(Files::isDirectory)?.also { dir ->
-                dir.also {
-                    Files.list(it).forEach { file ->
-                        clearRecursive(file)
-                    }
-                }.let {
-                    dir.also(Files::delete)
-                }
-            } ?: path.also(Files::delete)
-        }
 
     private fun addedMain(indent: String, line: String) = listOf(
         line.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),

@@ -10,6 +10,7 @@ import kotlin.io.path.Path
 
 private const val lambdaName = "bootstrap"
 
+@Suppress("unused")
 open class LambdaTask : DefaultTask() {
 
     @Input
