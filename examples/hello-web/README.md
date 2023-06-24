@@ -15,7 +15,7 @@ Checklist for Docker:
 
 #### 2. Build uplift
 
-The libraries aren't published anywhere yet. So, publish [uplift](../../) to local repo before running:
+The libraries aren't published anywhere yet. So, publish [uplift](../..) to local repo before running:
 
 ```
 cd ../.. && ./gradlew build publishToMavenLocal && cd -
