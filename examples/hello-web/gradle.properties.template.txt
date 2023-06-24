@@ -1,0 +1,4 @@
+# Convert this to a gradle.properties file
+account=123456768910
+region=us-east-1
+profile=<profile with access keys to authorized role>

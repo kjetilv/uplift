@@ -33,5 +33,6 @@ bin/
 .gradle
 **/build/*
 
+### These are used to hold sensitive information (account id, profile etc.)
 examples/**/gradle.properties
 gradle.properties
