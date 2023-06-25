@@ -16,14 +16,12 @@ class NativeLambdaPlugin : Plugin<Project> {
                 jarTask.set("shadowJar")
                 arch.set(System.getProperty("os.arch"))
                 jdkVersion.set("17")
-                graalVersion.set("22.3.1")
                 buildsite.set("${project.shortGroupName}-buildsite")
                 javaDist.set(
                     URI.create(
                         "https://download.oracle.com/graalvm/20/latest/graalvm-jdk-20_linux-${arch.get()}_bin.tar.gz"
                     )
                 )
-                javaHome.set("graalvm-ce-java${jdkVersion.get()}-${graalVersion.get()}")
             }
         }
     }

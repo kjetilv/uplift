@@ -1,4 +1,5 @@
 import com.github.kjetilv.uplift.plugins.UpliftTask
+import java.util.concurrent.atomic.AtomicBoolean
 
 plugins {
     java
@@ -14,18 +15,18 @@ tasks.withType<UpliftTask> {
 
     admonish() // TODO Remove this when you have your properties in order
 
-// // TODO One way to do it: Uncomment and fix, or provide suitable gradle.properties
     configure(
+        stack = "hello-web-uplift"
+    )
+
+// TODO: Either:
+//  1. Uncomment and configure, then replace above call with this one, or
+//  2. Rremove this block and provide the settings in a gradle.propeties file
+//    configure(
 //        account = "<your 12-digit AWS account id>"",
 //        region = "<your preferred region>",
 //        profile = "<AWS profile holding key/secret>",
-        stack = "hello-web-uplift" // This is the not-so-nice default
-    )
-//    env(
-//        "FOO" to "bar"
-//    )
-//    stackWith(
-//        "uplift.examples.helloweb.HelloWebBuilder"
+//        stack = "hello-web-uplift"
 //    )
 
     dependsOn(

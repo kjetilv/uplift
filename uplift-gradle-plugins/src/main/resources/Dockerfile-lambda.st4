@@ -10,7 +10,7 @@ RUN tar xvzf /graal.tar.gz
 WORKDIR /
 RUN rm /graal.tar.gz
 ⎨else⎬
-ADD dist.tar.gz /graalvm
+ADD ⎨distfile⎬ /graalvm
 ⎨endif⎬
 RUN chmod 777 /graalvm/*/bin/*
 RUN /graalvm/*/bin/gu install native-image
