@@ -5,5 +5,6 @@ abstract class UpliftDeployTask : UpliftTask() {
     override fun perform() {
         collectLambdaZips()
         deploy()
+        ping()
     }
 }

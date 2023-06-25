@@ -18,6 +18,9 @@ gradlePlugin {
 
 dependencies {
     implementation("software.amazon.awscdk:aws-cdk-lib:2.73.0")
+    implementation("software.amazon.awssdk:lambda:2.20.92")
+    implementation("software.amazon.awssdk:cloudformation:2.20.92")
+    implementation("software.amazon.awssdk:auth:2.20.92")
     implementation("software.constructs:constructs:10.1.301")
 
     implementation(kotlin("stdlib"))

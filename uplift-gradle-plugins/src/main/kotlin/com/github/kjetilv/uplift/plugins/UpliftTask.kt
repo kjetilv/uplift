@@ -9,10 +9,20 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecResult
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.cloudformation.CloudFormationClient
+import software.amazon.awssdk.services.cloudformation.model.Stack
+import software.amazon.awssdk.services.cloudformation.model.StackResource
+import software.amazon.awssdk.services.lambda.LambdaClient
+import software.amazon.awssdk.services.lambda.model.FunctionConfiguration
+import software.amazon.awssdk.services.lambda.model.FunctionUrlConfig
+import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsRequest
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
+
 
 abstract class UpliftTask : DefaultTask() {
 
@@ -52,6 +62,9 @@ abstract class UpliftTask : DefaultTask() {
     @get:Input
     abstract val stackbuilderClass: Property<String>
 
+    //    @get:Input
+//    abstract val pingPath: Property<String>
+//
     @TaskAction
     fun upliftPerform() {
         selfCheck()
@@ -158,6 +171,109 @@ abstract class UpliftTask : DefaultTask() {
         clearRecursive(paths.toList())
 
     private fun <T> nonEmpty(): (List<T>) -> Boolean = { it.isNotEmpty() }
+
+    protected fun ping() {
+        lambdaClient {
+            cloudFormationClient { cloudFormationClient ->
+                cloudFormationClient.stacks()
+                    .filter(::current)
+                    .forEach { stack ->
+                        cloudFormationClient.logStack(stack)
+                    }
+            }
+        }
+    }
+
+    private fun CloudFormationClient.logStack(stack: Stack) {
+        val stackResources = resources(stack)
+        if (stackResources.isEmpty()) {
+            logger.warn(
+                """
+                ##
+                ## No resources found for stack `${stack.stackName()}
+                ##
+                """.trimIndent()
+            )
+            return
+        }
+        val functions = stackResources.filter { it.actualFunction() }
+        if (functions.isEmpty()) {
+            logger.warn(
+                """
+                ##
+                ## No functions found for stack `${stack.stackName()}, resources:
+                ##
+                """.trimIndent()
+            )
+            stackResources.forEach { resource ->
+                logger.lifecycle("  ${resource.physicalResourceId()}:${resource.resourceType()}")
+            }
+            return
+        }
+        logger.lifecycle(
+            """
+            ##
+            ## uplifted stack: `${stack.stackName()}` (${stackResources.size} resources)
+            ##
+            """.trimIndent()
+        )
+        functions.forEach { stackResource ->
+            lambdaClient { lambdaClient ->
+                lambdaClient.functionConfigurations().firstOrNull { functionConfiguration ->
+                    functionConfiguration.functionName().equals(stackResource.physicalResourceId())
+                }?.let { func: FunctionConfiguration ->
+                    lambdaClient.functionUrlConfigs(func).forEach { url ->
+                        logger.lifecycle(
+                            """
+                            ##   ${url.functionUrl()}
+                            ##     Function    : ${func.functionName()}
+                            ##     Modified    : ${func.lastModified()}
+                            ##     Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
+                            ##       created: ${url.creationTime()}, modified ${url.lastModifiedTime()}
+                            ##       auth   : ${url.authTypeAsString()}
+                            ##       cors   : ${url.cors()}
+                            ##       invoke : ${url.invokeModeAsString()}
+                            """.trimIndent()
+                        )
+                    }
+                    logger.lifecycle("##")
+                }
+            }
+        }
+    }
+
+    private fun CloudFormationClient.resources(stack: Stack) =
+        describeStackResources { builder ->
+            builder.stackName(stack.stackName())
+        }.stackResources().toList()
+
+    private fun StackResource.actualFunction() =
+        resourceType() == "AWS::Lambda::Function" && !physicalResourceId().contains("-LogRetention")
+
+    private fun current(stack: Stack) =
+        stack.stackName() == this.stack.get()
+
+    private val awsRegion get() = Region.of(this.region.get())
+
+    private val credentialsProvider get() = ProfileCredentialsProvider.create(this.profile.get())
+
+    private fun CloudFormationClient.stacks() =
+        this.describeStacks().stacks().toList()
+
+    private fun LambdaClient.functionUrlConfigs(function: FunctionConfiguration): List<FunctionUrlConfig> =
+        listFunctionUrlConfigs(listFunctionUrlConfigsRequest(function)).functionUrlConfigs().toList()
+
+    private fun listFunctionUrlConfigsRequest(function: FunctionConfiguration) =
+        ListFunctionUrlConfigsRequest.builder().functionName(function.functionName()).build()
+
+    private fun LambdaClient.functionConfigurations() =
+        listFunctions().functions().toList()
+
+    private fun cloudFormationClient(a: (CloudFormationClient) -> Unit) =
+        a.invoke(CloudFormationClient.builder().region(awsRegion).credentialsProvider(credentialsProvider).build())
+
+    private fun lambdaClient(a: (LambdaClient) -> Unit) =
+        a.invoke(LambdaClient.builder().region(awsRegion).credentialsProvider(credentialsProvider).build())
 
     private fun resolvedStackbuilderJar() =
         stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")

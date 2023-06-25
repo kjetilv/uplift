@@ -57,3 +57,9 @@ Then, you should be able to:
 ```
 
 And find your lambda running in the cloud eventually!
+
+To find the URL of your service:
+
+```
+./gradlew uplift-ping
+```

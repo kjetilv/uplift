@@ -24,11 +24,16 @@ class UpliftPlugin : Plugin<Project> {
                 dependsOn("uplift-bootstrap")
             }
         }
-        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) { task ->
-            task.configureFor(project) {
-                setDependsOn(emptyList<String>())
-            }
+        project.tasks.register("uplift-ping", UpliftPingTask::class.java) { task ->
+            task.configureFor(project) { clearDependencies() }
         }
+        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) { task ->
+            task.configureFor(project) { clearDependencies() }
+        }
+    }
+
+    private fun UpliftTask.clearDependencies() {
+        setDependsOn(emptyList<String>())
     }
 
     private fun templateFile(project: Project, task: UpliftBootstrapTask): Path =

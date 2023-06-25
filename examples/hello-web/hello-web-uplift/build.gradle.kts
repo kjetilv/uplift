@@ -1,5 +1,5 @@
+import com.github.kjetilv.uplift.plugins.UpliftPingTask
 import com.github.kjetilv.uplift.plugins.UpliftTask
-import java.util.concurrent.atomic.AtomicBoolean
 
 plugins {
     java
@@ -15,13 +15,14 @@ tasks.withType<UpliftTask> {
 
     admonish() // TODO Remove this when you have your properties in order
 
+    // Minimal config, assuming gradle.properties are found
     configure(
         stack = "hello-web-uplift"
     )
 
 // TODO: Either:
-//  1. Uncomment and configure, then replace above call with this one, or
-//  2. Rremove this block and provide the settings in a gradle.propeties file
+//  1. Uncomment and tweak + replace above configure with this one, or
+//  2. Remove this block and provide the below settings in a gradle.properties file
 //    configure(
 //        account = "<your 12-digit AWS account id>"",
 //        region = "<your preferred region>",
@@ -29,10 +30,12 @@ tasks.withType<UpliftTask> {
 //        stack = "hello-web-uplift"
 //    )
 
-    dependsOn(
-        ":hello-web-service:native-lambda",
-        "jar"
-    )
+    if (this !is UpliftPingTask) {
+        dependsOn(
+            ":hello-web-service:native-lambda",
+            "jar"
+        )
+    }
 }
 
 fun admonish() =
