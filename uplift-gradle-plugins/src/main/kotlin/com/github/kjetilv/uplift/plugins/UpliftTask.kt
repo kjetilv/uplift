@@ -190,7 +190,10 @@ abstract class UpliftTask : DefaultTask() {
             logger.warn(
                 """
                 ##
-                ## No resources found for stack `${stack.stackName()}
+                ## No resources found for stack `${stack.stackName()}`
+                ##   Stack id : ${stack.stackId()}
+                ##   Created  : ${stack.creationTime()}
+                ##   Modified : ${stack.lastUpdatedTime()}
                 ##
                 """.trimIndent()
             )
@@ -201,7 +204,10 @@ abstract class UpliftTask : DefaultTask() {
             logger.warn(
                 """
                 ##
-                ## No functions found for stack `${stack.stackName()}, resources:
+                ## No functions found for stack `${stack.stackName()}`
+                ##   Stack id : ${stack.stackId()}
+                ##   Created  : ${stack.creationTime()}
+                ##   Modified : ${stack.lastUpdatedTime()}
                 ##
                 """.trimIndent()
             )
@@ -213,7 +219,11 @@ abstract class UpliftTask : DefaultTask() {
         logger.lifecycle(
             """
             ##
-            ## uplifted stack: `${stack.stackName()}` (${stackResources.size} resources)
+            ## uplifted stack: `${stack.stackName()}` 
+            ##   Stack id : ${stack.stackId()}
+            ##   Created  : ${stack.creationTime()}
+            ##   Modified : ${stack.lastUpdatedTime()}
+            ##   Resources: ${stackResources.size}
             ##
             """.trimIndent()
         )

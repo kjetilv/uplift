@@ -50,19 +50,19 @@ fun admonish() =
             }
         }
     }.also { properties ->
-        val missing = properties.filterValues { it.isBlank() }
-        if (missing.isEmpty())
-            logger.warn("##\n## Great, we have configuration! Now you can remove this nasty method\n##")
-        else
-            logger.error(
-                "\n##\n## MISSING CONFIG FOR UPLIFT\n##\n\nYou need to provide value${
-                    if (missing.size > 1) "s" else ""
-                } for propert${
-                    if (missing.size > 1) "ies" else "y"
-                } ${
-                    missing.keys.joinToString()
-                }!\n\nTo set, either plug them right into this build file, or provide them as gradle properties.\n" +
-                        "(E.g. add a gradle.properties file in ${System.getProperty("user.dir")},\n" +
-                        "and then, remove this method admonishing you.)"
-            )
+        properties.filterValues { it.isBlank() }
+            .takeUnless { it.isEmpty() }
+            ?.also { missing ->
+                logger.error(
+                    "\n##\n## MISSING CONFIG FOR UPLIFT\n##\n\nYou need to provide value${
+                        if (missing.size > 1) "s" else ""
+                    } for propert${
+                        if (missing.size > 1) "ies" else "y"
+                    } ${
+                        missing.keys.joinToString()
+                    }!\n\nTo set, either plug them right into this build file, or provide them as gradle properties.\n" +
+                            "(E.g. add a gradle.properties file in ${System.getProperty("user.dir")},\n" +
+                            "and then, remove this method admonishing you.)"
+                )
+            }
     }
