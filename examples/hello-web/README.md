@@ -17,8 +17,11 @@ Checklist for Docker:
 
 The libraries aren't published anywhere yet. So, publish [uplift](../..) to local repo before running:
 
-```
-cd ../.. && ./gradlew build publishToMavenLocal && cd -
+```bash
+cd ../.. && ./gradlew build \
+ publishToMavenLocal \
+ publishPluginMavenPublicationToMavenLocal \
+ && cd -
 ```
 
 #### 3. Identify in AWS
@@ -52,7 +55,7 @@ profile=<profile with access keys to authorized role>
 
 Then, you should be able to:
 
-```
+```bash
 ./gradlew uplift
 ```
 
@@ -60,6 +63,6 @@ And find your lambda running in the cloud eventually!
 
 To find the URL of your service:
 
-```
+```bash
 ./gradlew uplift-ping
 ```

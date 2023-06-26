@@ -4,7 +4,9 @@ Native images, to the cloud!
 
 To try it out, start by installing to local repo:
 
-`./gradlew publishToMavenLocal`
+```bash
+./gradlew publishToMavenLocal publishPluginMavenPublicationToMavenLocal
+```
 
 Then check out [an example](./examples/hello-web) that deploys a native service.
 
