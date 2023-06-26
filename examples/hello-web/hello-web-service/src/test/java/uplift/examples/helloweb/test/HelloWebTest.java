@@ -20,19 +20,20 @@ class HelloWebTest extends LambdaTestCase {
 
     @Test
     void helloYou() {
-        assertResponse("you");
+        assertResponse("you", Greeter.greet("/" + "you"));
     }
 
     @Test
     void helloStranger() {
-        assertResponse(UUID.randomUUID().toString());
+        String random = UUID.randomUUID().toString();
+        assertResponse(random, Greeter.greet("/" + random));
     }
 
-    private void assertResponse(String someRando) {
+    private void assertResponse(String someRando, String greeting) {
         reqs().get("/" + someRando)
             .thenApply(HttpResponse::body)
             .thenAccept(body ->
-                assertThat(body).isEqualTo(Greeter.greet("/" + someRando)))
+                assertThat(body).isEqualTo(greeting))
             .join();
     }
 }

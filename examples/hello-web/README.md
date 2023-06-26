@@ -1,34 +1,29 @@
 # Hello, web!
 
-This function will reply with a friendly hello as a JSON string.
+This is a simple HTTP function will that reply with a friendly hello as a JSON string. It is intended to demonstrate usage of [uplift](../../).
 
-## Steps
+## One-time setup
 
-We will need docker to build, a working IAM user in AWS with sufficient permissions to deploy.Gradle also needs some properties to know about the IAM user. 
+We need some groundwork to get started. 
 
-#### 1. Run Docker
+* A running Docker service
+* Access key/secret for an IAM user with sufficient permissions in AWS
+* Gradle properties to select AWS account and region, and to point to the access key/secrets
+
+We will need docker to build, a working IAM user in AWS with sufficient permissions to deploy. Gradle also needs some properties to know about the IAM user. 
+
+### 1. Run Docker
 
 Checklist for Docker:
 
 * A docker daemon should be running and authenticated so it can pull [temurin](https://hub.docker.com/_/eclipse-temurin/) and [ubuntu](https://hub.docker.com/_/ubuntu) images from the [Docker hub](https://hub.docker.com/).
-* The `docker` command line tool should be on `PATH` so that the gradle process can run it.
+* The `docker` command line tool should be on `PATH` so that the Gradle process can execute it.
 
-#### 2. Build uplift
-
-The libraries aren't published anywhere yet. So, publish [uplift](../..) to local repo before running:
-
-```bash
-cd ../.. && ./gradlew build \
- publishToMavenLocal \
- publishPluginMavenPublicationToMavenLocal \
- && cd -
-```
-
-#### 3. Identify in AWS
+### 2. Identify in AWS
 
 You need an AWS account and an IAM role with the permissions required for deployment. Creating one with [AllPermissions](https://us-east-1.console.aws.amazon.com/iam/home?region=us-east-1#/policies/arn:aws:iam::aws:policy/AdministratorAccess) will get you started.
 
-We assume the file `~/.aws/credentials` contains the access key+secret for this user, in the usual way:
+We assume the file `~/.aws/credentials` contains the access key/secret for this user, in the usual way:
 
 ```
 ... other profiles ...
@@ -37,12 +32,12 @@ We assume the file `~/.aws/credentials` contains the access key+secret for this 
 aws_access_key_id = < AKIA... >
 aws_secret_access_key = < 123... >
 
-...yet more profiles...
+... other other profiles ...
 ```
 
-### 4. Configure Gradle build
+### 3. Configure Gradle build
 
-Add a `gradle.properties` file (based on e.g. [this one](./gradle.properties.template.txt)) file to point to the profile, along with the account number and the desired region:
+Add a `gradle.properties` file (based on e.g. [this one](./gradle.properties.template.txt)) file to point to the profile, along with your account number, and the desired region:
 
 ```
 # Convert this to a gradle.properties file
@@ -51,7 +46,22 @@ region=us-east-1
 profile=<profile with access keys to authorized role> 
 ```
 
-## 5. Launch!
+## Build and run
+
+### 1. Build uplift
+
+The libraries aren't published anywhere yet. So, you need to publish 
+[uplift](../..) to your local repo before running:
+
+```bash
+cd ../.. && ./gradlew \
+ build \
+ publishToMavenLocal \
+ publishPluginMavenPublicationToMavenLocal \
+ ; cd -
+```
+
+### 2. Launch!
 
 Then, you should be able to:
 
