@@ -23,6 +23,7 @@ CMD /graalvm/*/bin/native-image \
  --no-fallback \
  -g \
  -H:+ReportExceptionStackTraces \
+ -H:+BuildReport \
  --enable-url-protocols=https \
  --target=linux-⎨arch⎬ \
  -jar /shadow.jar \
