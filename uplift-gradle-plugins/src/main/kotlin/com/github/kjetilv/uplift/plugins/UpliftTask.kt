@@ -218,7 +218,6 @@ abstract class UpliftTask : DefaultTask() {
         }
         logger.lifecycle(
             """
-            ##
             ## uplifted stack: `${stack.stackName()}` 
             ##   Stack id : ${stack.stackId()}
             ##   Created  : ${stack.creationTime()}
@@ -232,10 +231,12 @@ abstract class UpliftTask : DefaultTask() {
                 lambdaClient.functionConfigurations().firstOrNull { functionConfiguration ->
                     functionConfiguration.functionName().equals(stackResource.physicalResourceId())
                 }?.let { func: FunctionConfiguration ->
-                    lambdaClient.functionUrlConfigs(func).forEach { url ->
+                    lambdaClient.functionUrlConfigs(func).forEachIndexed() { i, url ->
                         logger.lifecycle(
                             """
-                            ## ${func.functionName()}
+                            ## Lambdas:
+                            ##
+                            ## $i. ${func.functionName()}
                             ##   URL         : ${url.functionUrl()} 
                             ##   Modified    : ${func.lastModified()}
                             ##   Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
