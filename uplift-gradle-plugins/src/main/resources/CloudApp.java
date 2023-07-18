@@ -1,7 +1,5 @@
 package lambda.uplift.app;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -76,9 +74,7 @@ public final class CloudApp {
     }
 
     private static Optional<Class<Consumer<? super Stack>>> resolveStackloaderClass() {
-        try (
-            JarFile jarFile = new JarFile(JAR)
-        ) {
+        try (JarFile jarFile = new JarFile(JAR)) {
             return jarFile.stream()
                 .filter(entry ->
                     entry.getName().endsWith(".class"))
@@ -105,9 +101,7 @@ public final class CloudApp {
     }
 
     private static Class<?> loadClass(String name) {
-        try (
-            URLClassLoader classLoader = getUrlClassLoader()
-        ) {
+        try (URLClassLoader classLoader = getUrlClassLoader()) {
             return classLoader.loadClass(name);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load: " + name, e);
@@ -133,7 +127,7 @@ public final class CloudApp {
                     file.getFileName().toString().endsWith(".jar"))
                 .map(toUrl())
                 .toList();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("COuld not list additkonal jars", e);
         }
     }
@@ -154,7 +148,7 @@ public final class CloudApp {
         return path -> {
             try {
                 return path.toUri().toURL();
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
                 throw new IllegalStateException("Bad URI: " + path, e);
             }
         };

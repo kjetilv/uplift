@@ -235,14 +235,13 @@ abstract class UpliftTask : DefaultTask() {
                     lambdaClient.functionUrlConfigs(func).forEach { url ->
                         logger.lifecycle(
                             """
-                            ##   ${url.functionUrl()}
-                            ##     Function    : ${func.functionName()}
+                            ##   ${func.functionName()}
+                            ##     URL         : ${url.functionUrl()} 
                             ##     Modified    : ${func.lastModified()}
                             ##     Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
-                            ##       created: ${url.creationTime()}, modified ${url.lastModifiedTime()}
-                            ##       auth   : ${url.authTypeAsString()}
-                            ##       cors   : ${url.cors()}
-                            ##       invoke : ${url.invokeModeAsString()}
+                            ##         created : ${url.creationTime()}, modified ${url.lastModifiedTime()}
+                            ##            cors : ${url.cors()}
+                            ##            auth : ${url.authTypeAsString()}
                             """.trimIndent()
                         )
                     }

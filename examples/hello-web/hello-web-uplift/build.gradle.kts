@@ -7,8 +7,8 @@ plugins {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.86.0")
-    implementation("software.constructs:constructs:10.2.65")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.87.0")
+    implementation("software.constructs:constructs:10.2.69")
 }
 
 tasks.withType<UpliftTask> {
