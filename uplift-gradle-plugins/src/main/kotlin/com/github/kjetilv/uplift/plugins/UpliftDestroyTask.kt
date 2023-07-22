@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.plugins
 
-abstract class UpliftDestroyTask : UpliftTask() {
+abstract class UpliftDestroyTask : UpliftCdkTask() {
 
     override fun perform() {
         if (!cdkApp().isActualDirectory) {

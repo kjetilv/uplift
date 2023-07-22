@@ -13,7 +13,6 @@ RUN rm /graal.tar.gz
 ADD ⎨distfile⎬ /graalvm
 ⎨endif⎬
 RUN chmod 777 /graalvm/*/bin/*
-RUN /graalvm/*/bin/gu install native-image
 
 FROM ⎨buildsite⎬ AS ⎨target⎬
 ADD shadow.jar /shadow.jar

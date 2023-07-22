@@ -3,8 +3,6 @@
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
@@ -18,10 +16,8 @@ import software.amazon.awssdk.services.lambda.LambdaClient
 import software.amazon.awssdk.services.lambda.model.FunctionConfiguration
 import software.amazon.awssdk.services.lambda.model.FunctionUrlConfig
 import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsRequest
-import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 
 abstract class UpliftTask : DefaultTask() {
@@ -35,10 +31,6 @@ abstract class UpliftTask : DefaultTask() {
 
     @get:Input
     abstract val env: MapProperty<String, String>
-
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val lambdaZips: ListProperty<Path>
 
     @get:Input
     abstract val awsAuth: Property<String>
@@ -54,13 +46,6 @@ abstract class UpliftTask : DefaultTask() {
 
     @get:Input
     abstract val stack: Property<String>
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val stackbuilderJar: Property<Path>
-
-    @get:Input
-    abstract val stackbuilderClass: Property<String>
 
     //    @get:Input
 //    abstract val pingPath: Property<String>
@@ -109,11 +94,7 @@ abstract class UpliftTask : DefaultTask() {
         profile?.also(this.profile::set)
     }
 
-    @Suppress("unused")
-    fun stackWith(name: String) =
-        this.apply {
-            stackbuilderClass %= name
-        }
+    open fun stackWith(name: String) {}
 
     protected abstract fun perform()
 
@@ -126,32 +107,8 @@ abstract class UpliftTask : DefaultTask() {
 
     protected fun cdkApp(): Path = project.cdkApp()
 
-    protected fun collectLambdaZips() =
-        lambdas()?.forEach { lambdaZip ->
-            copyTo(lambdaZip, upliftDir())
-        } ?: throw IllegalStateException(
-            "No zips configured, and no zips found in ${dependsOn.joinToString(", ", transform = Any::toString)}"
-        )
-
     protected fun deploy() {
         runCdk("cdk deploy ${profileOption()} --require-approval=never ${stack.get()}")
-    }
-
-    protected fun initCdkApp() {
-        clearCdkApp()
-        runCdk("cdk init --language=java --generate-only")
-        copyTo(resolvedStackbuilderJar(), cdkApp())
-
-        val writeCdkCode = loadResource("CloudApp.java").split('\n')
-        val sourcePackage = cdkApp().resolve("src/main/java/lambda/uplift/app")
-        Files.createDirectories(sourcePackage)
-        Files.write(sourcePackage.resolve("CloudApp.java"), writeCdkCode)
-        clearRecursive(listOf(cdkApp().resolve("src/main/java/com"), cdkApp().resolve("src/test/java/com")))
-
-        val pom = cdkApp().resolve("pom.xml")
-        val pomCopy = Files.copy(pom, cdkApp().resolve("pom.xml.orig"))
-        Files.write(pom, templated(pomCopy))
-        clearRecursive(pomCopy)
     }
 
     protected fun clearRecursive(paths: List<Path>): Unit =
@@ -170,7 +127,7 @@ abstract class UpliftTask : DefaultTask() {
     protected fun clearRecursive(vararg paths: Path): Unit =
         clearRecursive(paths.toList())
 
-    private fun <T> nonEmpty(): (List<T>) -> Boolean = { it.isNotEmpty() }
+    protected fun <T> nonEmpty(): (List<T>) -> Boolean = { it.isNotEmpty() }
 
     protected fun ping() {
         lambdaClient {
@@ -223,26 +180,24 @@ abstract class UpliftTask : DefaultTask() {
             ##   Created  : ${stack.creationTime()}
             ##   Modified : ${stack.lastUpdatedTime()}
             ##   Resources: ${stackResources.size}
-            ##
+            ##  Lambdas:
             """.trimIndent()
         )
-        functions.forEach { stackResource ->
+        functions.forEachIndexed { f, stackResource ->
             lambdaClient { lambdaClient ->
                 lambdaClient.functionConfigurations().firstOrNull { functionConfiguration ->
                     functionConfiguration.functionName().equals(stackResource.physicalResourceId())
                 }?.let { func: FunctionConfiguration ->
-                    lambdaClient.functionUrlConfigs(func).forEachIndexed() { i, url ->
+                    lambdaClient.functionUrlConfigs(func).forEach { url ->
                         logger.lifecycle(
                             """
-                            ## Lambdas:
-                            ##
-                            ## $i. ${func.functionName()}
-                            ##   URL         : ${url.functionUrl()} 
-                            ##   Modified    : ${func.lastModified()}
-                            ##   Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
-                            ##       created : ${url.creationTime()}, modified ${url.lastModifiedTime()}
-                            ##          cors : ${url.cors()}
-                            ##          auth : ${url.authTypeAsString()}
+                            ##   ${f + 1}. ${func.functionName()}:
+                            ##    URL         : ${url.functionUrl()} 
+                            ##    Modified    : ${func.lastModified()}
+                            ##    Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
+                            ##        created : ${url.creationTime()}, modified ${url.lastModifiedTime()}
+                            ##           cors : ${url.cors()}
+                            ##           auth : ${url.authTypeAsString()}
                             """.trimIndent()
                         )
                     }
@@ -285,9 +240,6 @@ abstract class UpliftTask : DefaultTask() {
     private fun lambdaClient(a: (LambdaClient) -> Unit) =
         a.invoke(LambdaClient.builder().region(awsRegion).credentialsProvider(credentialsProvider).build())
 
-    private fun resolvedStackbuilderJar() =
-        stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
-
     private fun selfCheck() {
         listOf(
             account, region, profile, stack
@@ -298,28 +250,12 @@ abstract class UpliftTask : DefaultTask() {
         }
     }
 
-    private fun lambdas(): List<Path>? =
-        lambdaZips.get().takeIf(nonEmpty())?.toList()
-            ?: dependencyOutputs()
-                .filter(Path::isZip)
-                .takeIf(nonEmpty())
-
     private fun initialize() {
         Files.write(
             upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
         )
         exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
     }
-
-    private fun templated(pomCopy: Path?) =
-        Files.lines(pomCopy, StandardCharsets.UTF_8).collect(Collectors.toList()).flatMap { line ->
-            if (line.contains("<mainClass>"))
-                addedMain(indent(line), line)
-            else if (line.contains("</dependencies>"))
-                addedDeps(indent(line), line)
-            else
-                listOf(line)
-        }
 
     private fun volumes(vararg vols: Pair<*, *>) =
         vols.joinToString("") { (local, contained) ->
@@ -330,47 +266,4 @@ abstract class UpliftTask : DefaultTask() {
         env?.entries?.joinToString("") { (key, value) ->
             "-e $key=$value "
         } ?: ""
-
-    private fun property(indent: String, key: String, property: Property<*>) =
-        property(indent, key, property.get())
-
-    private fun property(indent: String, key: String, value: Any?) =
-        "$indent  <systemProperty><key>$key</key><value>$value</value></systemProperty>"
-
-    private fun indent(main: String) = main.takeWhile(Char::isWhitespace)
-
-    private fun addedMain(indent: String, line: String) = listOf(
-        line.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
-        "$indent<systemProperties>",
-        property("$indent  ", "uplift.account", account),
-        property("$indent  ", "uplift.region", region),
-        property("$indent  ", "uplift.stack", stack),
-        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar().fileName),
-        property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
-        "$indent</systemProperties>"
-    )
-
-    private fun addedDeps(indent: String, line: String) =
-        dependencies().filterNotNull().filterNot(::isAws).flatMap { dep ->
-            dep.run {
-                listOf(
-                    "",
-                    "$indent    <dependency>",
-                    "$indent      <groupId>$group</groupId>",
-                    "$indent      <artifactId>$name</artifactId>",
-                    "$indent      <version>$version</version>",
-                    "$indent    </dependency>"
-                )
-            }
-        } + listOf(line)
-
-    private fun isAws(dep: Dependency) =
-        setOf(
-            "software.amazon.awscdk" to "aws-cdk-lib",
-            "software.constructs" to "constructs"
-        ).contains(dep.group to dep.name)
-
-    private fun dependencies() =
-        project.configurations.findByName("compileClasspath")?.incoming?.dependencies?.stream()?.toList()?.toList()
-            ?: emptyList()
 }

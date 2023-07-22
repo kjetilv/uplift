@@ -6,7 +6,7 @@ import org.gradle.api.tasks.OutputFile
 import java.nio.file.Path
 
 @CacheableTask
-abstract class UpliftBootstrapTask : UpliftTask() {
+abstract class UpliftBootstrapTask : UpliftLambdaZipTask() {
 
     @get:OutputFile
     abstract val template: Property<Path>

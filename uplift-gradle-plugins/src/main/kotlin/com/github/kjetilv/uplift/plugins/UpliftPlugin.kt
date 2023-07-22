@@ -25,16 +25,19 @@ class UpliftPlugin : Plugin<Project> {
             }
         }
         project.tasks.register("uplift-ping", UpliftPingTask::class.java) { task ->
-            task.configureFor(project) { clearDependencies() }
+            task.configureFor(project) {
+                clearDependencies()
+            }
         }
         project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) { task ->
-            task.configureFor(project) { clearDependencies() }
+            task.configureFor(project) {
+                clearDependencies()
+            }
         }
     }
 
-    private fun UpliftTask.clearDependencies() {
+    private fun UpliftTask.clearDependencies() =
         setDependsOn(emptyList<String>())
-    }
 
     private fun templateFile(project: Project, task: UpliftBootstrapTask): Path =
         project.cdkApp().resolve("cdk.out").resolve("${task.stack.get()}.template.json")
@@ -46,13 +49,14 @@ class UpliftPlugin : Plugin<Project> {
         stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
         arch %= resolveArchitecture()
         awsAuth %= resolveAwsAuth()
-        jarOutput(project)?.also { jarFile ->
-            stackbuilderJar %= jarFile
+        if (this is UpliftCdkTask ) {
+            jarOutput(project)?.also {
+                stackbuilderJar %= it
+            }
+            stackbuilderClass %= ""
         }
-        stackbuilderClass %= ""
         aob.invoke(this)
     }
-
 
     private fun composeName(project: Project) = normalize(
         if (project.name.startsWith(project.group.toString())) project.name

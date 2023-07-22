@@ -6,7 +6,7 @@ import org.gradle.api.tasks.OutputFile
 import java.nio.file.Path
 
 @CacheableTask
-abstract class UpliftInitTask : UpliftTask() {
+abstract class UpliftInitTask : UpliftCdkTask() {
 
     @get:OutputFile
     abstract val activeJar: Property<Path>
