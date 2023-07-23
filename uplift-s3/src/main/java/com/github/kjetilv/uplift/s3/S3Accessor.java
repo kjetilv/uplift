@@ -39,11 +39,6 @@ public interface S3Accessor {
             null);
     }
 
-    default void put(String contents, String remoteName) {
-        byte[] bytes = contents.getBytes(StandardCharsets.UTF_8);
-        put(remoteName, new ByteArrayInputStream(bytes), bytes.length);
-    }
-
     default Stream<String> list(String prefix) {
         return listInfos(prefix).stream().map(RemoteInfo::key);
     }
@@ -100,15 +95,20 @@ public interface S3Accessor {
 
     Optional<? extends InputStream> stream(String name, Range range);
 
-    default Optional<InputStream> put(String remoteName, byte[] bytes) {
+    default void put(String contents, String remoteName) {
+        byte[] bytes = contents.getBytes(StandardCharsets.UTF_8);
+        put(remoteName, new ByteArrayInputStream(bytes), bytes.length);
+    }
+
+    default void put(String remoteName, byte[] bytes) {
         try (ByteArrayInputStream data = new ByteArrayInputStream(bytes)) {
-            return put(remoteName, data, bytes.length);
+            put(remoteName, data, bytes.length);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to put " + bytes.length + " bytes @ " + remoteName, e);
         }
     }
 
-    Optional<InputStream> put(String remoteName, InputStream inputStream, long length);
+    void put(String remoteName, InputStream inputStream, long length);
 
     Map<String, RemoteInfo> remoteInfos(String prefix);
 

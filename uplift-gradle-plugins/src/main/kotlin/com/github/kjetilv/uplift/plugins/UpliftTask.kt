@@ -172,11 +172,14 @@ abstract class UpliftTask : DefaultTask() {
         }
         logger.lifecycle(
             """
-            ## uplifted stack: `${stack.stackName()}` 
-            ##   Stack id : ${stack.stackId()}
-            ##   Created  : ${stack.creationTime()}
-            ##   Modified : ${stack.lastUpdatedTime()}
-            ##   Resources: ${stackResources.size}
+            ##
+            ## uplifted `${stack.stackName()}`
+            ##
+            ##   Stack id  : ${stack.stackId()}
+            ##   Created   : ${stack.creationTime()}
+            ##   Modified  : ${stack.lastUpdatedTime()}
+            ##   Resources : ${stackResources.size}
+            ##
             ##  Lambdas:
             """.trimIndent()
         )
@@ -188,17 +191,17 @@ abstract class UpliftTask : DefaultTask() {
                     lambdaClient.functionUrlConfigs(func).forEach { url ->
                         logger.lifecycle(
                             """
-                            ##   ${f + 1}. ${func.functionName()}: ${func.description()?.takeUnless(String::isBlank) ?: ""}
+                            ##   [${f + 1}] ${func.functionName()}: ${func.description()?.takeUnless(String::isBlank) ?: ""}
                             ##    modified @ ${func.lastModified() ?: "<unknown>"}
                             ##    Function URL ${url.functionUrl()} 
                             ##      created @ ${url.creationTime()}
                             ##     modified @ ${url.lastModifiedTime()}
                             ##         cors : ${url.cors()}
                             ##         auth : ${url.authTypeAsString()}
+                            ##
                             """.trimIndent()
                         )
                     }
-                    logger.lifecycle("##")
                 }
             }
         }
