@@ -47,9 +47,6 @@ abstract class UpliftTask : DefaultTask() {
     @get:Input
     abstract val stack: Property<String>
 
-    //    @get:Input
-//    abstract val pingPath: Property<String>
-//
     @TaskAction
     fun upliftPerform() {
         selfCheck()
@@ -191,13 +188,13 @@ abstract class UpliftTask : DefaultTask() {
                     lambdaClient.functionUrlConfigs(func).forEach { url ->
                         logger.lifecycle(
                             """
-                            ##   ${f + 1}. ${func.functionName()}:
-                            ##    URL         : ${url.functionUrl()} 
-                            ##    Modified    : ${func.lastModified()}
-                            ##    Description : ${func.description()?.takeUnless(String::isBlank) ?: "<none>"}
-                            ##        created : ${url.creationTime()}, modified ${url.lastModifiedTime()}
-                            ##           cors : ${url.cors()}
-                            ##           auth : ${url.authTypeAsString()}
+                            ##   ${f + 1}. ${func.functionName()}: ${func.description()?.takeUnless(String::isBlank) ?: ""}
+                            ##    modified @ ${func.lastModified() ?: "<unknown>"}
+                            ##    Function URL ${url.functionUrl()} 
+                            ##      created @ ${url.creationTime()}
+                            ##     modified @ ${url.lastModifiedTime()}
+                            ##         cors : ${url.cors()}
+                            ##         auth : ${url.authTypeAsString()}
                             """.trimIndent()
                         )
                     }
