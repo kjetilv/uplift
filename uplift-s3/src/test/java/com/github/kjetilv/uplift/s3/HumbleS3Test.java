@@ -21,29 +21,29 @@ class HumbleS3Test {
     @Test
     void getIds() {
         S3Accessor defaultS3Accessor = new DefaultS3Accessor(
-                Env.actual(), HttpClient.newHttpClient(), "taninim-water", null);
+            Env.actual(), HttpClient.newHttpClient(), "taninim-water", null);
 
         //        humbleS3Accessor.stream("ids.json").map(BytesIO::readUTF8).ifPresent(System.out::println);
         Map<String, S3Accessor.RemoteInfo> abc = defaultS3Accessor.remoteInfos("abc");
         assertThat(abc).isNotEmpty().allSatisfy((s, remoteInfo) ->
-                assertThat(s).startsWith("abc"));
+            assertThat(s).startsWith("abc"));
         System.out.println(abc);
 
         String contents = UUID.randomUUID().toString();
         defaultS3Accessor.put(contents, "foobar.txt");
 
         Optional<String> readFoobar = defaultS3Accessor.stream("foobar.txt")
-                .map(BytesIO::readUTF8);
+            .map(BytesIO::readUTF8);
         assertThat(readFoobar).hasValue(contents);
 
         Optional<String> rangedFoobar = defaultS3Accessor
-                .stream("foobar.txt", new Range(2L, 10L, 9L))
-                .map(BytesIO::readUTF8);
+            .stream("foobar.txt", new Range(2L, 10L, 9L))
+            .map(BytesIO::readUTF8);
         assertThat(rangedFoobar)
-                .hasValue(contents.substring(2, 10));
+            .hasValue(contents.substring(2, 10));
 
         defaultS3Accessor.remove(
-                List.of("foobar.txt", "ExampleObject.txt")
+            List.of("foobar.txt", "ExampleObject.txt")
         );
     }
 }
