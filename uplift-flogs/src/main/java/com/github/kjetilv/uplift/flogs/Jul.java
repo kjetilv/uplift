@@ -37,6 +37,9 @@ final class Jul {
         return new com.github.kjetilv.uplift.flogs.Logger(logger);
     }
 
+    private Jul() {
+    }
+
     private static final AtomicBoolean setupDone = new AtomicBoolean();
 
     private static Logger instrument(Logger logger, String name) {

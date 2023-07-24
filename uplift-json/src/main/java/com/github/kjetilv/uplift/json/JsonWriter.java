@@ -81,8 +81,8 @@ final class JsonWriter {
         );
     }
 
-    private static Sink writeNull(Sink sink) {
-        return sink.accept("null");
+    private static void writeNull(Sink sink) {
+        sink.accept("null");
     }
 
     private static void writeDecimal(BigDecimal dec, Sink sink) {

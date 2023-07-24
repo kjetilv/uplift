@@ -46,4 +46,7 @@ public final class Main {
     static Logger logger() {
         return LoggerFactory.getLogger(Main.class);
     }
+
+    private Main() {
+    }
 }

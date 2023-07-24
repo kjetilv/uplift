@@ -8,9 +8,6 @@ import java.nio.file.Path
 internal fun renderResource(resource: String, vararg pars: Pair<String, String?>): List<String> =
     render(loadResource(resource), pars)
 
-internal fun renderFile(file: Path, vararg pars: Pair<String, String?>): List<String> =
-    render(load(file), pars)
-
 internal fun loadResource(template: String): String =
     Thread.currentThread().contextClassLoader.getResourceAsStream(template)
         ?.use {

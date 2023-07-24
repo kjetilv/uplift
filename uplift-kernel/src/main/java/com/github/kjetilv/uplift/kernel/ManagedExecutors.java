@@ -68,6 +68,7 @@ public final class ManagedExecutors {
 
     private static final AtomicLong THREAD_COUNT = new AtomicLong();
 
+    @SuppressWarnings("deprecation")
     private static ThreadFactory threadFactory(String prefix) {
         return run -> {
             String name = prefix + (prefix.endsWith("-") ? "" : "-") + THREAD_COUNT.getAndIncrement();

@@ -4,7 +4,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import java.net.URI
 
-@Suppress("unused")
 class NativeLambdaPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {

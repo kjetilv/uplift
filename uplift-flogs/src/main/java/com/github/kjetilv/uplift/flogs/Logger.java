@@ -348,6 +348,7 @@ public final class Logger {
         jul.log(record);
     }
 
+    @SuppressWarnings("deprecation")
     private static LogRecord logRecord(String name, Level level, String msg, Throwable throwable, Object[] args) {
         LogRecord logRecord = new LogRecord(level, msg);
         logRecord.setLoggerName(name);

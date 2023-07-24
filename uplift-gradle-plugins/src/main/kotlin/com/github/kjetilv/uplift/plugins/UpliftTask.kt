@@ -54,7 +54,6 @@ abstract class UpliftTask : DefaultTask() {
         perform()
     }
 
-    @Suppress("unused")
     fun env(vararg envs: Pair<String, String>): UpliftTask = this.apply {
         env.set(mapOf(*envs))
     }
@@ -78,7 +77,6 @@ abstract class UpliftTask : DefaultTask() {
                 "${"cdk-site:latest"} $cmd"
     )
 
-    @Suppress("unused")
     fun configure(
         account: String? = null,
         region: String? = null,

@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.net.URI;
-import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

@@ -22,6 +22,9 @@ public final class LoggerFactory {
             new FLogger(name, Flogs.get(name)));
     }
 
+    private LoggerFactory() {
+    }
+
     @SuppressWarnings("StaticCollection")
     private static final Map<String, Logger> LOGGERS = new ConcurrentHashMap<>();
 }

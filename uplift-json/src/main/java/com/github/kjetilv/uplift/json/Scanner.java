@@ -8,16 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.COLON;
-import static com.github.kjetilv.uplift.json.TokenType.COMMA;
-import static com.github.kjetilv.uplift.json.TokenType.END_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.NIL;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
+import static com.github.kjetilv.uplift.json.TokenType.*;
 
 final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
@@ -156,17 +147,6 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return new Token(type, lexeme, literal, source.line(), source.column() - lexeme.length());
     }
 
-    private Object number(String value) {
-        if (value.contains(".")) {
-            try {
-                return new BigDecimal(value);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to parse: " + value, e);
-            }
-        }
-        return Long.parseLong(value);
-    }
-
     private static final char[] TRUE_TAIL = "rue".toCharArray();
 
     private static final char[] FALSE_TAIL = "alse".toCharArray();
@@ -180,6 +160,17 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     private static final String CANONICAL_NULL = "null";
 
     private static final Pattern ESCAPED_QUOTE = Pattern.compile("\\\\\"");
+
+    private static Object number(String value) {
+        if (value.contains(".")) {
+            try {
+                return new BigDecimal(value);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to parse: " + value, e);
+            }
+        }
+        return Long.parseLong(value);
+    }
 
     private static Stream<Token> tokenStream(Source source) {
         return StreamSupport.stream(new Scanner(source), false);

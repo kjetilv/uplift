@@ -26,6 +26,9 @@ public final class Flogs {
         emergencySetup();
     }
 
+    private Flogs() {
+    }
+
     @SuppressWarnings("StaticCollection")
     private static final Map<String, Logger> LOGGERS = new ConcurrentHashMap<>();
 

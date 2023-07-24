@@ -7,7 +7,7 @@ internal fun DefaultTask.exe(cwd: Path, cmd: String) =
     project.exec { spec ->
         spec.run {
             workingDir = cwd.toFile()
-            commandLine = cmd.also { it ->
+            commandLine = cmd.also {
                 logger.info("Running command in $cwd")
                 logger.info("  $it")
             }.toCommand()
