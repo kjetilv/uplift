@@ -107,11 +107,11 @@ public record Invocation<Q, R>(
     }
 
     Invocation<Q, R> process(LambdaHandler handler, Supplier<Instant> time) {
-        if (isEmpty()) {
+        if (empty()) {
             return this;
         }
         LambdaResult result = handler.handle(this.payload());
-        return isEmpty() ? this : new Invocation<>(
+        return empty() ? this : new Invocation<>(
             created,
             request,
             requestFailure,
@@ -140,7 +140,7 @@ public record Invocation<Q, R>(
         Function<? super Invocation<Q, R>, ? extends Q> completionRequest,
         Supplier<Instant> time
     ) {
-        if (isEmpty()) {
+        if (empty()) {
             return this;
         }
         Q completion = completionRequest.apply(this);
@@ -164,7 +164,7 @@ public record Invocation<Q, R>(
         Function<? super Q, ? extends CompletionStage<R>> completer,
         Supplier<Instant> time
     ) {
-        if (isEmpty()) {
+        if (empty()) {
             return this;
         }
         CompletionStage<R> completionStage =
@@ -186,7 +186,7 @@ public record Invocation<Q, R>(
     }
 
     CompletionStage<Invocation<Q, R>> completedAt(Instant time) {
-        if (isEmpty()) {
+        if (empty()) {
             return CompletableFuture.completedFuture(this);
         }
         return completionFuture.thenApply(completion ->
@@ -206,7 +206,7 @@ public record Invocation<Q, R>(
             ));
     }
 
-    boolean isEmpty() {
+    boolean empty() {
         return id == null || id.isBlank() || payload == null || aborted;
     }
 
@@ -214,7 +214,7 @@ public record Invocation<Q, R>(
     public String toString() {
         return getClass().getSimpleName() + "[[" + id + "] " + (
             requestFailure != null ? "requestFailure: " + requestFailure
-                : isEmpty() ? "empty"
+                : empty() ? "empty"
                     : payload + " / " + result + " => " + (
                         responseFailure != null
                             ? "responseFailure:" + responseFailure

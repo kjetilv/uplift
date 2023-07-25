@@ -60,7 +60,7 @@ final class LambdaLoopers {
         Throwable throwable
     ) {
         if (invocation != null) {
-            if (invocation.isEmpty()) {
+            if (invocation.empty()) {
                 log.warn("Empty invocation, no id resolved");
                 return false;
             }

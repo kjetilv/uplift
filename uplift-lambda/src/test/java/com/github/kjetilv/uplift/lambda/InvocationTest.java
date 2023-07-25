@@ -10,16 +10,16 @@ class InvocationTest {
 
     @Test
     void noneIsEmpty() {
-        assertThat(Invocation.none("str", Instant.now()).isEmpty()).isTrue();
+        assertThat(Invocation.none("str", Instant.now()).empty()).isTrue();
     }
 
     @Test
     void failedIsEmpty() {
-        assertThat(Invocation.failed(new Throwable(), Instant.now()).isEmpty()).isTrue();
+        assertThat(Invocation.failed(new Throwable(), Instant.now()).empty()).isTrue();
     }
 
     @Test
     void failedReqIsEmpty() {
-        assertThat(Invocation.failed("sdf", new Throwable(), Instant.now()).isEmpty()).isTrue();
+        assertThat(Invocation.failed("sdf", new Throwable(), Instant.now()).empty()).isTrue();
     }
 }

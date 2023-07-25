@@ -85,7 +85,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
                             Invocation.failed(exception, time.get())))
                 .map(CompletionStage::toCompletableFuture)
                 .peek(future ->
-                    future.whenComplete(this::handleFailure))
+                    future.whenComplete(this::handleOutcome))
                 .forEach(CompletableFuture::join);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to respond", e);
@@ -111,7 +111,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     }
 
     private void updateStats(Invocation<Q, R> invocation, Throwable throwable) {
-        if (invocation == null || invocation.isEmpty()) {
+        if (invocation == null || invocation.empty()) {
             initiatedfFail.increment();
             return;
         }
@@ -132,26 +132,25 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
         }
     }
 
-    private void handleFailure(Invocation<Q, R> qr, Throwable throwable) {
-        Throwable failure = qr.requestFailure();
-        if (failure == null) {
+    private void handleOutcome(Invocation<Q, R> qr, Throwable throwable) {
+        if (qr.requestFailure() == null && throwable == null) {
             log.debug("Completed: {}", qr, throwable);
             return;
         }
-        if (failure instanceof CompletionException completionException) {
+        if (qr.requestFailure() instanceof CompletionException completionException) {
             Throwable combined = combine(throwable, completionException.getCause());
-            if (combined instanceof ConnectException || combined instanceof HttpConnectTimeoutException) {
-                log.debug("Connection failed, pausing {}ms: {}", DECENT_WAIT_TIME_MILLIS, combined.toString());
-                sleep(DECENT_WAIT_TIME_MILLIS);
+            if (throwable instanceof ConnectException || throwable instanceof HttpConnectTimeoutException) {
+                log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
+                sleep(WAIT_MS);
             } else {
                 log.warn("Request failed: {}", qr, combined);
             }
         } else {
-            log.warn("Request failed: {}", qr, combine(throwable, failure));
+            log.warn("Request failed: {}", qr, combine(throwable, qr.requestFailure()));
         }
     }
 
-    private static final int DECENT_WAIT_TIME_MILLIS = 500;
+    private static final int WAIT_MS = 100;
 
     private static Throwable combine(Throwable throwable, Throwable failure) {
         if (throwable == null) {
