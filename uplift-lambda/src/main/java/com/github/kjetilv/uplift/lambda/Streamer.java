@@ -23,7 +23,7 @@ final class Streamer<T> implements Closeable {
 
     @Override
     public void close() {
-        if (closed.compareAndSet(false, true)){
+        if (closed.compareAndSet(false, true)) {
             spliterator.close();
         }
     }

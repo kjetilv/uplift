@@ -30,7 +30,8 @@ public record LambdaClientSettings(
             null,
             lambdaExecutor,
             serverExecutor,
-            time);
+            time
+        );
     }
 
     public LambdaClientSettings(

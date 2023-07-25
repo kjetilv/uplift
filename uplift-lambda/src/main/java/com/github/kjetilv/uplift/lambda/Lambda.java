@@ -39,7 +39,8 @@ public final class Lambda {
         LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
             env.awsLambdaUri(),
             getSettings(env, connectTimeout, responseTimeout, parallellism),
-            lambdaHandler);
+            lambdaHandler
+        );
         return lamdbdaManaged;
     }
 
@@ -58,6 +59,7 @@ public final class Lambda {
             responseTimeout,
             executor("L", parallellism > 0 ? parallellism : PARALLELLISM),
             executor("S", parallellism > 0 ? parallellism : PARALLELLISM),
-            Time.utcSupplier());
+            Time.utcSupplier()
+        );
     }
 }

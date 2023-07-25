@@ -22,6 +22,12 @@ import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 @SuppressWarnings("unused")
 public class LambdaHarness implements Closeable {
 
+    public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
+        List.of("*"),
+        List.of("GET", "POST", "PUT", "DELETE", "HEAD"),
+        List.of("content-type")
+    );
+
     private final String name;
 
     private final ExecutorService testExec;
@@ -108,12 +114,6 @@ public class LambdaHarness implements Closeable {
     public Reqs reqs() {
         return this.reqs;
     }
-
-    public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
-        List.of("*"),
-        List.of("GET", "POST", "PUT", "DELETE", "HEAD"),
-        List.of("content-type")
-    );
 
     @Override
     public String toString() {

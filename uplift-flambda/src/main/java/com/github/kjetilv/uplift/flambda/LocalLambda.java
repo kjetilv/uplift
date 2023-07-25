@@ -32,7 +32,8 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         ServerRunner lambdaServerRunner = ServerRunner.create(
             settings.lambdaPort(),
             settings.requestBufferSize(),
-            settings.lambdaExecutor());
+            settings.lambdaExecutor()
+        );
         this.lambdaServer = lambdaServerRunner.run(new HttpChannelHandler(
             lambdaHandler,
             settings.requestBufferSize(),
@@ -42,7 +43,8 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         ServerRunner apiServerRunner = ServerRunner.create(
             settings.apiPort(),
             settings.requestBufferSize(),
-            settings.serverExecutor());
+            settings.serverExecutor()
+        );
         this.apiServer = apiServerRunner.run(new HttpChannelHandler(
             new LocalApiHandler(lambdaHandler, settings.corsSettings()),
             settings.requestBufferSize(),

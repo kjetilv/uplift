@@ -18,15 +18,9 @@ import static java.util.Objects.requireNonNull;
 public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
 
     public static <T, V> Collector<T, ?, Map<String, List<V>>> caseInsensitive(
-        Function<? super T, String> key,
-        Function<? super T, ? extends List<V>> values
+        Function<? super T, String> key, Function<? super T, ? extends List<V>> values
     ) {
-        return caseInsensitive(
-            key,
-            values,
-            (vs1, vs2) ->
-                Stream.concat(vs1.stream(), vs2.stream()).toList()
-        );
+        return caseInsensitive(key, values, (vs1, vs2) -> Stream.concat(vs1.stream(), vs2.stream()).toList());
     }
 
     public static <T, V> Collector<T, ?, Map<String, V>> caseInsensitive(
@@ -34,19 +28,13 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
         Function<? super T, ? extends V> values,
         BiFunction<? super V, ? super V, ? extends V> merge
     ) {
-        return Collectors.toMap(
-            key,
-            values,
-            merge::apply,
-            CaseInsensitiveHashMap::new
-        );
+        return Collectors.toMap(key, values, merge::apply, CaseInsensitiveHashMap::new);
     }
 
     public static <T> Map<String, T> wrap(Map<String, T> map) {
-        return map == null || map.isEmpty() ? Collections.emptyMap()
-            : map instanceof CaseInsensitiveHashMap<T>
-                ? map
-                : new CaseInsensitiveHashMap<>(map);
+        return map == null || map.isEmpty()
+            ? Collections.emptyMap()
+            : map instanceof CaseInsensitiveHashMap<T> ? map : new CaseInsensitiveHashMap<>(map);
     }
 
     private final Map<String, V> map;
@@ -57,9 +45,7 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
 
     @SuppressWarnings("WeakerAccess")
     public CaseInsensitiveHashMap(Map<String, V> map) {
-        this.map = map == null
-            ? new LinkedHashMap<>()
-            : new LinkedHashMap<>(requireNonNull(map, "map"));
+        this.map = map == null ? new LinkedHashMap<>() : new LinkedHashMap<>(requireNonNull(map, "map"));
     }
 
     @Override

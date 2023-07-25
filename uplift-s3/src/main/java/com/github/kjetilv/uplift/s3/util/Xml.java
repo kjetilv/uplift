@@ -41,34 +41,7 @@ public final class Xml {
     }
 
     public static Stream<Map.Entry<String, String>> objectFields(String xml, String... fields) {
-        return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(
-            fields.length,
-            Spliterator.ORDERED
-        ) {
-
-            private int index;
-
-            private int position;
-
-            @Override
-            public boolean tryAdvance(Consumer<? super Map.Entry<String, String>> action) {
-                String field = fields[index];
-                String start = "<" + field + ">";
-                String end = "</" + field + ">";
-                int startPosition = xml.indexOf(start, position) + start.length();
-                if (startPosition < 0) {
-                    return false;
-                }
-                int endPosition = xml.indexOf(end, position);
-                if (endPosition < 0) {
-                    return false;
-                }
-                action.accept(Map.entry(field, xml.substring(startPosition, endPosition).trim()));
-                index++;
-                position = endPosition + end.length();
-                return index < fields.length;
-            }
-        }, false);
+        return StreamSupport.stream(new EntrySpliterator(xml, fields), false);
     }
 
     private Xml() {

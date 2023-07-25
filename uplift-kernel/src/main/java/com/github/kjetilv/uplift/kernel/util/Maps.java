@@ -76,24 +76,48 @@ public final class Maps {
         ));
     }
 
-    private static <V> BinaryOperator<V> noCombine() {
-        return (v1, v2) -> {
-            throw new IllegalStateException("No combine: " + v1 + " / " + v2);
-        };
-    }
-
-    public static <K, V> Map.Entry<K, Optional<? extends V>> ent(K key, V value) {
+    public static <K, V> Map.Entry<K, Optional<? extends V>> optionalEntry(K key, V value) {
         return Map.entry(key, Optional.ofNullable(value));
     }
 
     @SafeVarargs
-    public static Map<?, ?> toMap(Map.Entry<?, Optional<?>>... entries) {
-        return Stream.of(entries)
-            .filter(entry -> entry.getValue().isPresent())
-            .collect(toMap());
+    public static <K, V> Map<K, V> fromOptionalEntries(Map.Entry<K, Optional<? extends V>>... entries) {
+        return realEntries(entries).collect(toLinkedHashMap(entries.length));
+    }
+
+    public static <K, V> Map<K, V> fromOptionalEntries(List<Map.Entry<K, Optional<? extends V>>> entryList) {
+        return realEntries(entryList.stream()).collect(toLinkedHashMap(entryList.size()));
+    }
+
+    public static <K, V> Map<K, V> fromOptionalEntries(Stream<Map.Entry<K, Optional<? extends V>>> entryStream) {
+        return realEntries(entryStream).collect(toLinkedHashMap());
+    }
+
+    public static <K, V> Map<K, V> fromEntries(List<Map.Entry<K, V>> entryList) {
+        return entryList.stream().collect(toLinkedHashMap(entryList.size()));
+    }
+
+    public static <K, V> Map<K, V> fromEntries(Stream<Map.Entry<K, V>> entryStream) {
+        return entryStream.collect(toLinkedHashMap());
     }
 
     private Maps() {
+    }
+
+    private static <K, V> Stream<Map.Entry<K, V>> realEntries(Map.Entry<K, Optional<? extends V>>[] entries) {
+        return realEntries(Stream.of(entries));
+    }
+
+    private static <K, V> Stream<Map.Entry<K, V>> realEntries(Stream<Map.Entry<K, Optional<? extends V>>> entries) {
+        return entries
+            .filter(entry -> entry.getValue().isPresent())
+            .map(entry -> Map.entry(entry.getKey(), entry.getValue().get()));
+    }
+
+    private static <V> BinaryOperator<V> noCombine() {
+        return (v1, v2) -> {
+            throw new IllegalStateException("No combine: " + v1 + " / " + v2);
+        };
     }
 
     private static <V, T, I extends Collection<V>> List<Map.Entry<T, List<V>>> dupes(
@@ -106,9 +130,21 @@ public final class Maps {
             .toList();
     }
 
-    private static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, ? extends Map<K, V>> toMap() {
-        return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
-            throw new IllegalStateException("No combine");
-        }, LinkedHashMap::new);
+    private static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, ? extends Map<K, V>> toLinkedHashMap() {
+        return toLinkedHashMap(0);
+    }
+
+    private static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, ? extends Map<K, V>> toLinkedHashMap(
+        int size
+    ) {
+        return Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (v1, v2) -> {
+                throw new IllegalStateException("No combine: " + v1 + "/" + v2);
+            },
+            () ->
+                size > 0 ? new LinkedHashMap<>(size * 2) : new LinkedHashMap<>()
+        );
     }
 }

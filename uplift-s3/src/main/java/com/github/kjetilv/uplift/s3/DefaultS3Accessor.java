@@ -1,15 +1,5 @@
 package com.github.kjetilv.uplift.s3;
 
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.io.Range;
-import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
-import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
-import com.github.kjetilv.uplift.s3.util.BinaryUtils;
-import com.github.kjetilv.uplift.s3.util.Xml;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -20,10 +10,24 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.io.Range;
+import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
+import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
+import com.github.kjetilv.uplift.s3.util.BinaryUtils;
+import com.github.kjetilv.uplift.s3.util.Xml;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
@@ -55,49 +59,6 @@ public final class DefaultS3Accessor implements S3Accessor {
         this.region = region == null || region.isBlank() ? "eu-north-1" : region;
     }
 
-    private static ZonedDateTime dateTime(CharSequence date) {
-        return ZonedDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-    }
-
-    @SuppressWarnings("HttpUrlsUsage")
-    private static String deletes(Collection<String> objects) {
-        return String.format(
-                """
-                        <?xml version="1.0" encoding="UTF-8"?>
-                        <Delete xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
-                           %s  <Quiet>true</Quiet>
-                        </Delete>
-                        """,
-                objects.stream().map(object ->
-                        String.format(
-                                """
-                                        <Object>
-                                            <Key>%s</Key>
-                                          </Object>
-                                          """,
-                                object
-                        )).collect(Collectors.joining("  "))
-        );
-    }
-
-    private static String hash(byte[] body) {
-        return BinaryUtils.toHex(sha256(body));
-    }
-
-    private static String qp(Map<String, String> qps) {
-        if (qps == null || qps.isEmpty()) {
-            return "";
-        }
-        return "?" + qps.entrySet().stream()
-                .map(e -> e.getKey() + (e.getValue().isEmpty() ? "" : "=" + e.getValue()))
-                .collect(Collectors.joining("&"));
-    }
-
-    @Override
-    public void put(String contents, String remoteName) {
-        streamFrom(putObjectRequest(remoteName, contents.getBytes(StandardCharsets.UTF_8)));
-    }
-
     @Override
     public Optional<? extends InputStream> stream(String name) {
         return streamFrom(getObjectRequest(name, null));
@@ -120,13 +81,13 @@ public final class DefaultS3Accessor implements S3Accessor {
         Map<String, String> headers = new HashMap<>();
 
         AwsAuthQueryParamSigner signer = new AwsAuthQueryParamSigner(
-                endpointUrl, "GET", "s3", region);
+            endpointUrl, "GET", "s3", region);
         String authorizationQueryParameters = signer.computeSignature(
-                headers,
-                queryParams,
-                UNSIGNED_PAYLOAD,
-                accessKey,
-                secretKey
+            headers,
+            queryParams,
+            UNSIGNED_PAYLOAD,
+            accessKey,
+            secretKey
         );
 
         // build the presigned url to incorporate the authorization elements as query parameters
@@ -144,38 +105,27 @@ public final class DefaultS3Accessor implements S3Accessor {
     }
 
     @Override
+    public void put(String contents, String remoteName) {
+        streamFrom(putObjectRequest(remoteName, contents.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Override
     public void put(String remoteName, InputStream inputStream, long length) {
         streamFrom(putObjectRequest(remoteName, BytesIO.readInputStream(inputStream)))
-                .ifPresent(close(remoteName));
+            .ifPresent(close(remoteName));
     }
 
     @Override
     public Map<String, RemoteInfo> remoteInfos(String prefix) {
-        HttpRequest httpRequest = listObjectsRequest(prefix);
-        return streamFrom(httpRequest)
-                .<Map<String, RemoteInfo>>map(inputStream -> {
-                    String xml = BytesIO.readUTF8(inputStream);
-                    List<RemoteInfo> remoteInfos = Xml.objectList(xml, "Contents").map(contents -> {
-                                Map<String, String> fields = Xml.objectFields(contents, "Key", "LastModified", "Size")
-                                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                                return new RemoteInfo(
-                                        fields.get("Key"),
-                                        dateTime(fields.get("LastModified"))
-                                                .toInstant(),
-                                        Long.parseLong(fields.get("Size"))
-                                );
-                            })
-                            .toList();
-                    return remoteInfos.stream().collect(Collectors.toMap(
-                            RemoteInfo::key,
-                            Function.identity(),
-                            (ri1, ri2) -> {
-                                throw new IllegalStateException("No combine: " + ri1 + "/" + ri2);
-                            },
-                            LinkedHashMap::new
-                    ));
-                })
-                .orElseGet(Collections::emptyMap);
+        return streamFrom(listObjectsRequest(prefix))
+            .map(BytesIO::readUTF8)
+            .map(xml ->
+                Xml.objectList(xml, "Contents")
+                    .map(DefaultS3Accessor::parse)
+                    .toList())
+            .map(remoteInfos ->
+                Maps.indexBy(remoteInfos, RemoteInfo::key))
+            .orElseGet(Collections::emptyMap);
     }
 
     @Override
@@ -213,69 +163,69 @@ public final class DefaultS3Accessor implements S3Accessor {
             }
         }
         throw new IllegalStateException(
-                "Failed to get " + request + " => " + response + ": " + BytesIO.readUTF8(response.body()));
+            "Failed to get " + request + " => " + response + ": " + BytesIO.readUTF8(response.body()));
     }
 
     private HttpRequest listObjectsRequest(String prefix) {
         return buildRequest(
-                HttpRequest.newBuilder().GET(),
-                "GET",
-                "",
-                Map.of(
-                        "list-type", "2",
-                        "prefix", prefix
-                ),
-                null,
-                null
+            HttpRequest.newBuilder().GET(),
+            "GET",
+            "",
+            Map.of(
+                "list-type", "2",
+                "prefix", prefix
+            ),
+            null,
+            null
         );
     }
 
     private HttpRequest putObjectRequest(String name, byte[] bytes) {
         return buildRequest(
-                HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofByteArray(bytes)),
-                "PUT",
-                name,
-                null,
-                null,
-                bytes
+            HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofByteArray(bytes)),
+            "PUT",
+            name,
+            null,
+            null,
+            bytes
         );
     }
 
     private HttpRequest deleteObjectRequest(Collection<String> objects) {
         String deletes = deletes(objects);
         return buildRequest(
-                HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(deletes)),
-                "POST",
-                "",
-                Map.of("delete", ""),
-                null,
-                deletes.getBytes(StandardCharsets.UTF_8)
+            HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(deletes)),
+            "POST",
+            "",
+            Map.of("delete", ""),
+            null,
+            deletes.getBytes(StandardCharsets.UTF_8)
         );
     }
 
     private HttpRequest getObjectRequest(String name, Range range) {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().GET();
         return buildRequest(
-                requestBuilder,
-                "GET",
-                name,
-                null,
-                range,
-                null
+            requestBuilder,
+            "GET",
+            name,
+            null,
+            range,
+            null
         );
     }
 
     private HttpRequest buildRequest(
-            HttpRequest.Builder requestBuilder,
-            String method,
-            String name,
-            Map<String, String> queryPars,
-            Range range,
-            byte[] body
+        HttpRequest.Builder requestBuilder,
+        String method,
+        String name,
+        Map<String, String> queryPars,
+        Range range,
+        byte[] body
     ) {
         try {
             URI endpointUri =
-                    URI.create("https://" + bucket + ".s3." + region + ".amazonaws.com/" + name + qp(queryPars));
+                URI.create("https://" + bucket + ".s3." + region + ".amazonaws.com/" + name + qp(queryPars));
             requestBuilder.uri(endpointUri);
             AwsAuthHeaderSigner signer = new AwsAuthHeaderSigner(endpointUri, method, "s3", region);
             Map<String, String> headers = new HashMap<>();
@@ -297,13 +247,13 @@ public final class DefaultS3Accessor implements S3Accessor {
                 headers.put("Content-MD5", md5(body));
             }
             String authorization =
-                    signer.computeSignature(headers, queryPars, bodyHash, accessKey, secretKey);
+                signer.computeSignature(headers, queryPars, bodyHash, accessKey, secretKey);
             headers.remove("content-length");
             headers.forEach(requestBuilder::header);
             requestBuilder.header("Authorization", authorization);
             return requestBuilder
-                    .version(HttpClient.Version.HTTP_1_1)
-                    .build();
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to access", e);
         }
@@ -312,6 +262,56 @@ public final class DefaultS3Accessor implements S3Accessor {
     private static final String UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD";
 
     private static final String EMPTY_BODY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+    private static RemoteInfo parse(String contents) {
+        Map<String, String> fields = Maps.fromEntries(
+            Xml.objectFields(contents, "Key", "LastModified", "Size")
+        );
+        return new RemoteInfo(
+            fields.get("Key"),
+            dateTime(fields.get("LastModified"))
+                .toInstant(),
+            Long.parseLong(fields.get("Size"))
+        );
+    }
+
+    private static ZonedDateTime dateTime(CharSequence date) {
+        return ZonedDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    @SuppressWarnings("HttpUrlsUsage")
+    private static String deletes(Collection<String> objects) {
+        return String.format(
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Delete xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+               %s  <Quiet>true</Quiet>
+            </Delete>
+            """,
+            objects.stream().map(object ->
+                String.format(
+                    """
+                    <Object>
+                        <Key>%s</Key>
+                      </Object>
+                      """,
+                    object
+                )).collect(Collectors.joining("  "))
+        );
+    }
+
+    private static String hash(byte[] body) {
+        return BinaryUtils.toHex(sha256(body));
+    }
+
+    private static String qp(Map<String, String> qps) {
+        if (qps == null || qps.isEmpty()) {
+            return "";
+        }
+        return "?" + qps.entrySet().stream()
+            .map(e -> e.getKey() + (e.getValue().isEmpty() ? "" : "=" + e.getValue()))
+            .collect(Collectors.joining("&"));
+    }
 
     private static Consumer<InputStream> close(String remoteName) {
         return stream -> {

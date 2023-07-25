@@ -36,11 +36,7 @@ record ReqsImpl(URI uri) implements Reqs {
 
     @Override
     public CompletableFuture<HttpResponse<String>> execute(
-        String method,
-        URI uri,
-        Map<String, String> headers,
-        String body,
-        boolean json
+        String method, URI uri, Map<String, String> headers, String body, boolean json
     ) {
         Objects.requireNonNull(method, "method");
         URI uri1 = uri == null ? uri() : uri().resolve(uri);
@@ -57,11 +53,7 @@ record ReqsImpl(URI uri) implements Reqs {
             if (body != null && json) {
                 base.header("Content-Type", "application/json");
             }
-            return HttpClient.newBuilder()
-                .build()
-                .sendAsync(
-                    base.build(),
-                    HttpResponse.BodyHandlers.ofString());
+            return HttpClient.newBuilder().build().sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

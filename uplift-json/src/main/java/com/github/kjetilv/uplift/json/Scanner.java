@@ -47,19 +47,21 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     private Token scanToken() {
         return switch (source.chomp()) {
-            case '{' -> token(BEGIN_OBJECT);
-            case ':' -> token(COLON);
-            case ',' -> token(COMMA);
-            case '}' -> token(END_OBJECT);
-            case '[' -> token(BEGIN_ARRAY);
-            case ']' -> token(END_ARRAY);
-            case 't' -> expectedTokenTail(TRUE_TAIL, BOOL, CANONICAL_TRUE);
-            case 'f' -> expectedTokenTail(FALSE_TAIL, BOOL, CANONICAL_FALSE);
-            case 'n' -> expectedTokenTail(NULL_TAIL, NIL, CANONICAL_NULL);
+            case '{' -> token(BEGIN_OBJECT, null, source.lexeme());
+            case ':' -> token(COLON, null, source.lexeme());
+            case ',' -> token(COMMA, null, source.lexeme());
+            case '}' -> token(END_OBJECT, null, source.lexeme());
+            case '[' -> token(BEGIN_ARRAY, null, source.lexeme());
+            case ']' -> token(END_ARRAY, null, source.lexeme());
+            case 't' -> expectedTokenTail(RUE, BOOL, CANONICAL_TRUE);
+            case 'f' -> expectedTokenTail(ALSE, BOOL, CANONICAL_FALSE);
+            case 'n' -> expectedTokenTail(ULL, NIL, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
-            case ' ', '\r', '\t' -> spaces(false);
-            case '\n' -> spaces(true);
+            case ' ', '\r', '\t', '\n' -> {
+                spoolWhitespace();
+                yield null;
+            }
             default -> fail("Unrecognized token");
         };
     }
@@ -70,7 +72,7 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
                 fail("Unknown identifier");
             }
         }
-        return token(type, null, canonical);
+        return token(type, null, canonical == null ? source.lexeme() : canonical);
     }
 
     @SuppressWarnings("QuestionableName")
@@ -93,9 +95,10 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         source.advance();
         // Trim the surrounding quotes.
         String substring = source.lexeme(true);
-        return token(STRING, quoted
+        String literal = quoted
             ? ESCAPED_QUOTE.matcher(substring).replaceAll("\"")
-            : substring, null);
+            : substring;
+        return token(STRING, literal, source.lexeme());
     }
 
     private Token number() {
@@ -110,24 +113,13 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
                 source.advance();
             }
         }
-        return token(NUMBER, number(source.lexeme()), null);
+        return token(NUMBER, number(source.lexeme()), source.lexeme());
     }
 
-    private Token spaces(boolean newLine) {
-        if (newLine) {
-            newLine();
-        }
-        char peek;
-        while (isWS(peek = source.peek())) {
-            if (peek == '\n') {
-                newLine();
-            }
+    private void spoolWhitespace() {
+        while (isWS(source.peek())) {
             source.advance();
         }
-        return null;
-    }
-
-    private void newLine() {
     }
 
     private <T> T fail(String msg) {
@@ -138,20 +130,15 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         throw new ReadException(msg, source.lexeme(), source.line(), source.column() - 1, cause);
     }
 
-    private Token token(TokenType type) {
-        return token(type, null, null);
-    }
-
-    private Token token(TokenType type, Object literal, String canonical) {
-        String lexeme = canonical == null ? source.lexeme() : canonical;
+    private Token token(TokenType type, Object literal, String lexeme) {
         return new Token(type, lexeme, literal, source.line(), source.column() - lexeme.length());
     }
 
-    private static final char[] TRUE_TAIL = "rue".toCharArray();
+    private static final char[] RUE = "rue".toCharArray();
 
-    private static final char[] FALSE_TAIL = "alse".toCharArray();
+    private static final char[] ALSE = "alse".toCharArray();
 
-    private static final char[] NULL_TAIL = "ull".toCharArray();
+    private static final char[] ULL = "ull".toCharArray();
 
     private static final String CANONICAL_TRUE = "true";
 
