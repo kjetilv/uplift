@@ -15,7 +15,7 @@ public interface IOServer extends Closeable {
 
     InetSocketAddress address();
 
-    boolean awaitActive(Duration timeout);
+    void awaitActive(Duration timeout);
 
     <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(
         Function<? super AsynchronousByteChannel, ? extends ChannelHandler<S, C>> channelHandler

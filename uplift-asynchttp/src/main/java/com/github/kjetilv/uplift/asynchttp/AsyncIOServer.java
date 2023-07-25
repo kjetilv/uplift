@@ -112,14 +112,14 @@ final class AsyncIOServer implements IOServer {
     }
 
     @Override
-    public boolean awaitActive(Duration timeout) {
+    public void awaitActive(Duration timeout) {
         Instant startTime = Instant.now();
         activeLock.lock();
         try {
             while (readCount.longValue() == 0) {
                 Duration timeTaken = Duration.between(startTime, Instant.now());
                 if (timeTaken.compareTo(timeout) > 0) {
-                    return false;
+                    return;
                 }
                 try {
                     activeCondition.await();
@@ -128,7 +128,6 @@ final class AsyncIOServer implements IOServer {
                     throw new IllegalStateException("Failed to await", e);
                 }
             }
-            return true;
         } finally {
             activeLock.unlock();
         }
