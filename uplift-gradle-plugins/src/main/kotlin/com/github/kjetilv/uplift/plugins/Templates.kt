@@ -28,12 +28,3 @@ private fun render(
         .filter { it.isNotBlank() }
 }
 
-private fun load(template: Path): String =
-    try {
-        Files.newInputStream(template)
-            .use {
-                String(it.readBytes(), StandardCharsets.UTF_8)
-            }
-    } catch (e: Exception) {
-        throw IllegalStateException("No path $template found")
-    }
