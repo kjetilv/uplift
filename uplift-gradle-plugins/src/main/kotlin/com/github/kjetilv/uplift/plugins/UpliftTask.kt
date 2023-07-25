@@ -5,7 +5,8 @@ package com.github.kjetilv.uplift.plugins
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecResult
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -93,18 +94,10 @@ abstract class UpliftTask : DefaultTask() {
 
     protected abstract fun perform()
 
-    protected fun bootstrapCdk() {
-        runCdk("cdk bootstrap ${profileOption()} aws://${account.get()}/${region.get()}")
-    }
-
     protected fun profileOption() =
         profile.orNull?.let { "--profile=$it" }
 
     protected fun cdkApp(): Path = project.cdkApp()
-
-    protected fun deploy() {
-        runCdk("cdk deploy ${profileOption()} --require-approval=never ${stack.get()}")
-    }
 
     protected fun clearRecursive(paths: List<Path>): Unit =
         paths.forEach { path ->
@@ -124,70 +117,80 @@ abstract class UpliftTask : DefaultTask() {
 
     protected fun <T> nonEmpty(): (List<T>) -> Boolean = { it.isNotEmpty() }
 
-    protected fun ping() {
-        lambdaClient {
+    protected fun ping(sources: List<Path>? = null) {
+        withLambdaClient {
             cloudFormationClient { cloudFormationClient ->
                 cloudFormationClient.stacks()
                     .filter(::current)
                     .forEach { stack ->
-                        cloudFormationClient.logStack(stack)
+                        logStack(cloudFormationClient, stack, sources)
                     }
             }
         }
     }
 
-    private fun CloudFormationClient.logStack(stack: Stack) {
-        val stackResources = resources(stack)
+    private fun logStack(client: CloudFormationClient, stack: Stack, sources: List<Path>? = null) {
+        val stackResources = client.describeStackResources { builder ->
+            builder.stackName(stack.stackName())
+        }.stackResources().toList()
+        logStack(stack, stackResources, sources, logger::warn, logger::lifecycle)
+    }
+
+    private fun logStack(
+        stack: Stack,
+        stackResources: List<StackResource>,
+        sources: List<Path>? = null,
+        warner: (String) -> Unit,
+        printer: (String) -> Unit
+    ) {
         if (stackResources.isEmpty()) {
-            logger.warn(
+            warner(
                 """
-                ##
-                ## No resources found for stack `${stack.stackName()}`
-                ##   Stack id : ${stack.stackId()}
-                ##   Created  : ${stack.creationTime()}
-                ##   Modified : ${stack.lastUpdatedTime()}
-                ##
-                """.trimIndent()
+                    ##
+                    ## No resources found for stack `${stack.stackName()}`
+                    ##   Stack id : ${stack.stackId()}
+                    ##   Created  : ${stack.creationTime()}
+                    ##   Modified : ${stack.lastUpdatedTime()}
+                    ##
+                    """.trimIndent()
             )
             return
         }
         val functions = stackResources.filter { it.actualFunction() }
         if (functions.isEmpty()) {
-            logger.warn(
+            warner(
                 """
-                ##
-                ## No functions found for stack `${stack.stackName()}`
-                ##   Stack id : ${stack.stackId()}
-                ##   Created  : ${stack.creationTime()}
-                ##   Modified : ${stack.lastUpdatedTime()}
-                ##
-                """.trimIndent()
+                    ##
+                    ## No functions found for stack `${stack.stackName()}`
+                    ##   Stack id : ${stack.stackId()}
+                    ##   Created  : ${stack.creationTime()}
+                    ##   Modified : ${stack.lastUpdatedTime()}
+                    ##
+                    """.trimIndent()
             )
             stackResources.forEach { resource ->
-                logger.lifecycle("  ${resource.physicalResourceId()}:${resource.resourceType()}")
+                printer("  ${resource.physicalResourceId()}:${resource.resourceType()}")
             }
             return
         }
-        logger.lifecycle(
+        printer(
             """
-            ##
-            ## uplifted `${stack.stackName()}`
-            ##
-            ##   Stack id  : ${stack.stackId()}
-            ##   Created   : ${stack.creationTime()}
-            ##   Modified  : ${stack.lastUpdatedTime()}
-            ##   Resources : ${stackResources.size}
-            ##
-            ##  Lambdas:
-            """.trimIndent()
+                ##
+                ## uplifted `${stack.stackName()}`
+                ##
+                ##   Stack id  : ${stack.stackId()}
+                ##   Created   : ${stack.creationTime()}
+                ##   Modified  : ${stack.lastUpdatedTime()}
+                ##   Resources : ${stackResources.size}
+                ##
+                ##  Lambdas:
+                """.trimIndent()
         )
         functions.forEachIndexed { f, stackResource ->
-            lambdaClient { lambdaClient ->
-                lambdaClient.functionConfigurations().firstOrNull { functionConfiguration ->
-                    functionConfiguration.functionName().equals(stackResource.physicalResourceId())
-                }?.let { func: FunctionConfiguration ->
-                    lambdaClient.functionUrlConfigs(func).forEach { url ->
-                        logger.lifecycle(
+            withLambdaClient {
+                functionConfiguration(stackResource)?.let { func: FunctionConfiguration ->
+                    functionUrlConfigs(func).forEach { url ->
+                        printer(
                             """
                             ##   [${f + 1}] ${func.functionName()}: ${func.description()?.takeUnless(String::isBlank) ?: ""}
                             ##    modified @ ${func.lastModified() ?: "<unknown>"}
@@ -203,12 +206,29 @@ abstract class UpliftTask : DefaultTask() {
                 }
             }
         }
+        if (sources?.isNotEmpty() == true) {
+            printer(
+                """
+                ##
+                ##  Zips/jars:
+                """.trimIndent()
+            )
+        }
+        sources?.forEachIndexed { i, zip ->
+            printer(
+                """
+                ##   [${i + 1}] $zip
+                ##     size     : ${Files.size(zip) / 1_000_000}Mb
+                ##     modified @ ${Files.getLastModifiedTime(zip)}
+                """.trimIndent()
+            )
+        }
     }
 
-    private fun CloudFormationClient.resources(stack: Stack) =
-        describeStackResources { builder ->
-            builder.stackName(stack.stackName())
-        }.stackResources().toList()
+    private fun LambdaClient.functionConfiguration(stackResource: StackResource) =
+        functionConfigurations().firstOrNull { functionConfiguration ->
+            functionConfiguration.functionName().equals(stackResource.physicalResourceId())
+        }
 
     private fun StackResource.actualFunction() =
         resourceType() == "AWS::Lambda::Function" && !physicalResourceId().contains("-LogRetention")
@@ -235,7 +255,7 @@ abstract class UpliftTask : DefaultTask() {
     private fun cloudFormationClient(a: (CloudFormationClient) -> Unit) =
         a.invoke(CloudFormationClient.builder().region(awsRegion).credentialsProvider(credentialsProvider).build())
 
-    private fun lambdaClient(a: (LambdaClient) -> Unit) =
+    private fun withLambdaClient(a: LambdaClient.() -> Unit) =
         a.invoke(LambdaClient.builder().region(awsRegion).credentialsProvider(credentialsProvider).build())
 
     private fun selfCheck() {

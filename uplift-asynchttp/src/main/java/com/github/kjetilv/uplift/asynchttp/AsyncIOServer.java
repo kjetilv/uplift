@@ -11,16 +11,24 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.Long.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 final class AsyncIOServer implements IOServer {
 
@@ -47,6 +55,12 @@ final class AsyncIOServer implements IOServer {
     private final AsynchronousChannelGroup channelGroup;
 
     private final SocketAddress localAddress;
+
+    private final Lock activeLock = new ReentrantLock();
+
+    private final Condition activeCondition = activeLock.newCondition();
+
+    private final LongAdder readCount = new LongAdder();
 
     @SuppressWarnings("UnnecessaryToStringCall")
     private AsyncIOServer(InetSocketAddress address, ExecutorService executorService, int requestBufferSize) {
@@ -86,7 +100,7 @@ final class AsyncIOServer implements IOServer {
 
     @Override
     public void join() {
-        awaitTermination(0);
+        awaitTermination(Duration.ZERO);
     }
 
     @Override
@@ -95,6 +109,29 @@ final class AsyncIOServer implements IOServer {
             return address;
         }
         throw new IllegalStateException("Not a socket address: " + localAddress);
+    }
+
+    @Override
+    public boolean awaitActive(Duration timeout) {
+        Instant startTime = Instant.now();
+        activeLock.lock();
+        try {
+            while (readCount.longValue() == 0) {
+                Duration timeTaken = Duration.between(startTime, Instant.now());
+                if (timeTaken.compareTo(timeout) > 0) {
+                    return false;
+                }
+                try {
+                    activeCondition.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Failed to await", e);
+                }
+            }
+            return true;
+        } finally {
+            activeLock.unlock();
+        }
     }
 
     @Override
@@ -107,23 +144,23 @@ final class AsyncIOServer implements IOServer {
         return this;
     }
 
-    private boolean awaitTermination(int seconds) {
-        boolean forever = seconds == 0;
+    private boolean awaitTermination(Duration timeout) {
         try {
-            if (channelGroup.awaitTermination(forever ? Long.MAX_VALUE : seconds, TimeUnit.SECONDS)) {
+            if (terminatedWithin(timeout)) {
+                log.debug("Terminatd: {}", this);
                 return true;
             }
+            log.warn("Did not terminate: {}", this);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.warn(
-                "Interrupted while waiting {}{}: {} ",
-                forever ? "forever" : seconds,
-                forever ? "" : "s",
-                channelGroup,
-                e);
+            log.warn("Interrupted while waiting {}: {} ", timeout.isZero() ? "forever" : timeout, channelGroup, e);
         }
-        log.warn("Did not terminate: {}", this);
         return false;
+    }
+
+    private boolean terminatedWithin(Duration timeout) throws InterruptedException {
+        return timeout.isZero() && channelGroup.awaitTermination(MAX_VALUE, DAYS) ||
+               channelGroup.awaitTermination(timeout.toMillis(), MILLISECONDS);
     }
 
     private final class ChannelReader<S extends ChannelState, C extends ChannelHandler<S, C>>
@@ -132,7 +169,11 @@ final class AsyncIOServer implements IOServer {
         private final Function<? super AsynchronousSocketChannel, ? extends ChannelHandler<S, C>> provider;
 
         private ChannelReader(Function<? super AsynchronousSocketChannel, ? extends ChannelHandler<S, C>> provider) {
-            this.provider = provider;
+            try {
+                this.provider = provider;
+            } finally {
+                incrementRead();
+            }
         }
 
         @Override
@@ -166,6 +207,18 @@ final class AsyncIOServer implements IOServer {
             }
         }
 
+        private void incrementRead() {
+            readCount.increment();
+            if (readCount.longValue() == 1) {
+                activeLock.lock();
+                try {
+                    activeCondition.signalAll();
+                } finally {
+                    activeLock.unlock();
+                }
+            }
+        }
+
         private void read(AsynchronousSocketChannel channel) {
             ChannelHandler<S, C> asyncHandler = provider.apply(channel);
             ByteBuffer byteBuffer = ByteBuffer.allocate(requestBufferSize);
@@ -192,7 +245,7 @@ final class AsyncIOServer implements IOServer {
 
     private static final int MINIMUM_REQUEST_SIZE = 1024;
 
-    private static final int GRACE_PERIOD = 10;
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(10);
 
     private static InetAddress getInetAddress() {
         try {

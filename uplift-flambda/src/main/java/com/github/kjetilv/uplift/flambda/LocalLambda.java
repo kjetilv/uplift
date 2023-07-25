@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.flambda;
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.time.Duration;
 
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
@@ -93,6 +94,10 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
     void join() {
         lambdaServer.join();
+    }
+
+    void awaitStarted(Duration timeout) {
+        lambdaServer.awaitActive(timeout);
     }
 
     private static final String URL = "http://localhost:%1$d";

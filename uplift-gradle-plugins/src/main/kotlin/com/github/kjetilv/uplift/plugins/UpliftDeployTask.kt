@@ -5,6 +5,10 @@ abstract class UpliftDeployTask : UpliftLambdaZipTask() {
     override fun perform() {
         collectLambdaZips()
         deploy()
-        ping()
+        ping(lambdas() ?: emptyList())
+    }
+
+    private fun deploy() {
+        runCdk("cdk deploy ${profileOption()} --require-approval=never ${stack.get()}")
     }
 }

@@ -18,7 +18,8 @@ abstract class UpliftLambdaZipTask : UpliftTask() {
         } ?: throw IllegalStateException(
             "No zips configured, and no zips found in ${dependsOn.joinToString(", ", transform = Any::toString)}"
         )
-    private fun lambdas(): List<Path>? =
+
+    protected fun lambdas(): List<Path>? =
         lambdaZips.get().takeIf(nonEmpty())?.toList()
             ?: dependencyOutputs()
                 .filter(Path::isZip)

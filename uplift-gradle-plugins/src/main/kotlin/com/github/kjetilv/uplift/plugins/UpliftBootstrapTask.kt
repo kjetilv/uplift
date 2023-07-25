@@ -15,4 +15,8 @@ abstract class UpliftBootstrapTask : UpliftLambdaZipTask() {
         collectLambdaZips()
         bootstrapCdk()
     }
+
+    private fun bootstrapCdk() {
+        runCdk("cdk bootstrap ${profileOption()} aws://${account.get()}/${region.get()}")
+    }
 }

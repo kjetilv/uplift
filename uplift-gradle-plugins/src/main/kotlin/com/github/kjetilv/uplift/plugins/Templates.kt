@@ -2,8 +2,6 @@ package com.github.kjetilv.uplift.plugins
 
 import org.stringtemplate.v4.ST
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Path
 
 internal fun renderResource(resource: String, vararg pars: Pair<String, String?>): List<String> =
     render(loadResource(resource), pars)

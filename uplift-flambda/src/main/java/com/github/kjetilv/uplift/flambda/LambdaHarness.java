@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,7 @@ public class LambdaHarness implements Closeable {
         List.of("content-type")
     );
 
-    private final String name;
+    private final String testName;
 
     private final ExecutorService testExec;
 
@@ -46,58 +47,40 @@ public class LambdaHarness implements Closeable {
         this(null, lambdaHandler);
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
-        this(name, lambdaHandler, null, null);
+    public LambdaHarness(String testName, LambdaHandler lambdaHandler) {
+        this(testName, lambdaHandler, null, null);
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, Supplier<Instant> time) {
-        this(name, lambdaHandler, null, time);
+    public LambdaHarness(String testName, LambdaHandler lambdaHandler, Supplier<Instant> time) {
+        this(testName, lambdaHandler, null, time);
     }
 
     public LambdaHarness(LambdaHandler lambdaHandler, CorsSettings cors) {
         this(null, lambdaHandler, cors);
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors) {
-        this(name, lambdaHandler, cors, null);
+    public LambdaHarness(String testName, LambdaHandler lambdaHandler, CorsSettings cors) {
+        this(testName, lambdaHandler, cors, null);
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
+    public LambdaHarness(String testName, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
-        this.name = name == null ? lambdaHandler.getClass().getSimpleName() : name;
+        this.testName = testName == null ? lambdaHandler.getClass().getSimpleName() : testName;
 
-        this.serverExec = executor(this.name + "-S", 5);
-        this.lambdaExec = executor(this.name + "-L", 5);
-        this.testExec = executor(this.name, 4);
+        this.serverExec = executor(this.testName + "-S", 5);
+        this.lambdaExec = executor(this.testName + "-L", 5);
+        this.testExec = executor(this.testName, 4);
 
-        Supplier<Instant> timeRetriever = time == null ? Instant::now : time;
-        this.localLambda = new LocalLambda(new LocalLambdaSettings(
-            0,
-            0,
-            8 * 8192,
-            10,
-            lambdaExec,
-            serverExec,
-            cors == null ? CORS_DEFAULTS : cors,
-            timeRetriever
-        ));
-
+        this.localLambda = new LocalLambda(localLambdaSettings(cors, time));
         this.testExec.submit(localLambda);
+        this.localLambda.awaitStarted(Duration.ofMinutes(1));
 
-        LambdaClientSettings lambdaClientSettings = new LambdaClientSettings(
-            new EmptyEnv(),
-            lambdaExec,
-            serverExec,
-            timeRetriever
-        );
-        LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
-            localLambda.getLambdaUri(),
-            lambdaClientSettings,
-            lambdaHandler
-        );
+        LambdaClientSettings lambdaClientSettings = lambdaClientSettings(time);
+        LamdbdaManaged lamdbdaManaged =
+            new DefaultLamdbdaManaged(localLambda.getLambdaUri(), lambdaClientSettings, lambdaHandler);
+
         this.looper = lamdbdaManaged.looper();
-
-        this.testExec.submit(looper);
+        this.testExec.submit(this.looper);
         this.reqs = this.localLambda.reqs();
     }
 
@@ -115,8 +98,36 @@ public class LambdaHarness implements Closeable {
         return this.reqs;
     }
 
+    private LambdaClientSettings lambdaClientSettings(Supplier<Instant> time) {
+        return new LambdaClientSettings(
+            new EmptyEnv(),
+            lambdaExec,
+            serverExec,
+            resolve(time)
+        );
+    }
+
+    private LocalLambdaSettings localLambdaSettings(CorsSettings cors, Supplier<Instant> time) {
+        return new LocalLambdaSettings(
+            0,
+            0,
+            8 * 8192,
+            10,
+            lambdaExec,
+            serverExec,
+            cors == null ? CORS_DEFAULTS : cors,
+            resolve(time)
+        );
+    }
+
+    private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
+
+    private static Supplier<Instant> resolve(Supplier<Instant> time) {
+        return time == null ? SYSTEM_TIME : time;
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + name + " @ " + localLambda.getLambdaUri() + "]";
+        return getClass().getSimpleName() + "[" + testName + " @ " + localLambda.getLambdaUri() + "]";
     }
 }
