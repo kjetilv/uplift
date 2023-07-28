@@ -11,6 +11,7 @@ class NativeLambdaPlugin : Plugin<Project> {
         project.tasks.register("native-lambda", NativeLamdbdaTask::class.java) {
             it.run {
                 zipFile.set(target.resolve("${project.name}.zip"))
+                bootstrapFile.set(target.resolve(project.name))
                 identifier.set(project.name)
                 jarTask.set("shadowJar")
                 arch.set(System.getProperty("os.arch"))

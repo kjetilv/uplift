@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import static java.util.Objects.requireNonNull;
 
 public record LocalLambdaSettings(
-    int lambdaPort,
-    int apiPort,
+    Integer lambdaPort,
+    Integer apiPort,
     int requestBufferSize,
     int queueLength,
     ExecutorService lambdaExecutor,
@@ -18,8 +18,28 @@ public record LocalLambdaSettings(
 ) {
 
     public LocalLambdaSettings(
-        int lambdaPort,
-        int apiPort,
+        int requestBufferSize,
+        int queueLength,
+        ExecutorService lambdaExecutor,
+        ExecutorService serverExecutor,
+        CorsSettings corsSettings,
+        Supplier<Instant> time
+    ) {
+        this(
+            null,
+            null,
+            requestBufferSize,
+            queueLength,
+            lambdaExecutor,
+            serverExecutor,
+            corsSettings,
+            time
+        );
+    }
+
+    public LocalLambdaSettings(
+        Integer lambdaPort,
+        Integer apiPort,
         int requestBufferSize,
         int queueLength,
         ExecutorService lambdaExecutor,

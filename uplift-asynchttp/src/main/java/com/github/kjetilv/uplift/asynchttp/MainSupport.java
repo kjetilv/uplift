@@ -12,8 +12,6 @@ import com.github.kjetilv.uplift.kernel.io.ParseBits;
 @SuppressWarnings("unused")
 public final class MainSupport {
 
-    public static final int DEFAULT_PORT = 80;
-
     public static final int MAX_REQUEST_SIZE = 4096;
 
     public static boolean boolArg(Map<String, String> map, String param) {
@@ -43,7 +41,7 @@ public final class MainSupport {
         if (port > PORTS_AVAILABLE) {
             throw new IllegalStateException("Invalid port: " + port);
         }
-        return port > 0 ? port : DEFAULT_PORT;
+        return port > 0 ? port : PORT_80;
     }
 
     public static Map<String, String> parameterMap(String[] args) {
@@ -52,6 +50,8 @@ public final class MainSupport {
 
     private MainSupport() {
     }
+
+    private static final int PORT_80 = 80;
 
     private static final int PORTS_AVAILABLE = 65535;
 
@@ -97,10 +97,20 @@ public final class MainSupport {
     private static Optional<Map.Entry<String, String>> entry(
         String entry, int index, Function<? super String, String> parser
     ) {
-        String key = entry.substring(0, index);
-        String value = entry.substring(index + 1);
-        return key.isBlank()
-            ? EMPTY
-            : Optional.of(Map.entry(parser.apply(key.trim()), value.trim()));
+        return Optional.of(entry.substring(0, index))
+            .filter(s -> !s.isBlank())
+            .map(String::trim)
+            .map(key ->
+                Map.entry(
+                    parser.apply(key),
+                    value(entry, index)
+                ));
+    }
+
+    private static String value(String entry, int index) {
+        int valueIndex = index + 1;
+        return valueIndex > entry.length()
+            ? ""
+            : entry.substring(valueIndex).trim();
     }
 }

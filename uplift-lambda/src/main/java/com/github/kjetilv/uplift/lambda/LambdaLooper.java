@@ -26,7 +26,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     private final InvocationSource<Q, R> source;
 
-    private final LambdaHandler handler;
+    private final LambdaHandler lambdaHandler;
 
     private final Function<? super Invocation<Q, R>, ? extends Q> responseResolver;
 
@@ -52,14 +52,14 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     LambdaLooper(
         InvocationSource<Q, R> source,
-        LambdaHandler handler,
+        LambdaHandler lambdaHandler,
         Function<? super Invocation<Q, R>, ? extends Q> responseResolver,
         InvocationSink<Q, R> sink,
         BiFunction<? super Invocation<Q, R>, ? super Throwable, Boolean> resultLog,
         Supplier<Instant> time
     ) {
         this.source = requireNonNull(source, "source");
-        this.handler = requireNonNull(handler, "handler");
+        this.lambdaHandler = requireNonNull(lambdaHandler, "handler");
         this.responseResolver = requireNonNull(responseResolver, "responseResolver");
         this.sink = requireNonNull(sink, "sink");
         this.resultLog = requireNonNull(resultLog, "resultLog");
@@ -103,7 +103,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     private Invocation<Q, R> process(Invocation<Q, R> invocation) {
         try {
-            return invocation.process(handler, time);
+            return invocation.process(lambdaHandler, time);
         } finally {
             initiated.increment();
             lastTime.set(invocation.created());
@@ -184,7 +184,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
         long count = completedOk.longValue() + completedFail.longValue();
         return "%s[%s@%s: init:%s ok:%s fail:%s avg:%s]".formatted(
             getClass().getSimpleName(),
-            handler,
+            lambdaHandler,
             startTime,
             initiated,
             completedOk,

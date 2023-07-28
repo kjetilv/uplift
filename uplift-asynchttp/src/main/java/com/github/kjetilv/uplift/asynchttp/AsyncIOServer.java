@@ -35,12 +35,12 @@ final class AsyncIOServer implements IOServer {
     private static final Logger log = LoggerFactory.getLogger(AsyncIOServer.class);
 
     static IOServer server(
-        int port,
+        Integer port,
         int requestBufferSize,
         ExecutorService executorService
     ) {
         return new AsyncIOServer(
-            new InetSocketAddress(getInetAddress(), port),
+            new InetSocketAddress(getInetAddress(), port == null || port <= 0 ? 0 : port),
             requireNonNull(executorService, "executorService"),
             requestBufferSize > 0 ? requestBufferSize : MINIMUM_REQUEST_SIZE
         );
@@ -80,21 +80,7 @@ final class AsyncIOServer implements IOServer {
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
-            try {
-                serverSocketChannel.close();
-            } catch (Exception e) {
-                throw new IllegalStateException(this + " failed to close: " + serverSocketChannel, e);
-            }
-            channelGroup.shutdown();
-            if (!channelGroup.isTerminated()) {
-                if (!awaitTermination(GRACE_PERIOD)) {
-                    try {
-                        channelGroup.shutdownNow();
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to terminate: " + channelGroup, e);
-                    }
-                }
-            }
+            doClose();
         }
     }
 
@@ -160,6 +146,24 @@ final class AsyncIOServer implements IOServer {
     private boolean terminatedWithin(Duration timeout) throws InterruptedException {
         return timeout.isZero() && channelGroup.awaitTermination(MAX_VALUE, DAYS) ||
                channelGroup.awaitTermination(timeout.toMillis(), MILLISECONDS);
+    }
+
+    private void doClose() {
+        try {
+            serverSocketChannel.close();
+        } catch (Exception e) {
+            throw new IllegalStateException(this + " failed to close: " + serverSocketChannel, e);
+        }
+        channelGroup.shutdown();
+        if (!channelGroup.isTerminated()) {
+            if (!awaitTermination(GRACE_PERIOD)) {
+                try {
+                    channelGroup.shutdownNow();
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to terminate: " + channelGroup, e);
+                }
+            }
+        }
     }
 
     private final class ChannelReader<S extends ChannelState, C extends ChannelHandler<S, C>>

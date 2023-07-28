@@ -24,7 +24,11 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final LambdaHandler handler;
 
-    public DefaultLamdbdaManaged(URI lambdaUri, LambdaClientSettings settings, LambdaHandler handler) {
+    public DefaultLamdbdaManaged(
+        URI lambdaUri,
+        LambdaClientSettings settings,
+        LambdaHandler handler
+    ) {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
@@ -65,7 +69,10 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
             httpClient.sendAsync(request, ofInputStream(), null);
     }
 
-    private static HttpClient httpClient(Executor executor, Duration connectTimeout) {
+    private static HttpClient httpClient(
+        Executor executor,
+        Duration connectTimeout
+    ) {
         HttpClient.Builder builder = HttpClient.newBuilder()
             .version(HTTP_1_1)
             .executor(executor);

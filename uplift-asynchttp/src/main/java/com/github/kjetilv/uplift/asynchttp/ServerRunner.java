@@ -12,8 +12,16 @@ public final class ServerRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ServerRunner.class);
 
-    public static ServerRunner create(int port, int requestBufferSize, ExecutorService executor) {
-        IOServer server = AsyncIOServer.server(port, requestBufferSize, executor);
+    public static ServerRunner create(
+        Integer port,
+        int requestBufferSize,
+        ExecutorService executor
+    ) {
+        IOServer server = AsyncIOServer.server(
+            port,
+            requestBufferSize,
+            executor
+        );
         ServerRunner runner = new ServerRunner(server);
         Runtime.getRuntime().addShutdownHook(new Thread(server::close, "Close"));
         return runner;

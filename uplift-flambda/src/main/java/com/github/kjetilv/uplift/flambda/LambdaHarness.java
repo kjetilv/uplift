@@ -63,7 +63,12 @@ public class LambdaHarness implements Closeable {
         this(testName, lambdaHandler, cors, null);
     }
 
-    public LambdaHarness(String testName, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
+    public LambdaHarness(
+        String testName,
+        LambdaHandler lambdaHandler,
+        CorsSettings cors,
+        Supplier<Instant> time
+    ) {
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
         this.testName = testName == null ? lambdaHandler.getClass().getSimpleName() : testName;
 
@@ -76,8 +81,11 @@ public class LambdaHarness implements Closeable {
         this.localLambda.awaitStarted(Duration.ofMinutes(1));
 
         LambdaClientSettings lambdaClientSettings = lambdaClientSettings(time);
-        LamdbdaManaged lamdbdaManaged =
-            new DefaultLamdbdaManaged(localLambda.getLambdaUri(), lambdaClientSettings, lambdaHandler);
+        LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
+            localLambda.getLambdaUri(),
+            lambdaClientSettings,
+            lambdaHandler
+        );
 
         this.looper = lamdbdaManaged.looper();
         this.testExec.submit(this.looper);
@@ -109,8 +117,6 @@ public class LambdaHarness implements Closeable {
 
     private LocalLambdaSettings localLambdaSettings(CorsSettings cors, Supplier<Instant> time) {
         return new LocalLambdaSettings(
-            0,
-            0,
             8 * 8192,
             10,
             lambdaExec,

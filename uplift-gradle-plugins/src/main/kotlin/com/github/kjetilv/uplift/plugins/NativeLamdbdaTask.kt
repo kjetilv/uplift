@@ -39,6 +39,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     @get:OutputFile
     abstract val zipFile: Property<Path>
 
+    @get:OutputFile
+    abstract val bootstrapFile: Property<Path>
+
     @TaskAction
     fun perform() {
         val dist = javaDist.get()

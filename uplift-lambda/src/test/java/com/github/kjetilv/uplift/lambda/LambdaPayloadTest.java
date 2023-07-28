@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.lambda;
 import java.util.Map;
 
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.lambda.LambdaPayload;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

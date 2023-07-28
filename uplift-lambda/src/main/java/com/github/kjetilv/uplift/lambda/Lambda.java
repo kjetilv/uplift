@@ -36,18 +36,17 @@ public final class Lambda {
         int parallellism
     ) {
         Env env = Env.actual();
-        LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
+        return new DefaultLamdbdaManaged(
             env.awsLambdaUri(),
-            getSettings(env, connectTimeout, responseTimeout, parallellism),
+            setttings(env, connectTimeout, responseTimeout, parallellism),
             lambdaHandler
         );
-        return lamdbdaManaged;
     }
 
     private Lambda() {
     }
 
-    private static LambdaClientSettings getSettings(
+    private static LambdaClientSettings setttings(
         Env env,
         Duration connectTimeout,
         Duration responseTimeout,
