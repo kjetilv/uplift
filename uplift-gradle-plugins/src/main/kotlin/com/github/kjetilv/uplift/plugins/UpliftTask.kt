@@ -210,20 +210,35 @@ abstract class UpliftTask : DefaultTask() {
             printer(
                 """
                 ##
-                ##  Zips/jars:
+                ##  Zips/binaries/jars:
                 """.trimIndent()
             )
         }
-        sources?.forEachIndexed { i, zip ->
+        sources?.flatMap { zip ->
+            listOf(zip) +
+                    (binarySourceFor(zip)?.let { listOf(it) } ?: emptyList()) +
+                    (zip.parent?.let {
+                        Files.find(
+                            it,
+                            1,
+                            { file, _ -> file.fileName.toString().endsWith(".jar") })
+                    }?.toList() ?: emptyList())
+        }?.forEachIndexed { i, p ->
             printer(
                 """
-                ##   [${i + 1}] $zip
-                ##     size     : ${Files.size(zip) / 1_000_000}Mb
-                ##     modified @ ${Files.getLastModifiedTime(zip)}
+                ##   [${i + 1}] $p
+                ##     size     : ${p.printSize(4)}
+                ##     modified @ ${Files.getLastModifiedTime(p)}
                 """.trimIndent()
             )
         }
     }
+
+    private fun binarySourceFor(zip: Path) =
+        zip.fileName.toString()
+            .takeIf { it.endsWith(".zip") }
+            ?.let { name -> name.substring(0, name.length - ".zip".length) }
+            ?.let { zip.parent?.resolve(it) }
 
     private fun LambdaClient.functionConfiguration(stackResource: StackResource) =
         functionConfigurations().firstOrNull { functionConfiguration ->
@@ -284,4 +299,15 @@ abstract class UpliftTask : DefaultTask() {
         env?.entries?.joinToString("") { (key, value) ->
             "-e $key=$value "
         } ?: ""
+
+    private fun Path.printSize(limit: Int) =
+        Files.size(this).let {
+            when {
+                it > limit * 1_000_000 -> "${it / 1_000_000}Mb"
+                it > limit * 1_000 -> "${it / 1_000}Kb"
+                else -> "${it}b"
+            }
+        }
 }
+
+

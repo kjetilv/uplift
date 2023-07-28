@@ -59,11 +59,11 @@ abstract class UpliftCdkTask : UpliftTask() {
     private fun addedMain(indent: String, line: String) = listOf(
         line.replace("com.myorg.AppApp", "lambda.uplift.app.CloudApp"),
         "$indent<systemProperties>",
-        property("$indent  ", "uplift.account", account),
-        property("$indent  ", "uplift.region", region),
-        property("$indent  ", "uplift.stack", stack),
-        property("$indent  ", "uplift.stackbuilderJar", resolvedStackbuilderJar().fileName),
-        property("$indent  ", "uplift.stackbuilderClass", stackbuilderClass),
+        property("$indent  ", "uplift.account" to account.get()),
+        property("$indent  ", "uplift.region" to region.get()),
+        property("$indent  ", "uplift.stack" to stack.get()),
+        property("$indent  ", "uplift.stackbuilderJar" to resolvedStackbuilderJar().fileName),
+        property("$indent  ", "uplift.stackbuilderClass" to stackbuilderClass.get()),
         "$indent</systemProperties>"
     )
 
@@ -85,11 +85,10 @@ abstract class UpliftCdkTask : UpliftTask() {
         project.configurations.findByName("compileClasspath")?.incoming?.dependencies?.stream()?.toList()?.toList()
             ?: emptyList()
 
-    private fun property(indent: String, key: String, property: Property<*>) =
-        property(indent, key, property.get())
-
-    private fun property(indent: String, key: String, value: Any?) =
-        "$indent  <systemProperty><key>$key</key><value>$value</value></systemProperty>"
+    private fun property(indent: String, entry: Pair<String, Any>) =
+        entry.let { (key, value) ->
+            "$indent  <systemProperty><key>${key}</key><value>${value}</value></systemProperty>"
+        }
 
     private fun resolvedStackbuilderJar() =
         stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
