@@ -10,8 +10,8 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings({ "UnusedReturnValue" })
 public final class Flogs {
 
-    public static boolean initialize(Function<Long, Optional<String>> threadNames) {
-        return Jul.setup(threadNames);
+    public static void initialize(Function<Long, Optional<String>> threadNames) {
+        Jul.setup(threadNames);
     }
 
     public static Logger get(Class<?> source) {
@@ -32,7 +32,7 @@ public final class Flogs {
     @SuppressWarnings("StaticCollection")
     private static final Map<String, Logger> LOGGERS = new ConcurrentHashMap<>();
 
-    private static boolean emergencySetup() {
-        return Jul.setup(id -> Optional.ofNullable(String.valueOf(id)));
+    private static void emergencySetup() {
+        Jul.setup(id -> Optional.ofNullable(String.valueOf(id)));
     }
 }

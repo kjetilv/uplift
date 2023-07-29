@@ -4,6 +4,8 @@ import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
@@ -27,13 +29,17 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
     private final URI apiUri;
 
-    public LocalLambda(LocalLambdaSettings settings) {
+    public LocalLambda(
+        LocalLambdaSettings settings,
+        ExecutorService lambdaExecutor,
+        ExecutorService serverExecutor
+    ) {
         this.lambdaHandler = new LocalLambdaHandler(settings.queueLength());
 
         ServerRunner lambdaServerRunner = ServerRunner.create(
             settings.lambdaPort(),
             settings.requestBufferSize(),
-            settings.lambdaExecutor()
+            Objects.requireNonNull(lambdaExecutor, "lambdaExecutor")
         );
         this.lambdaServer = lambdaServerRunner.run(new HttpChannelHandler(
             lambdaHandler,
@@ -44,7 +50,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         ServerRunner apiServerRunner = ServerRunner.create(
             settings.apiPort(),
             settings.requestBufferSize(),
-            settings.serverExecutor()
+            Objects.requireNonNull(serverExecutor, "serverExecutor")
         );
         this.apiServer = apiServerRunner.run(new HttpChannelHandler(
             new LocalApiHandler(lambdaHandler, settings.corsSettings()),

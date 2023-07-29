@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.flambda;
 
 import java.time.Instant;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -11,39 +10,15 @@ public record LocalLambdaSettings(
     Integer apiPort,
     int requestBufferSize,
     int queueLength,
-    ExecutorService lambdaExecutor,
-    ExecutorService serverExecutor,
     CorsSettings corsSettings,
     Supplier<Instant> time
 ) {
-
-    public LocalLambdaSettings(
-        int requestBufferSize,
-        int queueLength,
-        ExecutorService lambdaExecutor,
-        ExecutorService serverExecutor,
-        CorsSettings corsSettings,
-        Supplier<Instant> time
-    ) {
-        this(
-            null,
-            null,
-            requestBufferSize,
-            queueLength,
-            lambdaExecutor,
-            serverExecutor,
-            corsSettings,
-            time
-        );
-    }
 
     public LocalLambdaSettings(
         Integer lambdaPort,
         Integer apiPort,
         int requestBufferSize,
         int queueLength,
-        ExecutorService lambdaExecutor,
-        ExecutorService serverExecutor,
         CorsSettings corsSettings,
         Supplier<Instant> time
     ) {
@@ -51,8 +26,6 @@ public record LocalLambdaSettings(
         this.apiPort = apiPort;
         this.requestBufferSize = Math.max(MIN_REQUEST_LENGTH, requestBufferSize);
         this.queueLength = Math.max(MIN_QUEUE_LENGTH, queueLength);
-        this.lambdaExecutor = requireNonNull(lambdaExecutor, "lambdaExecutor");
-        this.serverExecutor = requireNonNull(serverExecutor, "serverExecutor");
         this.corsSettings = requireNonNull(corsSettings, "corsSettings");
         this.time = requireNonNull(time, "time");
     }

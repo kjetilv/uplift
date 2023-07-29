@@ -38,8 +38,9 @@ public final class Lambda {
         Env env = Env.actual();
         return new DefaultLamdbdaManaged(
             env.awsLambdaUri(),
-            setttings(env, connectTimeout, responseTimeout, parallellism),
-            lambdaHandler
+            setttings(env, connectTimeout, responseTimeout),
+            lambdaHandler,
+            executor("L", parallellism > 0 ? parallellism : PARALLELLISM)
         );
     }
 
@@ -49,15 +50,12 @@ public final class Lambda {
     private static LambdaClientSettings setttings(
         Env env,
         Duration connectTimeout,
-        Duration responseTimeout,
-        int parallellism
+        Duration responseTimeout
     ) {
         return new LambdaClientSettings(
             env,
             connectTimeout,
             responseTimeout,
-            executor("L", parallellism > 0 ? parallellism : PARALLELLISM),
-            executor("S", parallellism > 0 ? parallellism : PARALLELLISM),
             Time.utcSupplier()
         );
     }

@@ -27,15 +27,16 @@ public final class Main {
                     apiPort,
                     8 * 8192,
                     10,
-                    executor("L", 10),
-                    executor("S", 10),
                     new CorsSettings(
                         List.of("*"),
                         List.of("GET", "OPTIONS", "POST", "DELETE"),
                         List.of("content-type", "range")
                     ),
                     UTC_CLOCK::instant
-                ))
+                ),
+                executor("L", 10),
+                executor("S", 10)
+            )
         ) {
             logger().info("Lambda: {}", localLambda);
             localLambda.join();

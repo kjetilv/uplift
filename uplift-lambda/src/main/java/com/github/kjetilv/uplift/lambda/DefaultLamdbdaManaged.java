@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import com.github.kjetilv.uplift.json.Json;
@@ -24,14 +25,18 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final LambdaHandler handler;
 
+    private final ExecutorService lambdaExecutor;
+
     public DefaultLamdbdaManaged(
         URI lambdaUri,
         LambdaClientSettings settings,
-        LambdaHandler handler
+        LambdaHandler handler,
+        ExecutorService lambdaExecutor
     ) {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
+        this.lambdaExecutor = requireNonNull(lambdaExecutor, "lambdaExecutor");
     }
 
     @Override
@@ -41,9 +46,8 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
-        Executor executor = settings.lambdaExecutor();
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client =
-            http(executor, settings.connectTimeout());
+            http(lambdaExecutor, settings.connectTimeout());
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
             new HttpInvocationSource(
                 client,
