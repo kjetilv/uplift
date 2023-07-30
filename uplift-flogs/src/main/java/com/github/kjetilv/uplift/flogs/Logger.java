@@ -42,7 +42,7 @@ public final class Logger {
 
     private final String name;
 
-    public Logger(java.util.logging.Logger jul, String... knownPrefixes) {
+    Logger(java.util.logging.Logger jul, String... knownPrefixes) {
         this.jul = requireNonNull(jul, "jul");
         String sourceName = requireNonNull(jul.getName(), "jul.getName()");
         int lastDot = sourceName.lastIndexOf('.');

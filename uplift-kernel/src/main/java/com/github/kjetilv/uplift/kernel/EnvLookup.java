@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.kernel;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -19,15 +21,15 @@ public final class EnvLookup {
         return get(systemProperty, environmentVariable, false);
     }
 
-    public static String get(String systemProperty, String environmentVariable, boolean required) {
-        Optional<String> value = systemProperty(systemProperty)
-            .or(() ->
-                systemProperty(environmentVariable))
-            .or(() ->
-                environmentVariable(environmentVariable));
-        value.ifPresentOrElse(
-            v -> log(systemProperty, environmentVariable, v),
-            () -> logMissing(systemProperty, environmentVariable, required)
+    public static String get(
+        String systemProperty,
+        String environmentVariable,
+        boolean required
+    ) {
+        Optional<String> value = cache.computeIfAbsent(
+            systemProperty + environmentVariable + required,
+            key ->
+                resolve(systemProperty, environmentVariable, required)
         );
         return required
             ? value.orElseThrow(missing(systemProperty, environmentVariable))
@@ -38,6 +40,23 @@ public final class EnvLookup {
 
     }
 
+    private static final Map<String, Optional<String>> cache = new ConcurrentHashMap<>();
+
+    private static Optional<String> resolve(String systemProperty, String environmentVariable, boolean required) {
+        Optional<String> property = systemProperty(systemProperty)
+            .or(() ->
+                systemProperty(environmentVariable))
+            .or(() ->
+                environmentVariable(environmentVariable));
+        property.ifPresentOrElse(
+            propertyValue ->
+                log(systemProperty, environmentVariable, propertyValue),
+            () ->
+                logMissing(systemProperty, environmentVariable, required)
+        );
+        return property;
+    }
+
     private static Supplier<IllegalStateException> missing(String systemProperty, String environmentVariable) {
         return () ->
             new IllegalStateException("Incomplete environment: " + systemProperty + "/" + environmentVariable);
@@ -45,9 +64,9 @@ public final class EnvLookup {
 
     private static void logMissing(String systemProperty, String environmentVariable, boolean required) {
         if (required) {
-            log.debug("Missing: {}/{}", systemProperty, environmentVariable);
-        } else {
             log.error("Missing: {}/{}", systemProperty, environmentVariable);
+        } else {
+            log.warn("Missing: {}/{}", systemProperty, environmentVariable);
         }
     }
 
