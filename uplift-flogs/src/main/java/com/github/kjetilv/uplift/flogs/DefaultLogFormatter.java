@@ -51,7 +51,7 @@ public final class DefaultLogFormatter extends SimpleFormatter {
                 ? withStacktrace(line, e)
                 : line;
         } catch (Exception ex) {
-            return ouch(record, ex);
+            return onStderr(record, ex);
         }
     }
 
@@ -59,9 +59,9 @@ public final class DefaultLogFormatter extends SimpleFormatter {
         String formattedMessage = getFormattedMessage(rec);
         long id = rec.getLongThreadID();
         ZonedDateTime dateTime = rec.getInstant().truncatedTo(MILLIS).atZone(ZoneId.of("Z"));
-        String threadName = threadNamer != null
-            ? threadNamer.apply(id).orElseGet(() -> simple(id))
-            : simple(id);
+        String threadName = threadNamer == null
+            ? simple(id)
+            : threadNamer.apply(id).orElseGet(() -> simple(id));
         return String.format(
             DEFAULT_FORMAT,
             dateTime,
@@ -85,6 +85,8 @@ public final class DefaultLogFormatter extends SimpleFormatter {
 
     private static final Pattern EMPTY_ARG_PATTERN = Pattern.compile("\\{}");
 
+    private static final PrintStream STDERR = System.err;
+
     private static String withStacktrace(String line, Throwable e) {
         String ln = line.endsWith("\n") ? "" : "\n";
         return line + ln + stackTrace(e);
@@ -96,14 +98,17 @@ public final class DefaultLogFormatter extends SimpleFormatter {
 
     private static String getFormattedMessage(LogRecord rec) {
         Object[] parameters = rec.getParameters();
+        String recordMessage = rec.getMessage();
         if (parameters == null || parameters.length == 0) {
-            return rec.getMessage();
+            return recordMessage;
         }
-        boolean rewrite = isEmptySetNotation(rec.getMessage());
+        boolean rewrite = recordMessage.contains(EMPTY_ARG);
         MessageFormat messageFormat = FORMATS.computeIfAbsent(
-            rec.getMessage(),
-            message ->
-                createMessageFormat(message, parameters.length, rewrite)
+            recordMessage,
+            msg -> {
+                String pattern = rewrite ? indexed(msg, parameters.length) : msg;
+                return new MessageFormat(pattern, Locale.ROOT);
+            }
         );
         return messageFormat.format(rewrite ? stringified(parameters) : parameters);
     }
@@ -121,16 +126,10 @@ public final class DefaultLogFormatter extends SimpleFormatter {
     }
 
     private static MessageFormat createMessageFormat(String message, int length, boolean rewrite) {
-        return new MessageFormat(
-            rewrite
-                ? indexed(message, length)
-                : message,
-            Locale.ROOT
-        );
-    }
-
-    private static boolean isEmptySetNotation(String message) {
-        return message.contains(EMPTY_ARG) && !NUMBERED_ARG.matcher(message).matches();
+        String pattern = rewrite
+            ? indexed(message, length)
+            : message;
+        return new MessageFormat(pattern, Locale.ROOT);
     }
 
     private static String indexed(CharSequence pattern, int paramsCount) {
@@ -147,13 +146,6 @@ public final class DefaultLogFormatter extends SimpleFormatter {
         return stringBuilder.toString();
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    private static String ouch(LogRecord record, Exception ex) {
-        System.err.println("Logging failed: " + record);
-        ex.printStackTrace(System.err);
-        return ex.toString();
-    }
-
     private static String stackTrace(Throwable e) {
         try (
             ByteArrayOutputStream baos = new ByteArrayOutputStream(16384);
@@ -165,5 +157,12 @@ public final class DefaultLogFormatter extends SimpleFormatter {
         } catch (Exception ex) {
             return "Failed to retieve stacktrace: " + ex;
         }
+    }
+
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    private static String onStderr(LogRecord record, Exception ex) {
+        STDERR.println("Logging failed: " + record);
+        ex.printStackTrace(STDERR);
+        return ex.toString();
     }
 }

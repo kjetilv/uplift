@@ -12,7 +12,7 @@ import static java.util.logging.Level.INFO;
 
 final class Jul {
 
-    static boolean setup(Function<Long, Optional<String>> threadNames) {
+    static void setup(Function<Long, Optional<String>> threadNames) {
         if (setupDone.compareAndSet(false, true)) {
             try {
                 Logger root = LogManager.getLogManager().getLogger("");
@@ -27,9 +27,7 @@ final class Jul {
             } catch (Exception e) {
                 throw new IllegalStateException("Setup failed", e);
             }
-            return true;
         }
-        return false;
     }
 
     static com.github.kjetilv.uplift.flogs.Logger createLogger(String name) {
