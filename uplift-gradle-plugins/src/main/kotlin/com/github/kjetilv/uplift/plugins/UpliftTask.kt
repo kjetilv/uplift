@@ -20,7 +20,9 @@ import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsReques
 import java.nio.file.Files
 import java.nio.file.Files.getLastModifiedTime
 import java.nio.file.Path
+import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.*
 import java.time.temporal.ChronoUnit
 
@@ -227,19 +229,25 @@ abstract class UpliftTask : DefaultTask() {
                             1,
                             { file, _ -> file.fileName.toString().endsWith(".jar") })
                     }?.toList() ?: emptyList())
-        }?.sortedBy { getLastModifiedTime(it) }?.forEachIndexed { count, path ->
-            val time = getLastModifiedTime(path).toInstant()
-                .truncatedTo(ChronoUnit.SECONDS)
-                .atZone(ZoneId.systemDefault())
-            printer(
-                """
-                ##   [${count + 1}] @ ${time.format(ISO_LOCAL_TIME)} ${time.format(ISO_LOCAL_DATE)} : ${path.fileName} 
-                ##     full path: ${path.toAbsolutePath().toUri()}
-                ##     size     : ${path.printSize(4)}
-                """.trimIndent()
-            )
-        }
+        }?.sortedBy { getLastModifiedTime(it) }
+            ?.map { path ->
+                path to getLastModifiedTime(path).toInstant().truncatedTo(ChronoUnit.SECONDS)
+            }
+            ?.forEachIndexed { count, (path, time) ->
+                printer(
+                    """
+                    ##   [${count + 1}] ${time.local(ISO_LOCAL_TIME)} ${time.local(ISO_LOCAL_DATE)} → ${path.fileName} 
+                    ##     full path : ${path.toAbsolutePath().toUri()}
+                    ##     ISO time  : ${time.utc(ISO_ZONED_DATE_TIME)}
+                    ##     size      : ${path.printSize(4)}
+                    """.trimIndent()
+                )
+            }
     }
+
+    private fun Instant.local(format: DateTimeFormatter) = atZone(ZoneId.systemDefault())!!.format(format)
+
+    private fun Instant.utc(format: DateTimeFormatter) = atZone(ZoneId.of("UTC"))!!.format(format)
 
     private fun binarySourceFor(zip: Path) =
         zip.fileName.toString()
