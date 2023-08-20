@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.kjetilv.uplift.build.nativeCmd
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -38,32 +39,15 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.register("native-image") {
-    val jarFile = "uplift-flambda-0.1.1-SNAPSHOT-all.jar"
-    val binary = "flambda"
-    val cmd = """
-            ${javaBin("native-image")} 
-             --verbose 
-             --no-fallback
-             -H:+ReportExceptionStackTraces
-             -H:+BuildReport
-             --enable-url-protocols=https 
-             -jar $jarFile
-             -o $binary
-             -march=native
-            """
     val libsDir = project.layout.buildDirectory.dir("libs").get().asFile.also {
         Files.createDirectories(it.toPath())
     }
     project.exec {
         workingDir = libsDir
-        commandLine = cmd.trimIndent().split("\\s+".toRegex())
+        commandLine = nativeCmd(
+            "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
+            "flambda"
+        )
     }
     dependsOn(tasks.named("shadowJar"))
 }
-
-fun javaBin(name: String) =
-    System.getProperty("java.home").asPath().resolve("bin").resolve(name)
-
-fun String.asPath() = Paths.get(this)
-
-fun Path.isExecutable() = Files.isExecutable(this)

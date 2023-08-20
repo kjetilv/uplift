@@ -238,7 +238,7 @@ abstract class UpliftTask : DefaultTask() {
                     """
                     ##   [${count + 1}] ${time.local(ISO_LOCAL_TIME)} ${time.local(ISO_LOCAL_DATE)} → ${path.fileName} 
                     ##     full path : ${path.toAbsolutePath().toUri()}
-                    ##     ISO time  : ${time.utc(ISO_ZONED_DATE_TIME)}
+                    ##     real time : ${time.utc(ISO_ZONED_DATE_TIME)}
                     ##     size      : ${path.printSize(4)}
                     """.trimIndent()
                 )
