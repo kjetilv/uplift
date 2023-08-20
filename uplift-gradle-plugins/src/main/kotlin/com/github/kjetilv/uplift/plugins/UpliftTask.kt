@@ -21,7 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Files.getLastModifiedTime
 import java.nio.file.Path
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.*
 import java.time.temporal.ChronoUnit
 
 
@@ -228,14 +228,12 @@ abstract class UpliftTask : DefaultTask() {
                             { file, _ -> file.fileName.toString().endsWith(".jar") })
                     }?.toList() ?: emptyList())
         }?.sortedBy { getLastModifiedTime(it) }?.forEachIndexed { count, path ->
-            val modifiedTime =
-                getLastModifiedTime(path).toInstant()
-                    .truncatedTo(ChronoUnit.SECONDS)
-                    .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+            val time = getLastModifiedTime(path).toInstant()
+                .truncatedTo(ChronoUnit.SECONDS)
+                .atZone(ZoneId.systemDefault())
             printer(
                 """
-                ##   [${count + 1}] ${path.fileName} @ $modifiedTime 
+                ##   [${count + 1}] @ ${time.format(ISO_LOCAL_TIME)} ${time.format(ISO_LOCAL_DATE)} : ${path.fileName} 
                 ##     full path: ${path.toAbsolutePath().toUri()}
                 ##     size     : ${path.printSize(4)}
                 """.trimIndent()
