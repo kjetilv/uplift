@@ -24,6 +24,24 @@ public record LambdaRequest(String id, HttpReq request) {
         return new LambdaRequest(requireNonNull(id, "id"), request);
     }
 
+    Map<String, Object> toPayload() {
+        return Map.of(
+            "version", "2.0",
+            "httpMethod", request.method(),
+            "path", request.path(),
+            "headers", toSingleValue(request.headers()),
+            "queryStringParameters", toSingleValue(request.queryParams()),
+            "requestContext", Map.of(
+                "http", Map.of(
+                    "method", request.method(),
+                    "path", request.path()
+                )
+            ),
+            "isBase64Encoded", true,
+            "body", BytesIO.toBase64(request.body())
+        );
+    }
+
     JsonLambdaPayload toJsonPayload() {
         return new JsonLambdaPayload(
             "2.0",

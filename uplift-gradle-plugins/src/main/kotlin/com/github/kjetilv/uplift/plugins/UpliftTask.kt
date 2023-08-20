@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.lambda.model.FunctionConfiguration
 import software.amazon.awssdk.services.lambda.model.FunctionUrlConfig
 import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsRequest
 import java.nio.file.Files
+import java.nio.file.Files.getLastModifiedTime
 import java.nio.file.Path
 
 
@@ -60,7 +61,7 @@ abstract class UpliftTask : DefaultTask() {
     }
 
     protected fun upliftDir(): Path =
-        project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
+        project.buildSubDirectory("uplift")
 
     protected fun clearCdkApp() = clearRecursive(cdkApp())
 
@@ -223,12 +224,12 @@ abstract class UpliftTask : DefaultTask() {
                             1,
                             { file, _ -> file.fileName.toString().endsWith(".jar") })
                     }?.toList() ?: emptyList())
-        }?.forEachIndexed { i, p ->
+        }?.sortedBy { getLastModifiedTime(it) }?.forEachIndexed { i, p ->
             printer(
                 """
-                ##   [${i + 1}] $p
+                ##   [${i + 1}] ${p.toUri()}
                 ##     size     : ${p.printSize(4)}
-                ##     modified @ ${Files.getLastModifiedTime(p)}
+                ##     modified @ ${getLastModifiedTime(p)}
                 """.trimIndent()
             )
         }
@@ -285,7 +286,7 @@ abstract class UpliftTask : DefaultTask() {
 
     private fun initialize() {
         Files.write(
-            upliftDir().resolve("Dockerfile"), renderResource("Dockerfile-cdk.st4", "arch" to arch.get())
+            upliftDir().resolve("Dockerfile"), "Dockerfile-cdk.st4".renderResource("arch" to arch.get())
         )
         exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
     }

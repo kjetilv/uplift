@@ -53,9 +53,9 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
             case '}' -> token(END_OBJECT, null, source.lexeme());
             case '[' -> token(BEGIN_ARRAY, null, source.lexeme());
             case ']' -> token(END_ARRAY, null, source.lexeme());
-            case 't' -> expectedTokenTail(RUE, BOOL, CANONICAL_TRUE);
-            case 'f' -> expectedTokenTail(ALSE, BOOL, CANONICAL_FALSE);
-            case 'n' -> expectedTokenTail(ULL, NIL, CANONICAL_NULL);
+            case 't' -> expectedTokenTail(RUE, BOOL, true, CANONICAL_TRUE);
+            case 'f' -> expectedTokenTail(ALSE, BOOL, false, CANONICAL_FALSE);
+            case 'n' -> expectedTokenTail(ULL, NIL, null, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
             case ' ', '\r', '\t', '\n' -> {
@@ -66,13 +66,13 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         };
     }
 
-    private Token expectedTokenTail(char[] tail, TokenType type, String canonical) {
+    private Token expectedTokenTail(char[] tail, TokenType type, Object literal, String canonical) {
         for (char c: tail) {
             if (source.chomp() != c) {
                 fail("Unknown identifier");
             }
         }
-        return token(type, null, canonical == null ? source.lexeme() : canonical);
+        return token(type, literal, canonical == null ? source.lexeme() : canonical);
     }
 
     @SuppressWarnings("QuestionableName")

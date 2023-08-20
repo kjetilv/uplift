@@ -53,7 +53,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
             Objects.requireNonNull(serverExecutor, "serverExecutor")
         );
         this.apiServer = apiServerRunner.run(new HttpChannelHandler(
-            new LocalApiHandler(lambdaHandler, settings.corsSettings()),
+            new LocalApiHandler(lambdaHandler, settings.cors()),
             settings.requestBufferSize(),
             settings.time()
         ));

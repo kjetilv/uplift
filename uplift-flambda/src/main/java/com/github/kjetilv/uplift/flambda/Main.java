@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.flambda;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.kjetilv.uplift.flogs.LogLevel;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.kernel.ManagedExecutors;
 import org.slf4j.Logger;
@@ -15,7 +16,8 @@ import static com.github.kjetilv.uplift.kernel.Time.UTC_CLOCK;
 public final class Main {
 
     public static void main(String[] args) {
-        Flogs.initialize(ManagedExecutors.threadNamer());
+        ManagedExecutors.configure(4, 10);
+        Flogs.initialize(LogLevel.DEBUG, ManagedExecutors.backgroundLogging());
         Integer lambdaPort =
             Arrays.stream(args).map(Integer::parseInt).findFirst().orElse(8081);
         Integer apiPort =
@@ -29,13 +31,13 @@ public final class Main {
                     10,
                     new CorsSettings(
                         List.of("*"),
-                        List.of("GET", "OPTIONS", "POST", "DELETE"),
-                        List.of("content-type", "range")
+                        List.of("GET", "POST", "PUT", "DELETE"),
+                        List.of()
                     ),
                     UTC_CLOCK::instant
                 ),
-                executor("L", 10),
-                executor("S", 10)
+                executor("L", 4),
+                executor("S", 4)
             )
         ) {
             logger().info("Lambda: {}", localLambda);

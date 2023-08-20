@@ -6,32 +6,35 @@ import java.nio.file.Path
 
 @Suppress("unused")
 class UpliftPlugin : Plugin<Project> {
+
     override fun apply(project: Project) {
-        project.tasks.register("uplift-init", UpliftInitTask::class.java) { task ->
-            task.configureFor(project) {
-                activeJar.set(project.cdkFile(task.stackbuilderJar.get()))
-                activePom.set(project.cdkFile("pom.xml"))
+        project.tasks.apply {
+            register("uplift-init", UpliftInitTask::class.java) {
+                it.configureFor(project) {
+                    activeJar.set(project.cdkFile(it.stackbuilderJar.get()))
+                    activePom.set(project.cdkFile("pom.xml"))
+                }
             }
-        }
-        project.tasks.register("uplift-bootstrap", UpliftBootstrapTask::class.java) { task ->
-            task.configureFor(project) {
-                template.set(project.templateFile(task))
-                dependsOn("uplift-init")
+            register("uplift-bootstrap", UpliftBootstrapTask::class.java) {
+                it.configureFor(project) {
+                    template.set(project.templateFile(it))
+                    dependsOn("uplift-init")
+                }
             }
-        }
-        project.tasks.register("uplift", UpliftDeployTask::class.java) { task ->
-            task.configureFor(project) {
-                dependsOn("uplift-bootstrap")
+            register("uplift", UpliftDeployTask::class.java) {
+                it.configureFor(project) {
+                    dependsOn("uplift-bootstrap")
+                }
             }
-        }
-        project.tasks.register("uplift-ping", UpliftPingTask::class.java) { task ->
-            task.configureFor(project) {
-                clearDependencies()
+            register("uplift-ping", UpliftPingTask::class.java) {
+                it.configureFor(project) {
+                    clearDependencies()
+                }
             }
-        }
-        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) { task ->
-            task.configureFor(project) {
-                clearDependencies()
+            register("uplift-destroy", UpliftDestroyTask::class.java) {
+                it.configureFor(project) {
+                    clearDependencies()
+                }
             }
         }
     }
@@ -49,7 +52,7 @@ class UpliftPlugin : Plugin<Project> {
         stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
         arch %= resolveArchitecture()
         awsAuth %= resolveAwsAuth()
-        if (this is UpliftCdkTask ) {
+        if (this is UpliftCdkTask) {
             jarOutput(project)?.also {
                 stackbuilderJar %= it
             }

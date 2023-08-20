@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 
 import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
 
@@ -14,31 +15,33 @@ import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
 public record HttpRes(
     int status,
     Map<String, List<String>> headers,
-    byte[] body
+    byte[] body,
+    Uuid reqId
 ) {
 
-    public HttpRes(byte[] body) {
-        this(0, body);
+    public HttpRes(byte[] body, Uuid reqId) {
+        this(0, body, reqId);
     }
 
-    public HttpRes(int status, byte[] body) {
-        this(status, null, body);
+    public HttpRes(int status, byte[] body, Uuid reqId) {
+        this(status, null, body, reqId);
     }
 
-    public HttpRes(int status, Map<String, List<String>> headers, byte[] body) {
+    public HttpRes(int status, Uuid reqId) {
+        this(status, Collections.emptyMap(), NOBODY, reqId);
+    }
+
+    public HttpRes(int status, Map<String, List<String>> headers, byte[] body, Uuid reqId) {
         this.status = httpStatus(status);
         this.headers = CaseInsensitiveHashMap.wrap(headers);
         this.body = BytesIO.nonNull(body);
-    }
-
-    public HttpRes(int status) {
-        this(status, Collections.emptyMap(), NOBODY);
+        this.reqId = reqId;
     }
 
     public HttpRes updateHeaders(
         Function<? super Map<String, List<String>>, ? extends Map<String, List<String>>> headerModifier
     ) {
-        return new HttpRes(status(), headerModifier.apply(headers()), body());
+        return new HttpRes(status(), headerModifier.apply(headers()), body(), reqId());
     }
 
     public int size() {
@@ -104,6 +107,19 @@ public record HttpRes(
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + status + " " + headers + " body:" + body.length + "]";
+        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+            .append("[")
+            .append(reqId)
+            .append( " ")
+            .append(status);
+
+        if (!headers.isEmpty()) {
+            ToStrings.print(base, headers);
+        }
+        if (body != null && body.length > 0) {
+            ToStrings.print(base, body);
+        }
+        return base.append("]")
+            .toString();
     }
 }

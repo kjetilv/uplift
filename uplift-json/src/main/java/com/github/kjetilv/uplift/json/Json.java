@@ -38,6 +38,18 @@ public interface Json {
     }
 
     @SuppressWarnings("unchecked")
+    default Map<String, Object> jsonMap(byte[] source) {
+        Object json = read(source);
+        if (json == null) {
+            return Collections.emptyMap();
+        }
+        if (json instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        throw new IllegalArgumentException("Not an object: " + source.length + " bytes => " + json);
+    }
+
+    @SuppressWarnings("unchecked")
     default Map<String, Object> jsonMap(String source) {
         Object json = read(source);
         if (json == null) {
@@ -67,6 +79,10 @@ public interface Json {
     Object read(String source);
 
     String write(Object object);
+
+    default byte[] writeBytes(Object object) {
+        return write(object).getBytes(StandardCharsets.UTF_8);
+    }
 
     void write(Object object, OutputStream outputStream);
 

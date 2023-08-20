@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.kjetilv.uplift.json.Json;
 
 @SuppressWarnings("unused")
 record ReqsImpl(URI uri) implements Reqs {
@@ -25,7 +24,7 @@ record ReqsImpl(URI uri) implements Reqs {
     }
 
     @Override
-    public CompletableFuture<HttpResponse<String>> execute(String method, Object body) {
+    public CompletableFuture<HttpResponse<String>> execute(String method, Map<String, Object> body) {
         return execute(method, json(body), true);
     }
 
@@ -36,7 +35,11 @@ record ReqsImpl(URI uri) implements Reqs {
 
     @Override
     public CompletableFuture<HttpResponse<String>> execute(
-        String method, URI uri, Map<String, String> headers, String body, boolean json
+        String method,
+        URI uri,
+        Map<String, String> headers,
+        String body,
+        boolean json
     ) {
         Objects.requireNonNull(method, "method");
         URI uri1 = uri == null ? uri() : uri().resolve(uri);
@@ -59,11 +62,9 @@ record ReqsImpl(URI uri) implements Reqs {
         }
     }
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
-
-    private static String json(Object value) {
+    private static String json(Map<String, Object> value) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(value);
+            return Json.OBJECT_2_STRING.apply(value);
         } catch (Exception e) {
             throw new IllegalStateException("Could not write: " + value, e);
         }

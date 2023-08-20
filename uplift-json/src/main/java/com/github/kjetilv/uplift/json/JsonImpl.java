@@ -40,6 +40,13 @@ class JsonImpl implements Json {
     }
 
     @Override
+    public byte[] writeBytes(Object object) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JsonWriter.write(object, new StreamSink(baos));
+        return baos.toByteArray();
+    }
+
+    @Override
     public void write(Object object, OutputStream outputStream) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter.write(object, new StreamSink(baos));

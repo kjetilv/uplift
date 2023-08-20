@@ -10,7 +10,7 @@ public record LocalLambdaSettings(
     Integer apiPort,
     int requestBufferSize,
     int queueLength,
-    CorsSettings corsSettings,
+    CorsSettings cors,
     Supplier<Instant> time
 ) {
 
@@ -19,14 +19,14 @@ public record LocalLambdaSettings(
         Integer apiPort,
         int requestBufferSize,
         int queueLength,
-        CorsSettings corsSettings,
+        CorsSettings cors,
         Supplier<Instant> time
     ) {
         this.lambdaPort = lambdaPort;
         this.apiPort = apiPort;
         this.requestBufferSize = Math.max(MIN_REQUEST_LENGTH, requestBufferSize);
         this.queueLength = Math.max(MIN_QUEUE_LENGTH, queueLength);
-        this.corsSettings = requireNonNull(corsSettings, "corsSettings");
+        this.cors = requireNonNull(cors, "cors");
         this.time = requireNonNull(time, "time");
     }
 

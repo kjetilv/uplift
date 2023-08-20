@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 
 import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -20,7 +21,8 @@ public record HttpReq(
     String path,
     Map<String, List<String>> queryParams,
     Map<String, List<String>> headers,
-    byte[] body
+    byte[] body,
+    Uuid id
 ) {
 
     static HttpReq readRequest(HttpBytes bytes) {
@@ -31,7 +33,7 @@ public record HttpReq(
         Map<String, List<String>> queryParams = queryParams(reqLine, methodMark);
         String headersPart = new String(bytes.headers(), UTF_8);
         Map<String, List<String>> headers = headers(headersPart);
-        return new HttpReq(method, url, queryParams, headers, bytes.body());
+        return new HttpReq(method, url, queryParams, headers, bytes.body(), Uuid.random());
     }
 
     public HttpReq(
@@ -39,13 +41,15 @@ public record HttpReq(
         String path,
         Map<String, List<String>> queryParams,
         Map<String, List<String>> headers,
-        byte[] body
+        byte[] body,
+        Uuid id
     ) {
         this.method = requireNonNull(method, "method");
         this.path = requireNonNull(path, "path");
         this.queryParams = CaseInsensitiveHashMap.wrap(queryParams);
         this.headers = CaseInsensitiveHashMap.wrap(headers);
         this.body = BytesIO.nonNull(body);
+        this.id = requireNonNull(id, "id");
     }
 
     public boolean isGet() {
@@ -136,9 +140,17 @@ public record HttpReq(
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" +
-               method + " " + path + " " + queryParams + " " + headers +
-               (body == null || body.length == 0 ? "" : " body: " + body.length) +
-               "]";
+        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+            .append("[").append(id).append(" ").append(method).append(" ").append(path);
+        if (!queryParams.isEmpty()) {
+            ToStrings.print(base, queryParams);
+        }
+        if (!headers.isEmpty()) {
+            ToStrings.print(base, headers);
+        }
+        if (body != null && body.length > 0) {
+            ToStrings.print(base, body);
+        }
+        return base.append("]").toString();
     }
 }

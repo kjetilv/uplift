@@ -132,10 +132,10 @@ final class AsyncIOServer implements IOServer {
     private boolean awaitTermination(Duration timeout) {
         try {
             if (terminatedWithin(timeout)) {
-                log.debug("Terminatd: {}", this);
+                log.debug("Terminated: {}", this);
                 return true;
             }
-            log.warn("Did not terminate: {}", this);
+            log.warn("Did not terminate within {}: {}", timeout, this);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Interrupted while waiting {}: {} ", timeout.isZero() ? "forever" : timeout, channelGroup, e);
@@ -248,7 +248,7 @@ final class AsyncIOServer implements IOServer {
 
     private static final int MINIMUM_REQUEST_SIZE = 1024;
 
-    private static final Duration GRACE_PERIOD = Duration.ofSeconds(10);
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(5);
 
     private static InetAddress getInetAddress() {
         try {

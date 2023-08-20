@@ -1,23 +1,26 @@
 package com.github.kjetilv.uplift.flambda;
 
 import java.io.Closeable;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
+import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +55,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         if (req.isPost()) {
             return passResponse(req);
         }
-        return BAD_REQUEST;
+        return new HttpRes(400, req.id());
     }
 
     @Override
@@ -91,13 +94,14 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         }
         requestsFetched.put(nextRequest.id(), nextRequest);
         byte[] body = lambdaRequest(nextRequest);
-        return new HttpRes(OK, requestHeaders(nextRequest), body);
+        Map<String, List<String>> headers = requestHeaders(nextRequest);
+        return new HttpRes(OK, headers, body, nextRequest.request().id());
     }
 
     private HttpRes passResponse(HttpReq req) {
         LambdaResponse response = lambdaResponse(req.body());
         responsesReceived.put(id(req.path()), response);
-        return NO_CONTENT;
+        return new HttpRes(204, req.id());
     }
 
     private void doPut(LambdaRequest request) {
@@ -120,17 +124,9 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
 
     private static final Duration TIMEOUT = Duration.ofMinutes(1);
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+    private static final HttpRes INTERNAL_ERROR = new HttpRes(500, null);
 
-    private static final HttpRes INTERNAL_ERROR = new HttpRes(500);
-
-    private static final HttpRes SERVICE_UNAVAILABLE = new HttpRes(503);
-
-    private static final HttpRes BAD_REQUEST = new HttpRes(400);
-
-    private static final HttpRes NO_CONTENT = new HttpRes(204);
+    private static final HttpRes SERVICE_UNAVAILABLE = new HttpRes(503, null);
 
     private static Map<String, List<String>> requestHeaders(LambdaRequest nextRequest) {
         return Map.of(
@@ -140,17 +136,62 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     private static LambdaResponse lambdaResponse(byte[] response) {
+        Map<String, Object> map;
         try {
-            return OBJECT_MAPPER.readerFor(LambdaResponse.class).readValue(response);
+            map = Json.INSTANCE.jsonMap(response);
         } catch (Exception e) {
             throw new IllegalStateException(
-                "Failed to produce lambda response from " + response.length + " bytes", e);
+                "Failed to produce lambda response from: " + new String(response, StandardCharsets.UTF_8), e);
         }
+        return new LambdaResponse(
+            map.getOrDefault("statusCode", 0) instanceof Number statusCode
+                ? statusCode.intValue()
+                : unexpectedValue("statusCode", map),
+            map.getOrDefault("headers", Collections.emptyMap()) instanceof Map<?, ?> headers
+                ? check(headers)
+                : unexpectedValue("headers", map),
+            map.getOrDefault("body", "") instanceof String body
+                ? body
+                : unexpectedValue("body", map),
+            map.getOrDefault("isBase64Encoded", false) instanceof Boolean encoded && encoded,
+            map.get("reqId") instanceof String reqId
+                ? Uuid.from(reqId)
+                : null
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, List<String>> check(Map<?, ?> headers) {
+        Set<?> keys = headers.keySet();
+        if (keys.stream().allMatch(String.class::isInstance)) {
+            if (headers.values().stream().allMatch(List.class::isInstance)) {
+                return (Map<String, List<String>>) headers;
+            }
+            return keys.stream().map(String.class::cast)
+                .collect(Collectors.toMap(
+                    Function.identity(),
+                    name -> list(headers, name)
+                ));
+        }
+        throw new IllegalStateException("Invalid header map: " + headers);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> list(Map<?, ?> headers, Object key) {
+        Object value = headers.get(key);
+        if (value instanceof List<?> list) {
+            return (List<String>) list;
+        }
+        return List.of(value.toString());
+    }
+
+    private static <T> T unexpectedValue(String key, Map<String, ?> map) {
+        throw new IllegalStateException("Unexpected value: " + key + " -> " + map.get(key));
     }
 
     private static byte[] lambdaRequest(LambdaRequest request) {
         try {
-            return OBJECT_MAPPER.writeValueAsBytes(request.toJsonPayload());
+            return Json.INSTANCE.writeBytes(request.toPayload());
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to produce lambda payload from " + request, e);

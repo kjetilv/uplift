@@ -54,8 +54,7 @@ abstract class NativeLamdbdaTask : DefaultTask() {
         require(distFile != null || distUri != null) {
             "javaDist property must be file, http or https URI: $dist"
         }
-        val split = renderResource(
-            "Dockerfile-lambda.st4",
+        val split = "Dockerfile-lambda.st4".renderResource(
             "buildsite" to buildsite.get(),
             "target" to identifier.get(),
             "arch" to arch.get(),
@@ -82,6 +81,5 @@ abstract class NativeLamdbdaTask : DefaultTask() {
 
     private fun requestedTask() = (jarTask.nonBlank?.let(::listOf) ?: emptyList())
 
-    private val uplift: Path
-        get() = project.buildDir.toPath().resolve("uplift").also(Files::createDirectories)
+    private val uplift: Path get() = project.buildSubDirectory("uplift")
 }

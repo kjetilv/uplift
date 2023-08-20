@@ -4,11 +4,18 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.provider.Property
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 internal operator fun <T> Property<T>.remAssign(value: T): Unit = set(value)
 
 internal fun Project.propertyOrNull(name: String) = takeIf { hasProperty(name) }?.let { this.property(name) }
+
+internal fun Project.buildSubDirectory(dir: String): Path =
+    layout.buildDirectory.dir(dir).get().asFile.toPath()
+        .also(Files::createDirectories)
+
 
 internal fun Project.resolve(property: String) =
     System.getProperty(property)

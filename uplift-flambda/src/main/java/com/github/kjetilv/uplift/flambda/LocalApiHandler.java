@@ -14,27 +14,24 @@ final class LocalApiHandler implements HttpChannelHandler.Server {
 
     private final LocalLambdaHandler handler;
 
-    private final HttpRes corsResponse;
-
     private final Map<String, List<String>> corsHeaders;
 
-    LocalApiHandler(LocalLambdaHandler handler, CorsSettings corsSettings) {
-        Objects.requireNonNull(corsSettings, "corsSettings");
+    LocalApiHandler(LocalLambdaHandler handler, CorsSettings cors) {
+        Objects.requireNonNull(cors, "cors");
         this.corsHeaders = CaseInsensitiveHashMap.wrap(Map.of(
-            "Access-Control-Allow-Origin", List.of(corsSettings.originValue()),
-            "Access-Control-Allow-Methods", List.of(corsSettings.methodsValue()),
-            "Access-Control-Allow-Headers", List.of(corsSettings.headersValue()),
+            "Access-Control-Allow-Origin", List.of(cors.originValue()),
+            "Access-Control-Allow-Methods", List.of(cors.methodsValue()),
+            "Access-Control-Allow-Headers", List.of(cors.headersValue()),
             "Access-Control-Max-Age", List.of("86400"),
-            "Access-Control-Allow-Credentials", List.of(corsSettings.credentialsValue())
+            "Access-Control-Allow-Credentials", List.of(cors.credentialsValue())
         ));
-        this.corsResponse = new HttpRes(OK, corsHeaders, null);
         this.handler = Objects.requireNonNull(handler, "handler");
     }
 
     @Override
     public HttpRes handle(HttpReq req) {
         if (req.isCORS()) {
-            return corsResponse;
+            return new HttpRes(OK, corsHeaders, null, req.id());
         }
         LambdaResponse lambdaResponse = handler.lambdaResponse(new LambdaRequest(req));
         return lambdaResponse.toHttpResponse().updateHeaders(this::withCors);
@@ -53,6 +50,6 @@ final class LocalApiHandler implements HttpChannelHandler.Server {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + handler + ", cors=" + corsResponse + "]";
+        return getClass().getSimpleName() + "[" + handler + ", cors=" + corsHeaders + "]";
     }
 }

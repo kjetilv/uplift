@@ -172,7 +172,7 @@ public class LambdaHarness implements Closeable {
             localLambdaSettings == null ? 8 * 8192 : localLambdaSettings.requestBufferSize(),
             localLambdaSettings == null ? 10 : localLambdaSettings.queueLength(),
             cors != null ? cors
-                : localLambdaSettings != null ? localLambdaSettings.corsSettings()
+                : localLambdaSettings != null ? localLambdaSettings.cors()
                     : CORS_DEFAULTS,
             resolve(time != null ? time
                 : localLambdaSettings != null ? localLambdaSettings.time()

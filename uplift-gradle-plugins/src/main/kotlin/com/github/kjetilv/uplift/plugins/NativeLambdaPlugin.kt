@@ -7,22 +7,21 @@ import java.net.URI
 class NativeLambdaPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        val target = project.buildDir.toPath().resolve("uplift")
         project.tasks.register("native-lambda", NativeLamdbdaTask::class.java) {
-            it.run {
-                zipFile.set(target.resolve("${project.name}.zip"))
-                bootstrapFile.set(target.resolve(project.name))
-                identifier.set(project.name)
-                jarTask.set("shadowJar")
-                arch.set(System.getProperty("os.arch"))
-                jdkVersion.set("17")
-                buildsite.set("${project.shortGroupName}-buildsite")
-                javaDist.set(
-                    URI.create(
-                        "https://download.oracle.com/graalvm/20/latest/graalvm-jdk-20_linux-${arch.get()}_bin.tar.gz"
-                    )
-                )
-            }
+            val target = project.buildSubDirectory("uplift")
+            val arch = System.getProperty("os.arch")
+            val projectName = project.name
+
+            it.zipFile.set(target.resolve("$projectName.zip"))
+            it.identifier.set(projectName)
+            it.jarTask.set("shadowJar")
+            it.jdkVersion.set("17")
+            it.bootstrapFile.set(target.resolve(projectName))
+            it.arch.set(arch)
+            it.buildsite.set("${project.shortGroupName}-buildsite")
+            it.javaDist.set(arch.asGraalUri())
         }
     }
+
+    private fun String?.asGraalUri(): URI? = URI.create("https://download.oracle.com/graalvm/20/latest/graalvm-jdk-20_linux-${this}_bin.tar.gz")
 }

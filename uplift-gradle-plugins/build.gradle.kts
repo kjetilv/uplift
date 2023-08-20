@@ -6,7 +6,7 @@ plugins {
 gradlePlugin {
     plugins {
         create("lambda-native") {
-            id = "com.github.kjetilv.uplift.plugins.native"
+            id = "com.github.kjetilv.uplift.plugins.lambda"
             implementationClass = "com.github.kjetilv.uplift.plugins.NativeLambdaPlugin"
         }
         create("uplift") {

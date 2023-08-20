@@ -6,16 +6,18 @@ import java.util.Map;
 
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 
 record LambdaResponse(
     int statusCode,
     Map<String, List<String>> headers,
     String body,
-    boolean isBase64Encoded
+    boolean isBase64Encoded,
+    Uuid reqId
 ) {
 
     HttpRes toHttpResponse() {
-        return new HttpRes(statusCode(), headers(), resolveBody());
+        return new HttpRes(statusCode(), headers(), resolveBody(), reqId());
     }
 
     private byte[] resolveBody() {

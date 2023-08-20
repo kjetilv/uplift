@@ -25,23 +25,19 @@ public interface Reqs {
     }
 
     default CompletableFuture<HttpResponse<String>> get(Map<String, String> headers) {
-        return execute("GET", headers);
+        return execute("GET", headers, null, false);
     }
 
     default CompletableFuture<HttpResponse<String>> get(URI path, Map<String, String> headers) {
-        return path(path).execute("GET", headers);
+        return path(path).execute("GET", headers, null, false);
     }
 
     default CompletableFuture<HttpResponse<String>> get(String path, Map<String, String> headers) {
-        return path(path).execute("GET", headers);
+        return path(path).execute("GET", headers, null, false);
     }
 
     default CompletableFuture<HttpResponse<String>> execute(String method) {
-        return execute(method, false);
-    }
-
-    default CompletableFuture<HttpResponse<String>> execute(String method, Map<String, String> headers) {
-        return execute(method, headers, null, false);
+        return execute(method, null, false);
     }
 
     default CompletableFuture<HttpResponse<String>> postJson(String body) {
@@ -56,7 +52,7 @@ public interface Reqs {
         return execute(method, (URI) null, null, body, json);
     }
 
-    CompletableFuture<HttpResponse<String>> execute(String method, Object body);
+    CompletableFuture<HttpResponse<String>> execute(String method, Map<String, Object> body);
 
     CompletableFuture<HttpResponse<String>> execute(String method, String body);
 

@@ -54,12 +54,11 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
             HttpBytes.read(state.requestBuffer())
                 .map(HttpReq::readRequest)
                 .filter(HttpReq::complete);
-        return completed.isEmpty()
-            ? Processing.INCOMPLETE
-            : completed.map(request ->
+        return completed.isEmpty() ? Processing.INCOMPLETE : completed.map(
+                request ->
                     response(request, server, this::write))
-                .map(HttpChannelHandler::processing)
-                .orElse(Processing.FAIL);
+            .map(HttpChannelHandler::processing)
+            .orElse(Processing.FAIL);
     }
 
     @SuppressWarnings("resource")
@@ -77,7 +76,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
         try {
             log.info("Handling {}", req);
             res = server.handle(req);
-            log.info("Handled {} -> {}", req, res);
+            log.info("Handled {} -> {}", req.id(), res);
             return res;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to process: " + req, e);

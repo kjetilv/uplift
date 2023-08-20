@@ -1,23 +1,27 @@
 package com.github.kjetilv.uplift.kernel;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
 
-import com.github.kjetilv.uplift.flogs.DefaultLogFormatter;
 import org.slf4j.LoggerFactory;
 
 public final class ManagedExecutors {
+
+    public static void configure(int coreThreads, int queueLength) {
+        configure(coreThreads, queueLength, Duration.ofSeconds(1));
+    }
+
+    public static ExecutorService backgroundLogging() {
+        return executor("logger", 1);
+    }
 
     public static void configure(int coreThreads, int queueLength, int secondsKeepAlive) {
         configure(coreThreads, queueLength, Duration.ofSeconds(secondsKeepAlive));
@@ -44,6 +48,9 @@ public final class ManagedExecutors {
         if (maxQueueLength < 1) {
             throw new IllegalArgumentException("Invalid queue length: " + maxQueueLength);
         }
+        if (coreThreads == 1) {
+            return Executors.newSingleThreadExecutor(threadFactory(prefix));
+        }
         return new ThreadPoolExecutor(
             coreThreads,
             coreThreads,
@@ -55,22 +62,8 @@ public final class ManagedExecutors {
         );
     }
 
-    public static Function<Long, Optional<String>> threadNamer() {
-        return id ->
-            Optional.ofNullable(THREAD_NAMES.get(id));
-    }
-
-    static {
-        THREAD_NAMES = new ConcurrentHashMap<>();
-        DefaultLogFormatter.set(() -> new DefaultLogFormatter(threadNamer()));
-    }
-
     private ManagedExecutors() {
-
     }
-
-    @SuppressWarnings("StaticCollection")
-    private static final ConcurrentMap<Long, String> THREAD_NAMES;
 
     private static final AtomicReference<Duration> KEEP_ALIVE_TIME =
         new AtomicReference<>(Duration.ofSeconds(10));
@@ -86,20 +79,17 @@ public final class ManagedExecutors {
     private static ThreadFactory threadFactory(String prefix) {
         return runnable -> {
             String name = nextName(prefix);
-            Thread thread = new Thread(
+            return new Thread(
                 () -> {
                     try {
                         runnable.run();
                     } catch (Throwable e) {
                         LoggerFactory.getLogger(ManagedExecutors.class)
                             .warn("{}: Uncaught exception {}", name, runnable, e);
-                    } finally {
-                        clearThreadName(Thread.currentThread());
                     }
                 },
                 name
             );
-            return storedThreadName(thread, name);
         };
     }
 
@@ -109,19 +99,5 @@ public final class ManagedExecutors {
         } finally {
             THREAD_COUNT.increment();
         }
-    }
-
-    private static Thread storedThreadName(Thread thread, String name) {
-        THREAD_NAMES.put(getId(thread), name);
-        return thread;
-    }
-
-    private static void clearThreadName(Thread thread) {
-        THREAD_NAMES.remove(getId(thread));
-    }
-
-    @SuppressWarnings("deprecation")
-    private static long getId(Thread thread) {
-        return thread.getId();
     }
 }
