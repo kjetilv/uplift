@@ -8,13 +8,13 @@ import static com.github.kjetilv.uplift.flogs.LogLevel.INFO;
 import static com.github.kjetilv.uplift.flogs.LogLevel.TRACE;
 import static com.github.kjetilv.uplift.flogs.LogLevel.WARN;
 
-class FLogger implements Logger {
+class Slf4jLogger implements Logger {
 
     private final String name;
 
     private final com.github.kjetilv.uplift.flogs.Logger l;
 
-    FLogger(String name, com.github.kjetilv.uplift.flogs.Logger l) {
+    Slf4jLogger(String name, com.github.kjetilv.uplift.flogs.Logger l) {
         this.name = name;
         this.l = l;
     }

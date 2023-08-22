@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +10,7 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
-@SuppressWarnings({  "unused" })
+@SuppressWarnings("unused")
 public final class Flogs {
 
     public static void initialize() {
@@ -45,7 +46,7 @@ public final class Flogs {
     }
 
     public static Logger get(String name) {
-        return Optional.ofNullable(simpleLoggers.get())
+        return Optional.ofNullable(floggers.get())
             .map(logger ->
                 loggers.computeIfAbsent(name, logger::create))
             .orElseGet(() ->
@@ -60,28 +61,23 @@ public final class Flogs {
     private Flogs() {
     }
 
-    @SuppressWarnings("StaticCollection")
     private static final Map<String, Logger> loggers = new ConcurrentHashMap<>();
 
-    private static final AtomicReference<FLoggers> simpleLoggers = new AtomicReference<>();
+    private static final AtomicReference<FLoggers> floggers = new AtomicReference<>();
 
     private static final FLoggers emergencyLoggers = initialized(null, null, null);
 
-    private static FLoggers initialized(
-        LogLevel logLevel,
-        Consumer<String> printer,
-        ExecutorService background
-    ) {
-        FLoggers loggers = simpleLoggers.updateAndGet(current ->
-            new FLoggers(logLevel, printer, background));
-        if (background != null) {
-            Runtime.getRuntime().addShutdownHook(new Thread(Flogs::stop, "stop logger"));
-        }
-        return loggers;
+    private static FLoggers initialized(LogLevel logLevel, Consumer<String> printer, ExecutorService background) {
+        return floggers.updateAndGet(current -> {
+            if (background != null) {
+                Runtime.getRuntime().addShutdownHook(new Thread(Flogs::stop, "stop logger"));
+            }
+            return new FLoggers(logLevel, printer, Instant::now, background, null);
+        });
     }
 
     private static void stop() {
-        simpleLoggers.updateAndGet(loggers -> {
+        floggers.updateAndGet(loggers -> {
             if (loggers != null) {
                 loggers.close();
             }

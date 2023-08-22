@@ -12,19 +12,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 abstract class AbstractFormatter<E> implements LogFormatter<E> {
 
-    static final String DEFAULT_FORMAT = "%1$TFT%1$TH:%1$TM:%1$TS:%1$TLZ %2$-7s %3$s: %4$s [%5$s]";
-
-    static final String DEFAULT_LEVEL_FORMAT = "%1$TFT%1$TH:%1$TM:%1$TS:%1$TLZ %2$s: %3$s [%4$s]";
-
-    static final PrintStream STDERR = System.err;
-
     static String formatMessage(String baseMessage, Object[] parameters, int trim) {
         if (parameters == null || parameters.length - trim <= 0) {
             return baseMessage;
         }
         boolean rewrite = baseMessage.contains(EMPTY_ARG);
         MessageFormat messageFormat = FORMATS.computeIfAbsent(
-            baseMessage + "-" + trim,
+            trim > 0
+                ? baseMessage + "-" + trim
+                : baseMessage,
             key -> {
                 String pattern = rewrite
                     ? indexed(baseMessage, parameters.length - trim)

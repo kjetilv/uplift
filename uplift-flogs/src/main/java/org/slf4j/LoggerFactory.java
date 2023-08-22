@@ -1,8 +1,9 @@
 package org.slf4j;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import com.github.kjetilv.uplift.flogs.Flogs;
 
@@ -18,13 +19,16 @@ public final class LoggerFactory {
     }
 
     public static Logger getLogger(String name) {
-        return LOGGERS.computeIfAbsent(Objects.requireNonNull(name, "name"), __ ->
-            new FLogger(name, Flogs.get(name)));
+        return LOGGERS.computeIfAbsent(Objects.requireNonNull(name, "name"), newLogger());
     }
 
     private LoggerFactory() {
     }
 
     @SuppressWarnings("StaticCollection")
-    private static final Map<String, Logger> LOGGERS = new ConcurrentHashMap<>();
+    private static final Map<String, Logger> LOGGERS = new HashMap<>();
+
+    private static Function<String, Logger> newLogger() {
+        return name -> new Slf4jLogger(name, Flogs.get(name));
+    }
 }

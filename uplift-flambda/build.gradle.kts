@@ -1,8 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.kjetilv.uplift.build.nativeCmd
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import com.github.kjetilv.uplift.build.Native
+import com.github.kjetilv.uplift.build.Native.runCommand
 
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -39,15 +37,11 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.register("native-image") {
-    val libsDir = project.layout.buildDirectory.dir("libs").get().asFile.also {
-        Files.createDirectories(it.toPath())
-    }
-    project.exec {
-        workingDir = libsDir
-        commandLine = nativeCmd(
+    project.runCommand(
+        command = Native.image(
             "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
             "flambda"
         )
-    }
+    )
     dependsOn(tasks.named("shadowJar"))
 }

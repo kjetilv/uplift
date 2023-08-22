@@ -21,6 +21,7 @@ record LogEntry(
 
     @SuppressWarnings("deprecation")
     static LogEntry create(
+        Instant time,
         String name,
         LogLevel level,
         String msg,
@@ -28,21 +29,22 @@ record LogEntry(
     ) {
         Thread thread = Thread.currentThread();
         Throwable argumentThrowable = argumentThrowable(args);
+        long id = thread.getId();
         LogEntry logEntry = new LogEntry(
-            Instant.now(),
+            time,
             name,
             level,
             msg,
             argumentThrowable,
             args,
             argumentThrowable != null,
-            thread.getId(),
-            thread.getName()
+            id,
+            id == 1 ? null : thread.getName()
         );
         return logEntry;
     }
 
-    public LogEntry {
+    LogEntry {
         requireNonNull(time, "time");
         requireNonNull(name, "name");
         requireNonNull(logLevel, "logLevel");
@@ -58,8 +60,8 @@ record LogEntry(
         return time.truncatedTo(MILLIS).atZone(Z);
     }
 
-    boolean isInfo() {
-        return logLevel == LogLevel.INFO;
+    boolean hasLevel() {
+        return logLevel != LogLevel.INFO;
     }
 
     private static final ZoneId Z = ZoneId.of("Z");

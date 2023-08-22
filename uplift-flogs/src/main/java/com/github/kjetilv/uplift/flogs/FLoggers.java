@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.flogs;
 
+import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.github.kjetilv.flopp.qr.Qrs;
 import com.github.kjetilv.flopp.qr.WriteQr;
@@ -15,26 +17,42 @@ final class FLoggers {
 
     private final ExecutorService executorService;
 
-    private final LogEntryFormatter formatter;
+    private final Supplier<Instant> time;
+
+    private final LogFormatter<LogEntry> formatter;
 
     private final WriteQr<String> qr;
 
-    FLoggers(LogLevel logLevel, Consumer<String> printer, ExecutorService executorService) {
+    FLoggers(
+        LogLevel logLevel,
+        Consumer<String> printer,
+        Supplier<Instant> time,
+        ExecutorService executorService,
+        LogFormatter<LogEntry> formatter
+    ) {
         this.logLevel = logLevel == null ? LogLevel.INFO : logLevel;
         this.printer = printer == null ? System.out::println : printer;
-        this.formatter = new LogEntryFormatter();
+        this.time = Objects.requireNonNull(time, "time");
+        this.formatter = formatter == null ? LogEntryFormatter.INSTANCE : formatter;
 
         this.executorService = executorService;
-        if (this.executorService == null) {
-            this.qr = null;
-        } else {
+        if (this.executorService != null) {
             this.qr = Qrs.writer("logger", this.printer, 10);
             this.executorService.submit(this.qr);
+        } else {
+            this.qr = null;
         }
     }
 
     FLogger create(String name) {
-        return new FLogger(name, logLevel, formatter, qr == null ? printer : qr, printer);
+        return new FLogger(
+            name,
+            logLevel,
+            formatter,
+            qr == null ? printer : qr,
+            printer,
+            time
+        );
     }
 
     void close() {

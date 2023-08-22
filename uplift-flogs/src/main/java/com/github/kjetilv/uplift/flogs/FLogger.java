@@ -1,11 +1,13 @@
 package com.github.kjetilv.uplift.flogs;
 
 import java.io.PrintStream;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -25,6 +27,8 @@ public final class FLogger implements Logger {
 
     private final Consumer<String> emergencyWriter;
 
+    private final Supplier<Instant> time;
+
     private final String sourceName;
 
     FLogger(
@@ -33,6 +37,7 @@ public final class FLogger implements Logger {
         Function<LogEntry, String> formatter,
         Consumer<String> linesWriter,
         Consumer<String> emergencyWriter,
+        Supplier<Instant> time,
         String... knownPrefixes
     ) {
         this.sourceName = requireNonNull(name, "name");
@@ -40,6 +45,7 @@ public final class FLogger implements Logger {
         this.formatter = requireNonNull(formatter, "formatter");
         this.linesWriter = requireNonNull(linesWriter, "linesWriter");
         this.emergencyWriter = emergencyWriter == null ? System.out::println : emergencyWriter;
+        this.time = requireNonNull(time, "time");
         int lastDot = this.sourceName.lastIndexOf('.');
         if (lastDot < 0) {
             this.name = sourceName;
@@ -60,31 +66,28 @@ public final class FLogger implements Logger {
 
     @Override
     public void log(LogLevel level, String msg, Object... args) {
-        if (this.isEnabled(logLevel)) {
-            doLog(level, msg, args);
+        if (this.isEnabled(level)) {
+            LogEntry logEntry = LogEntry.create(time.get(), name, level, msg, args);
+            String logLine = logLine(logEntry);
+            write(logLine);
         }
     }
 
-    private void log(LogLevel logLevel, String format, Object arg1, Object arg2, Object arg3) {
-        doLog(logLevel, format, arg1, arg2, arg3);
+    private void write(String logLine) {
+        try {
+            linesWriter.accept(logLine);
+        } catch (Exception e) {
+            emergencyWriter.accept(logLine);
+        }
     }
 
-    private void doLog(LogLevel level, String msg, Object... args) {
-        if (this.isEnabled(level)) {
-            LogEntry logEntry = LogEntry.create(name, level, msg, args);
-            String logLine;
-            try {
-                logLine = formatter.apply(logEntry);
-            } catch (Exception ex) {
-                STDERR.println("Logging failed: " + logEntry);
-                ex.printStackTrace(STDERR);
-                logLine = "FATAL " + logEntry + ": " + ex;
-            }
-            try {
-                linesWriter.accept(logLine);
-            } catch (Exception e) {
-                emergencyWriter.accept(logLine);
-            }
+    private String logLine(LogEntry logEntry) {
+        try {
+            return formatter.apply(logEntry);
+        } catch (Exception ex) {
+            STDERR.println("Logging failed: " + logEntry);
+            ex.printStackTrace(STDERR);
+            return "FATAL " + logEntry + ": " + ex;
         }
     }
 
