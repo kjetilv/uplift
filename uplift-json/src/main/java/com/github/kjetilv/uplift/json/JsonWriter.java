@@ -96,13 +96,14 @@ final class JsonWriter {
         }
         sink.accept("{ ");
         Sink.Mark mark = sink.mark();
-        map.forEach((field, value) -> {
+        for (Map.Entry<?, ?> value: map.entrySet()) {
             if (mark.moved()) {
                 sink.accept(", ");
             }
-            sink.accept("\"").accept(field).accept("\": ");
-            write(value, sink);
-        });
+            Map.Entry<?, ?> entry = value;
+            sink.accept("\"").accept(entry.getKey()).accept("\": ");
+            write(entry.getValue(), sink);
+        }
         sink.accept(" }");
     }
 
