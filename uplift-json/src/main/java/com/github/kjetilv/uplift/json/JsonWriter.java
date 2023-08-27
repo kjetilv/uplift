@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.json;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -65,20 +65,18 @@ final class JsonWriter {
     private static final Pattern QUOTE = Pattern.compile("\"");
 
     private static void writeString(String value, Sink sink) {
-        boolean quoted = value.indexOf('"') >= 0;
-        String str = quoted
-            ? QUOTE.matcher(value).replaceAll("\\\\\"")
-            : value;
-        sink.accept("\"").accept(str).accept("\"");
+        sink.accept("\"")
+            .accept(value.indexOf('"') >= 0
+                ? QUOTE.matcher(value).replaceAll("\\\\\"")
+                : value)
+            .accept("\"");
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private static void writeOptional(Optional<?> optional, Sink sink) {
         optional.ifPresentOrElse(
-            value ->
-                write(value, sink),
-            () ->
-                writeNull(sink)
+            value -> write(value, sink),
+            () -> writeNull(sink)
         );
     }
 
@@ -108,20 +106,25 @@ final class JsonWriter {
         sink.accept(" }");
     }
 
-    private static void writeArray(Iterable<?> list, Sink sink) {
-        if (list.iterator().hasNext()) {
-            sink.accept("[ ");
-            Sink.Mark mark = sink.mark();
-            list.forEach(value -> {
-                if (mark.moved()) {
-                    sink.accept(", ");
-                }
-                write(value, sink);
-            });
-            sink.accept(" ]");
-            return;
+    private static void writeArray(Iterable<?> iterable, Sink sink) {
+        Iterator<?> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            writeNonEmptyArray(sink, iterator);
+        } else {
+            sink.accept("[]");
         }
-        sink.accept("[]");
+    }
+
+    private static void writeNonEmptyArray(Sink sink, Iterator<?> iterator) {
+        sink.accept("[ ");
+        Sink.Mark mark = sink.mark();
+        while (iterator.hasNext()) {
+            if (mark.moved()) {
+                sink.accept(", ");
+            }
+            write(iterator.next(), sink);
+        }
+        sink.accept(" ]");
     }
 
     private static String objectToString(Object object) {

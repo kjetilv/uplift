@@ -12,8 +12,8 @@ interface Sink {
         return accept(obj.toString());
     }
 
-    default Sink accept(boolean b) {
-        return accept(String.valueOf(b));
+    default Sink accept(boolean bool) {
+        return accept(bool ? "true" : "false");
     }
 
     Sink accept(String str);

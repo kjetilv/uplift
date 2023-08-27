@@ -28,7 +28,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
-tasks.withType<ShadowJar> {
+tasks.withType<ShadowJar>().configureEach {
     manifest {
         attributes(mapOf(Pair("Main-Class", "com.github.kjetilv.uplift.flambda.Main")))
     }
@@ -36,7 +36,7 @@ tasks.withType<ShadowJar> {
     minimize()
 }
 
-tasks.register("native-image") {
+tasks.register("native-image").configure {
     project.runCommand(
         command = Native.image(
             "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
