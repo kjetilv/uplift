@@ -9,6 +9,7 @@ allprojects {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal()
     }
 }
 
@@ -22,7 +23,7 @@ subprojects {
         }
     }
 
-    JavaVersion.valueOf("VERSION_${resolveProperty("javaVersion", defValue = "17")}")
+    JavaVersion.valueOf("VERSION_${resolveProperty("javaVersion", defValue = "20")}")
         .also { javaVersion ->
             configure<JavaPluginExtension> {
                 sourceCompatibility = javaVersion

@@ -57,12 +57,7 @@ abstract class AbstractFormatter<E> implements LogFormatter<E> {
 
     private static Object[] stringified(Object[] pars) {
         for (int i = 0; i < pars.length; i++) {
-            Object par = pars[i];
-            if (!(par instanceof CharSequence)) {
-                pars[i] = par == null ? "null"
-                    : par instanceof Number ? String.valueOf(par)
-                        : pars[i];
-            }
+            pars[i] = String.valueOf(pars[i]);
         }
         return pars;
     }

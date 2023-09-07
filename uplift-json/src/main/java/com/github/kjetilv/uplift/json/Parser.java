@@ -17,7 +17,10 @@ final class Parser {
     private int i;
 
     Parser(List<Token> tokens) {
-        this.tokens = requireNonNull(tokens, "tokens");
+        if (tokens == null) {
+            throw new IllegalArgumentException("Null tokens");
+        }
+        this.tokens = tokens;
         if (this.tokens.size() < 2) {
             throw new IllegalStateException("Truncated token list");
         }

@@ -126,7 +126,10 @@ public final class BytesIO {
     }
 
     public static int writeWritables(DataOutput output, Collection<? extends BinaryWritable> list) {
-        int len = writeInt(output, requireNonNull(list, "list").size());
+        if (list == null) {
+            throw new IllegalArgumentException("Null list");
+        }
+        int len = writeInt(output, list.size());
         int data = list.stream()
             .mapToInt(idOut ->
                 idOut.writeTo(output))

@@ -63,9 +63,29 @@ public record LambdaRequest(String id, HttpReq request) {
         return map.entrySet().stream().collect(
             Collectors.toMap(
                 Map.Entry::getKey,
-                entry -> String.join(",", entry.getValue())
+                entry -> {
+                    List<String> values = entry.getValue();
+                    int size = values.size();
+                    return size == 0 ? ""
+                        : size == 1 ? String.valueOf(values.get(0))
+                            : concated(values, size);
+                }
             )
         );
+    }
+
+    private static String concated(List<String> values, int size) {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean firstDone = false;
+        for (int i = 0; i < size; i++) {
+            if (firstDone) {
+                stringBuilder.append(",");
+            } else {
+                firstDone = true;
+            }
+            stringBuilder.append(values.get(i));
+        }
+        return stringBuilder.toString();
     }
 
     record JsonLambdaPayload(

@@ -65,10 +65,19 @@ abstract class UpliftTask : DefaultTask() {
         env.set(mapOf(*envs))
     }
 
-    protected fun upliftDir(): Path =
-        project.buildSubDirectory("uplift")
+    open fun stackWith(name: String) {}
 
-    protected fun clearCdkApp() = clearRecursive(cdkApp())
+    fun configure(
+        account: String? = null,
+        region: String? = null,
+        stack: String? = null,
+        profile: String? = null
+    ): UpliftTask = this.apply {
+        account?.also(this.account::set)
+        region?.also(this.region::set)
+        stack?.also(this.stack::set)
+        profile?.also(this.profile::set)
+    }
 
     protected fun runCdk(cmd: String): ExecResult = exe(
         upliftDir(),
@@ -84,19 +93,9 @@ abstract class UpliftTask : DefaultTask() {
                 "${"cdk-site:latest"} $cmd"
     )
 
-    fun configure(
-        account: String? = null,
-        region: String? = null,
-        stack: String? = null,
-        profile: String? = null
-    ): UpliftTask = this.apply {
-        account?.also(this.account::set)
-        region?.also(this.region::set)
-        stack?.also(this.stack::set)
-        profile?.also(this.profile::set)
-    }
+    protected fun upliftDir(): Path = project.buildSubDirectory("uplift")
 
-    open fun stackWith(name: String) {}
+    protected fun clearCdkApp() = clearRecursive(cdkApp())
 
     protected abstract fun perform()
 

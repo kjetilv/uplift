@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
@@ -73,10 +72,11 @@ public record HttpReq(
     }
 
     private Integer contentLength() {
-        return Optional.ofNullable(this.headers().get("Content-Length"))
-            .flatMap(values ->
-                values.stream().findFirst()).map(Integer::parseInt)
-            .orElse(0);
+        List<String> value = this.headers().get("Content-Length");
+        if (value == null) {
+            return 0;
+        }
+        return value.stream().findFirst().map(Integer::parseInt).orElse(0);
     }
 
     private static Map<String, List<String>> headers(String headers) {

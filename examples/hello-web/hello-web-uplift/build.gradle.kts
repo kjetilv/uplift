@@ -11,6 +11,11 @@ dependencies {
     implementation("software.constructs:constructs:10.2.69")
 }
 
+configure<JavaPluginExtension> {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 tasks.withType<UpliftTask> {
 
     admonish() // TODO Remove this when you have your properties in order

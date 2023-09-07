@@ -35,5 +35,5 @@ compileKotlin.kotlinOptions {
     jvmTarget = project.takeIf { it.hasProperty("javaVersion") }
         ?.property("javaVersion")
         ?.toString()
-        ?: "17"
+        ?: "20"
 }

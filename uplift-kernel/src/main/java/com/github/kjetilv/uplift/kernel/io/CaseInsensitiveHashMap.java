@@ -45,7 +45,9 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
 
     @SuppressWarnings("WeakerAccess")
     public CaseInsensitiveHashMap(Map<String, V> map) {
-        this.map = map == null ? new LinkedHashMap<>() : new LinkedHashMap<>(requireNonNull(map, "map"));
+        this.map = map == null
+            ? new LinkedHashMap<>()
+            : new LinkedHashMap<>(requireNonNull(map, "map"));
     }
 
     @Override

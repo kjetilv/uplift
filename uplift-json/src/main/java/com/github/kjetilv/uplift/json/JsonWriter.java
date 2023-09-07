@@ -3,7 +3,9 @@ package com.github.kjetilv.uplift.json;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -20,12 +22,20 @@ final class JsonWriter {
             writeOptional(optional, sink);
             return;
         }
-        if (object instanceof Map<?, ?> map) {
-            writeObject(map, sink);
+        if (object instanceof List<?> list) {
+            writeArray(list, sink);
             return;
         }
-        if (object instanceof Iterable<?> list) {
-            writeArray(list, sink);
+        if (object instanceof Collection<?> collection) {
+            writeArray(collection, sink);
+            return;
+        }
+        if (object instanceof Iterable<?> iterable) {
+            writeArray(iterable, sink);
+            return;
+        }
+        if (object instanceof Map<?, ?> map) {
+            writeObject(map, sink);
             return;
         }
         if (object instanceof BigDecimal bigDecimal) {
@@ -109,6 +119,24 @@ final class JsonWriter {
 
     private static void writeArray(Iterable<?> iterable, Sink sink) {
         Iterator<?> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            writeNonEmptyArray(sink, iterator);
+        } else {
+            sink.accept("[]");
+        }
+    }
+
+    private static void writeArray(List<?> list, Sink sink) {
+        Iterator<?> iterator = list.iterator();
+        if (iterator.hasNext()) {
+            writeNonEmptyArray(sink, iterator);
+        } else {
+            sink.accept("[]");
+        }
+    }
+
+    private static void writeArray(Collection<?> collection, Sink sink) {
+        Iterator<?> iterator = collection.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
         } else {

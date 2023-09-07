@@ -170,7 +170,8 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
             return keys.stream().map(String.class::cast)
                 .collect(Collectors.toMap(
                     Function.identity(),
-                    name -> list(headers, name)
+                    name ->
+                        list(headers, name)
                 ));
         }
         throw new IllegalStateException("Invalid header map: " + headers);
@@ -179,10 +180,9 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     @SuppressWarnings("unchecked")
     private static List<String> list(Map<?, ?> headers, Object key) {
         Object value = headers.get(key);
-        if (value instanceof List<?> list) {
-            return (List<String>) list;
-        }
-        return List.of(value.toString());
+        return value instanceof List<?> list
+            ? (List<String>) list
+            : List.of(value.toString());
     }
 
     private static <T> T unexpectedValue(String key, Map<String, ?> map) {

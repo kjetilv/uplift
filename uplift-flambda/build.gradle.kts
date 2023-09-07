@@ -1,6 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.kjetilv.uplift.build.Native
-import com.github.kjetilv.uplift.build.Native.runCommand
 
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -28,7 +26,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
-tasks.withType<ShadowJar>().configureEach {
+tasks.withType<ShadowJar> {
     manifest {
         attributes(mapOf(Pair("Main-Class", "com.github.kjetilv.uplift.flambda.Main")))
     }
@@ -36,12 +34,12 @@ tasks.withType<ShadowJar>().configureEach {
     minimize()
 }
 
-tasks.register("native-image").configure {
-    project.runCommand(
-        command = Native.image(
-            "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
-            "flambda"
-        )
-    )
-    dependsOn(tasks.named("shadowJar"))
-}
+//tasks.register("native-image") {
+//    project.runCommand(
+//        command = Native.image(
+//            "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
+//            "flambda"
+//        )
+//    )
+//    dependsOn(tasks.named("shadowJar"))
+//}

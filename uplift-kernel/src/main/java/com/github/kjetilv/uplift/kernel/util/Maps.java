@@ -76,20 +76,20 @@ public final class Maps {
         ));
     }
 
-    public static <K, V> Map.Entry<K, Optional<? extends V>> optionalEntry(K key, V value) {
+    public static <K, V> Map.Entry<K, Optional<? extends V>> optEntry(K key, V value) {
         return Map.entry(key, Optional.ofNullable(value));
     }
 
     @SafeVarargs
-    public static <K, V> Map<K, V> fromOptionalEntries(Map.Entry<K, Optional<? extends V>>... entries) {
+    public static <K, V> Map<K, V> fromOptEntries(Map.Entry<K, Optional<? extends V>>... entries) {
         return realEntries(entries).collect(toLinkedHashMap(entries.length));
     }
 
-    public static <K, V> Map<K, V> fromOptionalEntries(List<Map.Entry<K, Optional<? extends V>>> entryList) {
+    public static <K, V> Map<K, V> fromOptEntries(List<Map.Entry<K, Optional<? extends V>>> entryList) {
         return realEntries(entryList.stream()).collect(toLinkedHashMap(entryList.size()));
     }
 
-    public static <K, V> Map<K, V> fromOptionalEntries(Stream<Map.Entry<K, Optional<? extends V>>> entryStream) {
+    public static <K, V> Map<K, V> fromOptEntries(Stream<Map.Entry<K, Optional<? extends V>>> entryStream) {
         return realEntries(entryStream).collect(toLinkedHashMap());
     }
 
