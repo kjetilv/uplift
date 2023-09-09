@@ -29,22 +29,21 @@ final class Parser {
         if (tokens.isEmpty()) {
             return null;
         }
-        Object value = switch (peek().type()) {
+        Token token = chomp();
+        Object value = switch (token.type()) {
             case BEGIN_OBJECT -> object();
             case BEGIN_ARRAY -> array();
-            case BOOL, STRING, NUMBER, NIL -> chomp().literal();
-            default -> fail(peek(), BEGIN_OBJECT, BEGIN_ARRAY, BOOL, STRING, NUMBER, NIL);
+            case BOOL, STRING, NUMBER, NIL -> token.literal();
+            default -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, BOOL, STRING, NUMBER, NIL);
         };
         return value == NULL_VALUE ? null : value;
     }
 
     private Map<String, Object> object() {
-        chomp();
         if (peek().isNot(END_OBJECT)) {
             Map<String, Object> object = new LinkedHashMap<>();
             while (peek().isNot(END_OBJECT)) {
-                String field = chomp(STRING).literal().toString();
-                chomp(COLON);
+                String field = readField();
                 object.put(field, parse());
                 Token next = peek();
                 if (next.comma()) {
@@ -60,8 +59,13 @@ final class Parser {
         return Collections.emptyMap();
     }
 
+    private String readField() {
+        String field = chomp(STRING).literal().toString();
+        chomp(COLON);
+        return field;
+    }
+
     private Collection<Object> array() {
-        chomp();
         Collection<Object> array = new ArrayList<>();
         while (peek().isNot(END_ARRAY)) {
             array.add(parse());
