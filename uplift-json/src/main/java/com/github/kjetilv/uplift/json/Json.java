@@ -22,50 +22,46 @@ public interface Json {
 
     BiConsumer<Object, OutputStream> OBJECT_OUT = INSTANCE::write;
 
-    Function<String, Map<String, Object>> STRING_2_JSON_MAP = INSTANCE::jsonMap;
+    Function<String, Map<?, ?>> STRING_2_JSON_MAP = INSTANCE::jsonMap;
 
-    Function<InputStream, Map<String, Object>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
+    Function<InputStream, Map<?, ?>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
 
-    Function<String, List<Object>> JSON_ARRAY = INSTANCE::jsonArray;
+    Function<String, List<?>> JSON_ARRAY = INSTANCE::jsonArray;
 
-    @SuppressWarnings("unchecked")
-    default Map<String, Object> jsonMap(InputStream source) {
+    default Map<?, ?> jsonMap(InputStream source) {
         Object json = read(source);
         if (json instanceof Map<?, ?> map) {
-            return (Map<String, Object>) map;
+            return map;
         }
         throw new IllegalArgumentException("Not an object: " + source + " => " + json);
     }
 
-    @SuppressWarnings("unchecked")
-    default Map<String, Object> jsonMap(byte[] source) {
+    default Map<?, ?> jsonMap(byte[] source) {
         Object json = read(source);
         if (json == null) {
             return Collections.emptyMap();
         }
         if (json instanceof Map<?, ?> map) {
-            return (Map<String, Object>) map;
+            return map;
         }
         throw new IllegalArgumentException("Not an object: " + source.length + " bytes => " + json);
     }
 
-    @SuppressWarnings("unchecked")
-    default Map<String, Object> jsonMap(String source) {
+    default Map<?, ?> jsonMap(String source) {
         Object json = read(source);
         if (json == null) {
             return Collections.emptyMap();
         }
         if (json instanceof Map<?, ?> map) {
-            return (Map<String, Object>) map;
+            return map;
         }
         throw new IllegalArgumentException("Not an object: " + source + " => " + json);
     }
 
-    @SuppressWarnings("unchecked")
-    default List<Object> jsonArray(String source) {
+    default List<?> jsonArray(String source) {
         Object json = read(source);
         if (json instanceof List<?> list) {
-            return (List<Object>) list;
+            return list;
         }
         throw new IllegalArgumentException("Not an array: " + source + " => " + json);
     }

@@ -11,7 +11,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParse() {
-        Map<String, Object> map = Json.INSTANCE.jsonMap(
+        Map<?, ?> map = Json.INSTANCE.jsonMap(
             """
             {
               "resource": "/audio/{track}",

@@ -27,7 +27,7 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
 
     private final URI endpoint;
 
-    private final Function<InputStream, Map<String, Object>> jsonParser;
+    private final Function<InputStream, Map<?, ?>> jsonParser;
 
     private final Supplier<Instant> time;
 
@@ -45,7 +45,7 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch,
         URI endpoint,
         Duration timeout,
-        Function<InputStream, Map<String, Object>> jsonParser,
+        Function<InputStream, Map<?, ?>> jsonParser,
         Supplier<Instant> time
     ) {
         this.fetch = requireNonNull(fetch, "send");
@@ -114,11 +114,11 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
 
     private LambdaPayload payload(HttpResponse<? extends InputStream> response) {
         InputStream body = validBody(response);
-        Map<String, Object> object = object(body);
+        Map<?, ?> object = object(body);
         return payload(object);
     }
 
-    private Map<String, Object> object(InputStream body) {
+    private Map<?, ?> object(InputStream body) {
         try {
             return parsedBody(body);
         } catch (Exception e) {
@@ -126,7 +126,7 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
         }
     }
 
-    private Map<String, Object> parsedBody(InputStream body) {
+    private Map<?, ?> parsedBody(InputStream body) {
         try {
             return jsonParser.apply(body);
         } catch (Exception e) {

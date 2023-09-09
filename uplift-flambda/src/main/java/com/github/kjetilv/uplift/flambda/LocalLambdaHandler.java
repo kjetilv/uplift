@@ -136,24 +136,25 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     private static LambdaResponse lambdaResponse(byte[] response) {
-        Map<String, Object> map;
+        Map<?, ?> map;
         try {
             map = Json.INSTANCE.jsonMap(response);
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to produce lambda response from: " + new String(response, StandardCharsets.UTF_8), e);
         }
+        Object entity = map.get("body");
         return new LambdaResponse(
-            map.getOrDefault("statusCode", 0) instanceof Number statusCode
+            map.get("statusCode") instanceof Number statusCode
                 ? statusCode.intValue()
                 : unexpectedValue("statusCode", map),
-            map.getOrDefault("headers", Collections.emptyMap()) instanceof Map<?, ?> headers
+            map.get("headers") instanceof Map<?, ?> headers
                 ? check(headers)
                 : unexpectedValue("headers", map),
-            map.getOrDefault("body", "") instanceof String body
-                ? body
-                : unexpectedValue("body", map),
-            map.getOrDefault("isBase64Encoded", false) instanceof Boolean encoded && encoded,
+            entity == null ? null
+                : entity instanceof String body ? body
+                    : unexpectedValue("body", map),
+            map.get("isBase64Encoded") instanceof Boolean encoded && encoded,
             map.get("reqId") instanceof String reqId
                 ? Uuid.from(reqId)
                 : null
@@ -186,7 +187,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
             : List.of(string);
     }
 
-    private static <T> T unexpectedValue(String key, Map<String, ?> map) {
+    private static <T> T unexpectedValue(String key, Map<?, ?> map) {
         throw new IllegalStateException("Unexpected value: " + key + " -> " + map.get(key));
     }
 
