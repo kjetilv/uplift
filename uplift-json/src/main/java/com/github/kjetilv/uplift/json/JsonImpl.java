@@ -23,12 +23,12 @@ class JsonImpl implements Json {
         try {
             tokens = Scanner.tokens(source).toList();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to scan, " + source.length() + " chars", e);
+            throw new IllegalStateException("Failed to scan " + source.length() + " chars", e);
         }
         try {
             return new Parser(tokens).parse();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse, " + source.length() + " chars", e);
+            throw new IllegalStateException("Failed to parse " + source.length() + " chars", e);
         }
     }
 

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-interface Sink {
+public interface Sink {
 
     @FunctionalInterface
     interface Mark {

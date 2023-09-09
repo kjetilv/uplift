@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.kjetilv.uplift.json.TokenType.*;
-import static java.util.Objects.requireNonNull;
 
 final class Parser {
 
@@ -17,8 +16,8 @@ final class Parser {
     private int i;
 
     Parser(List<Token> tokens) {
-        if (tokens == null) {
-            throw new IllegalArgumentException("Null tokens");
+        if (tokens == null ||  tokens.isEmpty()) {
+            throw new IllegalArgumentException("No tokens");
         }
         this.tokens = tokens;
         if (this.tokens.size() < 2) {
@@ -72,7 +71,7 @@ final class Parser {
             } else if (next.isNot(END_ARRAY)) {
                 fail(peek(), END_ARRAY, COMMA);
             }
-        } ;
+        }
         chomp();
         return array;
     }
@@ -84,7 +83,8 @@ final class Parser {
     private Token chomp(TokenType expected) {
         try {
             Token token = tokens.get(i);
-            return token.type() == expected ? token
+            return token.type() == expected
+                ? token
                 : fail(token, expected);
         } finally {
             i++;
