@@ -180,9 +180,11 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     @SuppressWarnings("unchecked")
     private static List<String> list(Map<?, ?> headers, Object key) {
         Object value = headers.get(key);
-        return value instanceof List<?> list
-            ? (List<String>) list
-            : List.of(value.toString());
+        String string = value.toString();
+        // Lists are unusual, avoid instanceof until we see a possible case
+        return string.charAt(0) == '[' && string.endsWith("]") && value instanceof List<?> list
+            ? list.stream().map(Object::toString).toList()
+            : List.of(string);
     }
 
     private static <T> T unexpectedValue(String key, Map<String, ?> map) {

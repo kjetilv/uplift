@@ -18,8 +18,24 @@ final class JsonWriter {
             writeNull(sink);
             return;
         }
-        if (object instanceof Optional<?> optional) {
-            writeOptional(optional, sink);
+        if (object instanceof String value) {
+            writeString(value, sink);
+            return;
+        }
+        if (object instanceof BigDecimal bigDecimal) {
+            writeDecimal(bigDecimal, sink);
+            return;
+        }
+        if (object instanceof Number value) {
+            sink.accept(value);
+            return;
+        }
+        if (object instanceof Boolean value) {
+            sink.accept(value);
+            return;
+        }
+        if (object instanceof Map<?, ?> map) {
+            writeObject(map, sink);
             return;
         }
         if (object instanceof List<?> list) {
@@ -34,24 +50,8 @@ final class JsonWriter {
             writeArray(iterable, sink);
             return;
         }
-        if (object instanceof Map<?, ?> map) {
-            writeObject(map, sink);
-            return;
-        }
-        if (object instanceof BigDecimal bigDecimal) {
-            writeDecimal(bigDecimal, sink);
-            return;
-        }
-        if (object instanceof String value) {
-            writeString(value, sink);
-            return;
-        }
-        if (object instanceof Boolean value) {
-            sink.accept(value);
-            return;
-        }
-        if (object instanceof Number value) {
-            sink.accept(value);
+        if (object instanceof Optional<?> optional) {
+            writeOptional(optional, sink);
             return;
         }
         if (object instanceof URI uri) {
@@ -104,17 +104,17 @@ final class JsonWriter {
             sink.accept("{}");
             return;
         }
-        sink.accept("{ ");
+        sink.accept("{");
         Sink.Mark mark = sink.mark();
         for (Map.Entry<?, ?> value: map.entrySet()) {
             if (mark.moved()) {
-                sink.accept(", ");
+                sink.accept(",");
             }
             Map.Entry<?, ?> entry = value;
-            sink.accept("\"").accept(entry.getKey()).accept("\": ");
+            sink.accept("\"").accept(entry.getKey()).accept("\":");
             write(entry.getValue(), sink);
         }
-        sink.accept(" }");
+        sink.accept("}");
     }
 
     private static void writeArray(Iterable<?> iterable, Sink sink) {
@@ -145,15 +145,15 @@ final class JsonWriter {
     }
 
     private static void writeNonEmptyArray(Sink sink, Iterator<?> iterator) {
-        sink.accept("[ ");
+        sink.accept("[");
         Sink.Mark mark = sink.mark();
         while (iterator.hasNext()) {
             if (mark.moved()) {
-                sink.accept(", ");
+                sink.accept(",");
             }
             write(iterator.next(), sink);
         }
-        sink.accept(" ]");
+        sink.accept("]");
     }
 
     private static String objectToString(Object object) {
