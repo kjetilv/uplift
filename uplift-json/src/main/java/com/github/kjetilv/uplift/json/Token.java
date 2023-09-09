@@ -14,16 +14,12 @@ record Token(
         requireNonNull(type, "type");
     }
 
-    boolean is(TokenType type, TokenType... or) {
-        if (this.type == requireNonNull(type, "type")) {
-            return true;
-        }
-        for (TokenType orType: or) {
-            if (this.type == orType) {
-                return true;
-            }
-        }
-        return false;
+    String literalString() {
+        return literal.toString();
+    }
+
+    boolean is(TokenType type) {
+        return this.type == type;
     }
 
     private String printableValue() {

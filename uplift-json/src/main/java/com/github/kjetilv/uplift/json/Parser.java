@@ -20,13 +20,13 @@ final class Parser {
             throw new IllegalArgumentException("No tokens");
         }
         this.tokens = tokens;
-        if (this.tokens.size() < 2) {
-            throw new IllegalStateException("Truncated token list");
-        }
     }
 
     Object parse() {
-        return tokens.isEmpty() ? null : parseFrom(chomp());
+        if (tokens.isEmpty()) {
+            throw new IllegalStateException("End of token stream");
+        }
+        return parseFrom(chomp());
     }
 
     private Object parseFrom(Token token) {
@@ -40,56 +40,64 @@ final class Parser {
     }
 
     private Map<String, Object> object() {
-        Map<String, Object> object = null;
         Token next = chomp();
-        while (!next.is(END_OBJECT)) {
-            String field = next.is(STRING)
-                ? next.literal().toString()
-                : fail(next, STRING, END_OBJECT);
-            next = chomp(COLON);
-            if (object == null) {
-                object = new LinkedHashMap<>();
-            }
-            object.put(field, parseFrom(next));
-            next = chomp();
-            if (next.is(COMMA)) {
-                next = chomp();
-            } else if (!next.is(END_OBJECT)) {
-                fail(next, END_OBJECT, COMMA);
-            }
+        if (next.is(END_OBJECT)) {
+            return Collections.emptyMap();
         }
-        return object == null ? Collections.emptyMap() : Collections.unmodifiableMap(object);
+        Map<String, Object> object = new LinkedHashMap<>();
+        do {
+            object.put(
+                string(next),
+                parseFrom(chomp(COLON))
+            );
+            next = expectCommaOr(END_OBJECT);
+            if (next.is(END_OBJECT)) {
+                return Collections.unmodifiableMap(object);
+            }
+        } while (true);
     }
 
     private Collection<Object> array() {
-        List<Object> array = null;
         Token next = chomp();
-        while (!next.is(END_ARRAY)) {
-            if (array == null) {
-                array = new ArrayList<>();
-            }
-            array.add(parseFrom(next));
-            next = chomp();
-            if (next.is(COMMA)) {
-                next = chomp();
-            } else if (!next.is(END_ARRAY)) {
-                fail(next, END_ARRAY, COMMA);
-            }
+        if (next.is(END_ARRAY)) {
+            return Collections.emptyList();
         }
-        return array == null ? Collections.emptyList() : Collections.unmodifiableList(array);
+        List<Object> array = new ArrayList<>();
+        do {
+            array.add(parseFrom(next));
+            next = expectCommaOr(END_ARRAY);
+            if (next.is(END_ARRAY)) {
+                return Collections.unmodifiableList(array);
+            }
+        } while (true);
     }
 
-    private Token chomp(TokenType... skippables) {
-        for (TokenType skippable: skippables) {
-            Token actual = tokens.get(i++);
-            if (actual.type() != skippable) {
-                fail(actual, skippable);
-            }
+    private Token expectCommaOr(TokenType tokenType) {
+        Token next = chomp();
+        return next.is(COMMA) ? chomp()
+            : next.is(tokenType) ? next
+                : fail(next, tokenType, COMMA);
+    }
+
+    private Token chomp(TokenType skipped) {
+        Token actual = tokens.get(i++);
+        if (actual.type() != skipped) {
+            fail(actual, skipped);
         }
+        return chomp();
+    }
+
+    private Token chomp() {
         return tokens.get(i++);
     }
 
     private static final Object NULL_VALUE = new Object();
+
+    private static String string(Token next) {
+        return next.is(STRING)
+            ? next.literalString()
+            : fail(next, STRING, END_OBJECT);
+    }
 
     private static <T> T fail(Token actual, TokenType... expected) {
         throw new ParseException(actual, expected);

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -63,6 +64,24 @@ class JsonTest {
     enum Enum {
 
         ENUM
+    }
+
+    @Test
+    void singleValueTrue() {
+        Object read = INSTANCE.read("true");
+        assertThat(read).isEqualTo(true);
+    }
+
+    @Test
+    void singleValueString() {
+        Object read = INSTANCE.read("\"foo\"");
+        assertThat(read).isEqualTo("foo");
+    }
+
+    @Test
+    void singleValueDec() {
+        Object read = INSTANCE.read("0.42");
+        assertThat(read).isEqualTo(new BigDecimal("0.42"));
     }
 
     @Test
