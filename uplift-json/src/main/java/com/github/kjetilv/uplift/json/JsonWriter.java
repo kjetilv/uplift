@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 final class JsonWriter {
 
@@ -74,6 +75,9 @@ final class JsonWriter {
         if (object instanceof Iterable<?> iterable) {
             writeIterable(iterable, sink);
             return;
+        }
+        if (object instanceof Stream<?> stream) {
+            writeList(stream.toList(), sink);
         }
         writeString(object.toString(), sink);
     }
