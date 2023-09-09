@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +39,10 @@ final class Parser {
     }
 
     private Map<String, Object> object() {
-        if (peek().is(END_OBJECT)) {
-            chomp();
-            return Collections.emptyMap();
-        }
         Map<String, Object> object = new LinkedHashMap<>();
         while (!peek().is(END_OBJECT)) {
-            String field = readField();
+            String field = chomp(STRING).literal().toString();
+            chomp(COLON);
             object.put(field, parse());
             Token next = peek();
             if (next.is(COMMA)) {
@@ -63,9 +59,6 @@ final class Parser {
         Collection<Object> array = new ArrayList<>();
         Token next = chomp();
         while (!next.is(END_ARRAY)) {
-            if (next.is(COMMA)) {
-                next = chomp();
-            }
             array.add(parseFrom(next));
             next = chomp();
             if (next.is(COMMA)) {
@@ -75,12 +68,6 @@ final class Parser {
             }
         }
         return array;
-    }
-
-    private String readField() {
-        String field = chomp(STRING).literal().toString();
-        chomp(COLON);
-        return field;
     }
 
     private Token chomp() {
