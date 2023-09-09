@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -15,11 +16,25 @@ import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.ARRAY;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 final class Tests {
+
+    static void emptyArray(Json instance) {
+        Object read1 = instance.read("[]");
+        assertThat(read1).asInstanceOf(LIST).isEmpty();
+        Object read2 = instance.read(
+            """
+            { "foo": [] }
+            """);
+        assertThat(read2).asInstanceOf(InstanceOfAssertFactories.MAP)
+            .hasEntrySatisfying("foo", entry ->
+                assertThat(entry).asInstanceOf(LIST).isEmpty());
+    }
 
     static void testObjects(Json instance) throws MalformedURLException {
         Map<String, Object> written = new LinkedHashMap<>();
@@ -209,7 +224,8 @@ final class Tests {
         assertEquals(line, e.getToken().line());
         assertEquals(unexpected, e.getToken().type());
         assertEquals(set.size(), e.getExpected().size(),
-            () -> set + " /= " + e.getExpected());
+            () -> set + " /= " + e.getExpected()
+        );
         assertTrue(e.getExpected().containsAll(set));
     }
 

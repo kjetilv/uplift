@@ -19,6 +19,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 class JsonTest {
 
     @Test
+    void emprtyArray() {
+        Tests.emptyArray(Json.INSTANCE);
+    }
+
+    @Test
     void noSemis() {
         Tests.noSemis(Json.INSTANCE);
     }

@@ -64,7 +64,7 @@ final class Parser {
     private Collection<Object> array() {
         chomp();
         Collection<Object> array = new ArrayList<>();
-        do {
+        while (peek().isNot(END_ARRAY)) {
             array.add(parse());
             Token next = peek();
             if (next.comma()) {
@@ -72,7 +72,7 @@ final class Parser {
             } else if (next.isNot(END_ARRAY)) {
                 fail(peek(), END_ARRAY, COMMA);
             }
-        } while (peek().isNot(END_ARRAY));
+        } ;
         chomp();
         return array;
     }
