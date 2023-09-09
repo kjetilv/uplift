@@ -177,7 +177,6 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         throw new IllegalStateException("Invalid header map: " + headers);
     }
 
-    @SuppressWarnings("unchecked")
     private static List<String> list(Map<?, ?> headers, Object key) {
         Object value = headers.get(key);
         String string = value.toString();
