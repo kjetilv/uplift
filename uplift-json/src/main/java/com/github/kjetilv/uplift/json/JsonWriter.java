@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 final class JsonWriter {
@@ -59,22 +60,22 @@ final class JsonWriter {
             return;
         }
         if (object instanceof List<?> list) {
-            writeArray(list, sink);
+            writeList(list, sink);
+            return;
+        }
+        if (object instanceof Set<?> set) {
+            writeSet(set, sink);
             return;
         }
         if (object instanceof Collection<?> collection) {
-            writeArray(collection, sink);
+            writeCollection(collection, sink);
             return;
         }
         if (object instanceof Iterable<?> iterable) {
-            writeArray(iterable, sink);
+            writeIterable(iterable, sink);
             return;
         }
-        String str = object.toString();
-        if (str.equals(objectToString(object))) {
-            throw new IllegalArgumentException("Bad object for JSON: " + str);
-        }
-        writeString(str, sink);
+        writeString(object.toString(), sink);
     }
 
     private JsonWriter() {
@@ -120,7 +121,7 @@ final class JsonWriter {
         sink.accept("}");
     }
 
-    private static void writeArray(Iterable<?> iterable, Sink sink) {
+    private static void writeIterable(Iterable<?> iterable, Sink sink) {
         Iterator<?> iterator = iterable.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -129,7 +130,7 @@ final class JsonWriter {
         }
     }
 
-    private static void writeArray(List<?> list, Sink sink) {
+    private static void writeList(List<?> list, Sink sink) {
         Iterator<?> iterator = list.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -138,7 +139,16 @@ final class JsonWriter {
         }
     }
 
-    private static void writeArray(Collection<?> collection, Sink sink) {
+    private static void writeSet(Set<?> list, Sink sink) {
+        Iterator<?> iterator = list.iterator();
+        if (iterator.hasNext()) {
+            writeNonEmptyArray(sink, iterator);
+        } else {
+            sink.accept("[]");
+        }
+    }
+
+    private static void writeCollection(Collection<?> collection, Sink sink) {
         Iterator<?> iterator = collection.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -157,9 +167,5 @@ final class JsonWriter {
             write(iterator.next(), sink);
         }
         sink.accept("]");
-    }
-
-    private static String objectToString(Object object) {
-        return object.getClass().getName() + "@" + Integer.toHexString(object.hashCode());
     }
 }
