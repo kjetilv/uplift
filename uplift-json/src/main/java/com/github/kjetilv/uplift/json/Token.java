@@ -22,6 +22,10 @@ record Token(
         return this.type != type;
     }
 
+    boolean is(TokenType tokenType) {
+        return this.type == type();
+    }
+
     private String printableValue() {
         if (type().printable()) {
             int length = lexeme.length();

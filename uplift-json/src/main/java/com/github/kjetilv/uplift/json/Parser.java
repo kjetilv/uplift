@@ -16,7 +16,7 @@ final class Parser {
     private int i;
 
     Parser(List<Token> tokens) {
-        if (tokens == null ||  tokens.isEmpty()) {
+        if (tokens == null || tokens.isEmpty()) {
             throw new IllegalArgumentException("No tokens");
         }
         this.tokens = tokens;
@@ -26,10 +26,10 @@ final class Parser {
     }
 
     Object parse() {
-        if (tokens.isEmpty()) {
-            return null;
-        }
-        Token token = chomp();
+        return tokens.isEmpty() ? null : parseFrom(chomp());
+    }
+
+    private Object parseFrom(Token token) {
         Object value = switch (token.type()) {
             case BEGIN_OBJECT -> object();
             case BEGIN_ARRAY -> array();
@@ -59,25 +59,28 @@ final class Parser {
         return Collections.emptyMap();
     }
 
+    private Collection<Object> array() {
+        Collection<Object> array = new ArrayList<>();
+        Token next = chomp();
+        while (next.isNot(END_ARRAY)) {
+            if (next.comma()) {
+                next = chomp();
+            }
+            array.add(parseFrom(next));
+            next = chomp();
+            if (next.comma()) {
+                next = chomp();
+            } else if (next.isNot(END_ARRAY)) {
+                fail(next, END_ARRAY, COMMA);
+            }
+        }
+        return array;
+    }
+
     private String readField() {
         String field = chomp(STRING).literal().toString();
         chomp(COLON);
         return field;
-    }
-
-    private Collection<Object> array() {
-        Collection<Object> array = new ArrayList<>();
-        while (peek().isNot(END_ARRAY)) {
-            array.add(parse());
-            Token next = peek();
-            if (next.comma()) {
-                chomp();
-            } else if (next.isNot(END_ARRAY)) {
-                fail(peek(), END_ARRAY, COMMA);
-            }
-        }
-        chomp();
-        return array;
     }
 
     private Token chomp() {
