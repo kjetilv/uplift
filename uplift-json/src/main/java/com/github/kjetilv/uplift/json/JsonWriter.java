@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
@@ -26,12 +27,31 @@ final class JsonWriter {
             writeDecimal(bigDecimal, sink);
             return;
         }
-        if (object instanceof Number value) {
-            sink.accept(value);
+        if (object instanceof BigInteger bigInteger) {
+            writeInteger(bigInteger, sink);
             return;
         }
         if (object instanceof Boolean value) {
             sink.accept(value);
+            return;
+        }
+        if (object instanceof Number value) {
+            sink.accept(value);
+            return;
+        }
+        if (object instanceof Optional<?> optional) {
+            optional.ifPresentOrElse(
+                value -> write(value, sink),
+                () -> writeNull(sink)
+            );
+            return;
+        }
+        if (object instanceof URI uri) {
+            writeString(uri.toASCIIString(), sink);
+            return;
+        }
+        if (object instanceof URL url) {
+            writeString(url.toExternalForm(), sink);
             return;
         }
         if (object instanceof Map<?, ?> map) {
@@ -48,21 +68,6 @@ final class JsonWriter {
         }
         if (object instanceof Iterable<?> iterable) {
             writeArray(iterable, sink);
-            return;
-        }
-        if (object instanceof Optional<?> optional) {
-            optional.ifPresentOrElse(
-                value -> write(value, sink),
-                () -> writeNull(sink)
-            );
-            return;
-        }
-        if (object instanceof URI uri) {
-            writeString(uri.toASCIIString(), sink);
-            return;
-        }
-        if (object instanceof URL url) {
-            writeString(url.toExternalForm(), sink);
             return;
         }
         String str = object.toString();
@@ -90,8 +95,11 @@ final class JsonWriter {
     }
 
     private static void writeDecimal(BigDecimal dec, Sink sink) {
-        String value = dec.toPlainString();
-        sink.accept(value.startsWith("0.") ? value.substring(1) : value);
+        sink.accept(dec.toPlainString());
+    }
+
+    private static void writeInteger(BigInteger inte, Sink sink) {
+        sink.accept(inte.toString(10));
     }
 
     private static void writeObject(Map<?, ?> map, Sink sink) {
