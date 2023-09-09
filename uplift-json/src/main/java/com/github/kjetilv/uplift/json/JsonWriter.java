@@ -51,7 +51,10 @@ final class JsonWriter {
             return;
         }
         if (object instanceof Optional<?> optional) {
-            writeOptional(optional, sink);
+            optional.ifPresentOrElse(
+                value -> write(value, sink),
+                () -> writeNull(sink)
+            );
             return;
         }
         if (object instanceof URI uri) {
@@ -80,14 +83,6 @@ final class JsonWriter {
                 ? QUOTE.matcher(value).replaceAll("\\\\\"")
                 : value)
             .accept("\"");
-    }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private static void writeOptional(Optional<?> optional, Sink sink) {
-        optional.ifPresentOrElse(
-            value -> write(value, sink),
-            () -> writeNull(sink)
-        );
     }
 
     private static void writeNull(Sink sink) {
