@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +40,16 @@ final class Parser {
     }
 
     private Map<String, Object> object() {
-        Map<String, Object> object = new LinkedHashMap<>();
+        Map<String, Object> object = null;
         Token next = chomp();
         while (!next.is(END_OBJECT)) {
             String field = next.is(STRING)
                 ? next.literal().toString()
                 : fail(next, STRING, END_OBJECT);
             next = chomp(COLON);
+            if (object == null) {
+                object = new LinkedHashMap<>();
+            }
             object.put(field, parseFrom(next));
             next = chomp();
             if (next.is(COMMA)) {
@@ -54,13 +58,16 @@ final class Parser {
                 fail(next, END_OBJECT, COMMA);
             }
         }
-        return object;
+        return object == null ? Collections.emptyMap() : Collections.unmodifiableMap(object);
     }
 
     private Collection<Object> array() {
-        Collection<Object> array = new ArrayList<>();
+        List<Object> array = null;
         Token next = chomp();
         while (!next.is(END_ARRAY)) {
+            if (array == null) {
+                array = new ArrayList<>();
+            }
             array.add(parseFrom(next));
             next = chomp();
             if (next.is(COMMA)) {
@@ -69,7 +76,7 @@ final class Parser {
                 fail(next, END_ARRAY, COMMA);
             }
         }
-        return array;
+        return array == null ? Collections.emptyList() : Collections.unmodifiableList(array);
     }
 
     private Token chomp(TokenType... skippables) {
