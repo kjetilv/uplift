@@ -151,7 +151,7 @@ class JsonTest {
             }
             """,
             e ->
-                assertParseException(e, BOOL, 2, STRING)
+                assertParseException(e, BOOL, 2, STRING, END_OBJECT)
         );
     }
 

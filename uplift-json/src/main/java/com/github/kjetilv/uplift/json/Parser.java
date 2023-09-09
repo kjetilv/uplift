@@ -40,18 +40,20 @@ final class Parser {
 
     private Map<String, Object> object() {
         Map<String, Object> object = new LinkedHashMap<>();
-        while (!peek().is(END_OBJECT)) {
-            String field = chomp(STRING).literal().toString();
-            chomp(COLON);
-            object.put(field, parse());
-            Token next = peek();
+        Token next = chomp();
+        while (!next.is(END_OBJECT)) {
+            String field = next.is(STRING)
+                ? next.literal().toString()
+                : fail(next, STRING, END_OBJECT);
+            next = chomp(COLON);
+            object.put(field, parseFrom(next));
+            next = chomp();
             if (next.is(COMMA)) {
-                chomp();
+                next = chomp();
             } else if (!next.is(END_OBJECT)) {
-                fail(peek(), END_OBJECT, COMMA);
+                fail(next, END_OBJECT, COMMA);
             }
         }
-        chomp();
         return object;
     }
 
@@ -70,23 +72,14 @@ final class Parser {
         return array;
     }
 
-    private Token chomp() {
-        return tokens.get(i++);
-    }
-
-    private Token chomp(TokenType expected) {
-        try {
-            Token token = tokens.get(i);
-            return token.type() == expected
-                ? token
-                : fail(token, expected);
-        } finally {
-            i++;
+    private Token chomp(TokenType... skippables) {
+        for (TokenType skippable: skippables) {
+            Token actual = tokens.get(i++);
+            if (actual.type() != skippable) {
+                fail(actual, skippable);
+            }
         }
-    }
-
-    private Token peek() {
-        return tokens.get(i);
+        return tokens.get(i++);
     }
 
     private static final Object NULL_VALUE = new Object();
