@@ -40,37 +40,37 @@ final class Parser {
     }
 
     private Map<String, Object> object() {
-        if (peek().isNot(END_OBJECT)) {
-            Map<String, Object> object = new LinkedHashMap<>();
-            while (peek().isNot(END_OBJECT)) {
-                String field = readField();
-                object.put(field, parse());
-                Token next = peek();
-                if (next.comma()) {
-                    chomp();
-                } else if (next.isNot(END_OBJECT)) {
-                    fail(peek(), END_OBJECT, COMMA);
-                }
-            }
+        if (peek().is(END_OBJECT)) {
             chomp();
-            return object;
+            return Collections.emptyMap();
+        }
+        Map<String, Object> object = new LinkedHashMap<>();
+        while (!peek().is(END_OBJECT)) {
+            String field = readField();
+            object.put(field, parse());
+            Token next = peek();
+            if (next.is(COMMA)) {
+                chomp();
+            } else if (!next.is(END_OBJECT)) {
+                fail(peek(), END_OBJECT, COMMA);
+            }
         }
         chomp();
-        return Collections.emptyMap();
+        return object;
     }
 
     private Collection<Object> array() {
         Collection<Object> array = new ArrayList<>();
         Token next = chomp();
-        while (next.isNot(END_ARRAY)) {
-            if (next.comma()) {
+        while (!next.is(END_ARRAY)) {
+            if (next.is(COMMA)) {
                 next = chomp();
             }
             array.add(parseFrom(next));
             next = chomp();
-            if (next.comma()) {
+            if (next.is(COMMA)) {
                 next = chomp();
-            } else if (next.isNot(END_ARRAY)) {
+            } else if (!next.is(END_ARRAY)) {
                 fail(next, END_ARRAY, COMMA);
             }
         }

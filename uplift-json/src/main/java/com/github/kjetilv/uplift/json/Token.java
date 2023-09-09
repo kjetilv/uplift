@@ -14,23 +14,22 @@ record Token(
         requireNonNull(type, "type");
     }
 
-    boolean comma() {
-        return this.type == TokenType.COMMA;
-    }
-
-    boolean isNot(TokenType type) {
-        return this.type != type;
-    }
-
-    boolean is(TokenType tokenType) {
-        return this.type == type();
+    boolean is(TokenType type, TokenType... or) {
+        if (this.type == requireNonNull(type, "type")) {
+            return true;
+        }
+        for (TokenType orType: or) {
+            if (this.type == orType) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String printableValue() {
         if (type().printable()) {
             int length = lexeme.length();
-            String printed =
-                length > 10 ? lexeme.substring(0, 9) + "⋯" + " [" + length + "]" : lexeme;
+            String printed = length > 10 ? lexeme.substring(0, 9) + "⋯" + " [" + length + "]" : lexeme;
             return printed + ":";
         }
         return "";
