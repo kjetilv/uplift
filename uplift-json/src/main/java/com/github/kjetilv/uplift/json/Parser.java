@@ -17,7 +17,7 @@ final class Parser {
 
     Parser(List<Token> tokens) {
         if (tokens == null || tokens.isEmpty()) {
-            throw new IllegalArgumentException("No tokens");
+            throw new IllegalArgumentException("Empty token stream");
         }
         this.tokens = tokens;
     }
@@ -50,7 +50,7 @@ final class Parser {
                 string(next),
                 parseFrom(chomp(COLON))
             );
-            next = expectCommaOr(END_OBJECT);
+            next = commaOr(END_OBJECT);
             if (next.is(END_OBJECT)) {
                 return Collections.unmodifiableMap(object);
             }
@@ -65,14 +65,14 @@ final class Parser {
         List<Object> array = new ArrayList<>();
         do {
             array.add(parseFrom(next));
-            next = expectCommaOr(END_ARRAY);
+            next = commaOr(END_ARRAY);
             if (next.is(END_ARRAY)) {
                 return Collections.unmodifiableList(array);
             }
         } while (true);
     }
 
-    private Token expectCommaOr(TokenType tokenType) {
+    private Token commaOr(TokenType tokenType) {
         Token next = chomp();
         return next.is(COMMA) ? chomp()
             : next.is(tokenType) ? next
