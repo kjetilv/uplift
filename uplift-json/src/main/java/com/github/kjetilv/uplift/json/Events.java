@@ -89,14 +89,10 @@ public abstract class Events implements Function<Token, Events> {
         return switch (token.type()) {
             case BEGIN_OBJECT -> new ObjectEvents(surroundingScope(), handlers());
             case BEGIN_ARRAY -> new ArrayEvents(surroundingScope(), handlers());
-            case STRING -> emit(handler -> handler.string(token.literalString()))
-                .surroundingScope();
-            case BOOL -> emit(handler -> handler.truth(token.literalTruth()))
-                .surroundingScope();
-            case NUMBER -> emit(handler -> handler.number(token.literalNumber()))
-                .surroundingScope();
-            case NIL -> emit(Handler::nil)
-                .surroundingScope();
+            case STRING -> emit(handler -> handler.string(token.literalString())).surroundingScope();
+            case BOOL -> emit(handler -> handler.truth(token.literalTruth())).surroundingScope();
+            case NUMBER -> emit(handler -> handler.number(token.literalNumber())).surroundingScope();
+            case NIL -> emit(Handler::nil).surroundingScope();
             case COMMA, COLON, END_OBJECT, END_ARRAY -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
         };
     }
