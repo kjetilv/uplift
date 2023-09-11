@@ -16,7 +16,7 @@ public class JsonEventsTest {
         Stream<Token> scanner = Scanner.tokens((
             """
             {
-              "els": [1, 2],
+              "els": [1, 2, "a", "b"],
               "foo": ["tip", true, [ 3, 4 ]]
             }
             """

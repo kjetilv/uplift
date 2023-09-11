@@ -15,7 +15,7 @@ public class ObjectEvents extends Events {
     @Override
     public Events process(Token token) {
         if (token.is(END_OBJECT)) {
-            return emit(Handler::objectEnded).surroundingScope().surroundingScope();
+            return emit(Handler::objectEnded).surroundingScope();
         }
         if (token.is(COMMA)) {
             return this;

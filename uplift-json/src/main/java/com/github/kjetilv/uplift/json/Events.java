@@ -87,8 +87,8 @@ public abstract class Events implements Function<Token, Events> {
 
     protected Events value(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEvents(this, handlers());
-            case BEGIN_ARRAY -> new ArrayEvents(this, handlers());
+            case BEGIN_OBJECT -> new ObjectEvents(surroundingScope(), handlers());
+            case BEGIN_ARRAY -> new ArrayEvents(surroundingScope(), handlers());
             case STRING -> emit(handler -> handler.string(token.literalString()))
                 .surroundingScope();
             case BOOL -> emit(handler -> handler.truth(token.literalTruth()))
