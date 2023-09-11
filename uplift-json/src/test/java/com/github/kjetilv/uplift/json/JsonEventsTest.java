@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -13,20 +11,18 @@ public class JsonEventsTest {
 
     @Test
     void arr() {
-        Stream<Token> scanner = Scanner.tokens((
+        Stream<Token> tokenStream = Scanner.tokens(
             """
             {
               "els": [1, 2, "a", "b"],
               "foo": ["tip", true, [ 3, 4 ]]
             }
-            """
-        ));
-        Events.Path path = new LinkedPath();
+            """);
         List<String> tokens = new ArrayList<>();
         try {
             Events.Handler handler = handler(tokens);
             Events rootEvents = new ValueEvents(handler);
-            Events reduce = scanner.reduce(
+            Events reduce = tokenStream.reduce(
                 rootEvents,
                 Function::apply,
                 (events, events2) -> {
@@ -40,7 +36,7 @@ public class JsonEventsTest {
 
     @Test
     void obj() {
-        Stream<Token> scanner = Scanner.tokens((
+        Stream<Token> tokenStream = Scanner.tokens(
             """
             {
               "foo": "bar",
@@ -49,14 +45,12 @@ public class JsonEventsTest {
                 "oops": true
               }
             }
-            """
-        ));
-        Events.Path path = new LinkedPath();
+            """);
         List<String> tokens = new ArrayList<>();
         try {
             Events.Handler handler = handler(tokens);
             Events rootEvents = new ValueEvents(handler);
-            Events reduce = scanner.reduce(
+            Events reduce = tokenStream.reduce(
                 rootEvents,
                 Function::apply,
                 (events, events2) -> {
@@ -74,11 +68,6 @@ public class JsonEventsTest {
             @Override
             public void objectStarted() {
                 tokens.add("objectStarted");
-            }
-
-            @Override
-            public void field(String name) {
-                tokens.add("field:" + name);
             }
 
             @Override
@@ -122,33 +111,5 @@ public class JsonEventsTest {
             }
         };
         return handler;
-    }
-
-    private static final class LinkedPath implements Events.Path {
-
-        private final LinkedList<String> path;
-
-        private LinkedPath() {
-            this(null);
-        }
-
-        private LinkedPath(LinkedList<String> path) {
-            this.path = path == null ? new LinkedList<>() : path;
-        }
-
-        @Override
-        public Events.Path push(String name) {
-            Objects.requireNonNull(name, "name");
-            LinkedList<String> newPath = new LinkedList<>(path);
-            newPath.addLast(name);
-            return new LinkedPath(newPath);
-        }
-
-        @Override
-        public String toString() {
-            return path.isEmpty()
-                ? "[]"
-                : "[" + String.join("/", path) + "]";
-        }
     }
 }

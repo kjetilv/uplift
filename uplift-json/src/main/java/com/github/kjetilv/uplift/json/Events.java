@@ -12,16 +12,9 @@ import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
 public abstract class Events implements Function<Token, Events> {
 
-    public interface Path {
-
-        Path push(String name);
-    }
-
     public interface Handler {
 
         void objectStarted();
-
-        void field(String name);
 
         void objectEnded();
 
@@ -58,12 +51,8 @@ public abstract class Events implements Function<Token, Events> {
 
     public abstract Events process(Token token);
 
-    protected final Events handler(String path, BiFunction<Events, Token, Events> handler) {
-        return new SimpleEvents(
-            surroundingScope(),
-            handler,
-            handlers()
-        );
+    protected final Events handler(BiFunction<Events, Token, Events> handler) {
+        return new DelegatingEvents(surroundingScope(), handler, handlers());
     }
 
     protected final Handler[] handlers() {
@@ -74,10 +63,6 @@ public abstract class Events implements Function<Token, Events> {
         return surroundingScope;
     }
 
-    protected final Events processInSurroundingScope(Token processable) {
-        return surroundingScope.apply(processable);
-    }
-
     protected final Events emit(Consumer<Handler> action) {
         for (Handler handler: handlers) {
             action.accept(handler);
@@ -85,39 +70,71 @@ public abstract class Events implements Function<Token, Events> {
         return this;
     }
 
-    protected Events value(Token token) {
+    protected final Events value(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEvents(surroundingScope(), handlers());
-            case BEGIN_ARRAY -> new ArrayEvents(surroundingScope(), handlers());
-            case STRING -> emit(handler -> handler.string(token.literalString())).surroundingScope();
-            case BOOL -> emit(handler -> handler.truth(token.literalTruth())).surroundingScope();
-            case NUMBER -> emit(handler -> handler.number(token.literalNumber())).surroundingScope();
-            case NIL -> emit(Handler::nil).surroundingScope();
-            case COMMA, COLON, END_OBJECT, END_ARRAY -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
+            case BEGIN_OBJECT -> object(surroundingScope());
+            case BEGIN_ARRAY -> array(surroundingScope());
+            case STRING -> string(token).surroundingScope();
+            case BOOL -> truth(token).surroundingScope();
+            case NUMBER -> number(token).surroundingScope();
+            case NIL -> nil().surroundingScope();
+            case COMMA, COLON, END_OBJECT, END_ARRAY -> failValue(token);
         };
     }
 
-    protected Events flatValue(Token token) {
+    protected final Events flatValue(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEvents(this, handlers());
-            case BEGIN_ARRAY -> new ArrayEvents(this, handlers());
-            case STRING -> emit(handler -> handler.string(token.literalString()));
-            case BOOL -> emit(handler -> handler.truth(token.literalTruth()));
-            case NUMBER -> emit(handler -> handler.number(token.literalNumber()));
-            case NIL -> emit(Handler::nil);
-            case COMMA, COLON, END_OBJECT, END_ARRAY -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
+            case BEGIN_OBJECT -> object(this);
+            case BEGIN_ARRAY -> array(this);
+            case STRING -> string(token);
+            case BOOL -> truth(token);
+            case NUMBER -> number(token);
+            case NIL -> nil();
+            case COMMA, COLON, END_OBJECT, END_ARRAY -> failValue(token);
         };
     }
 
-    protected <T> T fail(Token actual, TokenType... expected) {
+    protected final Events newValue() {
+        return new ValueEvents(this, handlers());
+    }
+
+    protected final <T> T fail(Token actual, TokenType... expected) {
         throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
     }
 
-    private static final class SimpleEvents extends Events {
+    protected final Events string(Token token) {
+        return emit(handler -> handler.string(token.literalString()));
+    }
+
+    private Events failValue(Token token) {
+        return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
+    }
+
+    private ObjectEvents object(Events surroundingScope) {
+        return new ObjectEvents(surroundingScope, handlers());
+    }
+
+    private ArrayEvents array(Events surroundingScope) {
+        return new ArrayEvents(surroundingScope, handlers());
+    }
+
+    private Events number(Token token) {
+        return emit(handler -> handler.number(token.literalNumber()));
+    }
+
+    private Events truth(Token token) {
+        return emit(handler -> handler.truth(token.literalTruth()));
+    }
+
+    private Events nil() {
+        return emit(Handler::nil);
+    }
+
+    private static final class DelegatingEvents extends Events {
 
         private final BiFunction<Events, Token, Events> action;
 
-        private SimpleEvents(
+        private DelegatingEvents(
             Events surroundingScope,
             BiFunction<Events, Token, Events> action,
             Handler... handlers
