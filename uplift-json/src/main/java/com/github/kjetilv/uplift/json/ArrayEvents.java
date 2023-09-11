@@ -14,7 +14,7 @@ public class ArrayEvents extends Events {
     public Events process(Token token) {
         if (token.is(END_ARRAY)) {
             emit(Handler::arrayEnded);
-            return surroundingScope();
+            return surroundingScope().surroundingScope();
         }
         if (token.is(COMMA)) {
             return this;

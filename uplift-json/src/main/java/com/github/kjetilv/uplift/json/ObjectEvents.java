@@ -18,7 +18,7 @@ public class ObjectEvents extends Events {
     public Events process(Token token) {
         if (token.is(END_OBJECT)) {
             emit(Handler::objectEnded);
-            return surroundingScope().pop().surroundingScope();
+            return surroundingScope().surroundingScope();
         }
         if (token.is(COMMA)) {
             return this;
@@ -26,10 +26,7 @@ public class ObjectEvents extends Events {
         if (token.is(STRING)) {
             String fieldName = token.literalString();
             try {
-                return handler(fieldName, (s1, colonToken) ->
-                    colonToken.is(COLON)
-                        ? new ValueEvents(path().push(fieldName), this, handlers())
-                        : fail(token, COLON));
+                return expectThen(COLON, newValue());
             } finally {
                 emit(handler -> handler.field(fieldName));
             }
@@ -37,13 +34,31 @@ public class ObjectEvents extends Events {
         return fail(token, END_OBJECT, COMMA, STRING);
     }
 
+    private ValueEvents newValue() {
+        return new ValueEvents(path(), this, handlers());
+    }
+
     @Override
     protected Events push(String name) {
-        return new ObjectEvents(path().push(Objects.requireNonNull(name, "name")), surroundingScope(), handlers());
+        return onPath(path().push(Objects.requireNonNull(name, "name")));
     }
 
     @Override
     protected Events pop() {
-        return new ObjectEvents(path().pop(), surroundingScope(), handlers());
+        return onPath(path().pop());
+    }
+
+    private ObjectEvents onPath(Path pushed) {
+        return new ObjectEvents(pushed, surroundingScope(), handlers());
+    }
+
+    private Skip expectThen(TokenType skip, Events next) {
+        return new Skip(
+            path(),
+            surroundingScope(),
+            skip,
+            next,
+            handlers()
+        );
     }
 }
