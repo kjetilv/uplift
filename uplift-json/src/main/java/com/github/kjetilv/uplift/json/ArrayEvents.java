@@ -13,8 +13,7 @@ public class ArrayEvents extends Events {
     @Override
     public Events process(Token token) {
         if (token.is(END_ARRAY)) {
-            emit(Handler::arrayEnded);
-            return surroundingScope().surroundingScope();
+            return emit(Handler::arrayEnded).surroundingScope().surroundingScope();
         }
         if (token.is(COMMA)) {
             return this;
