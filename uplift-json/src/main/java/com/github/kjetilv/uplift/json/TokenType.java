@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-enum TokenType {
+public enum TokenType {
 
     BEGIN_OBJECT,
 

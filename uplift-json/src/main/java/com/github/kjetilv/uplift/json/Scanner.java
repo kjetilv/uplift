@@ -12,6 +12,10 @@ import static com.github.kjetilv.uplift.json.TokenType.*;
 
 final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
+    static final String CANONICAL_TRUE = "true";
+
+    static final String CANONICAL_FALSE = "false";
+
     static Stream<Token> tokens(String source) {
         return tokenStream(new StringSource(source));
     }
@@ -139,10 +143,6 @@ final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     private static final char[] ALSE = "alse".toCharArray();
 
     private static final char[] ULL = "ull".toCharArray();
-
-    private static final String CANONICAL_TRUE = "true";
-
-    private static final String CANONICAL_FALSE = "false";
 
     private static final String CANONICAL_NULL = "null";
 
