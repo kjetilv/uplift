@@ -16,7 +16,8 @@ public class JsonEventsTest {
         Stream<Token> scanner = Scanner.tokens((
             """
             {
-              "els": [1, 2]
+              "els": [1, 2],
+              "foo": ["tip", true, [ 3, 4 ]]
             }
             """
         ));
@@ -24,7 +25,7 @@ public class JsonEventsTest {
         List<String> tokens = new ArrayList<>();
         try {
             Events.Handler handler = handler(tokens);
-            Events rootEvents = new ValueEvents(path, handler);
+            Events rootEvents = new ValueEvents(handler);
             Events reduce = scanner.reduce(
                 rootEvents,
                 Function::apply,
@@ -54,7 +55,7 @@ public class JsonEventsTest {
         List<String> tokens = new ArrayList<>();
         try {
             Events.Handler handler = handler(tokens);
-            Events rootEvents = new ValueEvents(path, handler);
+            Events rootEvents = new ValueEvents(handler);
             Events reduce = scanner.reduce(
                 rootEvents,
                 Function::apply,
@@ -140,13 +141,6 @@ public class JsonEventsTest {
             Objects.requireNonNull(name, "name");
             LinkedList<String> newPath = new LinkedList<>(path);
             newPath.addLast(name);
-            return new LinkedPath(newPath);
-        }
-
-        @Override
-        public Events.Path pop() {
-            LinkedList<String> newPath = new LinkedList<>(path);
-            newPath.removeLast();
             return new LinkedPath(newPath);
         }
 

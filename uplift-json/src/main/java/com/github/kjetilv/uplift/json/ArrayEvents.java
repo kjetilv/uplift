@@ -5,8 +5,8 @@ import static com.github.kjetilv.uplift.json.TokenType.END_ARRAY;
 
 public class ArrayEvents extends Events {
 
-    public ArrayEvents(Path path, Events surroundingScope, Handler... handlers) {
-        super(path, surroundingScope, handlers);
+    public ArrayEvents(Events surroundingScope, Handler... handlers) {
+        super(surroundingScope, handlers);
         emit(Handler::arrayStarted);
     }
 
