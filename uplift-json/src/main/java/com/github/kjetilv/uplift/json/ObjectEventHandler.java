@@ -5,21 +5,23 @@ import static com.github.kjetilv.uplift.json.TokenType.COMMA;
 import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
 import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
-public final class ObjectEventHandler extends EventHandler {
+final class ObjectEventHandler extends EventHandler {
 
-    public ObjectEventHandler(EventHandler scope, Handler... handlers) {
-        super(scope, handlers);
-        emit(Handler::objectStarted);
+    ObjectEventHandler(EventHandler scope, Callbacks... callbacks) {
+        super(scope, callbacks);
+        emit(Callbacks::objectStarted);
     }
 
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> emit(Handler::objectEnded).scope();
+            case END_OBJECT -> emit(Callbacks::objectEnded).scope();
             case COMMA -> this;
             case STRING -> {
                 emit(handler -> string(token));
-                yield skip(COLON, new ValueEventHandler(this, handlers()));
+                ValueEventHandler next = new ValueEventHandler(this, callbacks());
+                yield eventHandler(shouldSkip ->
+                    shouldSkip.is(COLON) ? next : fail(shouldSkip, COLON));
             }
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };

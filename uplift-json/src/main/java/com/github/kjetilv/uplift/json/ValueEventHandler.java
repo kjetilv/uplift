@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.json;
 
-public class ValueEventHandler extends EventHandler {
+final class ValueEventHandler extends EventHandler {
 
-    public ValueEventHandler(Handler... handlers) {
-        this(null, handlers);
+    ValueEventHandler(Callbacks... callbacks) {
+        this(null, callbacks);
     }
 
-    public ValueEventHandler(EventHandler scope, Handler... handlers) {
-        super(scope, handlers);
+    ValueEventHandler(EventHandler scope, Callbacks... callbacks) {
+        super(scope, callbacks);
     }
 
     @Override

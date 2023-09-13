@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class JsonEventHandlerTest {
+public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
@@ -16,13 +16,14 @@ public class JsonEventHandlerTest {
             """
             {
               "els": [1, 2, "a", "b"],
-              "foo": ["tip", true, [ 3, 4 ], []]
+              "foo": ["tip", true, [ 3, 4 ], []],
+              "bar": [{"zit": "quz"}, 4]
             }
             """);
         List<String> tokens = new ArrayList<>();
         try {
             tokenStream.reduce(
-                (EventHandler) new ValueEventHandler(handler(tokens)),
+                EventHandler.create(handler(tokens)),
                 Function::apply,
                 (events, events2) -> {
                     throw new IllegalStateException(events + "/" + events2);
@@ -47,8 +48,8 @@ public class JsonEventHandlerTest {
             """);
         List<String> tokens = new ArrayList<>();
         try {
-            EventHandler.Handler handler = handler(tokens);
-            EventHandler rootEventHandler = new ValueEventHandler(handler);
+            EventHandler.Callbacks callbacks = handler(tokens);
+            EventHandler rootEventHandler = EventHandler.create(callbacks);
             tokenStream.reduce(
                 rootEventHandler,
                 Function::apply,
@@ -76,7 +77,7 @@ public class JsonEventHandlerTest {
         List<String> tokens = new ArrayList<>();
         try {
             EventHandler reduce = tokenStream.reduce(
-                new ValueEventHandler(handler(tokens)),
+                EventHandler.create(handler(tokens)),
                 EventHandler::process,
                 (events, events2) -> {
                     throw new IllegalStateException(events + "/" + events2);
@@ -88,8 +89,8 @@ public class JsonEventHandlerTest {
         }
     }
 
-    private static EventHandler.Handler handler(List<String> stuff) {
-        return new EventHandler.Handler() {
+    private static EventHandler.Callbacks handler(List<String> stuff) {
+        return new EventHandler.Callbacks() {
 
             @Override
             public void objectStarted() {

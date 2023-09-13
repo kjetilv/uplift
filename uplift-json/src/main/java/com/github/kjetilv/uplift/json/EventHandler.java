@@ -3,11 +3,20 @@ package com.github.kjetilv.uplift.json;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.github.kjetilv.uplift.json.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
+import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
+import static com.github.kjetilv.uplift.json.TokenType.BOOL;
+import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
-public abstract class EventHandler implements Function<Token, EventHandler> {
+public abstract sealed class EventHandler implements Function<Token, EventHandler>
+    permits ValueEventHandler, ArrayEventHandler, ObjectEventHandler, DelegatedEventHandler {
 
-    public interface Handler {
+    public static EventHandler create(Callbacks... callbacks) {
+        return new ValueEventHandler(callbacks);
+    }
+
+    public interface Callbacks {
 
         void objectStarted();
 
@@ -28,13 +37,12 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
 
     private final EventHandler scope;
 
-    private final Handler[] handlers;
+    private final Callbacks[] callbacks;
 
-    public EventHandler(EventHandler scope, Handler... handlers) {
+    EventHandler(EventHandler scope, Callbacks... callbacks) {
         this.scope = scope;
-        this.handlers = handlers;
-
-        if (this.handlers.length == 0) {
+        this.callbacks = callbacks;
+        if (this.callbacks.length == 0) {
             throw new IllegalArgumentException(this + " has no handlers");
         }
     }
@@ -46,17 +54,17 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
 
     public abstract EventHandler process(Token token);
 
-    protected final Handler[] handlers() {
-        return handlers;
+    protected final Callbacks[] callbacks() {
+        return callbacks;
     }
 
     protected final EventHandler scope() {
         return scope;
     }
 
-    protected final EventHandler emit(Consumer<Handler> action) {
-        for (Handler handler: handlers) {
-            action.accept(handler);
+    protected final EventHandler emit(Consumer<Callbacks> action) {
+        for (Callbacks callbacks: this.callbacks) {
+            action.accept(callbacks);
         }
         return this;
     }
@@ -93,20 +101,20 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
         return emit(handler -> handler.string(token.literalString()));
     }
 
-    protected Skip skip(TokenType skipped, ValueEventHandler next) {
-        return new Skip(scope(), skipped, next, handlers());
+    protected final EventHandler eventHandler(Function<Token, EventHandler> eventHandler) {
+        return new DelegatedEventHandler(scope(), eventHandler, callbacks);
     }
 
-    private EventHandler failValue(Token token) {
+    private final EventHandler failValue(Token token) {
         return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
     }
 
     private EventHandler object(EventHandler scope) {
-        return new ObjectEventHandler(scope, handlers());
+        return new ObjectEventHandler(scope, callbacks());
     }
 
     private ArrayEventHandler array(EventHandler scope) {
-        return new ArrayEventHandler(scope, handlers());
+        return new ArrayEventHandler(scope, callbacks());
     }
 
     private EventHandler number(Token token) {
@@ -118,11 +126,11 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
     }
 
     private EventHandler nil() {
-        return emit(Handler::nil);
+        return emit(Callbacks::nil);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return getClass().getSimpleName() + "[" + (scope == null ? "" : "->" + scope) + "]";
     }
 }
