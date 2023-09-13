@@ -8,8 +8,8 @@ public final class Skip extends EventHandler {
 
     private final EventHandler next;
 
-    public Skip(EventHandler surroundingScope, TokenType type, EventHandler next, Handler... handlers) {
-        super(surroundingScope, handlers);
+    public Skip(EventHandler scope, TokenType type, EventHandler next, Handler... handlers) {
+        super(scope, handlers);
         this.type = Objects.requireNonNull(type, "type");
         this.next = Objects.requireNonNull(next, "next");
     }

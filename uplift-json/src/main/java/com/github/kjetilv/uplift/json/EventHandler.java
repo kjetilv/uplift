@@ -3,11 +3,7 @@ package com.github.kjetilv.uplift.json;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
+import static com.github.kjetilv.uplift.json.TokenType.*;
 
 public abstract class EventHandler implements Function<Token, EventHandler> {
 
@@ -30,12 +26,12 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
         void string(String string);
     }
 
-    private final EventHandler surroundingScope;
+    private final EventHandler scope;
 
     private final Handler[] handlers;
 
-    public EventHandler(EventHandler surroundingScope, Handler... handlers) {
-        this.surroundingScope = surroundingScope;
+    public EventHandler(EventHandler scope, Handler... handlers) {
+        this.scope = scope;
         this.handlers = handlers;
 
         if (this.handlers.length == 0) {
@@ -54,8 +50,8 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
         return handlers;
     }
 
-    protected final EventHandler surroundingScope() {
-        return surroundingScope;
+    protected final EventHandler scope() {
+        return scope;
     }
 
     protected final EventHandler emit(Consumer<Handler> action) {
@@ -67,12 +63,12 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
 
     protected final EventHandler value(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> object(surroundingScope());
-            case BEGIN_ARRAY -> array(surroundingScope());
-            case STRING -> string(token).surroundingScope();
-            case BOOL -> truth(token).surroundingScope();
-            case NUMBER -> number(token).surroundingScope();
-            case NIL -> nil().surroundingScope();
+            case BEGIN_OBJECT -> object(scope());
+            case BEGIN_ARRAY -> array(scope());
+            case STRING -> string(token).scope();
+            case BOOL -> truth(token).scope();
+            case NUMBER -> number(token).scope();
+            case NIL -> nil().scope();
             case COMMA, COLON, END_OBJECT, END_ARRAY -> failValue(token);
         };
     }
@@ -105,12 +101,12 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
         return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
     }
 
-    private EventHandler object(EventHandler surroundingScope) {
-        return new ObjectEventHandler(surroundingScope, handlers());
+    private EventHandler object(EventHandler scope) {
+        return new ObjectEventHandler(scope, handlers());
     }
 
-    private ArrayEventHandler array(EventHandler surroundingScope) {
-        return new ArrayEventHandler(surroundingScope, handlers());
+    private ArrayEventHandler array(EventHandler scope) {
+        return new ArrayEventHandler(scope, handlers());
     }
 
     private EventHandler number(Token token) {
@@ -127,6 +123,6 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + (surroundingScope == null ? "" : "->" + surroundingScope) + "]";
+        return getClass().getSimpleName() + "[" + (scope == null ? "" : "->" + scope) + "]";
     }
 }

@@ -6,8 +6,8 @@ public class ValueEventHandler extends EventHandler {
         this(null, handlers);
     }
 
-    public ValueEventHandler(EventHandler surroundingScope, Handler... handlers) {
-        super(surroundingScope, handlers);
+    public ValueEventHandler(EventHandler scope, Handler... handlers) {
+        super(scope, handlers);
     }
 
     @Override
