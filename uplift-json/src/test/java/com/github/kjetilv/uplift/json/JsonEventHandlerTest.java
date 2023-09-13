@@ -7,7 +7,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-public class JsonEventsTest {
+@SuppressWarnings("ResultOfMethodCallIgnored")
+public class JsonEventHandlerTest {
 
     @Test
     void arr() {
@@ -15,15 +16,13 @@ public class JsonEventsTest {
             """
             {
               "els": [1, 2, "a", "b"],
-              "foo": ["tip", true, [ 3, 4 ]]
+              "foo": ["tip", true, [ 3, 4 ], []]
             }
             """);
         List<String> tokens = new ArrayList<>();
         try {
-            Events.Handler handler = handler(tokens);
-            Events rootEvents = new ValueEvents(handler);
-            Events reduce = tokenStream.reduce(
-                rootEvents,
+            tokenStream.reduce(
+                (EventHandler) new ValueEventHandler(handler(tokens)),
                 Function::apply,
                 (events, events2) -> {
                     throw new IllegalStateException(events + "/" + events2);
@@ -48,10 +47,10 @@ public class JsonEventsTest {
             """);
         List<String> tokens = new ArrayList<>();
         try {
-            Events.Handler handler = handler(tokens);
-            Events rootEvents = new ValueEvents(handler);
-            Events reduce = tokenStream.reduce(
-                rootEvents,
+            EventHandler.Handler handler = handler(tokens);
+            EventHandler rootEventHandler = new ValueEventHandler(handler);
+            tokenStream.reduce(
+                rootEventHandler,
                 Function::apply,
                 (events, events2) -> {
                     throw new IllegalStateException(events + "/" + events2);
@@ -62,54 +61,80 @@ public class JsonEventsTest {
         }
     }
 
-    private static Events.Handler handler(List<String> tokens) {
-        Events.Handler handler = new Events.Handler() {
+    @Test
+    void parse() {
+        Stream<Token> tokenStream = Scanner.tokens(
+            """
+            {
+              "foo": "bar",
+              "zot": 5,
+              "obj2": {
+                "oops": true
+              }
+            }
+            """);
+        List<String> tokens = new ArrayList<>();
+        try {
+            EventHandler reduce = tokenStream.reduce(
+                new ValueEventHandler(handler(tokens)),
+                EventHandler::process,
+                (events, events2) -> {
+                    throw new IllegalStateException(events + "/" + events2);
+                }
+            );
+            System.out.println(reduce);
+        } finally {
+            System.out.println(tokens);
+        }
+    }
+
+    private static EventHandler.Handler handler(List<String> stuff) {
+        return new EventHandler.Handler() {
 
             @Override
             public void objectStarted() {
-                tokens.add("objectStarted");
+                stuff.add("objectStarted");
             }
 
             @Override
             public void objectEnded() {
-                tokens.add("objectEnded");
+                stuff.add("objectEnded");
             }
 
             @Override
             public void arrayStarted() {
-                tokens.add("arrayStarted");
+                stuff.add("arrayStarted");
             }
 
             @Override
             public void arrayEnded() {
-                tokens.add("arrayEnded");
+                stuff.add("arrayEnded");
             }
 
             @Override
             public void truth(boolean truth) {
-                tokens.add("truth:" + truth);
+                stuff.add("truth:" + truth);
             }
 
             @Override
             public void number(Number number) {
-                tokens.add("number:" + number);
+                stuff.add("number:" + number);
             }
 
             @Override
             public void nil() {
-                tokens.add("nil");
+                stuff.add("nil");
             }
 
             @Override
             public void string(String string) {
-                tokens.add("string:" + string);
+                stuff.add("string:" + string);
             }
 
             @Override
             public String toString() {
-                return tokens.toString();
+                return stuff.toString();
             }
         };
-        return handler;
     }
 }

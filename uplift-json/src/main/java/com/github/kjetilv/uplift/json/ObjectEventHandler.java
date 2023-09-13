@@ -5,15 +5,19 @@ import static com.github.kjetilv.uplift.json.TokenType.COMMA;
 import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
 import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
-public final class ObjectEvents extends Events {
+public final class ObjectEventHandler extends EventHandler {
 
-    public ObjectEvents(Events surroundingScope, Handler... handlers) {
+    public ObjectEventHandler(EventHandler surroundingScope, Handler... handlers) {
         super(surroundingScope, handlers);
         emit(Handler::objectStarted);
     }
 
     @Override
-    public Events process(Token token) {
+    public EventHandler process(Token token) {
+        return object(token);
+    }
+
+    private EventHandler object(Token token) {
         return switch (token.type()) {
             case END_OBJECT -> emit(Handler::objectEnded).surroundingScope();
             case COMMA -> this;

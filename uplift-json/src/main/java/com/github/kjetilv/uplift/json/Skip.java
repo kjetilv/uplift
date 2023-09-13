@@ -2,20 +2,20 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.Objects;
 
-public final class Skip extends Events {
+public final class Skip extends EventHandler {
 
     private final TokenType type;
 
-    private final Events next;
+    private final EventHandler next;
 
-    public Skip(Events surroundingScope, TokenType type, Events next, Handler... handlers) {
+    public Skip(EventHandler surroundingScope, TokenType type, EventHandler next, Handler... handlers) {
         super(surroundingScope, handlers);
         this.type = Objects.requireNonNull(type, "type");
         this.next = Objects.requireNonNull(next, "next");
     }
 
     @Override
-    public Events process(Token token) {
+    public EventHandler process(Token token) {
         return token.is(type) ? next : fail(token, type);
     }
 }
