@@ -19,7 +19,7 @@ public final class ObjectEventHandler extends EventHandler {
             case COMMA -> this;
             case STRING -> {
                 emit(handler -> string(token));
-                yield new Skip(scope(), COLON, newValue(), handlers());
+                yield skip(COLON, new ValueEventHandler(this, handlers()));
             }
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };

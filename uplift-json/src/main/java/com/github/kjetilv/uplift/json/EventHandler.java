@@ -85,16 +85,16 @@ public abstract class EventHandler implements Function<Token, EventHandler> {
         };
     }
 
-    protected final EventHandler newValue() {
-        return new ValueEventHandler(this, handlers());
-    }
-
     protected final <T> T fail(Token actual, TokenType... expected) {
         throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
     }
 
     protected final EventHandler string(Token token) {
         return emit(handler -> handler.string(token.literalString()));
+    }
+
+    protected Skip skip(TokenType skipped, ValueEventHandler next) {
+        return new Skip(scope(), skipped, next, handlers());
     }
 
     private EventHandler failValue(Token token) {
