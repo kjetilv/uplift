@@ -14,10 +14,6 @@ public final class ObjectEventHandler extends EventHandler {
 
     @Override
     public EventHandler process(Token token) {
-        return object(token);
-    }
-
-    private EventHandler object(Token token) {
         return switch (token.type()) {
             case END_OBJECT -> emit(Handler::objectEnded).surroundingScope();
             case COMMA -> this;
