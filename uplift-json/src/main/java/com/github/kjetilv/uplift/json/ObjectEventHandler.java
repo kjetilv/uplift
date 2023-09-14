@@ -15,7 +15,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> emit(Callbacks::objectEnded).scope();
+            case END_OBJECT -> endObject();
             case COMMA -> this;
             case STRING -> {
                 field(token);
@@ -27,7 +27,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
 
     private EventHandler colonAndValue() {
         return shouldSkip -> shouldSkip.is(COLON)
-            ? new ValueEventHandler(this, callbacks())
+            ? value()
             : fail(shouldSkip, COLON);
     }
 }

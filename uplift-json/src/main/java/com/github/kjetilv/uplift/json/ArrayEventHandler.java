@@ -10,7 +10,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_ARRAY -> emit(Callbacks::arrayEnded).scope();
+            case END_ARRAY -> endArray();
             case COMMA -> this;
             default -> flatValue(token);
         };

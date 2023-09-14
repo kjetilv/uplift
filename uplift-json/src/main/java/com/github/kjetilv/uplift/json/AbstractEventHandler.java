@@ -27,10 +27,6 @@ abstract class AbstractEventHandler implements EventHandler {
         return process(token);
     }
 
-    protected final Callbacks[] callbacks() {
-        return callbacks;
-    }
-
     protected final EventHandler scope() {
         return scope;
     }
@@ -74,8 +70,16 @@ abstract class AbstractEventHandler implements EventHandler {
         emit(Callbacks::objectStarted);
     }
 
+    protected EventHandler endObject() {
+        return emit(Callbacks::objectEnded).scope();
+    }
+
     protected final void startArray() {
         emit(Callbacks::arrayStarted);
+    }
+
+    protected EventHandler endArray() {
+        return emit(Callbacks::arrayEnded).scope();
     }
 
     protected final void field(Token token) {
@@ -91,11 +95,15 @@ abstract class AbstractEventHandler implements EventHandler {
     }
 
     private EventHandler object(EventHandler scope) {
-        return new ObjectEventHandler(scope, callbacks());
+        return new ObjectEventHandler(scope, callbacks);
     }
 
     private ArrayEventHandler array(EventHandler scope) {
-        return new ArrayEventHandler(scope, callbacks());
+        return new ArrayEventHandler(scope, callbacks);
+    }
+
+    protected ValueEventHandler value() {
+        return new ValueEventHandler(this, callbacks);
     }
 
     private AbstractEventHandler number(Token token) {

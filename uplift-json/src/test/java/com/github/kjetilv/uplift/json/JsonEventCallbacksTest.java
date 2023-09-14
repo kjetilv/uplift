@@ -154,13 +154,8 @@ public class JsonEventCallbacksTest {
             }
 
             @Override
-            public void arrayEnded() {
-                stuff.add("arrayEnded");
-            }
-
-            @Override
-            public void truth(boolean truth) {
-                stuff.add("truth:" + truth);
+            public void string(String string) {
+                stuff.add("string:" + string);
             }
 
             @Override
@@ -169,13 +164,18 @@ public class JsonEventCallbacksTest {
             }
 
             @Override
+            public void truth(boolean truth) {
+                stuff.add("truth:" + truth);
+            }
+
+            @Override
             public void nil() {
                 stuff.add("nil");
             }
 
             @Override
-            public void string(String string) {
-                stuff.add("string:" + string);
+            public void arrayEnded() {
+                stuff.add("arrayEnded");
             }
 
             @Override

@@ -19,15 +19,15 @@ public interface EventHandler extends Function<Token, EventHandler> {
 
         void arrayStarted();
 
-        void arrayEnded();
-
-        void truth(boolean truth);
+        void string(String string);
 
         void number(Number number);
 
+        void truth(boolean truth);
+
         void nil();
 
-        void string(String string);
+        void arrayEnded();
     }
 
     @Override
