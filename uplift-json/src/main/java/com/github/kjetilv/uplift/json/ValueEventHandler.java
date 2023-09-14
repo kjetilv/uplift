@@ -11,6 +11,11 @@ final class ValueEventHandler extends AbstractEventHandler {
     }
 
     @Override
+    protected AbstractEventHandler withCallbacks(Callbacks... callbacks) {
+        return new ValueEventHandler(scope(), callbacks);
+    }
+
+    @Override
     public EventHandler process(Token token) {
         return value(token);
     }

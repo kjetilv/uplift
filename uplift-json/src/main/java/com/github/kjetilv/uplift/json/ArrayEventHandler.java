@@ -8,6 +8,11 @@ final class ArrayEventHandler extends AbstractEventHandler {
     }
 
     @Override
+    protected AbstractEventHandler withCallbacks(Callbacks... callbacks) {
+        return new ArrayEventHandler(scope(), callbacks);
+    }
+
+    @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
             case END_ARRAY -> endArray();

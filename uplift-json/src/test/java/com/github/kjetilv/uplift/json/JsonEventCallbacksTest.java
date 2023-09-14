@@ -110,52 +110,86 @@ public class JsonEventCallbacksTest {
         );
     }
 
+    @Test
+    void parseMap() {
+        Stream<Token> tokenStream = Scanner.tokens(
+            """
+            {
+              "foo": "bar",
+              "zot": 5,
+              "obj2": {
+                "oops": true
+              }
+            }
+            """);
+        EventHandler.Callbacks callback = new EventHandler.Callbacks() {
+
+        };
+        List<String> tokens = new ArrayList<>();
+        EventHandler reduce = tokenStream.reduce(
+            EventHandler.create(handler(tokens)),
+            EventHandler::process,
+            (events, events2) -> {
+                throw new IllegalStateException(events + "/" + events2);
+            }
+        );
+    }
+
     private static EventHandler.Callbacks handler(List<String> stuff) {
         return new AbstractEventHandler.Callbacks() {
 
             @Override
-            public void objectStarted() {
+            public EventHandler.Callbacks objectStarted() {
                 stuff.add("objectStarted");
+                return this;
             }
 
             @Override
-            public void field(String name) {
+            public EventHandler.Callbacks field(String name) {
                 stuff.add("field:" + name);
+                return this;
             }
 
             @Override
-            public void objectEnded() {
+            public EventHandler.Callbacks objectEnded() {
                 stuff.add("objectEnded");
+                return this;
             }
 
             @Override
-            public void arrayStarted() {
+            public EventHandler.Callbacks arrayStarted() {
                 stuff.add("arrayStarted");
+                return this;
             }
 
             @Override
-            public void string(String string) {
+            public EventHandler.Callbacks string(String string) {
                 stuff.add("string:" + string);
+                return this;
             }
 
             @Override
-            public void number(Number number) {
+            public EventHandler.Callbacks number(Number number) {
                 stuff.add("number:" + number);
+                return this;
             }
 
             @Override
-            public void truth(boolean truth) {
+            public EventHandler.Callbacks truth(boolean truth) {
                 stuff.add("truth:" + truth);
+                return this;
             }
 
             @Override
-            public void nil() {
+            public EventHandler.Callbacks nil() {
                 stuff.add("nil");
+                return this;
             }
 
             @Override
-            public void arrayEnded() {
+            public EventHandler.Callbacks arrayEnded() {
                 stuff.add("arrayEnded");
+                return this;
             }
 
             @Override

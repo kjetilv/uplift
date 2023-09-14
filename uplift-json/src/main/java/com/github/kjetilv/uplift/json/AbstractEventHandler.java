@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
 import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
@@ -27,15 +28,16 @@ abstract class AbstractEventHandler implements EventHandler {
         return process(token);
     }
 
+    protected abstract AbstractEventHandler withCallbacks(Callbacks... callbacks);
+
     protected final EventHandler scope() {
         return scope;
     }
 
-    protected final AbstractEventHandler emit(Consumer<Callbacks> action) {
-        for (Callbacks callbacks: this.callbacks) {
-            action.accept(callbacks);
-        }
-        return this;
+    protected final AbstractEventHandler emit(Function<Callbacks, Callbacks> action) {
+        return withCallbacks(
+            Arrays.stream(callbacks).map(action).toArray(Callbacks[]::new)
+        );
     }
 
     protected final EventHandler value(Token token) {
@@ -90,6 +92,10 @@ abstract class AbstractEventHandler implements EventHandler {
         return emit(handler -> handler.string(token.literalString()));
     }
 
+    protected ValueEventHandler value() {
+        return new ValueEventHandler(this, callbacks);
+    }
+
     private EventHandler failValue(Token token) {
         return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
     }
@@ -100,10 +106,6 @@ abstract class AbstractEventHandler implements EventHandler {
 
     private ArrayEventHandler array(EventHandler scope) {
         return new ArrayEventHandler(scope, callbacks);
-    }
-
-    protected ValueEventHandler value() {
-        return new ValueEventHandler(this, callbacks);
     }
 
     private AbstractEventHandler number(Token token) {

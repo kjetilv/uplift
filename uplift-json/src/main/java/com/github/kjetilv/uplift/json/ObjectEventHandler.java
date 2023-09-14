@@ -13,21 +13,22 @@ final class ObjectEventHandler extends AbstractEventHandler {
     }
 
     @Override
+    protected AbstractEventHandler withCallbacks(Callbacks... callbacks) {
+        return new ObjectEventHandler(scope(), callbacks);
+    }
+
+    @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
             case END_OBJECT -> endObject();
             case COMMA -> this;
             case STRING -> {
                 field(token);
-                yield colonAndValue();
+                yield skipped -> skipped.is(COLON)
+                    ? value()
+                    : fail(skipped, COLON);
             }
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };
-    }
-
-    private EventHandler colonAndValue() {
-        return shouldSkip -> shouldSkip.is(COLON)
-            ? value()
-            : fail(shouldSkip, COLON);
     }
 }

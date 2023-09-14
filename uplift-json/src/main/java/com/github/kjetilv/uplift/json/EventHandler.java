@@ -21,23 +21,41 @@ public interface EventHandler extends Function<Token, EventHandler> {
 
     interface Callbacks {
 
-        void objectStarted();
+        default Callbacks objectStarted() {
+            return this;
+        }
 
-        void field(String name);
+        default Callbacks field(String name) {
+            return this;
+        }
 
-        void objectEnded();
+        default Callbacks objectEnded() {
+            return this;
+        }
 
-        void arrayStarted();
+        default Callbacks arrayStarted() {
+            return this;
+        }
 
-        void string(String string);
+        default Callbacks string(String string) {
+            return this;
+        }
 
-        void number(Number number);
+        default Callbacks number(Number number) {
+            return this;
+        }
 
-        void truth(boolean truth);
+        default Callbacks truth(boolean truth) {
+            return this;
+        }
 
-        void nil();
+        default Callbacks nil() {
+            return this;
+        }
 
-        void arrayEnded();
+        default Callbacks arrayEnded() {
+            return this;
+        }
     }
 
     @Override
