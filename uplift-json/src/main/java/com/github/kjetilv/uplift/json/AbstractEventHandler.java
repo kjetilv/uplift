@@ -70,11 +70,11 @@ abstract class AbstractEventHandler implements EventHandler {
         throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
     }
 
-    protected void startObject() {
+    protected final void startObject() {
         emit(Callbacks::objectStarted);
     }
 
-    protected void startArray() {
+    protected final void startArray() {
         emit(Callbacks::arrayStarted);
     }
 
