@@ -4,7 +4,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
 
     ArrayEventHandler(EventHandler scope, Callbacks... callbacks) {
         super(scope, callbacks);
-        emit(Callbacks::arrayStarted);
+        startArray();
     }
 
     @Override

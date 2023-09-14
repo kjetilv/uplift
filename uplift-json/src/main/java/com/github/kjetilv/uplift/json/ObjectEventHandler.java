@@ -9,7 +9,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
 
     ObjectEventHandler(EventHandler scope, Callbacks... callbacks) {
         super(scope, callbacks);
-        emit(Callbacks::objectStarted);
+        startObject();
     }
 
     @Override
