@@ -2,16 +2,16 @@ package com.github.kjetilv.uplift.json;
 
 final class ValueEventHandler extends AbstractEventHandler {
 
-    ValueEventHandler(Callbacks... callbacks) {
+    ValueEventHandler(Callbacks callbacks) {
         this(null, callbacks);
     }
 
-    ValueEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
+    ValueEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks... callbacks) {
+    protected AbstractEventHandler with(Callbacks callbacks) {
         return new ValueEventHandler(scope(), callbacks);
     }
 

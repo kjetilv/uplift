@@ -27,7 +27,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks().get(0)).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:els arrayStarted
@@ -72,7 +72,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks().get(0)).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:foo string:bar
@@ -100,7 +100,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks().get(0)).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:foo string:bar

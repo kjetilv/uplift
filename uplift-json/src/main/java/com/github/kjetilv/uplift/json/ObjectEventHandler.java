@@ -7,12 +7,12 @@ import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
 final class ObjectEventHandler extends AbstractEventHandler {
 
-    ObjectEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
+    ObjectEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks... callbacks) {
+    protected AbstractEventHandler with(Callbacks callbacks) {
         return new ObjectEventHandler(scope(), callbacks);
     }
 
@@ -21,13 +21,10 @@ final class ObjectEventHandler extends AbstractEventHandler {
         return switch (token.type()) {
             case END_OBJECT -> close(Callbacks::objectEnded);
             case COMMA -> this;
-            case STRING -> {
-                ValueEventHandler value = value(field(token));
-                yield colonToken ->
-                    colonToken.is(COLON)
-                        ? value
-                        : fail(colonToken, COLON);
-            }
+            case STRING -> colonToken ->
+                colonToken.is(COLON)
+                    ? new ValueEventHandler(this, field(token))
+                    : fail(colonToken, COLON);
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };
     }

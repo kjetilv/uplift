@@ -2,12 +2,12 @@ package com.github.kjetilv.uplift.json;
 
 final class ArrayEventHandler extends AbstractEventHandler {
 
-    ArrayEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
+    ArrayEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks... callbacks) {
+    protected AbstractEventHandler with(Callbacks callbacks) {
         return new ArrayEventHandler(scope(), callbacks);
     }
 

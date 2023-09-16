@@ -15,7 +15,7 @@ public interface EventHandler extends Function<Token, EventHandler> {
         return reduce(handler, Scanner.tokens(source));
     }
 
-    static EventHandler create(Callbacks... callbacks) {
+    static EventHandler create(Callbacks callbacks) {
         return new ValueEventHandler(callbacks);
     }
 
