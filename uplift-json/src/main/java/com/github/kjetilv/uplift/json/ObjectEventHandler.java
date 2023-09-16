@@ -21,9 +21,13 @@ final class ObjectEventHandler extends AbstractEventHandler {
         return switch (token.type()) {
             case END_OBJECT -> close(Callbacks::objectEnded);
             case COMMA -> this;
-            case STRING -> skipped -> skipped.is(COLON)
-                ? value(field(token))
-                : fail(skipped, COLON);
+            case STRING -> {
+                ValueEventHandler value = value(field(token));
+                yield colonToken ->
+                    colonToken.is(COLON)
+                        ? value
+                        : fail(colonToken, COLON);
+            }
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };
     }

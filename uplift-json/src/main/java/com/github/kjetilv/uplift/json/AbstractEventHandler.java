@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
@@ -11,16 +12,13 @@ import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
 abstract class AbstractEventHandler implements EventHandler {
 
-    private final EventHandler scope;
+    private final AbstractEventHandler scope;
 
     private final Callbacks[] callbacks;
 
-    AbstractEventHandler(EventHandler scope, Callbacks... callbacks) {
+    AbstractEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
         this.scope = scope;
         this.callbacks = callbacks;
-        if (this.callbacks.length == 0) {
-            throw new IllegalArgumentException(this + " has no handlers");
-        }
     }
 
     @Override
@@ -28,16 +26,18 @@ abstract class AbstractEventHandler implements EventHandler {
         return process(token);
     }
 
-    protected abstract AbstractEventHandler withCallbacks(Callbacks... callbacks);
-
-    protected final EventHandler scope() {
-        return scope;
+    List<Callbacks> getCallbacks() {
+        return Arrays.asList(callbacks);
     }
 
-    protected final AbstractEventHandler emit(Function<Callbacks, Callbacks> action) {
-        return withCallbacks(
-            Arrays.stream(callbacks).map(action).toArray(Callbacks[]::new)
-        );
+    protected abstract AbstractEventHandler with(Callbacks... callbacks);
+
+    protected final AbstractEventHandler scope() {
+        return scope == null ? this : scope.with(callbacks);
+    }
+
+    protected final Callbacks[] emit(Function<Callbacks, Callbacks> action) {
+        return emit(action, callbacks);
     }
 
     protected final EventHandler value(Token token) {
@@ -68,56 +68,52 @@ abstract class AbstractEventHandler implements EventHandler {
         throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
     }
 
-    protected final void startObject() {
-        emit(Callbacks::objectStarted);
-    }
-
-    protected EventHandler endObject() {
-        return emit(Callbacks::objectEnded).scope();
-    }
-
-    protected final void startArray() {
-        emit(Callbacks::arrayStarted);
-    }
-
-    protected EventHandler endArray() {
-        return emit(Callbacks::arrayEnded).scope();
-    }
-
-    protected final void field(Token token) {
-        emit(handler -> handler.field(token.literalString()));
+    protected final Callbacks[] field(Token token) {
+        return emit(handler ->
+            handler.field(token.literalString()));
     }
 
     protected final AbstractEventHandler string(Token token) {
-        return emit(handler -> handler.string(token.literalString()));
+        return with(emit(handler ->
+            handler.string(token.literalString())));
     }
 
-    protected ValueEventHandler value() {
+    private AbstractEventHandler number(Token token) {
+        return with(emit(handler ->
+            handler.number(token.literalNumber())));
+    }
+
+    private AbstractEventHandler truth(Token token) {
+        return with(emit(handler ->
+            handler.truth(token.literalTruth())));
+    }
+
+    protected ValueEventHandler value(Callbacks[] callbacks) {
         return new ValueEventHandler(this, callbacks);
+    }
+
+    protected AbstractEventHandler close(Function<Callbacks, Callbacks> action) {
+        return scope == null ? this : scope.with(emit(action));
     }
 
     private EventHandler failValue(Token token) {
         return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
     }
 
-    private EventHandler object(EventHandler scope) {
-        return new ObjectEventHandler(scope, callbacks);
+    private EventHandler object(AbstractEventHandler scope) {
+        return new ObjectEventHandler(scope, emit(Callbacks::objectStarted));
     }
 
-    private ArrayEventHandler array(EventHandler scope) {
-        return new ArrayEventHandler(scope, callbacks);
-    }
-
-    private AbstractEventHandler number(Token token) {
-        return emit(handler -> handler.number(token.literalNumber()));
-    }
-
-    private AbstractEventHandler truth(Token token) {
-        return emit(handler -> handler.truth(token.literalTruth()));
+    private ArrayEventHandler array(AbstractEventHandler scope) {
+        return new ArrayEventHandler(scope, emit(Callbacks::arrayStarted, callbacks));
     }
 
     private AbstractEventHandler nil() {
-        return emit(Callbacks::nil);
+        return with(emit(Callbacks::nil));
+    }
+
+    protected static Callbacks[] emit(Function<Callbacks, Callbacks> action, Callbacks... callbacks) {
+        return Arrays.stream(callbacks).map(action).toArray(Callbacks[]::new);
     }
 
     @Override
