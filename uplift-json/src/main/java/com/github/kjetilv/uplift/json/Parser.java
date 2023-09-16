@@ -11,21 +11,18 @@ import static com.github.kjetilv.uplift.json.TokenType.*;
 
 final class Parser {
 
-    private final List<Token> tokens;
+    private final Token[] tokens;
 
     private int i;
 
-    Parser(List<Token> tokens) {
-        if (tokens == null || tokens.isEmpty()) {
+    Parser(Token... tokens) {
+        if (tokens.length == 0) {
             throw new IllegalArgumentException("Empty token stream");
         }
         this.tokens = tokens;
     }
 
     Object parse() {
-        if (tokens.isEmpty()) {
-            throw new IllegalStateException("End of token stream");
-        }
         return parseFrom(chomp());
     }
 
@@ -80,7 +77,7 @@ final class Parser {
     }
 
     private Token chomp(TokenType skipped) {
-        Token actual = tokens.get(i++);
+        Token actual = tokens[i++];
         if (actual.type() != skipped) {
             fail(actual, skipped);
         }
@@ -88,7 +85,10 @@ final class Parser {
     }
 
     private Token chomp() {
-        return tokens.get(i++);
+        if (i < tokens.length) {
+            return tokens[i++];
+        }
+        throw new IllegalStateException("End of token stream");
     }
 
     private static final Object NULL_VALUE = new Object();

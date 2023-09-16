@@ -4,14 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream source) {
         try {
-            return new Parser(Scanner.tokens(source).toList()).parse();
+            return new Parser(Scanner.tokens(source).toArray(Token[]::new)).parse();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse: " + source, e);
         }
@@ -19,9 +18,9 @@ class JsonImpl implements Json {
 
     @Override
     public Object read(String source) {
-        List<Token> tokens;
+        Token[] tokens;
         try {
-            tokens = Scanner.tokens(source).toList();
+            tokens = Scanner.tokens(source).toArray(Token[]::new);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to scan " + source.length() + " chars", e);
         }

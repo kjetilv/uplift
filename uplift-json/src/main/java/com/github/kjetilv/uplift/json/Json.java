@@ -26,44 +26,26 @@ public interface Json {
 
     Function<InputStream, Map<?, ?>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
 
-    Function<String, List<?>> JSON_ARRAY = INSTANCE::jsonArray;
+    Function<String, List<?>> STRING_2_JSON_ARRAY = INSTANCE::jsonArray;
 
     default Map<?, ?> jsonMap(InputStream source) {
-        Object json = read(source);
-        if (json instanceof Map<?, ?> map) {
-            return map;
-        }
-        throw new IllegalArgumentException("Not an object: " + source + " => " + json);
+        return asMap(source, read(source));
     }
 
     default Map<?, ?> jsonMap(byte[] source) {
-        Object json = read(source);
-        if (json == null) {
-            return Collections.emptyMap();
-        }
-        if (json instanceof Map<?, ?> map) {
-            return map;
-        }
-        throw new IllegalArgumentException("Not an object: " + source.length + " bytes => " + json);
+        return asMap(source, read(source));
     }
 
     default Map<?, ?> jsonMap(String source) {
-        Object json = read(source);
-        if (json == null) {
-            return Collections.emptyMap();
-        }
-        if (json instanceof Map<?, ?> map) {
-            return map;
-        }
-        throw new IllegalArgumentException("Not an object: " + source + " => " + json);
+        return asMap(source, read(source));
     }
 
     default List<?> jsonArray(String source) {
-        Object json = read(source);
-        if (json instanceof List<?> list) {
-            return list;
-        }
-        throw new IllegalArgumentException("Not an array: " + source + " => " + json);
+        return asList(source, read(source));
+    }
+
+    default List<?> jsonArray(InputStream source) {
+        return asList(source, read(source));
     }
 
     default Object read(byte[] source) {
@@ -88,5 +70,25 @@ public interface Json {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read " + in, e);
         }
+    }
+
+    private static Map<?, ?> asMap(Object source, Object json) {
+        if (json == null) {
+            return Collections.emptyMap();
+        }
+        if (json instanceof Map<?, ?> map) {
+            return map;
+        }
+        throw new IllegalArgumentException("Not an object: " + source + " => " + json);
+    }
+
+    private static List<?> asList(Object source, Object json) {
+        if (json == null) {
+            return Collections.emptyList();
+        }
+        if (json instanceof List<?> list) {
+            return list;
+        }
+        throw new IllegalArgumentException("Not an array: " + source + " => " + json);
     }
 }
