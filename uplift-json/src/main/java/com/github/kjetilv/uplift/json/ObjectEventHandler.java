@@ -19,7 +19,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> close(Callbacks::objectEnded);
+            case END_OBJECT -> exit(Callbacks::objectEnded);
             case COMMA -> this;
             case STRING -> colonToken ->
                 colonToken.is(COLON)

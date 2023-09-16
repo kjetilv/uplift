@@ -14,7 +14,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_ARRAY -> close(Callbacks::arrayEnded);
+            case END_ARRAY -> exit(Callbacks::arrayEnded);
             case COMMA -> this;
             default -> flatValue(token);
         };

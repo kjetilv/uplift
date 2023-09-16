@@ -62,6 +62,10 @@ abstract class AbstractEventHandler implements EventHandler {
         throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
     }
 
+    protected AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
+        return scope == null ? this : scope.with(action.apply(callbacks));
+    }
+
     protected final Callbacks field(Token token) {
         return callbacks.field(token.literalString());
     }
@@ -70,20 +74,16 @@ abstract class AbstractEventHandler implements EventHandler {
         return with(callbacks.string(token.literalString()));
     }
 
-    protected AbstractEventHandler close(Function<Callbacks, Callbacks> action) {
-        return scope == null ? this : scope.with(action.apply(callbacks));
-    }
-
     private AbstractEventHandler number(Token token) {
-        return with(callbacks.number(token.literalNumber()));
+        return this.with(callbacks.number(token.literalNumber()));
     }
 
     private AbstractEventHandler truth(Token token) {
-        return with(callbacks.truth(token.literalTruth()));
+        return this.with(callbacks.truth(token.literalTruth()));
     }
 
-    private EventHandler failValue(Token token) {
-        return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
+    private AbstractEventHandler nil() {
+        return this.with(callbacks.nil());
     }
 
     private EventHandler object(AbstractEventHandler scope) {
@@ -94,8 +94,8 @@ abstract class AbstractEventHandler implements EventHandler {
         return new ArrayEventHandler(scope, callbacks.arrayStarted());
     }
 
-    private AbstractEventHandler nil() {
-        return with(callbacks.nil());
+    private EventHandler failValue(Token token) {
+        return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
     }
 
     @Override
