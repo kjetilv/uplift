@@ -1,9 +1,19 @@
 package com.github.kjetilv.uplift.json;
 
+import java.io.InputStream;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @FunctionalInterface
 public interface EventHandler extends Function<Token, EventHandler> {
+
+    static EventHandler parse(Callbacks handler, InputStream source) {
+        return reduce(handler, Scanner.tokens(source));
+    }
+
+    static EventHandler parse(Callbacks handler, String source) {
+        return reduce(handler, Scanner.tokens(source));
+    }
 
     static EventHandler create(Callbacks... callbacks) {
         return new ValueEventHandler(callbacks);
@@ -36,4 +46,15 @@ public interface EventHandler extends Function<Token, EventHandler> {
     }
 
     EventHandler process(Token token);
+
+    private static EventHandler reduce(Callbacks handler, Stream<Token> tokens) {
+        return tokens
+            .reduce(
+                create(handler),
+                EventHandler::process,
+                (events, events2) -> {
+                    throw new IllegalStateException(events + "/" + events2);
+                }
+            );
+    }
 }

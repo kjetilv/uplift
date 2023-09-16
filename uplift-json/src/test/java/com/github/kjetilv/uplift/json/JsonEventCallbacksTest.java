@@ -3,33 +3,26 @@ package com.github.kjetilv.uplift.json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings({ "ResultOfMethodCallIgnored", "DynamicRegexReplaceableByCompiledPattern" })
+@SuppressWarnings({ "DynamicRegexReplaceableByCompiledPattern" })
 public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        Stream<Token> tokenStream = Scanner.tokens(
+        List<String> tokens = new ArrayList<>();
+        EventHandler.parse(
+            handler(tokens),
             """
             {
               "els": [1, 2, "a", "b"],
               "foo": ["tip", true, [ 3, 4 ], []],
               "bar": [{"zit": "quz"}, 4]
             }
-            """);
-        List<String> tokens = new ArrayList<>();
-        tokenStream.reduce(
-            EventHandler.create(handler(tokens)),
-            Function::apply,
-            (events, events2) -> {
-                throw new IllegalStateException(events + "/" + events2);
-            }
+            """
         );
         assertThat(tokens).containsExactlyElementsOf(Arrays.stream(
             """
@@ -63,7 +56,9 @@ public class JsonEventCallbacksTest {
 
     @Test
     void obj() {
-        Stream<Token> tokenStream = Scanner.tokens(
+        List<String> tokens = new ArrayList<>();
+        EventHandler.parse(
+            handler(tokens),
             """
             {
               "foo": "bar",
@@ -72,16 +67,7 @@ public class JsonEventCallbacksTest {
                 "oops": true
               }
             }
-            """);
-        List<String> tokens = new ArrayList<>();
-        AbstractEventHandler.Callbacks callbacks = handler(tokens);
-        EventHandler rootEventHandler = EventHandler.create(callbacks);
-        tokenStream.reduce(
-            rootEventHandler,
-            Function::apply,
-            (events, events2) -> {
-                throw new IllegalStateException(events + "/" + events2);
-            }
+            """
         );
         assertThat(tokens).containsExactlyElementsOf(Arrays.stream(
             """
@@ -98,7 +84,9 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        Stream<Token> tokenStream = Scanner.tokens(
+        List<String> tokens = new ArrayList<>();
+        EventHandler.parse(
+            handler(tokens),
             """
             {
               "foo": "bar",
@@ -107,16 +95,8 @@ public class JsonEventCallbacksTest {
                 "oops": true
               }
             }
-            """);
-        List<String> tokens = new ArrayList<>();
-        EventHandler reduce = tokenStream.reduce(
-            EventHandler.create(handler(tokens)),
-            EventHandler::process,
-            (events, events2) -> {
-                throw new IllegalStateException(events + "/" + events2);
-            }
+            """
         );
-        System.out.println(reduce);
         assertThat(tokens).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
@@ -130,7 +110,7 @@ public class JsonEventCallbacksTest {
         );
     }
 
-    private static AbstractEventHandler.Callbacks handler(List<String> stuff) {
+    private static EventHandler.Callbacks handler(List<String> stuff) {
         return new AbstractEventHandler.Callbacks() {
 
             @Override
