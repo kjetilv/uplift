@@ -2,12 +2,6 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.function.Function;
 
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
-
 abstract class AbstractEventHandler implements EventHandler {
 
     private final AbstractEventHandler scope;
@@ -24,45 +18,17 @@ abstract class AbstractEventHandler implements EventHandler {
         return process(token);
     }
 
-    Callbacks getCallbacks() {
+    final Callbacks getCallbacks() {
         return callbacks;
     }
 
     protected abstract AbstractEventHandler with(Callbacks callbacks);
 
-    protected final AbstractEventHandler scope() {
+    protected final AbstractEventHandler exit() {
         return scope == null ? this : scope.with(callbacks);
     }
 
-    protected final EventHandler value(Token token) {
-        return switch (token.type()) {
-            case BEGIN_OBJECT -> object(scope());
-            case BEGIN_ARRAY -> array(scope());
-            case STRING -> string(token).scope();
-            case BOOL -> truth(token).scope();
-            case NUMBER -> number(token).scope();
-            case NIL -> nil().scope();
-            case COMMA, COLON, END_OBJECT, END_ARRAY -> failValue(token);
-        };
-    }
-
-    protected final EventHandler flatValue(Token token) {
-        return switch (token.type()) {
-            case BEGIN_OBJECT -> object(this);
-            case BEGIN_ARRAY -> array(this);
-            case STRING -> string(token);
-            case BOOL -> truth(token);
-            case NUMBER -> number(token);
-            case NIL -> nil();
-            case COMMA, COLON, END_OBJECT, END_ARRAY -> failValue(token);
-        };
-    }
-
-    protected final <T> T fail(Token actual, TokenType... expected) {
-        throw new IllegalStateException(this + " failed", new ParseException(actual, expected));
-    }
-
-    protected AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
+    protected final AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
         return scope == null ? this : scope.with(action.apply(callbacks));
     }
 
@@ -70,32 +36,32 @@ abstract class AbstractEventHandler implements EventHandler {
         return callbacks.field(token.literalString());
     }
 
-    protected final AbstractEventHandler string(Token token) {
-        return with(callbacks.string(token.literalString()));
+    protected final Callbacks objectStarted() {
+        return callbacks.objectStarted();
     }
 
-    private AbstractEventHandler number(Token token) {
-        return this.with(callbacks.number(token.literalNumber()));
+    protected final Callbacks arrayStarted() {
+        return callbacks.arrayStarted();
     }
 
-    private AbstractEventHandler truth(Token token) {
-        return this.with(callbacks.truth(token.literalTruth()));
+    protected final Callbacks string(Token token) {
+        return callbacks.string(token.literalString());
     }
 
-    private AbstractEventHandler nil() {
-        return this.with(callbacks.nil());
+    protected final Callbacks truth(Token token) {
+        return callbacks.truth(token.literalTruth());
     }
 
-    private EventHandler object(AbstractEventHandler scope) {
-        return new ObjectEventHandler(scope, callbacks.objectStarted());
+    protected final Callbacks number(Token token) {
+        return callbacks.number(token.literalNumber());
     }
 
-    private ArrayEventHandler array(AbstractEventHandler scope) {
-        return new ArrayEventHandler(scope, callbacks.arrayStarted());
+    protected final Callbacks nil() {
+        return callbacks.nil();
     }
 
-    private EventHandler failValue(Token token) {
-        return fail(token, BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER);
+    protected final <T> T fail(String msg, Token actual, TokenType... expected) {
+        throw new IllegalStateException(this + " failed: " + msg, new ParseException(actual, expected));
     }
 
     @Override

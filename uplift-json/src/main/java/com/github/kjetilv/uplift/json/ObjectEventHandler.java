@@ -13,7 +13,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
 
     @Override
     protected AbstractEventHandler with(Callbacks callbacks) {
-        return new ObjectEventHandler(scope(), callbacks);
+        return new ObjectEventHandler(exit(), callbacks);
     }
 
     @Override
@@ -24,8 +24,12 @@ final class ObjectEventHandler extends AbstractEventHandler {
             case STRING -> colonToken ->
                 colonToken.is(COLON)
                     ? new ValueEventHandler(this, field(token))
-                    : fail(colonToken, COLON);
-            default -> fail(token, END_OBJECT, COMMA, STRING);
+                    : fail(
+                        "Expected colon to follow field `" + token.literalString() + "`",
+                        colonToken,
+                        COLON
+                    );
+            default -> fail("Malformed object level", token, END_OBJECT, COMMA, STRING);
         };
     }
 }
