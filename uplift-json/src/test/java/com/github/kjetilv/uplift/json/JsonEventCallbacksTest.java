@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 

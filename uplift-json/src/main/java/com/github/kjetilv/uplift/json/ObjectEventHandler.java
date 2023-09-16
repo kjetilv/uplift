@@ -7,27 +7,23 @@ import static com.github.kjetilv.uplift.json.TokenType.STRING;
 
 final class ObjectEventHandler extends AbstractEventHandler {
 
-    ObjectEventHandler(EventHandler scope, Callbacks... callbacks) {
+    ObjectEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
         super(scope, callbacks);
-        startObject();
     }
 
     @Override
-    protected AbstractEventHandler withCallbacks(Callbacks... callbacks) {
+    protected AbstractEventHandler with(Callbacks... callbacks) {
         return new ObjectEventHandler(scope(), callbacks);
     }
 
     @Override
     public EventHandler process(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> endObject();
+            case END_OBJECT -> close(Callbacks::objectEnded);
             case COMMA -> this;
-            case STRING -> {
-                field(token);
-                yield skipped -> skipped.is(COLON)
-                    ? value()
-                    : fail(skipped, COLON);
-            }
+            case STRING -> skipped -> skipped.is(COLON)
+                ? value(field(token))
+                : fail(skipped, COLON);
             default -> fail(token, END_OBJECT, COMMA, STRING);
         };
     }

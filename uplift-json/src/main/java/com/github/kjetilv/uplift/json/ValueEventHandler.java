@@ -6,12 +6,12 @@ final class ValueEventHandler extends AbstractEventHandler {
         this(null, callbacks);
     }
 
-    ValueEventHandler(EventHandler scope, Callbacks... callbacks) {
+    ValueEventHandler(AbstractEventHandler scope, Callbacks... callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler withCallbacks(Callbacks... callbacks) {
+    protected AbstractEventHandler with(Callbacks... callbacks) {
         return new ValueEventHandler(scope(), callbacks);
     }
 
