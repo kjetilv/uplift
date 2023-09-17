@@ -1,19 +1,21 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.events;
 
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
+import com.github.kjetilv.uplift.json.tokens.Token;
+
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_ARRAY;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_OBJECT;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BOOL;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
 
 final class ArrayEventHandler extends AbstractEventHandler {
 
-    ArrayEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
+    ArrayEventHandler(AbstractEventHandler scope, Events.Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks callbacks) {
+    protected AbstractEventHandler with(Events.Callbacks callbacks) {
         return new ArrayEventHandler(exit(), callbacks);
     }
 
@@ -26,7 +28,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
             case BOOL -> with(truth(token));
             case NUMBER -> with(number(token));
             case NIL -> with(nil());
-            case END_ARRAY -> exit(Callbacks::arrayEnded);
+            case END_ARRAY -> exit(Events.Callbacks::arrayEnded);
             case COMMA -> this;
             case COLON, END_OBJECT -> fail(
                 "Malformed array",

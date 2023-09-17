@@ -1,6 +1,6 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.tokens;
 
-class ReadException extends RuntimeException {
+public class ReadException extends RuntimeException {
 
     private final String lexeme;
 
@@ -15,15 +15,15 @@ class ReadException extends RuntimeException {
         this.column = column;
     }
 
-    String getLexeme() {
+    public String getLexeme() {
         return lexeme;
     }
 
-    int getLine() {
+    public int getLine() {
         return line;
     }
 
-    int getColumn() {
+    public int getColumn() {
         return column;
     }
 }

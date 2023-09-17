@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.tokens;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -8,19 +8,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.kjetilv.uplift.json.TokenType.*;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class Scanner extends Spliterators.AbstractSpliterator<Token> {
+public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     static final String CANONICAL_TRUE = "true";
 
     static final String CANONICAL_FALSE = "false";
 
-    static Stream<Token> tokens(String source) {
+    public static Stream<Token> tokens(String source) {
         return tokenStream(new StringSource(source));
     }
 
-    static Stream<Token> tokens(InputStream source) {
+    public static Stream<Token> tokens(InputStream source) {
         return tokenStream(new BytesSource(source));
     }
 

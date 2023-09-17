@@ -14,16 +14,18 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.github.kjetilv.uplift.json.tokens.ReadException;
+import com.github.kjetilv.uplift.json.tokens.TokenType;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.COMMA;
-import static com.github.kjetilv.uplift.json.TokenType.END_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.END_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BOOL;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.COMMA;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.END_ARRAY;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.END_OBJECT;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.junit.jupiter.api.Assertions.assertEquals;

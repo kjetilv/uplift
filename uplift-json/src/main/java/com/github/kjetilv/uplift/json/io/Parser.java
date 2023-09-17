@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.io;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,7 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.kjetilv.uplift.json.TokenType.*;
+import com.github.kjetilv.uplift.json.ParseException;
+import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.tokens.TokenType;
+
+import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
 final class Parser {
 
@@ -76,6 +80,7 @@ final class Parser {
                 : fail(next, tokenType, COMMA);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Token chomp(TokenType skipped) {
         Token actual = tokens[i++];
         if (actual.type() != skipped) {

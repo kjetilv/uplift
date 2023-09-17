@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.tokens;
 
 abstract class AbstractSource implements Source {
 

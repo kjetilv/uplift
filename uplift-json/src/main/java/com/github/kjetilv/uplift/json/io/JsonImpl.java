@@ -1,11 +1,15 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-class JsonImpl implements Json {
+import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.tokens.Scanner;
+import com.github.kjetilv.uplift.json.tokens.Token;
+
+public class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream source) {

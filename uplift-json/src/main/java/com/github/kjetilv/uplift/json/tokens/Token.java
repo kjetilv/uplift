@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.tokens;
 
 import java.util.Objects;
 
@@ -16,25 +16,25 @@ public record Token(
         requireNonNull(type, "type");
     }
 
-    String literalString() {
+    public String literalString() {
         return literal.toString();
     }
 
-    boolean literalTruth() {
+    public boolean literalTruth() {
         if (type == TokenType.BOOL) {
             return Objects.equals(lexeme, Scanner.CANONICAL_TRUE);
         }
         throw new IllegalStateException(this + ": Not boolean");
     }
 
-    Number literalNumber() {
+    public Number literalNumber() {
         if (type == TokenType.NUMBER) {
             return (Number) literal;
         }
         throw new IllegalStateException(this + ": Not numeric");
     }
 
-    boolean is(TokenType type) {
+    public boolean is(TokenType type) {
         return this.type == type;
     }
 

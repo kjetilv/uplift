@@ -13,6 +13,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.github.kjetilv.uplift.json.io.JsonImpl;
+
 @SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "unused" })
 public interface Json {
 

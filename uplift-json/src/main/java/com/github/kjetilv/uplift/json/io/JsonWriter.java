@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

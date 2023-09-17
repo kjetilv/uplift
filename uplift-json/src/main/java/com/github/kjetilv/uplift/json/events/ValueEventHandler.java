@@ -1,24 +1,26 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.events;
 
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.TokenType.NIL;
-import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.TokenType.STRING;
+import com.github.kjetilv.uplift.json.tokens.Token;
+
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_ARRAY;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_OBJECT;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.BOOL;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.NIL;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
 
 final class ValueEventHandler extends AbstractEventHandler {
 
-    ValueEventHandler(Callbacks callbacks) {
+    ValueEventHandler(Events.Callbacks callbacks) {
         this(null, callbacks);
     }
 
-    ValueEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
+    ValueEventHandler(AbstractEventHandler scope, Events.Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks callbacks) {
+    protected AbstractEventHandler with(Events.Callbacks callbacks) {
         return new ValueEventHandler(exit(), callbacks);
     }
 

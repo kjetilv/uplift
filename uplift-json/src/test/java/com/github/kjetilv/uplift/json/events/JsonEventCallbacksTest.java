@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.events;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import com.github.kjetilv.uplift.json.tokens.Scanner;
+import com.github.kjetilv.uplift.json.tokens.Token;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +19,7 @@ public class JsonEventCallbacksTest {
     @Test
     void arr() {
         List<String> tokens = new ArrayList<>();
-        AbstractEventHandler myCallbacks = (AbstractEventHandler) EventHandler.parse(
+        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             handler(tokens),
             """
             {
@@ -27,7 +29,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(myCallbacks.stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:els arrayStarted
@@ -60,7 +62,7 @@ public class JsonEventCallbacksTest {
     @Test
     void obj() {
         List<String> tokens = new ArrayList<>();
-        AbstractEventHandler myCallbacks = (AbstractEventHandler) EventHandler.parse(
+        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             handler(tokens),
             """
             {
@@ -72,7 +74,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(myCallbacks.stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:foo string:bar
@@ -88,7 +90,7 @@ public class JsonEventCallbacksTest {
     @Test
     void parse() {
         List<String> tokens = new ArrayList<>();
-        AbstractEventHandler myCallbacks = (AbstractEventHandler) EventHandler.parse(
+        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             handler(tokens),
             """
             {
@@ -100,7 +102,7 @@ public class JsonEventCallbacksTest {
             }
             """
         );
-        assertThat(((MyCallbacks) myCallbacks.getCallbacks()).stuff).containsExactlyElementsOf(Arrays.stream(
+        assertThat(myCallbacks.stuff).containsExactlyElementsOf(Arrays.stream(
             """
             objectStarted
               field:foo string:bar
@@ -125,12 +127,12 @@ public class JsonEventCallbacksTest {
               }
             }
             """);
-        EventHandler.Callbacks callback = new EventHandler.Callbacks() {
+        Events.Callbacks callback = new Events.Callbacks() {
 
         };
         List<String> tokens = new ArrayList<>();
         EventHandler reduce = tokenStream.reduce(
-            EventHandler.create(handler(tokens)),
+            Events.create(handler(tokens)),
             EventHandler::process,
             (events, events2) -> {
                 throw new IllegalStateException(events + "/" + events2);
@@ -138,11 +140,11 @@ public class JsonEventCallbacksTest {
         );
     }
 
-    private static EventHandler.Callbacks handler(List<String> stuff) {
+    private static Events.Callbacks handler(List<String> stuff) {
         return new MyCallbacks(stuff);
     }
 
-    private static final class MyCallbacks implements AbstractEventHandler.Callbacks {
+    private static final class MyCallbacks implements Events.Callbacks {
 
         static final AtomicInteger COUNT = new AtomicInteger();
 
@@ -158,51 +160,51 @@ public class JsonEventCallbacksTest {
         }
 
         @Override
-        public EventHandler.Callbacks objectStarted() {
+        public Events.Callbacks objectStarted() {
             return add("objectStarted");
         }
 
         @Override
-        public EventHandler.Callbacks field(String name) {
+        public Events.Callbacks field(String name) {
             return add("field:" + name);
         }
 
         @Override
-        public EventHandler.Callbacks objectEnded() {
+        public Events.Callbacks objectEnded() {
             return add("objectEnded");
         }
 
         @Override
-        public EventHandler.Callbacks arrayStarted() {
+        public Events.Callbacks arrayStarted() {
             return add("arrayStarted");
         }
 
         @Override
-        public EventHandler.Callbacks string(String string) {
+        public Events.Callbacks string(String string) {
             return add("string:" + string);
         }
 
         @Override
-        public EventHandler.Callbacks number(Number number) {
+        public Events.Callbacks number(Number number) {
             return add("number:" + number);
         }
 
         @Override
-        public EventHandler.Callbacks truth(boolean truth) {
+        public Events.Callbacks truth(boolean truth) {
             return add("truth:" + truth);
         }
 
         @Override
-        public EventHandler.Callbacks nil() {
+        public Events.Callbacks nil() {
             return add("nil");
         }
 
         @Override
-        public EventHandler.Callbacks arrayEnded() {
+        public Events.Callbacks arrayEnded() {
             return add("arrayEnded");
         }
 
-        private AbstractEventHandler.Callbacks add(String event) {
+        private Events.Callbacks add(String event) {
             if (called.compareAndSet(false, true)) {
                 ArrayList<String> moreStuff = new ArrayList<>(stuff);
                 moreStuff.add(event);
