@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.json.Address;
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.User;
 import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
-import com.github.kjetilv.uplift.json.gens.AppCallbacks;
+import com.github.kjetilv.uplift.json.gens.AbstractCallbacks;
 import com.github.kjetilv.uplift.json.gens.UserCallbacks;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +132,7 @@ public class JsonEventCallbacksTest {
     @Test
     void parseUser() {
         AtomicReference<User> reference = new AtomicReference<>();
-        AppCallbacks parse = Events.parse(
+        AbstractCallbacks parse = Events.parse(
             new UserCallbacks(null, reference::set),
             """
             {
