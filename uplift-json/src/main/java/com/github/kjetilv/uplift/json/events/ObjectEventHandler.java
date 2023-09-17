@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
+import java.util.function.Supplier;
+
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
@@ -24,15 +26,21 @@ final class ObjectEventHandler<C extends Events.Callbacks<C>> extends AbstractEv
         return switch (token.type()) {
             case END_OBJECT -> exit(Events.Callbacks::objectEnded);
             case COMMA -> this;
-            case STRING -> colonToken ->
-                colonToken.is(COLON)
-                    ? new ValueEventHandler<>(this, field(token))
-                    : fail(
-                        "Expected colon to follow field `" + token.literalString() + "`",
-                        colonToken,
-                        COLON
-                    );
+            case STRING -> skip(
+                token,
+                () ->
+                    new ValueEventHandler<>(this, field(token))
+            );
             default -> fail("Malformed object level", token, END_OBJECT, COMMA, STRING);
         };
+    }
+
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
+    private EventHandler<C> skip(Token token, Supplier<EventHandler<C>> next) {
+        return skipToken ->
+            switch (skipToken.type()) {
+                case COLON -> next.get();
+                default -> fail("Expected colon to follow field `" + token.literalString() + "`", skipToken, COLON);
+            };
     }
 }

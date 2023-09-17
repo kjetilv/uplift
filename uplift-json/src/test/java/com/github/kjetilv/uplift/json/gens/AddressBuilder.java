@@ -1,8 +1,13 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.gens;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class AddressBuilder implements Supplier<Address> {
+import com.github.kjetilv.uplift.json.Address;
+import com.github.kjetilv.uplift.json.Resident;
+
+public final class AddressBuilder implements Supplier<Address> {
 
     private String streetName;
 
@@ -11,6 +16,8 @@ public class AddressBuilder implements Supplier<Address> {
     private Address.Modifier modifier;
 
     private Integer code;
+
+    private List<Resident> residents;
 
     public void setStreetName(String streetName) {
         this.streetName = streetName;
@@ -28,13 +35,21 @@ public class AddressBuilder implements Supplier<Address> {
         this.code = code;
     }
 
+    public void addResident(Resident resident) {
+        if (residents == null) {
+            residents = new ArrayList<>();
+        }
+        residents.add(resident);
+    }
+
     @Override
     public Address get() {
         return new Address(
             streetName,
             houseNumber,
             modifier,
-            code
+            code,
+            residents
         );
     }
 }

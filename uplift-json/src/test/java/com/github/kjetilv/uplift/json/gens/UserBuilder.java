@@ -1,8 +1,13 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.gens;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class UserBuilder implements Supplier<User> {
+import com.github.kjetilv.uplift.json.Address;
+import com.github.kjetilv.uplift.json.User;
+
+public final class UserBuilder implements Supplier<User> {
 
     private String name;
 
@@ -12,13 +17,16 @@ public class UserBuilder implements Supplier<User> {
 
     private boolean roadWarrior;
 
+    private List<Object> misc;
+
     @Override
     public User get() {
         return new User(
             name,
             birthYear,
             address,
-            roadWarrior
+            roadWarrior,
+            misc
         );
     }
 
@@ -36,5 +44,12 @@ public class UserBuilder implements Supplier<User> {
 
     public void setRoadWarrior(boolean roadWarrior) {
         this.roadWarrior = roadWarrior;
+    }
+
+    public void addMisc(Object object) {
+        if (misc == null) {
+            misc = new ArrayList<>();
+        }
+        misc.add(object);
     }
 }

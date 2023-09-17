@@ -1,8 +1,14 @@
 package com.github.kjetilv.uplift.json.events;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.github.kjetilv.uplift.json.Address;
 import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.User;
+import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
+import com.github.kjetilv.uplift.json.gens.AppCallbacks;
+import com.github.kjetilv.uplift.json.gens.UserCallbacks;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,8 +131,9 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parseUser() {
-        MyCallbacks parse = Events.parse(
-            new MyCallbacks(),
+        AtomicReference<User> reference = new AtomicReference<>();
+        AppCallbacks parse = Events.parse(
+            new UserCallbacks(null, reference::set),
             """
             {
               "name": "Kjetil",
@@ -134,13 +141,42 @@ public class JsonEventCallbacksTest {
                 "streetName": "None Street",
                 "houseNumber": 1729,
                 "modifier": "B",
-                "code": 1450
+                "code": 1450,
+                "residents": [
+                  {
+                    "name": "foo",
+                    "permanent": true
+                  },
+                  {
+                    "name": "bar",
+                    "permanent": false
+                  }
+                ]
               },
-              "birthYear": 1973
+              "roadWarrior": true,
+              "birthYear": 1973,
+              "misc": [
+                50,
+                "hacker",
+                true
+              ]
             }
             """
         );
-        System.out.println(parse.getStuff());
+        System.out.println(reference.get());
+        AtomicReference<Address> reference1 = new AtomicReference<>();
+        Events.parse(
+            new AddressCallbacks(null, reference1::set),
+            """
+            {
+                "streetName": "None Street",
+                "houseNumber": 1729,
+                "modifier": "B",
+                "code": 1450
+            }
+            """
+        );
+        System.out.println(reference1.get());
     }
 
     private static MyCallbacks callbacks() {
