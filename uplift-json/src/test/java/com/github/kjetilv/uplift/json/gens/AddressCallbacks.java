@@ -13,7 +13,7 @@ public final class AddressCallbacks extends AbstractCallbacks<Address> {
         onInteger("houseNumber", addressBuilder::setHouseNumber);
         onInteger("code", addressBuilder::setCode);
         onString("streetName", addressBuilder::setStreetName);
-        onEnum("modifier", Address.Modifier::valueOf, addressBuilder::setModifier);
+        onTypedString("modifier", Address.Modifier::valueOf, addressBuilder::setModifier);
         onObject("residents", () -> new ResidentCallbacks(this, addressBuilder::addResident));
         get(addressBuilder);
     }

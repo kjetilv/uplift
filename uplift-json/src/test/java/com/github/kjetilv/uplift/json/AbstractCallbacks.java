@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractCallbacks<?>>, Supplier<T> {
+public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractCallbacks<?>> {
 
     private final AbstractCallbacks<?> parent;
 
@@ -23,7 +23,7 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
 
     private String currentField;
 
-    private Supplier<T> get;
+    private Supplier<T> supplier;
 
     protected AbstractCallbacks(AbstractCallbacks<?> parent, Consumer<T> onDone) {
         this.parent = parent;
@@ -53,12 +53,15 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
         try {
             return parent == null ? this : parent;
         } finally {
-            onDone.accept(get());
+            onDone.accept(supplier.get());
         }
     }
 
     @Override
     public final AbstractCallbacks<?> string(String string) {
+        if (currentField == null) {
+            return fail();
+        }
         Consumer<String> consumer = strings.get(currentField);
         if (consumer != null) {
             consumer.accept(string);
@@ -85,20 +88,15 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
         return this;
     }
 
-    @Override
-    public final T get() {
-        return get.get();
-    }
-
     protected final void get(Supplier<T> get) {
-        this.get = get;
+        this.supplier = get;
     }
 
     protected final void onObject(String name, Supplier<AbstractCallbacks<?>> nested) {
         objectFields.put(name, nested);
     }
 
-    protected final <E extends Enum<?>> void onEnum(String name, Function<String, E> enumType, Consumer<E> setter) {
+    protected final <E> void onTypedString(String name, Function<String, E> enumType, Consumer<E> setter) {
         strings.put(name, str -> setter.accept(enumType.apply(str)));
     }
 
