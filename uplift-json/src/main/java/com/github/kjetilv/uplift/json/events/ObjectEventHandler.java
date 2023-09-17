@@ -26,7 +26,7 @@ final class ObjectEventHandler<C extends Events.Callbacks<C>> extends AbstractEv
             case COMMA -> this;
             case STRING -> colonToken ->
                 colonToken.is(COLON)
-                    ? new ValueEventHandler<C>(this, field(token))
+                    ? new ValueEventHandler<>(this, field(token))
                     : fail(
                         "Expected colon to follow field `" + token.literalString() + "`",
                         colonToken,

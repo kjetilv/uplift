@@ -6,15 +6,15 @@ final class Progress {
 
     private int column = 1;
 
-    final int line() {
+    int line() {
         return line;
     }
 
-    final int column() {
+    int column() {
         return column;
     }
 
-    final char chomped(char c) {
+    char chomped(char c) {
         if (c == '\n') {
             line++;
             column = 1;

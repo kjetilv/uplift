@@ -22,7 +22,7 @@ final class ValueEventHandler<C extends Events.Callbacks<C>> extends AbstractEve
 
     @Override
     protected AbstractEventHandler<C> with(C callbacks) {
-        return new ValueEventHandler<C>(exit(), callbacks);
+        return new ValueEventHandler<>(exit(), callbacks);
     }
 
     @Override
