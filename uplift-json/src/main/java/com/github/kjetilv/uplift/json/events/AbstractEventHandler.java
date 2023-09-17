@@ -2,60 +2,62 @@ package com.github.kjetilv.uplift.json.events;
 
 import java.util.function.Function;
 
+import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
-abstract class AbstractEventHandler implements EventHandler {
+abstract class AbstractEventHandler<C extends Events.Callbacks<C>> implements EventHandler<C> {
 
-    private final AbstractEventHandler scope;
+    private final AbstractEventHandler<C> scope;
 
-    private final Events.Callbacks callbacks;
+    private final C callbacks;
 
-    AbstractEventHandler(AbstractEventHandler scope, Events.Callbacks callbacks) {
+    AbstractEventHandler(AbstractEventHandler<C> scope, C callbacks) {
         this.scope = scope;
         this.callbacks = callbacks;
     }
 
-    final Events.Callbacks getCallbacks() {
+    @Override
+    public final C callbacks() {
         return callbacks;
     }
 
-    protected abstract AbstractEventHandler with(Events.Callbacks callbacks);
+    protected abstract AbstractEventHandler<C> with(C callbacks);
 
-    protected final AbstractEventHandler exit() {
+    protected final AbstractEventHandler<C> exit() {
         return scope == null ? this : scope.with(callbacks);
     }
 
-    protected final AbstractEventHandler exit(Function<Events.Callbacks, Events.Callbacks> action) {
+    protected final AbstractEventHandler<C> exit(Function<C, C> action) {
         return scope == null ? this : scope.with(action.apply(callbacks));
     }
 
-    protected final Events.Callbacks field(Token token) {
+    protected final C field(Token token) {
         return callbacks.field(token.literalString());
     }
 
-    protected final Events.Callbacks objectStarted() {
+    protected final C objectStarted() {
         return callbacks.objectStarted();
     }
 
-    protected final Events.Callbacks arrayStarted() {
+    protected final C arrayStarted() {
         return callbacks.arrayStarted();
     }
 
-    protected final Events.Callbacks string(Token token) {
+    protected final C string(Token token) {
         return callbacks.string(token.literalString());
     }
 
-    protected final Events.Callbacks truth(Token token) {
+    protected final C truth(Token token) {
         return callbacks.truth(token.literalTruth());
     }
 
-    protected final Events.Callbacks number(Token token) {
+    protected final C number(Token token) {
         return callbacks.number(token.literalNumber());
     }
 
-    protected final Events.Callbacks nil() {
+    protected final C nil() {
         return callbacks.nil();
     }
 

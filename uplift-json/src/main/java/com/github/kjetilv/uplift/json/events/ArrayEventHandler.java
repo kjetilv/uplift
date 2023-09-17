@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
+import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_ARRAY;
@@ -8,22 +9,22 @@ import static com.github.kjetilv.uplift.json.tokens.TokenType.BOOL;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
 
-final class ArrayEventHandler extends AbstractEventHandler {
+final class ArrayEventHandler<C extends Events.Callbacks<C>> extends AbstractEventHandler<C> {
 
-    ArrayEventHandler(AbstractEventHandler scope, Events.Callbacks callbacks) {
+    ArrayEventHandler(AbstractEventHandler<C> scope, C callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    protected AbstractEventHandler with(Events.Callbacks callbacks) {
-        return new ArrayEventHandler(exit(), callbacks);
+    protected AbstractEventHandler<C> with(C callbacks) {
+        return new ArrayEventHandler<>(exit(), callbacks);
     }
 
     @Override
-    public EventHandler process(Token token) {
+    public EventHandler<C> process(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEventHandler(this, objectStarted());
-            case BEGIN_ARRAY -> new ArrayEventHandler(this, arrayStarted());
+            case BEGIN_OBJECT -> new ObjectEventHandler<>(this, objectStarted());
+            case BEGIN_ARRAY -> new ArrayEventHandler<>(this, arrayStarted());
             case STRING -> with(string(token));
             case BOOL -> with(truth(token));
             case NUMBER -> with(number(token));

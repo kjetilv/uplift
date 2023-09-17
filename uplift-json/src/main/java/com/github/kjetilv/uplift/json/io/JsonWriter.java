@@ -13,10 +13,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-final class JsonWriter {
+public final class JsonWriter {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
-    static void write(Object object, Sink sink) {
+    public static void write(Object object, Sink sink) {
         if (object == null) {
             writeNull(sink);
             return;

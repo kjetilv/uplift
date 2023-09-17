@@ -13,20 +13,20 @@ import com.github.kjetilv.uplift.json.tokens.TokenType;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class Parser {
+public final class Parser {
 
     private final Token[] tokens;
 
     private int i;
 
-    Parser(Token... tokens) {
+    public Parser(Token... tokens) {
         if (tokens.length == 0) {
             throw new IllegalArgumentException("Empty token stream");
         }
         this.tokens = tokens;
     }
 
-    Object parse() {
+    public Object parse() {
         return parseFrom(chomp());
     }
 

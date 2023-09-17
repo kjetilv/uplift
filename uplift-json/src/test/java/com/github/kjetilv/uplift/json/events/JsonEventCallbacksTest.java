@@ -5,10 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
-import com.github.kjetilv.uplift.json.tokens.Scanner;
-import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.Events;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,8 +17,8 @@ public class JsonEventCallbacksTest {
     @Test
     void arr() {
         List<String> tokens = new ArrayList<>();
-        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
-            handler(tokens),
+        MyCallbacks myCallbacks = Events.parse(
+            callbacks(tokens),
             """
             {
               "els": [1, 2, "a", "b"],
@@ -62,8 +60,8 @@ public class JsonEventCallbacksTest {
     @Test
     void obj() {
         List<String> tokens = new ArrayList<>();
-        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
-            handler(tokens),
+        MyCallbacks myCallbacks = Events.parse(
+            callbacks(tokens),
             """
             {
               "foo": "bar",
@@ -90,8 +88,8 @@ public class JsonEventCallbacksTest {
     @Test
     void parse() {
         List<String> tokens = new ArrayList<>();
-        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
-            handler(tokens),
+        MyCallbacks myCallbacks = Events.parse(
+            callbacks(tokens),
             """
             {
               "foo": "bar",
@@ -117,7 +115,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parseMap() {
-        Stream<Token> tokenStream = Scanner.tokens(
+        List<String> tokens = new ArrayList<>();
+        MyCallbacks callbacks = callbacks(tokens);
+        Events.parse(
+            callbacks,
             """
             {
               "foo": "bar",
@@ -126,25 +127,15 @@ public class JsonEventCallbacksTest {
                 "oops": true
               }
             }
-            """);
-        Events.Callbacks callback = new Events.Callbacks() {
-
-        };
-        List<String> tokens = new ArrayList<>();
-        EventHandler reduce = tokenStream.reduce(
-            Events.create(handler(tokens)),
-            EventHandler::process,
-            (events, events2) -> {
-                throw new IllegalStateException(events + "/" + events2);
-            }
+            """
         );
     }
 
-    private static Events.Callbacks handler(List<String> stuff) {
+    private static MyCallbacks callbacks(List<String> stuff) {
         return new MyCallbacks(stuff);
     }
 
-    private static final class MyCallbacks implements Events.Callbacks {
+    private static final class MyCallbacks implements Events.Callbacks<MyCallbacks> {
 
         static final AtomicInteger COUNT = new AtomicInteger();
 
@@ -160,51 +151,51 @@ public class JsonEventCallbacksTest {
         }
 
         @Override
-        public Events.Callbacks objectStarted() {
+        public MyCallbacks objectStarted() {
             return add("objectStarted");
         }
 
         @Override
-        public Events.Callbacks field(String name) {
+        public MyCallbacks field(String name) {
             return add("field:" + name);
         }
 
         @Override
-        public Events.Callbacks objectEnded() {
+        public MyCallbacks objectEnded() {
             return add("objectEnded");
         }
 
         @Override
-        public Events.Callbacks arrayStarted() {
+        public MyCallbacks arrayStarted() {
             return add("arrayStarted");
         }
 
         @Override
-        public Events.Callbacks string(String string) {
+        public MyCallbacks string(String string) {
             return add("string:" + string);
         }
 
         @Override
-        public Events.Callbacks number(Number number) {
+        public MyCallbacks number(Number number) {
             return add("number:" + number);
         }
 
         @Override
-        public Events.Callbacks truth(boolean truth) {
+        public MyCallbacks truth(boolean truth) {
             return add("truth:" + truth);
         }
 
         @Override
-        public Events.Callbacks nil() {
+        public MyCallbacks nil() {
             return add("nil");
         }
 
         @Override
-        public Events.Callbacks arrayEnded() {
+        public MyCallbacks arrayEnded() {
             return add("arrayEnded");
         }
 
-        private Events.Callbacks add(String event) {
+        private MyCallbacks add(String event) {
             if (called.compareAndSet(false, true)) {
                 ArrayList<String> moreStuff = new ArrayList<>(stuff);
                 moreStuff.add(event);

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
-public class ParseException extends RuntimeException {
+public final class ParseException extends RuntimeException {
 
     private final Token token;
 
