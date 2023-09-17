@@ -123,7 +123,7 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
         truths.put(name, setter);
     }
 
-    protected final void
+    protected final void onFloat(String name, Consumer<Float> setter) {
         numbers.put(name, setter);
     }
 
