@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.json.tokens;
 
-class StringSource extends AbstractSource {
+class StringSource implements Source {
 
     private final String source;
+
+    private final Progress progress;
 
     private int start;
 
@@ -10,12 +12,13 @@ class StringSource extends AbstractSource {
 
     StringSource(String source) {
         this.source = source;
+        this.progress = new Progress();
     }
 
     @Override
     public String lexeme(boolean quoted) {
         return !quoted ? source.substring(start, current)
-            : current == start + 1 ? canonical(source.charAt(current))
+            : current == start + 1 ? Canonical.string(source.charAt(current))
                 : source.substring(start + 1, current - 1);
     }
 
@@ -49,9 +52,19 @@ class StringSource extends AbstractSource {
         return current >= source.length();
     }
 
+    @Override
+    public int line() {
+        return progress.line();
+    }
+
+    @Override
+    public int column() {
+        return progress.column();
+    }
+
     private char chompAndAdvance() {
         try {
-            return chomped(source.charAt(current));
+            return progress.chomped(source.charAt(current));
         } finally {
             current++;
         }

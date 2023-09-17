@@ -96,7 +96,7 @@ public final class JsonWriter {
     }
 
     private static void writeNull(Sink sink) {
-        sink.accept("null");
+        sink.accept(Canonical.NULL);
     }
 
     private static void writeDecimal(BigDecimal dec, Sink sink) {

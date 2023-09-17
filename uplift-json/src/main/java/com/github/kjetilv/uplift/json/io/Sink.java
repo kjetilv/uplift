@@ -13,7 +13,7 @@ public interface Sink {
     }
 
     default Sink accept(boolean bool) {
-        return accept(bool ? "true" : "false");
+        return accept(bool ? Canonical.TRUE : Canonical.FALSE);
     }
 
     Sink accept(String str);

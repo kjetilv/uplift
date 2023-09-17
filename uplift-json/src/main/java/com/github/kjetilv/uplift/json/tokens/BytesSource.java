@@ -4,9 +4,11 @@ import java.io.InputStream;
 
 import static java.util.Objects.requireNonNull;
 
-class BytesSource extends AbstractSource {
+class BytesSource implements Source {
 
     private final InputStream stream;
+
+    private final Progress progress;
 
     private int next1;
 
@@ -17,6 +19,7 @@ class BytesSource extends AbstractSource {
 
     BytesSource(InputStream stream) {
         this.stream = requireNonNull(stream, "stream");
+        this.progress = new Progress();
         try {
             this.next1 = stream.read();
             this.next2 = next1 < 0 ? -1 : stream.read();
@@ -28,13 +31,13 @@ class BytesSource extends AbstractSource {
     @Override
     public String lexeme(boolean quoted) {
         return quoted ? currentLexeme.substring(1, currentLexeme.length() - 1)
-            : currentLexeme.length() == 1 ? canonical(currentLexeme.charAt(0))
+            : currentLexeme.length() == 1 ? Canonical.string(currentLexeme.charAt(0))
                 : currentLexeme.toString();
     }
 
     @Override
     public char chomp() {
-        char chomped = chomped(toChar(next1));
+        char chomped = progress.chomped(toChar(next1));
         currentLexeme.append(chomped);
         next1 = next2;
         if (next1 >= 0) {
@@ -45,6 +48,16 @@ class BytesSource extends AbstractSource {
             }
         }
         return chomped;
+    }
+
+    @Override
+    public int line() {
+        return progress.line();
+    }
+
+    @Override
+    public int column() {
+        return progress.column();
     }
 
     @Override
