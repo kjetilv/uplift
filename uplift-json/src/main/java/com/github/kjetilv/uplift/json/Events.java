@@ -37,7 +37,7 @@ public final class Events {
             return (C) this;
         }
 
-        default C number(Number number) {
+        default <N extends Number> C number(N number) {
             return (C) this;
         }
 

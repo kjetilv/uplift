@@ -69,10 +69,9 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public final AbstractCallbacks<?> number(Number number) {
-        Consumer<Number> consumer = (Consumer<Number>) numbers.get(currentField);
+    public final <N extends Number> AbstractCallbacks<?> number(N number) {
+        Consumer<N> consumer = numberConsumer();
         if (consumer != null) {
             consumer.accept(number);
         }
@@ -126,6 +125,11 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
 
     protected final void onByte(String name, Consumer<Byte> setter) {
         numbers.put(name, (Long l) -> setter.accept(l.byteValue()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <N extends Number> Consumer<N> numberConsumer() {
+        return (Consumer<N>) numbers.get(currentField);
     }
 
     private final <R> R fail() {
