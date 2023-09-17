@@ -7,6 +7,7 @@ public record User(
     Integer birthYear,
     Address address,
     boolean roadWarrior,
+    byte maxAge,
     List<Object> misc) {
 
 }

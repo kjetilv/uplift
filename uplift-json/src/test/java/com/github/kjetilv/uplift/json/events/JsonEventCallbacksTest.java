@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.json.Address;
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.User;
 import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
-import com.github.kjetilv.uplift.json.gens.AbstractCallbacks;
+import com.github.kjetilv.uplift.json.AbstractCallbacks;
 import com.github.kjetilv.uplift.json.gens.UserCallbacks;
 import org.junit.jupiter.api.Test;
 
@@ -159,7 +159,8 @@ public class JsonEventCallbacksTest {
                 50,
                 "hacker",
                 true
-              ]
+              ],
+              "maxAge": 127
             }
             """
         );

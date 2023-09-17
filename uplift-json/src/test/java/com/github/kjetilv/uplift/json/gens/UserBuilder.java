@@ -19,6 +19,8 @@ public final class UserBuilder implements Supplier<User> {
 
     private List<Object> misc;
 
+    private byte maxAge;
+
     @Override
     public User get() {
         return new User(
@@ -26,6 +28,7 @@ public final class UserBuilder implements Supplier<User> {
             birthYear,
             address,
             roadWarrior,
+            maxAge,
             misc
         );
     }
@@ -51,5 +54,9 @@ public final class UserBuilder implements Supplier<User> {
             misc = new ArrayList<>();
         }
         misc.add(object);
+    }
+
+    void setMaxAge(byte maxAge) {
+        this.maxAge = maxAge;
     }
 }

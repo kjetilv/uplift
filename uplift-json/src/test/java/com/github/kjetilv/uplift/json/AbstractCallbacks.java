@@ -1,12 +1,11 @@
-package com.github.kjetilv.uplift.json.gens;
+package com.github.kjetilv.uplift.json;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.github.kjetilv.uplift.json.Events;
 
 public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractCallbacks<?>>, Supplier<T> {
 
@@ -28,7 +27,7 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
 
     protected AbstractCallbacks(AbstractCallbacks<?> parent, Consumer<T> onDone) {
         this.parent = parent;
-        this.onDone = onDone;
+        this.onDone = Objects.requireNonNull(onDone, "onDone");
     }
 
     @Override
@@ -61,41 +60,29 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
     @Override
     public final AbstractCallbacks<?> string(String string) {
         Consumer<String> consumer = strings.get(currentField);
-        if (consumer == null) {
-            return fail(string);
-        }
-        try {
-            return this;
-        } finally {
+        if (consumer != null) {
             consumer.accept(string);
         }
+        return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public final AbstractCallbacks<?> number(Number number) {
         Consumer<Number> consumer = (Consumer<Number>) numbers.get(currentField);
-        if (consumer == null) {
-            return fail(number);
-        }
-        try {
-            return this;
-        } finally {
+        if (consumer != null) {
             consumer.accept(number);
         }
+        return this;
     }
 
     @Override
     public final AbstractCallbacks<?> truth(boolean truth) {
         Consumer<Boolean> consumer = truths.get(currentField);
-        if (consumer == null) {
-            return fail(truth);
-        }
-        try {
-            return this;
-        } finally {
+        if (consumer != null) {
             consumer.accept(truth);
         }
+        return this;
     }
 
     @Override
@@ -124,7 +111,7 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
     }
 
     protected final void onFloat(String name, Consumer<Float> setter) {
-        numbers.put(name, setter);
+        numbers.put(name, (Double d) -> setter.accept(d.floatValue()));
     }
 
     protected final void onDouble(String name, Consumer<Double> setter) {
@@ -132,7 +119,15 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
     }
 
     protected final void onInteger(String name, Consumer<Integer> setter) {
-        numbers.put(name, (Long l) -> setter.accept(l.intValue()));
+        numbers.put(name, (Long l) -> setter.accept(Math.toIntExact(l)));
+    }
+
+    protected final void onShort(String name, Consumer<Short> setter) {
+        numbers.put(name, (Long l) -> setter.accept(l.shortValue()));
+    }
+
+    protected final void onByte(String name, Consumer<Byte> setter) {
+        numbers.put(name, (Long l) -> setter.accept(l.byteValue()));
     }
 
     private final <R> R fail() {

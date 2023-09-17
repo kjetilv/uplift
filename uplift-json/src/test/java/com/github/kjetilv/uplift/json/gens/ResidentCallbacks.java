@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.gens;
 
 import java.util.function.Consumer;
 
+import com.github.kjetilv.uplift.json.AbstractCallbacks;
 import com.github.kjetilv.uplift.json.Resident;
 
 public class ResidentCallbacks extends AbstractCallbacks<Resident> {
