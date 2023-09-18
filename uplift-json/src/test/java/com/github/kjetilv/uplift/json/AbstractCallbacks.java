@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,29 +33,23 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
 
     @Override
     public final AbstractCallbacks<?> objectStarted() {
-        if (currentField == null) {
-            return this;
-        }
-        Supplier<AbstractCallbacks<?>> nester = objectFields.get(currentField);
-        return nester == null ? fail() : nester.get();
+        return currentField == null
+            ? this
+            : Optional.ofNullable(objectFields.get(currentField))
+                .map(Supplier::get)
+                .orElseGet(this::fail);
     }
 
     @Override
     public final AbstractCallbacks<T> field(String name) {
-        try {
-            return this;
-        } finally {
-            currentField = name;
-        }
+        currentField = name;
+        return this;
     }
 
     @Override
     public AbstractCallbacks<?> objectEnded() {
-        try {
-            return parent == null ? this : parent;
-        } finally {
-            onDone.accept(supplier.get());
-        }
+        onDone.accept(supplier.get());
+        return parent == null ? this : parent;
     }
 
     @Override

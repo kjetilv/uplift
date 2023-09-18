@@ -17,7 +17,8 @@ public final class UserCallbacks extends AbstractCallbacks<User> {
         onTruth("roadWarrior", userBuilder::setRoadWarrior);
         onByte("maxAge", userBuilder::setMaxAge);
         onTruth("misc", userBuilder::addMisc);
-        onObject("address", () -> new AddressCallbacks(this, userBuilder::setAddress));
+        onObject("address", () ->
+            new AddressCallbacks(this, userBuilder::setAddress));
         get(userBuilder);
     }
 }
