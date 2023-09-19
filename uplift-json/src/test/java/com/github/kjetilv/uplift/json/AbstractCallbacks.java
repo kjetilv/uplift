@@ -1,38 +1,44 @@
 package com.github.kjetilv.uplift.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractCallbacks<?>> {
+@SuppressWarnings("SameParameterValue")
+public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Events.Callbacks<AbstractCallbacks<?, ?>> {
 
-    private final AbstractCallbacks<?> parent;
+    private final B builder;
+
+    private final AbstractCallbacks<?, ?> parent;
 
     private final Consumer<T> onDone;
 
-    private final Map<String, Consumer<? extends Number>> numbers = new LinkedHashMap<>();
+    private final Map<String, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
 
-    private final Map<String, Consumer<String>> strings = new LinkedHashMap<>();
+    private final Map<String, BiConsumer<B, String>> strings = new LinkedHashMap<>();
 
-    private final Map<String, Consumer<Boolean>> truths = new LinkedHashMap<>();
+    private final Map<String, BiConsumer<B, Boolean>> truths = new LinkedHashMap<>();
 
-    private final Map<String, Supplier<AbstractCallbacks<?>>> objectFields = new LinkedHashMap<>();
+    private final Map<String, Supplier<AbstractCallbacks<?, ?>>> objectFields = new LinkedHashMap<>();
 
     private String currentField;
 
-    private Supplier<T> supplier;
 
-    protected AbstractCallbacks(AbstractCallbacks<?> parent, Consumer<T> onDone) {
+    protected AbstractCallbacks(B builder, AbstractCallbacks<?, ?> parent, Consumer<T> onDone) {
+        this.builder = builder;
         this.parent = parent;
         this.onDone = Objects.requireNonNull(onDone, "onDone");
     }
 
     @Override
-    public final AbstractCallbacks<?> objectStarted() {
+    public final AbstractCallbacks<?, ?> objectStarted() {
         return currentField == null
             ? this
             : Optional.ofNullable(objectFields.get(currentField))
@@ -41,97 +47,105 @@ public abstract class AbstractCallbacks<T> implements Events.Callbacks<AbstractC
     }
 
     @Override
-    public final AbstractCallbacks<T> field(String name) {
+    public final AbstractCallbacks<?, T> field(String name) {
         currentField = name;
         return this;
     }
 
     @Override
-    public AbstractCallbacks<?> objectEnded() {
-        onDone.accept(supplier.get());
+    public AbstractCallbacks<?, ?> objectEnded() {
+        onDone.accept(builder.get());
         return parent == null ? this : parent;
     }
 
     @Override
-    public final AbstractCallbacks<?> string(String string) {
+    public final AbstractCallbacks<?, ?> string(String string) {
         if (currentField == null) {
             return fail();
         }
-        Consumer<String> consumer = strings.get(currentField);
+        BiConsumer<B, String> consumer = strings.get(currentField);
         if (consumer != null) {
-            consumer.accept(string);
+            consumer.accept(builder, string);
         }
         return this;
     }
 
     @Override
-    public final <N extends Number> AbstractCallbacks<?> number(N number) {
-        Consumer<N> consumer = numberConsumer();
+    public final <N extends Number> AbstractCallbacks<?, ?> number(N number) {
+        BiConsumer<B, Number> consumer = numberConsumer();
         if (consumer != null) {
-            consumer.accept(number);
+            consumer.accept(builder,number);
         }
         return this;
     }
 
     @Override
-    public final AbstractCallbacks<?> truth(boolean truth) {
-        Consumer<Boolean> consumer = truths.get(currentField);
+    public final AbstractCallbacks<?, ?> truth(boolean truth) {
+        BiConsumer<B, Boolean> consumer = truths.get(currentField);
         if (consumer != null) {
-            consumer.accept(truth);
+            consumer.accept(builder, truth);
         }
         return this;
     }
 
-    protected final void get(Supplier<T> get) {
-        this.supplier = get;
+    protected B builder() {
+        return builder;
     }
 
-    protected final void onObject(String name, Supplier<AbstractCallbacks<?>> nested) {
+    protected final void onObject(String name, Supplier<AbstractCallbacks<?, ?>> nested) {
         objectFields.put(name, nested);
     }
 
-    protected final <E> void onTypedString(String name, Function<String, E> enumType, Consumer<E> setter) {
-        strings.put(name, str -> setter.accept(enumType.apply(str)));
+    protected final <E> void onStringly(String name, Function<String, E> enumType, BiConsumer<B, E> setter) {
+        strings.put(name, (builder, str) -> setter.accept(builder, enumType.apply(str)));
     }
 
-    protected final void onString(String name, Consumer<String> setter) {
+    protected final void onString(String name, BiConsumer<B, String> setter) {
         strings.put(name, setter);
     }
 
-    protected final void onTruth(String name, Consumer<Boolean> setter) {
+    protected final void onTruth(String name, BiConsumer<B, Boolean> setter) {
         truths.put(name, setter);
     }
 
-    protected final void onFloat(String name, Consumer<Float> setter) {
-        numbers.put(name, (Double d) -> setter.accept(d.floatValue()));
+    protected final void onFloat(String name, BiConsumer<B, Float> setter) {
+        numbers.put(name, (B builder, Double d) -> setter.accept(builder, d.floatValue()));
     }
 
-    protected final void onDouble(String name, Consumer<Double> setter) {
+    protected final void onDouble(String name, BiConsumer<B, Double> setter) {
         numbers.put(name, setter);
     }
 
-    protected final void onInteger(String name, Consumer<Integer> setter) {
-        numbers.put(name, (Long l) -> setter.accept(Math.toIntExact(l)));
+    protected final void onInteger(String name, BiConsumer<B, Integer> setter) {
+        numbers.put(name, (B builder, Long l) -> setter.accept(builder, l.intValue()));
     }
 
-    protected final void onShort(String name, Consumer<Short> setter) {
-        numbers.put(name, (Long l) -> setter.accept(l.shortValue()));
+    protected final void onBigInteger(String name, BiConsumer<B, Long> setter) {
+        numbers.put(name, (B builder, BigInteger bi) -> setter.accept(builder, bi.longValue()));
     }
 
-    protected final void onByte(String name, Consumer<Byte> setter) {
-        numbers.put(name, (Long l) -> setter.accept(l.byteValue()));
+    protected final void onBigDecimal(String name, BiConsumer<B, BigDecimal> setter) {
+        strings.put(name, (B builder, String l) -> setter.accept(builder, new BigDecimal(l)));
+    }
+
+    protected final void onShort(String name, BiConsumer<B, Short> setter) {
+        numbers.put(name, (B builder, Long l) -> setter.accept(builder,l.shortValue()));
+    }
+
+    protected final void onByte(String name, BiConsumer<B, Byte> setter) {
+        numbers.put(name, (B builder, Long l) -> setter.accept(builder, l.byteValue()));
     }
 
     @SuppressWarnings("unchecked")
-    private <N extends Number> Consumer<N> numberConsumer() {
-        return (Consumer<N>) numbers.get(currentField);
+    private <N extends Number> BiConsumer<B, N> numberConsumer() {
+        return (BiConsumer<B, N>) numbers.get(currentField);
     }
 
-    private final <R> R fail() {
+    private <R> R fail() {
         throw new IllegalStateException("Unexpected object value for " + currentField);
     }
 
-    private final <R> R fail(Object value) {
+    private <R> R fail(Object value) {
         throw new IllegalStateException("Unexpected value for " + currentField + ": " + value);
     }
 }
