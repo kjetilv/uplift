@@ -23,5 +23,5 @@ class NativeLambdaPlugin : Plugin<Project> {
         }
     }
 
-    private fun String?.asGraalUri(): URI? = URI.create("https://download.oracle.com/graalvm/20/latest/graalvm-jdk-20_linux-${this}_bin.tar.gz")
+    private fun String?.asGraalUri(): URI? = URI.create("https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-${this}_bin.tar.gz")
 }
