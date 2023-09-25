@@ -1,4 +1,5 @@
 plugins {
+    java
     `maven-publish`
 }
 
@@ -23,16 +24,18 @@ subprojects {
         }
     }
 
-    JavaVersion.valueOf("VERSION_${resolveProperty("javaVersion", defValue = "20")}")
-        .also { javaVersion ->
-            configure<JavaPluginExtension> {
-                sourceCompatibility = javaVersion
-                targetCompatibility = javaVersion
+    if (project.name != "uplift-gradle-plugins") {
+        java {
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(21))
+                vendor.set(JvmVendorSpec.GRAAL_VM)
                 withSourcesJar()
+                languageVersion.set(JavaLanguageVersion.of(21))
+                sourceCompatibility = JavaVersion.VERSION_21
+                targetCompatibility = JavaVersion.VERSION_21
             }
         }
 
-    if (project.name != "uplift-gradle-plugins") {
         publishing {
             repositories {
                 mavenLocal()
