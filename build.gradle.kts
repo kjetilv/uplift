@@ -29,10 +29,9 @@ subprojects {
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(21))
                 vendor.set(JvmVendorSpec.GRAAL_VM)
-                withSourcesJar()
-                languageVersion.set(JavaLanguageVersion.of(21))
                 sourceCompatibility = JavaVersion.VERSION_21
                 targetCompatibility = JavaVersion.VERSION_21
+                withSourcesJar()
             }
         }
 

@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.10"
     `java-gradle-plugin`
 }
 
@@ -29,23 +29,11 @@ dependencies {
     implementation("org.antlr:ST4:4.3.4")
 }
 
-val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-        vendor.set(JvmVendorSpec.GRAAL_VM)
-        withSourcesJar()
-        languageVersion.set(JavaLanguageVersion.of(17))
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+kotlin {
+    jvmToolchain {
+        (this as JavaToolchainSpec).apply {
+            languageVersion.set(JavaLanguageVersion.of(17))
+            vendor.set(JvmVendorSpec.GRAAL_VM)
+        }
     }
-}
-
-
-compileKotlin.kotlinOptions {
-    jvmTarget = project.takeIf { it.hasProperty("javaVersion") }
-        ?.property("javaVersion")
-        ?.toString()
-        ?: "17"
 }
