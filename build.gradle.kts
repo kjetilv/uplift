@@ -18,10 +18,8 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "java")
 
-    tasks {
-        withType<Test> {
-            this.useJUnitPlatform()
-        }
+    tasks.withType<Test> {
+        this.useJUnitPlatform()
     }
 
     if (project.name != "uplift-gradle-plugins") {
