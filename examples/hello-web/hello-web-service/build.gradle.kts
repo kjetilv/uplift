@@ -1,9 +1,7 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
 
 plugins {
     java
-    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.github.kjetilv.uplift.plugins.lambda") version "0.1.1-SNAPSHOT"
 }
 
@@ -19,20 +17,13 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
-configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-tasks.withType<ShadowJar> {
-    manifest {
-        attributes(mapOf(Pair("Main-Class", "uplift.examples.helloweb.HelloWeb")))
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+        vendor.set(JvmVendorSpec.GRAAL_VM)
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+        withSourcesJar()
     }
-    mergeServiceFiles()
-    minimize()
-    dependsOn("build")
 }
 
-tasks.withType<NativeLamdbdaTask> {
-    dependsOn("shadowJar")
-}

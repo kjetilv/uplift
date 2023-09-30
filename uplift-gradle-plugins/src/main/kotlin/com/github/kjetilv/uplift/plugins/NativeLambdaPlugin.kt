@@ -11,11 +11,13 @@ class NativeLambdaPlugin : Plugin<Project> {
             val target = project.buildSubDirectory("uplift")
             val arch = System.getProperty("os.arch")
             val projectName = project.name
+            val classpath =
+                project.configurations
+                    .first { conf -> conf.incoming.path.equals("${project.path}:runtimeOnly") }
 
             it.zipFile.set(target.resolve("$projectName.zip"))
             it.identifier.set(projectName)
             it.jarTask.set("shadowJar")
-            it.jdkVersion.set("17")
             it.bootstrapFile.set(target.resolve(projectName))
             it.arch.set(arch)
             it.buildsite.set("${project.shortGroupName}-buildsite")
