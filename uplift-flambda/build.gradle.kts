@@ -1,10 +1,6 @@
 import com.github.kjetilv.uplift.bld.Native
 import com.github.kjetilv.uplift.bld.Native.runCommand
 
-plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-}
-
 repositories {
     mavenCentral()
     gradlePluginPortal()
@@ -46,13 +42,3 @@ tasks.register<Task>("native-image")
             )
         }
     }
-
-//tasks.register("native-image") {
-//    project.runCommand(
-//        command = Native.image(
-//            "uplift-flambda-0.1.1-SNAPSHOT-all.jar",
-//            "flambda"
-//        )
-//    )
-//    dependsOn(tasks.named("shadowJar"))
-//}

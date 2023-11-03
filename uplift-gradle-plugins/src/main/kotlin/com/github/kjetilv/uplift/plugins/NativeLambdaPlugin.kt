@@ -18,7 +18,6 @@ class NativeLambdaPlugin : Plugin<Project> {
                 classPath.set(project.classpath)
                 zipFile.set(target.resolve("$projectName.zip"))
                 identifier.set(projectName)
-                jarTask.set("shadowJar")
                 bootstrapFile.set(target.resolve(projectName))
                 arch.set(osArch)
                 buildsite.set("${project.shortGroupName}-buildsite")
