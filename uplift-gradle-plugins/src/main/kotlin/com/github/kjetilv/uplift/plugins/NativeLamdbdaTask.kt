@@ -21,9 +21,6 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     abstract val identifier: Property<String>
 
     @get:Input
-    abstract val jarTask: Property<String>
-
-    @get:Input
     abstract val arch: Property<String>
 
     @get:Input
