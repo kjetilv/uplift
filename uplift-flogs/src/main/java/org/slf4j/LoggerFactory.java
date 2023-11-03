@@ -1,13 +1,13 @@
 package org.slf4j;
 
+import com.github.kjetilv.uplift.flogs.Flogs;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import com.github.kjetilv.uplift.flogs.Flogs;
-
-@SuppressWarnings({ "unused", "WeakerAccess" })
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class LoggerFactory {
 
     public static ILoggerFactory getILoggerFactory() {

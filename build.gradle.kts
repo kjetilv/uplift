@@ -3,7 +3,10 @@ plugins {
     `maven-publish`
 }
 
-allprojects {
+subprojects {
+    apply(plugin = "maven-publish")
+    apply(plugin = "java")
+
     group = "com.github.kjetilv.uplift"
     version = "0.1.1-SNAPSHOT"
 
@@ -12,11 +15,6 @@ allprojects {
         mavenCentral()
         mavenLocal()
     }
-}
-
-subprojects {
-    apply(plugin = "maven-publish")
-    apply(plugin = "java")
 
     tasks.withType<Test> {
         this.useJUnitPlatform()
@@ -27,10 +25,10 @@ subprojects {
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(21))
                 vendor.set(JvmVendorSpec.GRAAL_VM)
-                sourceCompatibility = JavaVersion.VERSION_21
-                targetCompatibility = JavaVersion.VERSION_21
-                withSourcesJar()
             }
+            sourceCompatibility = JavaVersion.VERSION_21
+            targetCompatibility = JavaVersion.VERSION_21
+            withSourcesJar()
         }
 
         publishing {

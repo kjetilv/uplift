@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -25,6 +27,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     abstract val arch: Property<String>
 
     @get:Input
+    abstract val main: Property<String>
+
+    @get:Input
     abstract val javaDist: Property<URI>
 
     @get:Input
@@ -37,7 +42,7 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     abstract val bootstrapFile: Property<Path>
 
     @get:Classpath
-    abstract val classPath: Property<Any>
+    abstract val classPath: ListProperty<File>
 
     @TaskAction
     fun perform() {
@@ -48,34 +53,37 @@ abstract class NativeLamdbdaTask : DefaultTask() {
         }
 
         val distFile = dist.takeIf {
-            it.scheme =="https" || it.scheme == "http"
+            it.scheme == "https" || it.scheme == "http"
         }
 
         require(distFile != null || distUri != null) {
             "javaDist property must be file, http or https URI: $dist"
         }
 
+        val cp =
+            if (classPath.isPresent) classPath.get().map(File::toPath)
+            else outputs(dependencyTasks()).filter { it.isJar || it.isDir }
+
+        if (cp.isEmpty()) {
+            logger.warn("No output jars from any upstream dependencies: ${dependencyTasks().joinToString(", ")}")
+        }
+
+        cp.forEach { copyTo(it, upliftClasspath) }
+
         val split = "Dockerfile-lambda.st4".renderResource(
             "buildsite" to buildsite.get(),
             "target" to identifier.get(),
             "arch" to arch.get(),
+            "main" to main.get(),
             "distfile" to distUri?.toASCIIString(),
-            "disturi" to distFile?.toASCIIString()
+            "disturi" to distFile?.toASCIIString(),
+            "classpath" to cp.joinToString(":") {
+                "/out/classpath/${it.fileName}"
+            }
         )
 
         Files.write(uplift.resolve("Dockerfile"), split)
         logger.info("Created new DockerFile for ${buildsite.get()}")
-
-        val jars = outputs(dependencyTasks())
-            .filter { it.isJar }
-        if (jars.isEmpty()) {
-            logger.warn("No output jars from any upstream dependencies: ${dependencyTasks().joinToString(", ")}")
-        }
-
-        val shadow = jars
-            .forEach {
-                copyTo(it, uplift, target = "shadow.jar")
-            }
 
         if (dist.scheme == "file") {
             copyTo(dist.toPath(), uplift, target = "dist.tar.gz")
@@ -89,4 +97,6 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     }
 
     private val uplift: Path get() = project.buildSubDirectory("uplift")
+
+    private val upliftClasspath: Path get() = project.buildSubDirectory("uplift/classpath")
 }

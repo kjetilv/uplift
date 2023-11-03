@@ -8,22 +8,28 @@ class NativeLambdaPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.tasks.register("native-lambda", NativeLamdbdaTask::class.java) {
-            val target = project.buildSubDirectory("uplift")
-            val arch = System.getProperty("os.arch")
-            val projectName = project.name
-            val classpath =
-                project.configurations
-                    .first { conf -> conf.incoming.path.equals("${project.path}:runtimeOnly") }
+            it.apply {
 
-            it.zipFile.set(target.resolve("$projectName.zip"))
-            it.identifier.set(projectName)
-            it.jarTask.set("shadowJar")
-            it.bootstrapFile.set(target.resolve(projectName))
-            it.arch.set(arch)
-            it.buildsite.set("${project.shortGroupName}-buildsite")
-            it.javaDist.set(arch.asGraalUri())
+                val target = project.buildSubDirectory("uplift")
+                val osArch = System.getProperty("os.arch")
+                val javaDistUri = osArch.asGraalUri()
+                val projectName = project.name
+
+                classPath.set(project.classpath)
+                zipFile.set(target.resolve("$projectName.zip"))
+                identifier.set(projectName)
+                jarTask.set("shadowJar")
+                bootstrapFile.set(target.resolve(projectName))
+                arch.set(osArch)
+                buildsite.set("${project.shortGroupName}-buildsite")
+                javaDist.set(javaDistUri)
+
+                dependsOn("jar")
+
+            }
         }
     }
 
-    private fun String?.asGraalUri(): URI? = URI.create("https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-${this}_bin.tar.gz")
+    private fun String?.asGraalUri(): URI? =
+        URI.create("https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-${this}_bin.tar.gz")
 }

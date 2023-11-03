@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.flogs;
 
+import com.github.kjetilv.flopp.kernel.qr.Qrs;
+import com.github.kjetilv.flopp.kernel.qr.WriteQr;
+
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import com.github.kjetilv.flopp.qr.Qrs;
-import com.github.kjetilv.flopp.qr.WriteQr;
 
 final class FLoggers {
 

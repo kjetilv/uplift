@@ -4,11 +4,14 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.time.Instant
+import kotlin.io.path.isDirectory
 
 
 internal val Path.isZip get() = fileName.toString().endsWith(".zip")
 
 internal val Path.isJar get() = fileName.toString().endsWith(".jar")
+
+internal val Path.isDir get() = fileName.isDirectory()
 
 internal val Path.isActualFile get() = Files.isRegularFile(this)
 

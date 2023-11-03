@@ -6,7 +6,6 @@ import org.gradle.api.provider.Property
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 internal operator fun <T> Property<T>.remAssign(value: T): Unit = set(value)
 
@@ -16,6 +15,13 @@ internal fun Project.buildSubDirectory(dir: String): Path =
     layout.buildDirectory.dir(dir).get().asFile.toPath()
         .also(Files::createDirectories)
 
+internal val Project.classpath: List<File>
+    get() =
+        configurations
+            .first { conf ->
+                conf.incoming.path.equals("$path:runtimeClasspath")
+            }
+            .toList()
 
 internal fun Project.resolve(property: String) =
     System.getProperty(property)

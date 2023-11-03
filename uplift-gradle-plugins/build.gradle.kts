@@ -33,7 +33,7 @@ kotlin {
     jvmToolchain {
         (this as JavaToolchainSpec).apply {
             languageVersion.set(JavaLanguageVersion.of(17))
-            vendor.set(JvmVendorSpec.GRAAL_VM)
+//            vendor.set(JvmVendorSpec.GRAAL_VM)
         }
     }
 }
