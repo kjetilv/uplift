@@ -24,7 +24,6 @@ class NativeLambdaPlugin : Plugin<Project> {
                 javaDist.set(javaDistUri)
 
                 dependsOn("jar")
-
             }
         }
     }

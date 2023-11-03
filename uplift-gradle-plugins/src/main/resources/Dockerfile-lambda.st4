@@ -20,6 +20,7 @@ CMD /graalvm/*/bin/native-image ⎨main⎬ \
  --verbose \
  --no-fallback \
  -g \
+ -H:+UnlockExperimentalVMOptions \
  -H:+ReportExceptionStackTraces \
  -H:+BuildReport \
  --enable-url-protocols=https \

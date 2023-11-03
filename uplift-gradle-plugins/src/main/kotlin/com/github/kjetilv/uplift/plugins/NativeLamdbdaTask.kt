@@ -4,6 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.internal.fingerprint.classpath.impl.ClasspathFingerprintingStrategy.runtimeClasspath
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -57,9 +58,7 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             "javaDist property must be file, http or https URI: $dist"
         }
 
-        val cp =
-            if (classPath.isPresent) classPath.get().map(File::toPath)
-            else outputs(dependencyTasks()).filter { it.isJar || it.isDir }
+        val cp = runtimeClasspath + dependencyOutputs
 
         if (cp.isEmpty()) {
             logger.warn("No output jars from any upstream dependencies: ${dependencyTasks().joinToString(", ")}")
@@ -92,6 +91,10 @@ abstract class NativeLamdbdaTask : DefaultTask() {
 
         zipFile(uplift.resolve(identifier.get()), zipFile = zipFile.get())
     }
+
+    private val runtimeClasspath get() = if (classPath.isPresent) classPath.get().map(File::toPath) else emptyList()
+
+    private val dependencyOutputs get() = outputs(dependencyTasks()).filter { it.isJar || it.isDir }
 
     private val uplift: Path get() = project.buildSubDirectory("uplift")
 
