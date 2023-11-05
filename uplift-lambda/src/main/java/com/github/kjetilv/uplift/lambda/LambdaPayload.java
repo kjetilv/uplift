@@ -8,7 +8,17 @@ import java.util.*;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 import static java.util.Objects.requireNonNull;
 
-public final class LambdaPayload {
+public record LambdaPayload(
+    String method,
+
+    String path,
+
+    Map<?, ?> queryParameters,
+
+    Map<?, ?> headers,
+
+    String body
+) {
 
     public static LambdaPayload create(Map<?, ?> req) {
         if (req.isEmpty()) {
@@ -46,34 +56,8 @@ public final class LambdaPayload {
         }
     }
 
-    private final String method;
-
-    private final String path;
-
-    private final Map<?, ?> queryParameters;
-
-    private final Map<?, ?> headers;
-
-    private final String body;
-
-    public LambdaPayload(String method, String path, Map<?, ?> queryParameters, Map<?, ?> headers, String body) {
-        this.method = method;
-        this.path = path;
-        this.queryParameters = queryParameters;
-        this.headers = headers;
-        this.body = body;
-    }
-
-    public String method() {
-        return method;
-    }
-
     public boolean isPost() {
         return isMethod("POST");
-    }
-
-    public String path() {
-        return path(null);
     }
 
     public String path(String prefix) {
@@ -117,6 +101,14 @@ public final class LambdaPayload {
 
     public String body() {
         return body;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + method + " " + path +
+            (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
+            (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
+            "]]";
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -182,13 +174,5 @@ public final class LambdaPayload {
         }
         throw new IllegalArgumentException(
             "No string field `" + key + "`" + (map.isEmpty() ? ", no query params" : " in query params: " + map));
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + method + " " + path +
-            (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
-            (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
-            "]]";
     }
 }
