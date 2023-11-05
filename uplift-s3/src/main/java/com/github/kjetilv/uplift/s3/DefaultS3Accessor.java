@@ -1,5 +1,17 @@
 package com.github.kjetilv.uplift.s3;
 
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.io.Print;
+import com.github.kjetilv.uplift.kernel.io.Range;
+import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
+import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
+import com.github.kjetilv.uplift.s3.util.BinaryUtils;
+import com.github.kjetilv.uplift.s3.util.Xml;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -10,24 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.io.Range;
-import com.github.kjetilv.uplift.kernel.util.Maps;
-import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
-import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
-import com.github.kjetilv.uplift.s3.util.BinaryUtils;
-import com.github.kjetilv.uplift.s3.util.Xml;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
@@ -325,6 +322,8 @@ public final class DefaultS3Accessor implements S3Accessor {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + accessKey + "/* -> " + bucket + "@" + region + "]";
+        return getClass().getSimpleName() + "[" +
+            Print.semiSecret(accessKey) + "/*** -> " + bucket + "@" + region +
+            "]";
     }
 }

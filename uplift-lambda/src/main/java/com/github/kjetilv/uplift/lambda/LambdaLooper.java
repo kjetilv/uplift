@@ -104,6 +104,8 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     private Invocation<Q, R> process(Invocation<Q, R> invocation) {
         try {
             return invocation.process(lambdaHandler, time);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to process " + invocation, e);
         } finally {
             initiated.increment();
             lastTime.set(invocation.created());

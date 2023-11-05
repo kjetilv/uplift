@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
+
+import java.util.*;
 
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 import static java.util.Objects.requireNonNull;
@@ -15,43 +11,57 @@ import static java.util.Objects.requireNonNull;
 public final class LambdaPayload {
 
     public static LambdaPayload create(Map<?, ?> req) {
-        return new LambdaPayload(req);
-    }
-
-    private final String path;
-
-    private final Map<?, ?> headers;
-
-    private final String method;
-
-    private final String body;
-
-    private final Map<?, ?> queryParameters;
-
-    private LambdaPayload(Map<?, ?> req) {
         if (req.isEmpty()) {
             throw new IllegalArgumentException("Empty request");
         }
         try {
             String version = stringVal(req, "version", "1.0");
+            Map<?, ?> queryParameters = submap(req, "queryStringParameters");
+            Map<?, ?> headers = submap(req, "headers");
+            String body = body(req);
             switch (version) {
                 case "2.0" -> {
                     Map<?, ?> http = submap(req, "requestContext", "http");
-                    this.method = stringVal(http, "method").toUpperCase(Locale.ROOT);
-                    this.path = stringVal(http, "path");
+                    return new LambdaPayload(
+                        stringVal(http, "method").toUpperCase(Locale.ROOT),
+                        stringVal(http, "path"),
+                        queryParameters,
+                        headers,
+                        body
+                    );
                 }
                 case "1.0" -> {
-                    this.method = stringVal(req, "httpMethod").toUpperCase(Locale.ROOT);
-                    this.path = stringVal(req, "path");
+                    return new LambdaPayload(
+                        stringVal(req, "httpMethod").toUpperCase(Locale.ROOT),
+                        stringVal(req, "path"),
+                        queryParameters,
+                        headers,
+                        body
+                    );
                 }
                 default -> throw new IllegalArgumentException("Unknown version: " + req);
             }
-            this.headers = submap(req, "headers");
-            this.queryParameters = submap(req, "queryStringParameters");
-            this.body = body(req);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Failed to parse payload: " + Json.INSTANCE.write(req), e);
         }
+    }
+
+    private final String method;
+
+    private final String path;
+
+    private final Map<?, ?> queryParameters;
+
+    private final Map<?, ?> headers;
+
+    private final String body;
+
+    public LambdaPayload(String method, String path, Map<?, ?> queryParameters, Map<?, ?> headers, String body) {
+        this.method = method;
+        this.path = path;
+        this.queryParameters = queryParameters;
+        this.headers = headers;
+        this.body = body;
     }
 
     public String method() {
@@ -71,7 +81,7 @@ public final class LambdaPayload {
             return path;
         }
         if (path.equals(prefix)) {
-            return "";
+            return BLANK;
         }
         if (path.startsWith(prefix)) {
             return path.substring(prefix.length());
@@ -96,7 +106,8 @@ public final class LambdaPayload {
     }
 
     public Optional<String> header(String header) {
-        return headers.entrySet().stream()
+        return headers.entrySet()
+            .stream()
             .filter(entry ->
                 String.valueOf(entry.getKey()).equalsIgnoreCase(header))
             .map(Map.Entry::getValue)
@@ -113,16 +124,28 @@ public final class LambdaPayload {
         return requireNonNull(method, "method").equalsIgnoreCase(this.method);
     }
 
+    private static final String BLANK = "";
+
+    @SuppressWarnings("StringEquality")
     private static String body(Map<?, ?> req) {
-        String bodyString = stringVal(req, "body", "");
-        if (bodyString.isBlank()) {
+        String bodyString = stringVal(req, "body", BLANK);
+        if (bodyString == BLANK || bodyString.isBlank()) {
             return null;
         }
-        boolean json =
+        if (looksJsony(bodyString)) {
+            return bodyString;
+        }
+        return base64(bodyString);
+    }
+
+    private static String base64(String bodyString) {
+        return BytesIO.stringFromBase64(bodyString);
+    }
+
+    private static boolean looksJsony(String bodyString) {
+        boolean lookJsony =
             wrapped('{', bodyString, '}') || wrapped('[', bodyString, ']');
-        return bodyString.isBlank() ? null
-            : json ? bodyString
-                : BytesIO.stringFromBase64(bodyString);
+        return lookJsony;
     }
 
     private static boolean wrapped(char start, CharSequence bodyString, char end) {
@@ -131,7 +154,7 @@ public final class LambdaPayload {
 
     private static Map<?, ?> submap(Map<?, ?> root, String... keys) {
         Map<?, ?> map = root;
-        for (String key: keys) {
+        for (String key : keys) {
             Object value = map.get(key);
             if (value == null) {
                 return Collections.emptyMap();
@@ -164,8 +187,8 @@ public final class LambdaPayload {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + method + " " + path +
-               (queryParameters == null || queryParameters.isEmpty() ? "" : "﹖" + queryParameters) +
-               (body == null || body.isBlank() ? "" : " ⨁ " + printBody(body)) +
-               "]]";
+            (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
+            (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
+            "]]";
     }
 }
