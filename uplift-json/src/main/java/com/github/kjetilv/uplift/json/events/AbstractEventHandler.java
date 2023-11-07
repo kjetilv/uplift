@@ -7,7 +7,8 @@ import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
-abstract class AbstractEventHandler<C extends Events.Callbacks<C>> implements EventHandler<C> {
+abstract sealed class AbstractEventHandler<C extends Events.Callbacks<C>> implements EventHandler<C>
+    permits ArrayEventHandler, ObjectEventHandler, ValueEventHandler {
 
     private final AbstractEventHandler<C> scope;
 

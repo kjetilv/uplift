@@ -1,38 +1,42 @@
 package com.github.kjetilv.uplift.json.events;
 
-import java.io.InputStream;
-import java.util.function.BinaryOperator;
-
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Token;
+
+import java.io.InputStream;
+import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
 
 @FunctionalInterface
 public interface EventHandler<C extends Events.Callbacks<C>> {
 
     static <C extends Events.Callbacks<C>> C parse(C callbacks, InputStream source) {
-        return Scanner.tokens(source).reduce(
-            (EventHandler<C>) new ValueEventHandler<>(callbacks),
-            EventHandler::process,
-            noCombine()
-        ).callbacks();
+        return parse(Scanner.tokens(source), callbacks);
     }
 
     static <C extends Events.Callbacks<C>> C parse(C callbacks, String source) {
-        EventHandler<C> root = new ValueEventHandler<>(callbacks);
-        return Scanner.tokens(source)
-            .reduce(
-                root,
-                EventHandler::process,
-                noCombine()
-            )
-            .callbacks();
+        return parse(Scanner.tokens(source), callbacks);
     }
 
     EventHandler<C> process(Token token);
 
     default C callbacks() {
         throw new UnsupportedOperationException(this + ": No callbacks");
+    }
+
+    private static <C extends Events.Callbacks<C>> EventHandler<C> init(C callbacks) {
+        return new ValueEventHandler<>(callbacks);
+    }
+
+    private static <C extends Events.Callbacks<C>> C parse(
+        Stream<Token> tokens, C callbacks
+    ) {
+        return tokens.reduce(
+            init(callbacks),
+            EventHandler::process,
+            noCombine()
+        ).callbacks();
     }
 
     private static <T> BinaryOperator<T> noCombine() {

@@ -1,24 +1,17 @@
 package com.github.kjetilv.uplift.json.events;
 
-import java.util.function.Supplier;
-
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.COLON;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.COMMA;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.END_OBJECT;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
+import java.util.function.Supplier;
 
-final class ObjectEventHandler<C extends Events.Callbacks<C>> extends AbstractEventHandler<C> {
+import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+
+final class ObjectEventHandler<C extends Events.Callbacks<C>>
+    extends AbstractEventHandler<C> {
 
     ObjectEventHandler(AbstractEventHandler<C> scope, C callbacks) {
         super(scope, callbacks);
-    }
-
-    @Override
-    protected AbstractEventHandler<C> with(C callbacks) {
-        return new ObjectEventHandler<>(exit(), callbacks);
     }
 
     @Override
@@ -35,12 +28,21 @@ final class ObjectEventHandler<C extends Events.Callbacks<C>> extends AbstractEv
         };
     }
 
+    @Override
+    protected AbstractEventHandler<C> with(C callbacks) {
+        return new ObjectEventHandler<>(exit(), callbacks);
+    }
+
     @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private EventHandler<C> skip(Token token, Supplier<EventHandler<C>> next) {
         return skipToken ->
             switch (skipToken.type()) {
                 case COLON -> next.get();
-                default -> fail("Expected colon to follow field `" + token.literalString() + "`", skipToken, COLON);
+                default -> fail(
+                    "Expected colon to follow field `" + token.literalString() + "`",
+                    skipToken,
+                    COLON
+                );
             };
     }
 }

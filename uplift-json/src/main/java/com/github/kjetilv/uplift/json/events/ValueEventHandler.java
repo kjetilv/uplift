@@ -3,14 +3,10 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_ARRAY;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.BEGIN_OBJECT;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.BOOL;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.NIL;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
+import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class ValueEventHandler<C extends Events.Callbacks<C>> extends AbstractEventHandler<C> {
+final class ValueEventHandler<C extends Events.Callbacks<C>>
+    extends AbstractEventHandler<C> {
 
     ValueEventHandler(C callbacks) {
         this(null, callbacks);
@@ -18,11 +14,6 @@ final class ValueEventHandler<C extends Events.Callbacks<C>> extends AbstractEve
 
     ValueEventHandler(AbstractEventHandler<C> scope, C callbacks) {
         super(scope, callbacks);
-    }
-
-    @Override
-    protected AbstractEventHandler<C> with(C callbacks) {
-        return new ValueEventHandler<>(exit(), callbacks);
     }
 
     @Override
@@ -40,5 +31,10 @@ final class ValueEventHandler<C extends Events.Callbacks<C>> extends AbstractEve
                 BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER, NIL
             );
         };
+    }
+
+    @Override
+    protected AbstractEventHandler<C> with(C callbacks) {
+        return new ValueEventHandler<>(exit(), callbacks);
     }
 }
