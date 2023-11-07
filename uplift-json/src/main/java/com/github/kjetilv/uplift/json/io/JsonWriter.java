@@ -4,12 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -17,69 +12,27 @@ public final class JsonWriter {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     public static void write(Object object, Sink sink) {
-        if (object == null) {
-            writeNull(sink);
-            return;
-        }
-        if (object instanceof String value) {
-            writeString(value, sink);
-            return;
-        }
-        if (object instanceof BigDecimal bigDecimal) {
-            writeDecimal(bigDecimal, sink);
-            return;
-        }
-        if (object instanceof BigInteger bigInteger) {
-            writeInteger(bigInteger, sink);
-            return;
-        }
-        if (object instanceof Boolean value) {
-            sink.accept(value);
-            return;
-        }
-        if (object instanceof Number value) {
-            sink.accept(value);
-            return;
-        }
-        if (object instanceof Optional<?> optional) {
-            optional.ifPresentOrElse(
+        switch (object) {
+            case null -> writeNull(sink);
+            case String value -> writeString(value, sink);
+            case BigDecimal bigDec -> writeDecimal(bigDec, sink);
+            case BigInteger bigInt -> writeInteger(bigInt, sink);
+            case Boolean bool -> sink.accept(bool);
+            case Number number -> sink.accept(number);
+            case Optional<?> optional -> optional.ifPresentOrElse(
                 value -> write(value, sink),
                 () -> writeNull(sink)
             );
-            return;
+            case URI uri -> writeString(uri.toASCIIString(), sink);
+            case URL url -> writeString(url.toExternalForm(), sink);
+            case Map<?, ?> map -> writeObject(map, sink);
+            case List<?> list -> writeList(list, sink);
+            case Set<?> set -> writeSet(set, sink);
+            case Collection<?> collection -> writeCollection(collection, sink);
+            case Iterable<?> iterable -> writeIterable(iterable, sink);
+            case Stream<?> stream -> writeList(stream.toList(), sink);
+            default -> writeString(object.toString(), sink);
         }
-        if (object instanceof URI uri) {
-            writeString(uri.toASCIIString(), sink);
-            return;
-        }
-        if (object instanceof URL url) {
-            writeString(url.toExternalForm(), sink);
-            return;
-        }
-        if (object instanceof Map<?, ?> map) {
-            writeObject(map, sink);
-            return;
-        }
-        if (object instanceof List<?> list) {
-            writeList(list, sink);
-            return;
-        }
-        if (object instanceof Set<?> set) {
-            writeSet(set, sink);
-            return;
-        }
-        if (object instanceof Collection<?> collection) {
-            writeCollection(collection, sink);
-            return;
-        }
-        if (object instanceof Iterable<?> iterable) {
-            writeIterable(iterable, sink);
-            return;
-        }
-        if (object instanceof Stream<?> stream) {
-            writeList(stream.toList(), sink);
-        }
-        writeString(object.toString(), sink);
     }
 
     private JsonWriter() {
@@ -114,7 +67,7 @@ public final class JsonWriter {
         }
         sink.accept("{");
         Sink.Mark mark = sink.mark();
-        for (Map.Entry<?, ?> value: map.entrySet()) {
+        for (Map.Entry<?, ?> value : map.entrySet()) {
             if (mark.moved()) {
                 sink.accept(",");
             }
