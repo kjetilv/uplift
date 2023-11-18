@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.kernel;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.kernel.aws.DefaultEnv;
 
@@ -8,7 +9,7 @@ import com.github.kjetilv.uplift.kernel.aws.DefaultEnv;
 public interface Env {
 
     static Env actual() {
-        return new DefaultEnv();
+        return ENV.updateAndGet(env -> env == null ? new DefaultEnv() : env);
     }
 
     URI awsLambdaUri();
@@ -32,4 +33,6 @@ public interface Env {
     String authorizationToken();
 
     String credentialsFullUri();
+
+    AtomicReference<DefaultEnv> ENV = new AtomicReference<>();
 }
