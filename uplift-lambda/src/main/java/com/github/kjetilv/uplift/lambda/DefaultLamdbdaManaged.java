@@ -1,23 +1,22 @@
 package com.github.kjetilv.uplift.lambda;
 
+import com.github.kjetilv.uplift.json.Json;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import com.github.kjetilv.uplift.json.Json;
-
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 import static java.net.http.HttpResponse.BodyHandlers.ofInputStream;
 import static java.util.Objects.requireNonNull;
 
-public final class DefaultLamdbdaManaged implements LamdbdaManaged {
+final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final URI lambdaUri;
 
@@ -27,7 +26,7 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final ExecutorService lambdaExecutor;
 
-    public DefaultLamdbdaManaged(
+    DefaultLamdbdaManaged(
         URI lambdaUri,
         LambdaClientSettings settings,
         LambdaHandler handler,
@@ -47,7 +46,7 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
     @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client =
-            http(lambdaExecutor, settings.connectTimeout());
+            http(lambdaExecutor, settings);
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
             new HttpInvocationSource(
                 client,
@@ -64,30 +63,30 @@ public final class DefaultLamdbdaManaged implements LamdbdaManaged {
         return LambdaLoopers.looper(handler, source, sink, settings.time());
     }
 
-    private static Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(
-        Executor executor,
-        Duration connectTimeout
-    ) {
-        HttpClient httpClient = httpClient(executor, connectTimeout);
-        return request ->
-            httpClient.sendAsync(request, ofInputStream(), null);
-    }
-
-    private static HttpClient httpClient(
-        Executor executor,
-        Duration connectTimeout
-    ) {
-        HttpClient.Builder builder = HttpClient.newBuilder()
-            .version(HTTP_1_1)
-            .executor(executor);
-        if (connectTimeout.compareTo(Duration.ZERO) > 0) {
-            builder.connectTimeout(connectTimeout);
-        }
-        return builder.build();
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + settings + "]";
+    }
+
+    private static Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(
+        Executor executor,
+        LambdaClientSettings settings
+    ) {
+        HttpClient.Builder builder = httpClient(executor, settings);
+        return request -> {
+            try (HttpClient build = builder.build()) {
+                return build.sendAsync(request, ofInputStream(), null);
+            }
+        };
+    }
+
+    private static HttpClient.Builder httpClient(Executor executor, LambdaClientSettings settings) {
+        HttpClient.Builder builder = HttpClient.newBuilder()
+            .version(HTTP_1_1)
+            .executor(executor);
+        if (settings.hasConnectTimeout()) {
+            builder.connectTimeout(settings.connectTimeout());
+        }
+        return builder;
     }
 }

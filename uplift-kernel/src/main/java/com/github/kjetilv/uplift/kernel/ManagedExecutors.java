@@ -1,17 +1,12 @@
 package com.github.kjetilv.uplift.kernel;
 
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
-
-import org.slf4j.LoggerFactory;
 
 public final class ManagedExecutors {
 
@@ -65,14 +60,11 @@ public final class ManagedExecutors {
     private ManagedExecutors() {
     }
 
-    private static final AtomicReference<Duration> KEEP_ALIVE_TIME =
-        new AtomicReference<>(Duration.ofSeconds(10));
+    private static final AtomicReference<Duration> KEEP_ALIVE_TIME = new AtomicReference<>(Duration.ofSeconds(10));
 
-    private static final AtomicInteger CORE_THREADS_DEFAULT =
-        new AtomicInteger(4);
+    private static final AtomicInteger CORE_THREADS_DEFAULT = new AtomicInteger(4);
 
-    private static final AtomicInteger MAX_QUEUE_LENGTH_DEFAULT =
-        new AtomicInteger(10);
+    private static final AtomicInteger MAX_QUEUE_LENGTH_DEFAULT = new AtomicInteger(10);
 
     private static final LongAdder THREAD_COUNT = new LongAdder();
 

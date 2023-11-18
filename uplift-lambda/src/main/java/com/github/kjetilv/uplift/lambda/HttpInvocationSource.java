@@ -1,5 +1,9 @@
 package com.github.kjetilv.uplift.lambda;
 
+import com.github.kjetilv.uplift.json.Json;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -15,13 +19,9 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.github.kjetilv.uplift.json.Json;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static java.util.Objects.requireNonNull;
 
-public final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpResponse<InputStream>> {
+final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpResponse<InputStream>> {
 
     private static final Logger log = LoggerFactory.getLogger(HttpInvocationSource.class);
 
@@ -92,6 +92,13 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
                     : Invocation.failed(request, throwable, time.get())));
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
+            (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
+            "]";
+    }
+
     private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
         HttpResponse<? extends InputStream> response,
         String id
@@ -151,7 +158,8 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
     }
 
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
-        return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id").stream()
+        return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id")
+            .stream()
             .filter(Objects::nonNull)
             .filter(value -> !value.isBlank())
             .findFirst();
@@ -163,12 +171,5 @@ public final class HttpInvocationSource implements InvocationSource<HttpRequest,
         } catch (Exception ex) {
             return String.valueOf(input);
         }
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
-               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
-               "]";
     }
 }

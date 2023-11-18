@@ -36,6 +36,10 @@ public record LambdaClientSettings(
         this.time = requireNonNull(time, "time");
     }
 
+    public boolean hasConnectTimeout() {
+        return connectTimeout.compareTo(Duration.ZERO) > 0;
+    }
+
     private static Duration sane(Duration timeout) {
         return timeout == null || timeout.isNegative() || timeout.isZero() ? Duration.ZERO : timeout;
     }

@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-public final class HttpInvocationSink implements InvocationSink<HttpRequest, HttpResponse<InputStream>> {
+final class HttpInvocationSink implements InvocationSink<HttpRequest, HttpResponse<InputStream>> {
 
     private final Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send;
 

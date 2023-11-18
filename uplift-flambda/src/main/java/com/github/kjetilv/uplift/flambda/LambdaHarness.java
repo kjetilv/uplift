@@ -1,5 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
+import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
+import com.github.kjetilv.uplift.lambda.LambdaHandler;
+import com.github.kjetilv.uplift.lambda.LambdaLooper;
+import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
+
 import java.io.Closeable;
 import java.io.InputStream;
 import java.net.http.HttpRequest;
@@ -11,12 +16,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import com.github.kjetilv.uplift.lambda.DefaultLamdbdaManaged;
-import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
-import com.github.kjetilv.uplift.lambda.LambdaHandler;
-import com.github.kjetilv.uplift.lambda.LambdaLooper;
-import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 
@@ -124,7 +123,7 @@ public class LambdaHarness implements Closeable {
         this.testExec.submit(localLambda);
         this.localLambda.awaitStarted(Duration.ofMinutes(1));
 
-        LamdbdaManaged lamdbdaManaged = new DefaultLamdbdaManaged(
+        LamdbdaManaged lamdbdaManaged = LamdbdaManaged.create(
             localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
             lambdaHandler,
