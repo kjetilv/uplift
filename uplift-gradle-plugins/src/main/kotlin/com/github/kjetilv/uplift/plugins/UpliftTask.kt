@@ -204,7 +204,6 @@ abstract class UpliftTask : DefaultTask() {
                             ##     modified @ ${url.lastModifiedTime()}
                             ##         cors : ${url.cors()}
                             ##         auth : ${url.authTypeAsString()}
-                            ##
                             """.trimIndent()
                         )
                     }
@@ -214,6 +213,7 @@ abstract class UpliftTask : DefaultTask() {
         if (sources?.isNotEmpty() == true) {
             printer(
                 """
+                ##
                 ##  Zips/binaries/jars:
                 """.trimIndent()
             )
