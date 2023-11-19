@@ -11,27 +11,27 @@ import java.util.stream.Stream;
 public final class JsonWriter {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
-    public static void write(Object object, Sink sink) {
+    public static void write(Sink sink, Object object) {
         switch (object) {
             case null -> writeNull(sink);
-            case String value -> writeString(value, sink);
-            case BigDecimal bigDec -> writeDecimal(bigDec, sink);
-            case BigInteger bigInt -> writeInteger(bigInt, sink);
-            case Boolean bool -> sink.accept(bool);
-            case Number number -> sink.accept(number);
-            case Optional<?> optional -> optional.ifPresentOrElse(
-                value -> write(value, sink),
+            case String s -> writeString(sink, s);
+            case BigDecimal d -> writeDecimal(sink, d);
+            case BigInteger i -> writeInteger(sink, i);
+            case Boolean b -> writeBool(sink, b);
+            case Number n -> sink.accept(n);
+            case Optional<?> o -> o.ifPresentOrElse(
+                value -> write(sink, value),
                 () -> writeNull(sink)
             );
-            case URI uri -> writeString(uri.toASCIIString(), sink);
-            case URL url -> writeString(url.toExternalForm(), sink);
-            case Map<?, ?> map -> writeObject(map, sink);
-            case List<?> list -> writeList(list, sink);
-            case Set<?> set -> writeSet(set, sink);
-            case Collection<?> collection -> writeCollection(collection, sink);
-            case Iterable<?> iterable -> writeIterable(iterable, sink);
-            case Stream<?> stream -> writeList(stream.toList(), sink);
-            default -> writeString(object.toString(), sink);
+            case URI uri -> writeString(sink, uri.toASCIIString());
+            case URL url -> writeString(sink, url.toExternalForm());
+            case Map<?, ?> map -> writeObject(sink, map);
+            case List<?> list -> writeList(sink, list);
+            case Set<?> set -> writeSet(sink, set);
+            case Collection<?> coll -> writeCollection(sink, coll);
+            case Iterable<?> it -> writeIterable(sink, it);
+            case Stream<?> str -> writeList(sink, str.toList());
+            default -> writeString(sink, object.toString());
         }
     }
 
@@ -40,7 +40,7 @@ public final class JsonWriter {
 
     private static final Pattern QUOTE = Pattern.compile("\"");
 
-    private static void writeString(String value, Sink sink) {
+    private static void writeString(Sink sink, String value) {
         sink.accept("\"")
             .accept(value.indexOf('"') >= 0
                 ? QUOTE.matcher(value).replaceAll("\\\\\"")
@@ -52,15 +52,21 @@ public final class JsonWriter {
         sink.accept(Canonical.NULL);
     }
 
-    private static void writeDecimal(BigDecimal dec, Sink sink) {
+    private static void writeBool(Sink sink, Boolean bool) {
+        sink.accept(bool
+            ? Canonical.TRUE
+            : Canonical.FALSE);
+    }
+
+    private static void writeDecimal(Sink sink, BigDecimal dec) {
         sink.accept(dec.toPlainString());
     }
 
-    private static void writeInteger(BigInteger inte, Sink sink) {
+    private static void writeInteger(Sink sink, BigInteger inte) {
         sink.accept(inte.toString(10));
     }
 
-    private static void writeObject(Map<?, ?> map, Sink sink) {
+    private static void writeObject(Sink sink, Map<?, ?> map) {
         if (map.isEmpty()) {
             sink.accept("{}");
             return;
@@ -73,12 +79,12 @@ public final class JsonWriter {
             }
             Map.Entry<?, ?> entry = value;
             sink.accept("\"").accept(entry.getKey()).accept("\":");
-            write(entry.getValue(), sink);
+            write(sink, entry.getValue());
         }
         sink.accept("}");
     }
 
-    private static void writeIterable(Iterable<?> iterable, Sink sink) {
+    private static void writeIterable(Sink sink, Iterable<?> iterable) {
         Iterator<?> iterator = iterable.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -87,7 +93,7 @@ public final class JsonWriter {
         }
     }
 
-    private static void writeList(List<?> list, Sink sink) {
+    private static void writeList(Sink sink, List<?> list) {
         Iterator<?> iterator = list.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -96,7 +102,7 @@ public final class JsonWriter {
         }
     }
 
-    private static void writeSet(Set<?> list, Sink sink) {
+    private static void writeSet(Sink sink, Set<?> list) {
         Iterator<?> iterator = list.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -105,7 +111,7 @@ public final class JsonWriter {
         }
     }
 
-    private static void writeCollection(Collection<?> collection, Sink sink) {
+    private static void writeCollection(Sink sink, Collection<?> collection) {
         Iterator<?> iterator = collection.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
@@ -121,7 +127,7 @@ public final class JsonWriter {
             if (mark.moved()) {
                 sink.accept(",");
             }
-            write(iterator.next(), sink);
+            write(sink, iterator.next());
         }
         sink.accept("]");
     }

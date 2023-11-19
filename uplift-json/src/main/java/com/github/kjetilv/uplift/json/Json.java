@@ -1,32 +1,17 @@
 package com.github.kjetilv.uplift.json;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "unused" })
+@SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "unused"})
 public interface Json {
-
-    Json INSTANCE = new JsonImpl();
-
-    Function<Object, String> OBJECT_2_STRING = INSTANCE::write;
-
-    BiConsumer<Object, OutputStream> OBJECT_OUT = INSTANCE::write;
-
-    Function<String, Map<?, ?>> STRING_2_JSON_MAP = INSTANCE::jsonMap;
-
-    Function<InputStream, Map<?, ?>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
-
-    Function<String, List<?>> STRING_2_JSON_ARRAY = INSTANCE::jsonArray;
 
     default Map<?, ?> jsonMap(InputStream source) {
         return asMap(source, read(source));
@@ -52,25 +37,54 @@ public interface Json {
         return read(new String(source, StandardCharsets.UTF_8));
     }
 
-    Object read(InputStream source);
-
-    Object read(String source);
-
-    String write(Object object);
-
     default byte[] writeBytes(Object object) {
         return write(object).getBytes(StandardCharsets.UTF_8);
     }
 
-    void write(Object object, OutputStream outputStream);
-
     default Object read(Reader in) {
         try (BufferedReader reader = new BufferedReader(in)) {
-            return read(reader.lines().collect(Collectors.joining("\n")));
+            return read(reader.lines()
+                .collect(Collectors.joining("\n")));
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to read " + in, e);
         }
     }
+
+    default Object read(String source) {
+        try (
+            InputStream in = new ByteArrayInputStream(
+                Objects.requireNonNull(source, "source").getBytes(StandardCharsets.UTF_8))
+        ) {
+            return read(in);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read string of " + source.length() + " chars", e);
+        }
+    }
+
+    default String write(Object object) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            write(object, baos);
+            return baos.toString(StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write " + object, e);
+        }
+    }
+
+    Object read(InputStream source);
+
+    void write(Object object, OutputStream outputStream);
+
+    Json INSTANCE = new JsonImpl();
+
+    Function<Object, String> OBJECT_2_STRING = INSTANCE::write;
+
+    BiConsumer<Object, OutputStream> OBJECT_OUT = INSTANCE::write;
+
+    Function<String, Map<?, ?>> STRING_2_JSON_MAP = INSTANCE::jsonMap;
+
+    Function<InputStream, Map<?, ?>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
+
+    Function<String, List<?>> STRING_2_JSON_ARRAY = INSTANCE::jsonArray;
 
     private static Map<?, ?> asMap(Object source, Object json) {
         if (json == null) {

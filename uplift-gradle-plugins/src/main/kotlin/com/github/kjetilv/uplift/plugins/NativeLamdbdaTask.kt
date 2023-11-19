@@ -4,7 +4,6 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.internal.fingerprint.classpath.impl.ClasspathFingerprintingStrategy.runtimeClasspath
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -46,15 +45,15 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     fun perform() {
         val dist = javaDist.get()
 
-        val distUri = dist.takeIf {
+        val file = dist.takeIf {
             it.scheme == "file"
         }
 
-        val distFile = dist.takeIf {
+        val uri = dist.takeIf {
             it.scheme == "https" || it.scheme == "http"
         }
 
-        require(distFile != null || distUri != null) {
+        require(file != null || uri != null) {
             "javaDist property must be file, http or https URI: $dist"
         }
 
@@ -71,8 +70,8 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             "target" to identifier.get(),
             "arch" to arch.get(),
             "main" to main.get(),
-            "distfile" to distUri?.toASCIIString(),
-            "disturi" to distFile?.toASCIIString(),
+            "distfile" to file?.toASCIIString(),
+            "disturi" to uri?.toASCIIString(),
             "classpath" to cp.joinToString(":") {
                 "/out/classpath/${it.fileName}"
             }

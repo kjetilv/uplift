@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.json.io;
 
-final class Canonical {
+interface Canonical {
 
-    public static final String TRUE = "true";
+    String TRUE = "true";
 
-    public static final String FALSE = "false";
+    String FALSE = "false";
 
-    public static final String NULL = "null";
-
-    private Canonical() {
-
-    }
+    String NULL = "null";
 }

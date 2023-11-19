@@ -40,21 +40,21 @@ final class JsonImpl implements Json {
     @Override
     public String write(Object object) {
         StringBuilder sb = new StringBuilder();
-        JsonWriter.write(object, new StringSink(sb));
+        JsonWriter.write(new StringSink(sb), object);
         return sb.toString();
     }
 
     @Override
     public byte[] writeBytes(Object object) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter.write(object, new StreamSink(baos));
+        JsonWriter.write(new StreamSink(baos), object);
         return baos.toByteArray();
     }
 
     @Override
     public void write(Object object, OutputStream outputStream) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter.write(object, new StreamSink(baos));
+        JsonWriter.write(new StreamSink(baos), object);
     }
 
     private record StreamSink(ByteArrayOutputStream baos) implements Sink {
