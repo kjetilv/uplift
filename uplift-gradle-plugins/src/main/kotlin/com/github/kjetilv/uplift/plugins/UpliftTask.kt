@@ -214,7 +214,6 @@ abstract class UpliftTask : DefaultTask() {
         if (sources?.isNotEmpty() == true) {
             printer(
                 """
-                ##
                 ##  Zips/binaries/jars:
                 """.trimIndent()
             )
