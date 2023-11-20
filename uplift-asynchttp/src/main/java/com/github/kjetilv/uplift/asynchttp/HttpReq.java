@@ -3,12 +3,12 @@ package com.github.kjetilv.uplift.asynchttp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import com.github.kjetilv.uplift.kernel.http.QueryParams;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.kernel.util.ToStrings;
 import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 
 import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
@@ -67,7 +67,7 @@ public record HttpReq(
         return this.method.equalsIgnoreCase(method);
     }
 
-    boolean complete() {
+    public boolean complete() {
         return body == null || body.length >= contentLength();
     }
 
@@ -108,34 +108,21 @@ public record HttpReq(
         return reqLine.substring(urlStart);
     }
 
-    private static Map<String, List<String>> queryParams(String reqLine, int methodMark) {
-        int urlStart = methodMark + 1;
+    private static String method(String reqLine, int methodMark) {
+        return reqLine.substring(0, methodMark);
+    }
+
+    private static Map<String, List<String>> queryParams(String reqLine, int urlStart) {
         int queryIndex = reqLine.indexOf('?', urlStart);
         if (queryIndex < 0) {
             return Collections.emptyMap();
         }
         int urlEnd = reqLine.indexOf(' ', urlStart);
         int queryStart = queryIndex + 1;
-        String query = urlEnd > 0 ? reqLine.substring(queryStart, urlEnd) : reqLine.substring(queryStart);
-        String[] pairs = query.split("&");
-        return Arrays.stream(pairs)
-            .map(pair -> pair.split("="))
-            .collect(Collectors.groupingBy(
-                (String[] pair) ->
-                    pair[0].toLowerCase(Locale.ROOT),
-                Collectors.toList()
-            ))
-            .entrySet()
-            .stream()
-            .collect(caseInsensitive(
-                Map.Entry::getKey,
-                entry ->
-                    entry.getValue().stream().map(pair -> pair[1]).toList()
-            ));
-    }
-
-    private static String method(String reqLine, int methodMark) {
-        return reqLine.substring(0, methodMark);
+        String query = urlEnd > 0
+            ? reqLine.substring(queryStart, urlEnd)
+            : reqLine.substring(queryStart);
+        return QueryParams.read(query);
     }
 
     @Override

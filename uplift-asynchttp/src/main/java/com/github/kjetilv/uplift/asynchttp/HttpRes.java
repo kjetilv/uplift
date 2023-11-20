@@ -1,13 +1,14 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.kernel.util.ToStrings;
+import com.github.kjetilv.uplift.kernel.uuid.Uuid;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
-import com.github.kjetilv.uplift.kernel.uuid.Uuid;
 
 import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
 
@@ -65,7 +66,8 @@ public record HttpRes(
     }
 
     private int headersSize() {
-        return headers.entrySet().stream().mapToInt(e -> length(e.getKey(), e.getValue())).sum();
+        return headers.entrySet()
+            .stream().mapToInt(e -> length(e.getKey(), e.getValue())).sum();
     }
 
     private static final int OK = 200;
@@ -110,7 +112,7 @@ public record HttpRes(
         StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
             .append("[")
             .append(reqId)
-            .append( " ")
+            .append(" ")
             .append(status);
 
         if (!headers.isEmpty()) {

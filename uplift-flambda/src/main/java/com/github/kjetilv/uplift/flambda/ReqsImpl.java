@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
+import com.github.kjetilv.uplift.json.Json;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -7,8 +9,6 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-
-import com.github.kjetilv.uplift.json.Json;
 
 @SuppressWarnings("unused")
 record ReqsImpl(URI uri) implements Reqs {
@@ -25,7 +25,7 @@ record ReqsImpl(URI uri) implements Reqs {
 
     @Override
     public CompletableFuture<HttpResponse<String>> execute(String method, Map<String, Object> body) {
-        return execute(method, json(body), true);
+        return execute(method, body == null || body.isEmpty() ? null : json(body), true);
     }
 
     @Override
@@ -48,15 +48,15 @@ record ReqsImpl(URI uri) implements Reqs {
             if (headers != null) {
                 headers.forEach(base::header);
             }
-            if (body == null) {
-                base.GET();
-            } else {
-                base.method(method, HttpRequest.BodyPublishers.ofString(body));
-            }
+            base.method(method, body == null || body.isBlank() ?
+                HttpRequest.BodyPublishers.noBody()
+                : HttpRequest.BodyPublishers.ofString(body));
             if (body != null && json) {
                 base.header("Content-Type", "application/json");
             }
-            return HttpClient.newBuilder().build().sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
+            try (HttpClient build = HttpClient.newBuilder().build()) {
+                return build.sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

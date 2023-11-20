@@ -67,7 +67,7 @@ public record LambdaRequest(String id, HttpReq request) {
                     List<String> values = entry.getValue();
                     int size = values.size();
                     return size == 0 ? ""
-                        : size == 1 ? String.valueOf(values.get(0))
+                        : size == 1 ? String.valueOf(values.getFirst())
                             : concated(values, size);
                 }
             )

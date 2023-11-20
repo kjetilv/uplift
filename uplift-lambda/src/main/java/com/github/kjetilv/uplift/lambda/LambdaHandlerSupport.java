@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.lambda;
 
 import org.slf4j.Logger;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,8 +27,6 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
 
     protected static final int BAD_REQUEST = 400;
 
-    protected static final int NOT_FOUND = 404;
-
     protected static final int UNAUTHORIZED = 401;
 
     protected static Supplier<LambdaResult> errorSupplier(int statusCode, String error, Object... args) {
@@ -51,5 +50,12 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
 
     protected static Optional<LambdaResult> handleBody(String body, Function<String, LambdaResult> bodyHandler) {
         return Optional.ofNullable(body).map(bodyHandler);
+    }
+
+    protected static Optional<LambdaResult> handleQuery(
+        Map<?, ?> params,
+        Function<Map<?, ?>, LambdaResult> queryHandler
+    ) {
+        return Optional.ofNullable(params).map(queryHandler);
     }
 }

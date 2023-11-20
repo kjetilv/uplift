@@ -1,16 +1,16 @@
-package com.github.kjetilv.uplift.asynchttp;
+package com.github.kjetilv.uplift.kernel.util;
 
 import java.util.List;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-final class ToStrings {
+public final class ToStrings {
 
     private ToStrings() {
     }
 
-    static void print(StringBuilder base, Map<String, List<String>> headers) {
+    public static void print(StringBuilder base, Map<String, List<String>> headers) {
         base.append(" headers:[");
         int count = 0;
         for (Map.Entry<String, List<String>> entry: headers.entrySet()) {
@@ -27,19 +27,19 @@ final class ToStrings {
                     if (i > 0) {
                         base.append(" ");
                     }
-                    base.append(value.get(0));
+                    base.append(value.getFirst());
                 }
                 base.append("]");
             } else if (size > 0) {
                 base.append(key).append("=");
-                base.append(value.get(0));
+                base.append(value.getFirst());
             }
             count++;
         }
         base.append("]");
     }
 
-    static void print(StringBuilder base, byte[] body) {
+    public static void print(StringBuilder base, byte[] body) {
         int length = body.length;
         if (length > 50) {
             base.append(" body:").append(length);

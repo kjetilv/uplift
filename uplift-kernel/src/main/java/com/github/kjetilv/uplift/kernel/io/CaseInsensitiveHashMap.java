@@ -31,10 +31,13 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
         return Collectors.toMap(key, values, merge::apply, CaseInsensitiveHashMap::new);
     }
 
-    public static <T> Map<String, T> wrap(Map<String, T> map) {
+    @SuppressWarnings("unchecked")
+    public static <T> Map<String, T> wrap(Map<?, T> map) {
         return map == null || map.isEmpty()
             ? Collections.emptyMap()
-            : map instanceof CaseInsensitiveHashMap<T> ? map : new CaseInsensitiveHashMap<>(map);
+            : map instanceof CaseInsensitiveHashMap<?>
+                ? (CaseInsensitiveHashMap<T>)map
+                : new CaseInsensitiveHashMap<>(map);
     }
 
     private final Map<String, V> map;
@@ -43,11 +46,11 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
         this(null);
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public CaseInsensitiveHashMap(Map<String, V> map) {
+    @SuppressWarnings({"WeakerAccess", "unchecked"})
+    public CaseInsensitiveHashMap(Map<?, V> map) {
         this.map = map == null
             ? new LinkedHashMap<>()
-            : new LinkedHashMap<>(requireNonNull(map, "map"));
+            : (Map<String, V>) new LinkedHashMap<>(requireNonNull(map, "map"));
     }
 
     @Override
