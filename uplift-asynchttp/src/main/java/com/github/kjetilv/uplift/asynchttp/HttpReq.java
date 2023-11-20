@@ -29,7 +29,7 @@ public record HttpReq(
         int methodMark = reqLine.indexOf(' ');
         String method = method(reqLine, methodMark);
         String url = url(reqLine, methodMark);
-        Map<String, List<String>> queryParams = queryParams(reqLine, methodMark);
+        Map<String, List<String>> queryParams = queryParams(reqLine, methodMark + 1);
         String headersPart = new String(bytes.headers(), UTF_8);
         Map<String, List<String>> headers = headers(headersPart);
         return new HttpReq(method, url, queryParams, headers, bytes.body(), Uuid.random());
@@ -119,9 +119,14 @@ public record HttpReq(
         }
         int urlEnd = reqLine.indexOf(' ', urlStart);
         int queryStart = queryIndex + 1;
-        String query = urlEnd > 0
-            ? reqLine.substring(queryStart, urlEnd)
-            : reqLine.substring(queryStart);
+        String query = null;
+        try {
+            query = urlEnd > 0
+                ? reqLine.substring(queryStart, urlEnd)
+                : reqLine.substring(queryStart);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse, " + queryStart + "/" + urlEnd + ": " + reqLine, e);
+        }
         return QueryParams.read(query);
     }
 
