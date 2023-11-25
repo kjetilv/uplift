@@ -27,7 +27,7 @@ public final class Print {
             return semi.charAt(0) + "***".substring(0, length - 1);
         }
         int printable = length / 3;
-        return semi.substring(0, printable) + "***" + semi.substring(length - printable, printable);
+        return semi.substring(0, printable) + "***" + semi.substring(length - printable);
     }
 
     public static String prettyTrackTime(Duration dur) {
