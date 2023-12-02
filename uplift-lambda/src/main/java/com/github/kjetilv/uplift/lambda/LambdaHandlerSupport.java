@@ -46,7 +46,7 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
             return result;
         } finally {
             log.error(error, args);
-            log.debug("Failing {} with {}", source(lambdaPayload), result);
+            log.debug("Failing lambda request {} with {}", source(lambdaPayload), result);
         }
     }
 
