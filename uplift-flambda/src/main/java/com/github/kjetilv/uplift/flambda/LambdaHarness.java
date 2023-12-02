@@ -11,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -24,8 +25,8 @@ public class LambdaHarness implements Closeable {
 
     public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
         List.of("*"),
-        List.of("GET", "POST", "PUT", "DELETE", "HEAD"),
-        List.of("content-type")
+        List.of("GET"),
+        Collections.emptyList()
     );
 
     private final String name;

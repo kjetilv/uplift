@@ -10,49 +10,48 @@ import static java.util.Objects.requireNonNull;
 
 public record LambdaPayload(
     String method,
-
     String path,
-
     Map<?, ?> queryParameters,
-
     Map<?, ?> headers,
-
-    String body
+    String body,
+    Map<?, ?> source
 ) {
 
-    public static LambdaPayload create(Map<?, ?> req) {
-        if (req.isEmpty()) {
+    public static LambdaPayload create(Map<?, ?> source) {
+        if (source.isEmpty()) {
             throw new IllegalArgumentException("Empty request");
         }
         try {
-            String version = stringVal(req, "version", "1.0");
-            Map<?, ?> queryParameters = submap(req, "queryStringParameters");
-            Map<?, ?> headers = submap(req, "headers");
-            String body = body(req);
+            String version = stringVal(source, "version", "1.0");
+            Map<?, ?> queryParameters = submap(source, "queryStringParameters");
+            Map<?, ?> headers = submap(source, "headers");
+            String body = body(source);
             switch (version) {
                 case "2.0" -> {
-                    Map<?, ?> http = submap(req, "requestContext", "http");
+                    Map<?, ?> http = submap(source, "requestContext", "http");
                     return new LambdaPayload(
                         stringVal(http, "method").toUpperCase(Locale.ROOT),
                         stringVal(http, "path"),
                         queryParameters,
                         headers,
-                        body
+                        body,
+                        source
                     );
                 }
                 case "1.0" -> {
                     return new LambdaPayload(
-                        stringVal(req, "httpMethod").toUpperCase(Locale.ROOT),
-                        stringVal(req, "path"),
+                        stringVal(source, "httpMethod").toUpperCase(Locale.ROOT),
+                        stringVal(source, "path"),
                         queryParameters,
                         headers,
-                        body
+                        body,
+                        source
                     );
                 }
-                default -> throw new IllegalArgumentException("Unknown version: " + req);
+                default -> throw new IllegalArgumentException("Unknown version: " + source);
             }
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Failed to parse payload: " + Json.INSTANCE.write(req), e);
+            throw new IllegalStateException("Failed to parse payload: " + Json.INSTANCE.write(source), e);
         }
     }
 
@@ -78,7 +77,11 @@ public record LambdaPayload(
     }
 
     public boolean isExactly(String method, String path) {
-        return method.equalsIgnoreCase(this.method) && path.equalsIgnoreCase(this.path);
+        return method.equalsIgnoreCase(this.method) && isExactly(path);
+    }
+
+    public boolean isExactly(String path) {
+        return path.equalsIgnoreCase(this.path);
     }
 
     public Optional<String> pathParam(String pattern, String name) {

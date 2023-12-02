@@ -6,7 +6,7 @@ RUN mkdir /graalvm
 ⎨if(disturi)⎬
 ADD ⎨disturi⎬ /graal.tar.gz
 WORKDIR /graalvm
-RUN tar xvzf /graal.tar.gz
+RUN tar xzf /graal.tar.gz
 WORKDIR /
 RUN rm /graal.tar.gz
 ⎨else⎬
