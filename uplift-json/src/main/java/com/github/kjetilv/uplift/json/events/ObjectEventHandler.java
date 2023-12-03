@@ -33,16 +33,10 @@ final class ObjectEventHandler<C extends Events.Callbacks<C>>
         return new ObjectEventHandler<>(exit(), callbacks);
     }
 
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private EventHandler<C> skip(Token token, Supplier<EventHandler<C>> next) {
         return skipToken ->
-            switch (skipToken.type()) {
-                case COLON -> next.get();
-                default -> fail(
-                    "Expected colon to follow field `" + token.literalString() + "`",
-                    skipToken,
-                    COLON
-                );
-            };
+            skipToken.type() == COLON
+                ? next.get()
+                : fail("Expected " + COLON + " to follow field `" + token.literalString() + "`", skipToken, COLON);
     }
 }

@@ -33,6 +33,9 @@ final class ArrayEventHandler<C extends Events.Callbacks<C>>
 
     @Override
     protected AbstractEventHandler<C> with(C callbacks) {
-        return new ArrayEventHandler<>(exit(), callbacks);
+        return new ArrayEventHandler<>(
+            exit(),
+            callbacks
+        );
     }
 }

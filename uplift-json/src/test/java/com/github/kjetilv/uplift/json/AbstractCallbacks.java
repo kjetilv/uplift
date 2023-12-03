@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@SuppressWarnings("SameParameterValue")
+@SuppressWarnings({"SameParameterValue", "unused"})
 public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Events.Callbacks<AbstractCallbacks<?, ?>> {
 
     private final B builder;
@@ -30,8 +30,11 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
 
     private String currentField;
 
-
-    protected AbstractCallbacks(B builder, AbstractCallbacks<?, ?> parent, Consumer<T> onDone) {
+    protected AbstractCallbacks(
+        B builder,
+        AbstractCallbacks<?, ?> parent,
+        Consumer<T> onDone
+    ) {
         this.builder = builder;
         this.parent = parent;
         this.onDone = Objects.requireNonNull(onDone, "onDone");
@@ -74,7 +77,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     public final <N extends Number> AbstractCallbacks<?, ?> number(N number) {
         BiConsumer<B, Number> consumer = numberConsumer();
         if (consumer != null) {
-            consumer.accept(builder,number);
+            consumer.accept(builder, number);
         }
         return this;
     }
@@ -92,48 +95,89 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
         return builder;
     }
 
-    protected final void onObject(String name, Supplier<AbstractCallbacks<?, ?>> nested) {
+    protected final void onObject(
+        String name,
+        Supplier<AbstractCallbacks<?, ?>> nested
+    ) {
         objectFields.put(name, nested);
     }
 
-    protected final <E> void onStringly(String name, Function<String, E> enumType, BiConsumer<B, E> setter) {
-        strings.put(name, (builder, str) -> setter.accept(builder, enumType.apply(str)));
+    protected final <E> void onStringly(
+        String name,
+        Function<String, E> enumType,
+        BiConsumer<B, E> setter
+    ) {
+        strings.put(name, (builder, str) ->
+            setter.accept(builder, enumType.apply(str)));
     }
 
-    protected final void onString(String name, BiConsumer<B, String> setter) {
+    protected final void onString(
+        String name,
+        BiConsumer<B, String> setter
+    ) {
         strings.put(name, setter);
     }
 
-    protected final void onTruth(String name, BiConsumer<B, Boolean> setter) {
+    protected final void onTruth(
+        String name,
+        BiConsumer<B, Boolean> setter
+    ) {
         truths.put(name, setter);
     }
 
-    protected final void onFloat(String name, BiConsumer<B, Float> setter) {
-        numbers.put(name, (B builder, Double d) -> setter.accept(builder, d.floatValue()));
+    protected final void onFloat(
+        String name,
+        BiConsumer<B, Float> setter
+    ) {
+        numbers.put(name, (B builder, Double d) ->
+            setter.accept(builder, d.floatValue()));
     }
 
-    protected final void onDouble(String name, BiConsumer<B, Double> setter) {
+    protected final void onDouble(
+        String name,
+        BiConsumer<B, Double> setter
+    ) {
         numbers.put(name, setter);
     }
 
-    protected final void onInteger(String name, BiConsumer<B, Integer> setter) {
-        numbers.put(name, (B builder, Long l) -> setter.accept(builder, l.intValue()));
+    protected final void onInteger(
+        String name,
+        BiConsumer<B, Integer> setter
+    ) {
+        numbers.put(name, (B builder, Long l) ->
+            setter.accept(builder, l.intValue()));
     }
 
-    protected final void onBigInteger(String name, BiConsumer<B, Long> setter) {
-        numbers.put(name, (B builder, BigInteger bi) -> setter.accept(builder, bi.longValue()));
+    protected final void onBigInteger(
+        String name,
+        BiConsumer<B, Long> setter
+    ) {
+        numbers.put(name, (B builder, BigInteger bi) ->
+            setter.accept(builder, bi.longValue()));
     }
 
-    protected final void onBigDecimal(String name, BiConsumer<B, BigDecimal> setter) {
-        strings.put(name, (B builder, String l) -> setter.accept(builder, new BigDecimal(l)));
+    protected final void onBigDecimal(
+        String name,
+        BiConsumer<B, BigDecimal> setter
+    ) {
+        strings.put(name, (B builder, String l) ->
+            setter.accept(builder, new BigDecimal(l)));
     }
 
-    protected final void onShort(String name, BiConsumer<B, Short> setter) {
-        numbers.put(name, (B builder, Long l) -> setter.accept(builder,l.shortValue()));
+    protected final void onShort(
+        String name,
+        BiConsumer<B, Short> setter
+    ) {
+        numbers.put(name, (B builder, Long l) ->
+            setter.accept(builder, l.shortValue()));
     }
 
-    protected final void onByte(String name, BiConsumer<B, Byte> setter) {
-        numbers.put(name, (B builder, Long l) -> setter.accept(builder, l.byteValue()));
+    protected final void onByte(
+        String name,
+        BiConsumer<B, Byte> setter
+    ) {
+        numbers.put(name, (B builder, Long l) ->
+            setter.accept(builder, l.byteValue()));
     }
 
     @SuppressWarnings("unchecked")
@@ -142,10 +186,12 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     }
 
     private <R> R fail() {
-        throw new IllegalStateException("Unexpected object value for " + currentField);
+        throw new IllegalStateException(
+            "Unexpected object value for " + currentField);
     }
 
     private <R> R fail(Object value) {
-        throw new IllegalStateException("Unexpected value for " + currentField + ": " + value);
+        throw new IllegalStateException(
+            "Unexpected value for " + currentField + ": " + value);
     }
 }

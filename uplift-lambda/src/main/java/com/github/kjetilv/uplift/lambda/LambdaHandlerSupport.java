@@ -5,7 +5,6 @@ import com.github.kjetilv.uplift.kernel.util.Throwables;
 import org.slf4j.Logger;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.lambda.LambdaResult.status;

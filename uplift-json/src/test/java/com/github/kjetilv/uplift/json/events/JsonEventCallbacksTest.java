@@ -1,8 +1,5 @@
 package com.github.kjetilv.uplift.json.events;
 
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.github.kjetilv.uplift.json.Address;
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.User;
@@ -10,9 +7,12 @@ import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
 import com.github.kjetilv.uplift.json.gens.UserCallbacks;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings({ "DynamicRegexReplaceableByCompiledPattern" })
 public class JsonEventCallbacksTest {
 
     @Test
@@ -20,15 +20,14 @@ public class JsonEventCallbacksTest {
         MyCallbacks myCallbacks = Events.parse(
             callbacks(),
             """
-            {
-              "els": [1, 2, "a", "b"],
-              "foo": ["tip", true, [ 3, 4 ], []],
-              "bar": [{"zit": "quz"}, 4]
-            }
-            """
+                {
+                  "els": [1, 2, "a", "b"],
+                  "foo": ["tip", true, [ 3, 4 ], []],
+                  "bar": [{"zit": "quz"}, 4]
+                }
+                """
         );
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(Arrays.stream(
-            """
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -53,7 +52,7 @@ public class JsonEventCallbacksTest {
               number:4
               arrayEnded
             objectEnded
-            """.split("\\s+")).toList()
+            """)
         );
     }
 
@@ -62,17 +61,16 @@ public class JsonEventCallbacksTest {
         MyCallbacks myCallbacks = Events.parse(
             callbacks(),
             """
-            {
-              "foo": "bar",
-              "zot": 5,
-              "obj2": {
-                "oops": true
-              }
-            }
-            """
+                {
+                  "foo": "bar",
+                  "zot": 5,
+                  "obj2": {
+                    "oops": true
+                  }
+                }
+                """
         );
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(Arrays.stream(
-            """
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo string:bar
               field:zot number:5
@@ -80,7 +78,7 @@ public class JsonEventCallbacksTest {
                 field:oops truth:true
               objectEnded
             objectEnded
-            """.split("\\s+")).toList()
+            """)
         );
     }
 
@@ -89,25 +87,25 @@ public class JsonEventCallbacksTest {
         MyCallbacks myCallbacks = Events.parse(
             callbacks(),
             """
-            {
-              "foo": "bar",
-              "zot": 5,
-              "obj2": {
-                "oops": true
-              }
-            }
-            """
+                {
+                  "foo": "bar",
+                  "zot": 5,
+                  "obj2": {
+                    "oops": true
+                  }
+                }
+                """
         );
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(Arrays.stream(
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
-            objectStarted
-              field:foo string:bar
-              field:zot number:5
-              field:obj2 objectStarted
-                field:oops truth:true
-              objectEnded
-            objectEnded
-            """.split("\\s+")).toList()
+                objectStarted
+                  field:foo string:bar
+                  field:zot number:5
+                  field:obj2 objectStarted
+                    field:oops truth:true
+                  objectEnded
+                objectEnded
+                """)
         );
     }
 
@@ -117,14 +115,14 @@ public class JsonEventCallbacksTest {
         Events.parse(
             callbacks,
             """
-            {
-              "foo": "bar",
-              "zot": 5,
-              "obj2": {
-                "oops": true
-              }
-            }
-            """
+                {
+                  "foo": "bar",
+                  "zot": 5,
+                  "obj2": {
+                    "oops": true
+                  }
+                }
+                """
         );
     }
 
@@ -134,50 +132,53 @@ public class JsonEventCallbacksTest {
         Events.parse(
             new UserCallbacks(reference::set),
             """
-            {
-              "name": "Kjetil",
-              "address": {
-                "streetName": "None Street",
-                "houseNumber": 1729,
-                "modifier": "B",
-                "code": 1450,
-                "residents": [
-                  {
-                    "name": "foo",
-                    "permanent": true
+                {
+                  "name": "Kjetil",
+                  "address": {
+                    "streetName": "None Street",
+                    "houseNumber": 1729,
+                    "modifier": "B",
+                    "code": 1450,
+                    "residents": [
+                      {
+                        "name": "foo",
+                        "permanent": true
+                      },
+                      {
+                        "name": "bar",
+                        "permanent": false
+                      }
+                    ]
                   },
-                  {
-                    "name": "bar",
-                    "permanent": false
-                  }
-                ]
-              },
-              "roadWarrior": true,
-              "birthYear": 1973,
-              "misc": [
-                50,
-                "hacker",
-                true
-              ],
-              "maxAge": 127
-            }
-            """
+                  "roadWarrior": true,
+                  "birthYear": 1973,
+                  "misc": [
+                    50,
+                    "hacker",
+                    true
+                  ],
+                  "maxAge": 127
+                }
+                """
         );
         System.out.println(reference.get());
         AtomicReference<Address> reference1 = new AtomicReference<>();
         Events.parse(
             new AddressCallbacks(null, reference1::set),
             """
-            {
-                "streetName": "None Street",
-                "houseNumber": 1729,
-                "modifier": "B",
-                "code": 1450
-            }
-            """
+                {
+                    "streetName": "None Street",
+                    "houseNumber": 1729,
+                    "modifier": "B",
+                    "code": 1450
+                }
+                """
         );
         System.out.println(reference1.get());
     }
+
+    private static List<String> lines(String text) {
+        return Arrays.stream(text.split("\\s+")).toList();}
 
     private static MyCallbacks callbacks() {
         return new MyCallbacks();
