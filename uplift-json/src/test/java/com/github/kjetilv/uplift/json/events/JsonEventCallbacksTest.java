@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Address;
 import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.Resident;
 import com.github.kjetilv.uplift.json.User;
 import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
 import com.github.kjetilv.uplift.json.gens.UserCallbacks;
@@ -161,7 +162,32 @@ public class JsonEventCallbacksTest {
                 }
                 """
         );
-        System.out.println(reference.get());
+        assertThat(reference.get()).isEqualTo(
+            new User(
+                "Kjetil",
+                1973,
+                new Address(
+                    "None Street",
+                    1729,
+                    Address.Modifier.B,
+                    1450,
+                    List.of(
+                        new Resident(
+                            "foo", true
+                        ),
+                        new Resident(
+                            "bar", false
+                        )
+                    )
+                ),
+                true,
+                (byte) 127,
+                List.of(
+                    50,
+                    "hacker",
+                    true
+                )
+            ));
         AtomicReference<Address> reference1 = new AtomicReference<>();
         Events.parse(
             new AddressCallbacks(null, reference1::set),
@@ -174,11 +200,20 @@ public class JsonEventCallbacksTest {
                 }
                 """
         );
-        System.out.println(reference1.get());
+        assertThat(reference1.get()).isEqualTo(
+            new Address(
+                "None Street",
+                1729,
+                Address.Modifier.B,
+                1450,
+                null
+            )
+        );
     }
 
     private static List<String> lines(String text) {
-        return Arrays.stream(text.split("\\s+")).toList();}
+        return Arrays.stream(text.split("\\s+")).toList();
+    }
 
     private static MyCallbacks callbacks() {
         return new MyCallbacks();

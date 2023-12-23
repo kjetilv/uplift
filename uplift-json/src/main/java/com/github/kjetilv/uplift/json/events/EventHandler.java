@@ -25,10 +25,6 @@ public interface EventHandler<C extends Events.Callbacks<C>> {
         throw new UnsupportedOperationException(this + ": No callbacks");
     }
 
-    private static <C extends Events.Callbacks<C>> EventHandler<C> init(C callbacks) {
-        return new ValueEventHandler<>(callbacks);
-    }
-
     private static <C extends Events.Callbacks<C>> C parse(
         Stream<Token> tokens, C callbacks
     ) {
@@ -37,6 +33,10 @@ public interface EventHandler<C extends Events.Callbacks<C>> {
             EventHandler::process,
             noCombine()
         ).callbacks();
+    }
+
+    private static <C extends Events.Callbacks<C>> EventHandler<C> init(C callbacks) {
+        return new ValueEventHandler<>(callbacks);
     }
 
     private static <T> BinaryOperator<T> noCombine() {
