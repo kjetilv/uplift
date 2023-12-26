@@ -53,13 +53,6 @@ public final class AddressBuilder implements Supplier<Address> {
 
     @Override
     public Address get() {
-        return new Address(
-            streetName,
-            houseNumber,
-            modifier,
-            adjacents,
-            code,
-            residents
-        );
+        return new Address(streetName, houseNumber, modifier, adjacents, code, residents);
     }
 }

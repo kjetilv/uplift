@@ -15,7 +15,6 @@ import javax.tools.JavaFileObject;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
@@ -28,12 +27,14 @@ public class JsRecProcessor extends AbstractProcessor {
                 typeElement.getQualifiedName().toString().equals(JsRec.class.getName()))
             .findFirst()
             .map(typeElement -> {
-                Set<? extends Element> roots = roundEnv.getRootElements();
-                Stream<? extends Element> enums = Gen.enums(roots);
-                roots
-                        .forEach(element ->
-                            process(element, roots, enums
-                                .collect(Collectors.toSet())));
+                    Set<? extends Element> enums = Gen.enums(roundEnv.getRootElements())
+                        .collect(Collectors.toSet());
+                    Set<? extends Element> roots = roundEnv.getRootElements()
+                        .stream()
+                        .filter(element -> !enums.contains(element))
+                        .collect(Collectors.toSet());
+                    roots.forEach(element ->
+                        process(element, roots, enums));
                     return true;
                 }
             ).orElse(false);
