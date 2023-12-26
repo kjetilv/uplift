@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.github.kjetilv.uplift.json.annpro.Gen.*;
+
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class JsRecProcessor extends AbstractProcessor {
@@ -27,7 +29,7 @@ public class JsRecProcessor extends AbstractProcessor {
                 typeElement.getQualifiedName().toString().equals(JsRec.class.getName()))
             .findFirst()
             .map(typeElement -> {
-                    Set<? extends Element> enums = Gen.enums(roundEnv.getRootElements())
+                    Set<? extends Element> enums = enums(roundEnv.getRootElements())
                         .collect(Collectors.toSet());
                     Set<? extends Element> roots = roundEnv.getRootElements()
                         .stream()
