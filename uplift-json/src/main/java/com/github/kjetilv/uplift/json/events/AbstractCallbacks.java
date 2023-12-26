@@ -1,4 +1,6 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.events;
+
+import com.github.kjetilv.uplift.json.Events;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -102,7 +104,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
         objectFields.put(name, nested);
     }
 
-    protected final <E> void onStringly(
+    protected final <E> void onEnum(
         String name,
         Function<String, E> enumType,
         BiConsumer<B, E> setter
@@ -118,7 +120,15 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
         strings.put(name, setter);
     }
 
-    protected final void onTruth(
+    protected final void onCharacter(
+        String name,
+        BiConsumer<B, Character> setter
+    ) {
+        strings.put(name, (builder, string) ->
+            setter.accept(builder, toChar(string)));
+    }
+
+    protected final void onBoolean(
         String name,
         BiConsumer<B, Boolean> setter
     ) {
@@ -146,6 +156,13 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     ) {
         numbers.put(name, (B builder, Long l) ->
             setter.accept(builder, l.intValue()));
+    }
+
+    protected final void onLong(
+        String name,
+        BiConsumer<B, Long> setter
+    ) {
+        numbers.put(name, setter);
     }
 
     protected final void onBigInteger(
@@ -193,5 +210,15 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     private <R> R fail(Object value) {
         throw new IllegalStateException(
             "Unexpected value for " + currentField + ": " + value);
+    }
+
+    private static Character toChar(String string) {
+        if (string == null || string.isEmpty()) {
+            return null;
+        }
+        if (string.length() != 1) {
+            return string.charAt(0);
+        }
+        throw new IllegalStateException("Not a char: `" + string + "`'");
     }
 }

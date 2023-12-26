@@ -1,9 +1,9 @@
-package com.github.kjetilv.uplift.json.gens;
+package com.github.kjetilv.uplift.json.example.gen;
 
 import java.util.function.Consumer;
 
-import com.github.kjetilv.uplift.json.AbstractCallbacks;
-import com.github.kjetilv.uplift.json.User;
+import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
+import com.github.kjetilv.uplift.json.example.User;
 
 public final class UserCallbacks extends AbstractCallbacks<UserBuilder, User> {
 
@@ -12,10 +12,9 @@ public final class UserCallbacks extends AbstractCallbacks<UserBuilder, User> {
         onInteger("misc", UserBuilder::addMisc);
         onInteger("birthYear", UserBuilder::setBirthYear);
         onString("name", UserBuilder::setName);
-        onString("misc", UserBuilder::addMisc);
-        onTruth("roadWarrior", UserBuilder::setRoadWarrior);
+        onBoolean("roadWarrior", UserBuilder::setRoadWarrior);
         onByte("maxAge", UserBuilder::setMaxAge);
-        onTruth("misc", UserBuilder::addMisc);
+        onString("aliases", UserBuilder::addAliases);
         onObject("address", () ->
             new AddressCallbacks(this, builder()::setAddress));
     }

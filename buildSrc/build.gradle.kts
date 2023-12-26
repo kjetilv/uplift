@@ -8,7 +8,6 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(17))
-    }
+    jvmToolchain(21)
 }
+

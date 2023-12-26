@@ -16,8 +16,17 @@ subprojects {
         mavenLocal()
     }
 
-    tasks.withType<Test> {
-        this.useJUnitPlatform()
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.test {
+        useJUnitPlatform()
     }
 
     if (project.name != "uplift-gradle-plugins") {

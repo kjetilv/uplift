@@ -1,8 +1,8 @@
-package com.github.kjetilv.uplift.json.gens;
+package com.github.kjetilv.uplift.json.example.gen;
 
 import java.util.function.Supplier;
 
-import com.github.kjetilv.uplift.json.Resident;
+import com.github.kjetilv.uplift.json.example.Resident;
 
 public final class ResidentBuilder implements Supplier<Resident> {
 

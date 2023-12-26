@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     `java-gradle-plugin`
 }
 
@@ -30,10 +30,5 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain {
-        (this as JavaToolchainSpec).apply {
-            languageVersion.set(JavaLanguageVersion.of(17))
-//            vendor.set(JvmVendorSpec.GRAAL_VM)
-        }
-    }
+    jvmToolchain(21)
 }

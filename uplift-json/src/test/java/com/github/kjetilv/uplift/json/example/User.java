@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.example;
 
 import java.util.List;
 
@@ -8,7 +8,8 @@ public record User(
     Address address,
     boolean roadWarrior,
     byte maxAge,
-    List<Object> misc) {
+    List<String> aliases,
+    List<Integer> misc) {
 
 }
 

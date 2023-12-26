@@ -1,16 +1,17 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.Address;
+import com.github.kjetilv.uplift.json.example.Address;
 import com.github.kjetilv.uplift.json.Events;
-import com.github.kjetilv.uplift.json.Resident;
-import com.github.kjetilv.uplift.json.User;
-import com.github.kjetilv.uplift.json.gens.AddressCallbacks;
-import com.github.kjetilv.uplift.json.gens.UserCallbacks;
+import com.github.kjetilv.uplift.json.example.Resident;
+import com.github.kjetilv.uplift.json.example.User;
+import com.github.kjetilv.uplift.json.example.gen.AddressCallbacks;
+import com.github.kjetilv.uplift.json.example.gen.UserCallbacks;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -130,8 +131,9 @@ public class JsonEventCallbacksTest {
     @Test
     void parseUser() {
         AtomicReference<User> reference = new AtomicReference<>();
+        Consumer<User> set = reference::set;
         Events.parse(
-            new UserCallbacks(reference::set),
+            new UserCallbacks(set),
             """
                 {
                   "name": "Kjetil",
@@ -139,6 +141,7 @@ public class JsonEventCallbacksTest {
                     "streetName": "None Street",
                     "houseNumber": 1729,
                     "modifier": "B",
+                    "adjacents": [ "C" ],
                     "code": 1450,
                     "residents": [
                       {
@@ -153,11 +156,8 @@ public class JsonEventCallbacksTest {
                   },
                   "roadWarrior": true,
                   "birthYear": 1973,
-                  "misc": [
-                    50,
-                    "hacker",
-                    true
-                  ],
+                  "aliases": ["MrX", "Foo"],
+                  "misc": [50, 60, 70],
                   "maxAge": 127
                 }
                 """
@@ -170,6 +170,7 @@ public class JsonEventCallbacksTest {
                     "None Street",
                     1729,
                     Address.Modifier.B,
+                    List.of(Address.Modifier.C),
                     1450,
                     List.of(
                         new Resident(
@@ -182,10 +183,11 @@ public class JsonEventCallbacksTest {
                 ),
                 true,
                 (byte) 127,
+                List.of("MrX", "Foo"),
                 List.of(
                     50,
-                    "hacker",
-                    true
+                    60,
+                    70
                 )
             ));
         AtomicReference<Address> reference1 = new AtomicReference<>();
@@ -196,6 +198,7 @@ public class JsonEventCallbacksTest {
                     "streetName": "None Street",
                     "houseNumber": 1729,
                     "modifier": "B",
+                    "adjacents": [ "C" ],
                     "code": 1450
                 }
                 """
@@ -205,6 +208,7 @@ public class JsonEventCallbacksTest {
                 "None Street",
                 1729,
                 Address.Modifier.B,
+                List.of(Address.Modifier.C),
                 1450,
                 null
             )

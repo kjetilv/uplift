@@ -1,11 +1,11 @@
-package com.github.kjetilv.uplift.json.gens;
+package com.github.kjetilv.uplift.json.example.gen;
+
+import com.github.kjetilv.uplift.json.example.Address;
+import com.github.kjetilv.uplift.json.example.User;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-
-import com.github.kjetilv.uplift.json.Address;
-import com.github.kjetilv.uplift.json.User;
 
 public final class UserBuilder implements Supplier<User> {
 
@@ -17,7 +17,9 @@ public final class UserBuilder implements Supplier<User> {
 
     private boolean roadWarrior;
 
-    private List<Object> misc;
+    private List<String> aliases;
+
+    private List<Integer> misc;
 
     private byte maxAge;
 
@@ -29,6 +31,7 @@ public final class UserBuilder implements Supplier<User> {
             address,
             roadWarrior,
             maxAge,
+            aliases,
             misc
         );
     }
@@ -49,11 +52,18 @@ public final class UserBuilder implements Supplier<User> {
         this.roadWarrior = roadWarrior;
     }
 
-    public void addMisc(Object object) {
-        if (misc == null) {
-            misc = new ArrayList<>();
+    public void addMisc(Integer misc) {
+        if (this.misc == null) {
+            this.misc = new ArrayList<>();
         }
-        misc.add(object);
+        this.misc.add(misc);
+    }
+
+    public void addAliases(String aliases) {
+        if (this.aliases == null) {
+            this.aliases = new ArrayList<>();
+        }
+        this.aliases.add(aliases);
     }
 
     void setMaxAge(byte maxAge) {
