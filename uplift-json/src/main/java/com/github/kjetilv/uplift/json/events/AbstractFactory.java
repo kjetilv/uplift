@@ -30,15 +30,19 @@ public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbac
     }
 
     public void read(String string, Consumer<T> set) {
-        Events.parse(newCallbacks.apply(set), string);
+        Events.parse(callbacks(set), string);
     }
 
     public void read(Reader reader, Consumer<T> set) {
-        Events.parse(newCallbacks.apply(set), reader);
+        Events.parse(callbacks(set), reader);
     }
 
     public void read(InputStream string, Consumer<T> set) {
-        Events.parse(newCallbacks.apply(set), string);
+        Events.parse(callbacks(set), string);
+    }
+
+    private C callbacks(Consumer<T> set) {
+        return newCallbacks.apply(set);
     }
 
     private static <T> T extract(Consumer<Consumer<T>> consumer) {
