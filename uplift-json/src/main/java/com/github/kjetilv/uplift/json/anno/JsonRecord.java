@@ -9,11 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface JsonRecord {
 
+    boolean root() default false;
+
     String factoryClass() default "";
-
-    String factoryMethod() default "";
-
-    String createPrefix() default "create";
-
-    String factorySuffix() default "Factory";
 }

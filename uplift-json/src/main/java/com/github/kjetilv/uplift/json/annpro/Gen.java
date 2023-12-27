@@ -3,7 +3,10 @@ package com.github.kjetilv.uplift.json.annpro;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.RecordComponentElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.math.BigDecimal;
@@ -76,14 +79,11 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         return te.getSimpleName() + "Callbacks";
     }
 
-    static String factoryClass(TypeElement typeElement) {
-        JsonRecord annotation = typeElement.getAnnotation(JsonRecord.class);
-        Name simpleName = typeElement.getSimpleName();
-        String name = annotation == null ? simpleName + DEFAULT_SUFFIX
-            : !annotation.factoryClass().isBlank() ? annotation.factoryClass()
-                : !annotation.factorySuffix().isBlank() ? simpleName + annotation.factorySuffix()
-                    : simpleName + DEFAULT_SUFFIX;
-        return name;
+    static String factoryClass(TypeElement te) {
+        JsonRecord rec = te.getAnnotation(JsonRecord.class);
+        String name = te.getSimpleName().toString();
+        return rec == null || rec.factoryClass().isBlank() ? defaultFactory(name)
+            : rec.factoryClass();
     }
 
     static String setter(RecordComponentElement el) {
@@ -168,6 +168,10 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         return annotation != null ? annotation.value()
             : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
                 : plural;
+    }
+
+    private static String defaultFactory(String name) {
+        return name + DEFAULT_SUFFIX;
     }
 
     private static String listType(Object type) {

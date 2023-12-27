@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
-class StringSource implements Source {
+@SuppressWarnings("unused")
+final class StringSource implements Source {
 
     private final String source;
 

@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import java.math.BigDecimal;
 import java.util.List;
 
-@JsonRecord
+@JsonRecord(factoryClass = "Users", root = true)
 public record User(
     String name,
     Integer birthYear,

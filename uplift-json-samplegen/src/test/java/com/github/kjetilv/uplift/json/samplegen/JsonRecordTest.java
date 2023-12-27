@@ -39,7 +39,7 @@ public class JsonRecordTest {
               "balance": "123.23"
             }
             """;
-        assertThat(com.github.kjetilv.uplift.json.samplegen.UserFactory.INSTANCE.read(json)).isEqualTo(
+        assertThat(com.github.kjetilv.uplift.json.samplegen.Users.INSTANCE.read(json)).isEqualTo(
             new User(
                 "Kjetil",
                 1973,
@@ -69,23 +69,26 @@ public class JsonRecordTest {
                 new BigDecimal("123.23")
             ));
         String addressJson = """
-            {
+            { "address":
+              {
                 "streetName": "None Street",
                 "houseNumber": 1729,
                 "modifier": "B",
                 "adjacents": [ "C" ],
                 "code": 1450
+              }
             }
             """;
-        assertThat(com.github.kjetilv.uplift.json.samplegen.AddressFactory.INSTANCE.read(addressJson)).isEqualTo(
-            new Address(
-                "None Street",
-                1729,
-                Address.Modifier.B,
-                List.of(Address.Modifier.C),
-                1450,
-                null
-            )
-        );
+        assertThat(com.github.kjetilv.uplift.json.samplegen.Users.INSTANCE.read(addressJson).address())
+            .isEqualTo(
+                new Address(
+                    "None Street",
+                    1729,
+                    Address.Modifier.B,
+                    List.of(Address.Modifier.C),
+                    1450,
+                    null
+                )
+            );
     }
 }

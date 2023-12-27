@@ -7,33 +7,49 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.github.kjetilv.uplift.json.annpro.Gen.enums;
-
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
-public class JsonRecordProcessor extends AbstractProcessor {
+public final class JsonRecordProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
-        return isJsRec(typedElements) && processed(roundEnv);
+        return isJsonRecord(typedElements) && processed(roundEnv);
     }
 
     private boolean processed(RoundEnvironment roundEnv) {
-        Set<? extends Element> enums = enums(roundEnv.getRootElements())
+        Set<? extends Element> enums = enums(roundEnv);
+        Set<? extends Element> roots = roots(roundEnv, enums);
+        verifyRooted(roots);
+        generate(roots, enums);
+        return true;
+    }
+
+    private static Set<? extends Element> enums(RoundEnvironment roundEnv) {
+        Set<? extends Element> enums = Gen.enums(roundEnv.getRootElements())
             .collect(Collectors.toSet());
-        Set<? extends Element> roots = roundEnv.getRootElements()
+        return enums;
+    }
+
+    private static Set<? extends Element> roots(RoundEnvironment roundEnv, Set<? extends Element> enums) {
+        return roundEnv.getRootElements()
             .stream()
             .filter(element -> !enums.contains(element))
             .collect(Collectors.toSet());
+    }
+
+    private void generate(Set<? extends Element> roots, Set<? extends Element> enums) {
         roots.forEach(element ->
             process(element, roots, enums));
-        return true;
     }
 
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
@@ -55,13 +71,13 @@ public class JsonRecordProcessor extends AbstractProcessor {
                 roots,
                 enums
             );
-            Factories.writeFactory(
-                packageElement,
-                typeElement,
-                factoryFile(typeElement),
-                roots,
-                enums
-            );
+            if (isRoot(typeElement)) {
+                Factories.writeFactory(
+                    packageElement,
+                    typeElement,
+                    factoryFile(typeElement)
+                );
+            }
         }
     }
 
@@ -91,12 +107,32 @@ public class JsonRecordProcessor extends AbstractProcessor {
 
     private static final String JS_REC = JsonRecord.class.getName();
 
-    private static boolean isJsRec(Set<? extends TypeElement> typedElements) {
+    private static boolean isJsonRecord(Set<? extends TypeElement> typedElements) {
         return typedElements != null && typedElements.stream()
-            .anyMatch(JsonRecordProcessor::isJsRec);
+            .anyMatch(JsonRecordProcessor::isJsonRecord);
     }
 
-    private static boolean isJsRec(TypeElement typeElement) {
+    private static boolean isRoot(TypeElement typeElement) {
+        return typeElement.getAnnotation(JsonRecord.class).root();
+    }
+
+    private static void verifyRooted(Set<? extends Element> roots) {
+        if (
+            roots.stream()
+                .filter(TypeElement.class::isInstance)
+                .map(TypeElement.class::cast)
+                .noneMatch(JsonRecordProcessor::isRoot)
+        ) {
+            throw new IllegalStateException(
+                "None of " + roots.size() + " elements are root class(es): " +
+                roots.stream()
+                    .map(Element::getSimpleName)
+                    .map(Objects::toString)
+                    .collect(Collectors.joining(", ")));
+        }
+    }
+
+    private static boolean isJsonRecord(TypeElement typeElement) {
         return typeElement.getQualifiedName().toString().equals(JS_REC);
     }
 

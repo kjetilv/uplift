@@ -7,9 +7,8 @@ import java.io.Reader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbacks<B, T>> {
+public abstract class AbstractFactory<T, C extends AbstractCallbacks<?, T>> implements JsonFactory<T> {
 
     private final Function<Consumer<T>, C> newCallbacks;
 
@@ -17,26 +16,32 @@ public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbac
         this.newCallbacks = newCallbacks;
     }
 
+    @Override
     public T read(String string) {
         return extract(consumer -> read(string, consumer));
     }
 
+    @Override
     public T read(InputStream inputStream) {
-        return extract(setter -> read(inputStream,setter));
+        return extract(setter -> read(inputStream, setter));
     }
 
+    @Override
     public T read(Reader reader) {
         return extract(setter -> read(reader, setter));
     }
 
+    @Override
     public void read(String string, Consumer<T> set) {
         Events.parse(callbacks(set), string);
     }
 
+    @Override
     public void read(Reader reader, Consumer<T> set) {
         Events.parse(callbacks(set), reader);
     }
 
+    @Override
     public void read(InputStream string, Consumer<T> set) {
         Events.parse(callbacks(set), string);
     }

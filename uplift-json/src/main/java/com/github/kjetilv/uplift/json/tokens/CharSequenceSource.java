@@ -3,9 +3,7 @@ package com.github.kjetilv.uplift.json.tokens;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
-class CharSequenceSource extends AbstractBytesSource {
-
-    private int i;
+final class CharSequenceSource extends AbstractBytesSource {
 
     CharSequenceSource(CharSequence sequence) {
         super(reader(sequence));

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.tokens;
 
-public class ReadException extends RuntimeException {
+public final class ReadException extends RuntimeException {
 
     private final String lexeme;
 

@@ -3,7 +3,8 @@ package com.github.kjetilv.uplift.json.tokens;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public abstract class AbstractBytesSource implements Source {
+public abstract sealed class AbstractBytesSource implements Source
+    permits BytesSource, CharSequenceSource, CharsSource {
 
     private final Progress progress;
 
@@ -53,12 +54,12 @@ public abstract class AbstractBytesSource implements Source {
 
     @Override
     public char peek() {
-        return AbstractBytesSource.toChar(next1);
+        return toChar(next1);
     }
 
     @Override
     public char peekNext() {
-        return AbstractBytesSource.toChar(next2);
+        return toChar(next2);
     }
 
     @Override
