@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,6 +12,7 @@ public class JsonRecordTest {
 
     @Test
     void parseUser() {
+        UUID uuid = UUID.randomUUID();
         String json = """
             {
               "name": "Kjetil",
@@ -27,7 +29,8 @@ public class JsonRecordTest {
                   },
                   {
                     "name": "bar",
-                    "permanent": false
+                    "permanent": false,
+                    "uuid": "%s"
                   }
                 ]
               },
@@ -38,7 +41,7 @@ public class JsonRecordTest {
               "maxAge": 127,
               "balance": "123.23"
             }
-            """;
+            """.formatted(uuid);
         assertThat(com.github.kjetilv.uplift.json.samplegen.Users.INSTANCE.read(json)).isEqualTo(
             new User(
                 "Kjetil",
@@ -51,10 +54,10 @@ public class JsonRecordTest {
                     1450,
                     List.of(
                         new Resident(
-                            "foo", true
+                            "foo", true, null
                         ),
                         new Resident(
-                            "bar", false
+                            "bar", false, uuid
                         )
                     )
                 ),

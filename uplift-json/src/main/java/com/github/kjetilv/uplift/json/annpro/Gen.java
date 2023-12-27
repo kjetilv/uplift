@@ -157,7 +157,8 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         Short.class,
         Byte.class,
         BigDecimal.class,
-        BigInteger.class
+        BigInteger.class,
+        UUID.class
     );
 
     protected static String singularVariableName(RecordComponentElement el) {

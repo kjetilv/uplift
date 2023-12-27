@@ -4,10 +4,7 @@ import com.github.kjetilv.uplift.json.Events;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -167,6 +164,14 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     ) {
         numbers.put(name, (B builder, BigInteger bi) ->
             setter.accept(builder, bi.longValue()));
+    }
+
+    protected final void onUUID(
+        String name,
+        BiConsumer<B, UUID> setter
+    ) {
+        strings.put(name, (builder, str) ->
+            setter.accept(builder, UUID.fromString(str)));
     }
 
     protected final void onBigDecimal(
