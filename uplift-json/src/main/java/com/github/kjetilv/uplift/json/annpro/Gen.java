@@ -1,21 +1,18 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
+
+import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-abstract sealed class Gen permits Builders, Callbacks {
+abstract sealed class Gen permits Builders, Callbacks, Factories {
 
     static String listType(TypeElement te) {
         return listType(te.getQualifiedName());
@@ -39,6 +36,10 @@ abstract sealed class Gen permits Builders, Callbacks {
                 })
             )
             .flatMap(Function.identity());
+    }
+
+    static void write(BufferedWriter bw, String... strs) {
+        write(bw, Arrays.asList(strs));
     }
 
     static void write(BufferedWriter bw, List<String> strs) {
@@ -75,12 +76,22 @@ abstract sealed class Gen permits Builders, Callbacks {
         return te.getSimpleName() + "Callbacks";
     }
 
+    static String factoryClass(TypeElement typeElement) {
+        JsonRecord annotation = typeElement.getAnnotation(JsonRecord.class);
+        Name simpleName = typeElement.getSimpleName();
+        String name = annotation == null ? simpleName + DEFAULT_SUFFIX
+            : !annotation.factoryClass().isBlank() ? annotation.factoryClass()
+                : !annotation.factorySuffix().isBlank() ? simpleName + annotation.factorySuffix()
+                    : simpleName + DEFAULT_SUFFIX;
+        return name;
+    }
+
     static String setter(RecordComponentElement el) {
         return "set" + upcased(el.getSimpleName().toString());
     }
 
     static String adder(RecordComponentElement el) {
-        return "add" + upcased(el.getSimpleName().toString());
+        return "add" + upcased(singularVariableName(el));
     }
 
     static Optional<RecordComponentElement> enumType(
@@ -136,6 +147,8 @@ abstract sealed class Gen permits Builders, Callbacks {
             .findFirst();
     }
 
+    private static final String DEFAULT_SUFFIX = "Factory";
+
     private static final Set<Class<?>> BASE_TYPES = Set.of(
         String.class,
         Boolean.class,
@@ -149,8 +162,16 @@ abstract sealed class Gen permits Builders, Callbacks {
         BigInteger.class
     );
 
+    protected static String singularVariableName(RecordComponentElement el) {
+        Singular annotation = el.getAnnotation(Singular.class);
+        String plural = el.getSimpleName().toString();
+        return annotation != null ? annotation.value()
+            : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
+                : plural;
+    }
+
     private static String listType(Object type) {
-        return "java.util.List<" + type + ">";
+        return List.class.getName() + "<" + type + ">";
     }
 
     private static String upcased(String string) {

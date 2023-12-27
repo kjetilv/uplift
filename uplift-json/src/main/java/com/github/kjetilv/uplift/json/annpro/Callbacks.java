@@ -1,47 +1,51 @@
 package com.github.kjetilv.uplift.json.annpro;
 
+import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
+
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 final class Callbacks extends Gen {
 
     static void writeCallbacks(
         PackageElement pe,
         TypeElement te,
-        JavaFileObject callbacks,
+        JavaFileObject file,
         Set<? extends Element> roots,
         Set<? extends Element> enums
     ) {
         List<String> header = List.of(
             "package " + pe.getQualifiedName() + ";",
-            "",
-            "import java.util.function.Consumer;",
-            "",
-            "import com.github.kjetilv.uplift.json.events.AbstractCallbacks;",
             ""
         );
 
         Name name = te.getSimpleName();
-        try (BufferedWriter bw = writer(callbacks)) {
+        try (BufferedWriter bw = writer(file)) {
             write(bw, header);
             write(
                 bw,
-                "public final class " + callbacksClass(te) + " extends AbstractCallbacks<" + builderClass(te) + ", " + name + "> {"
+                "public final class " + callbacksClass(te) + " extends " + AbstractCallbacks.class.getName() + "<" + builderClass(
+                    te) + ", " + name + "> {"
             );
-            write(bw, "");
-            write(bw, "    public " + callbacksClass(te) + "(Consumer<" + name + "> onDone) {");
-            write(bw, "        this(null, onDone);");
-            write(bw, "    }");
             write(bw, "");
             write(
                 bw,
-                "    public " + callbacksClass(te) + "(AbstractCallbacks<?, ?> parent, Consumer<" + name + "> onDone) {"
+                "    public static " + callbacksClass(te) + " create(" + AbstractCallbacks.class.getName() + "<?, ?> parent, " + Consumer.class.getName() + "<" + name + "> onDone) {",
+                "        return new " + callbacksClass(te) + "(parent, onDone);",
+                "    }",
+                "",
+                "    public static " + callbacksClass(te) + " create(" + Consumer.class.getName() + "<" + name + "> onDone) {",
+                "        return new " + callbacksClass(te) + "(null, onDone);",
+                "    }",
+                "",
+                "    private " + callbacksClass(te) + "(" + AbstractCallbacks.class.getName() + "<?, ?> parent, " + Consumer.class.getName() + "<" + name + "> onDone) {"
             );
-            write(bw, "        super(new " + builderClass(te) + "(), parent, onDone);");
+            write(bw, "        super(" + builderClass(te) + ".create(), parent, onDone);");
             write(bw, te.getRecordComponents()
                 .stream()
                 .map(element -> {
@@ -56,6 +60,10 @@ final class Callbacks extends Gen {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Callbacks() {
+
     }
 
     private static AttributeType attributeType(
@@ -136,9 +144,5 @@ final class Callbacks extends Gen {
                 ))
             .orElseThrow(() ->
                 new IllegalStateException("Unsupported: " + string));
-    }
-
-    private Callbacks() {
-
     }
 }

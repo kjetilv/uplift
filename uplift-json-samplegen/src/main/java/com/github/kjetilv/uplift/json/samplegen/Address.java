@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public record Address(
     Modifier modifier,
     List<Modifier> adjacents,
     Integer code,
-    List<Resident> residents
+    @Singular("rezzie") List<Resident> residents
 ) {
 
     public enum Modifier {

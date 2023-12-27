@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
@@ -12,6 +13,10 @@ import java.util.stream.Stream;
 public interface EventHandler<C extends Events.Callbacks<C>> {
 
     static <C extends Events.Callbacks<C>> C parse(C callbacks, InputStream source) {
+        return parse(Scanner.tokens(source), callbacks);
+    }
+
+    static <C extends Events.Callbacks<C>> C parse(C callbacks, Reader source) {
         return parse(Scanner.tokens(source), callbacks);
     }
 

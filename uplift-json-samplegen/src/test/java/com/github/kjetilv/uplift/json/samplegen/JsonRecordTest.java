@@ -45,7 +45,7 @@ public class JsonRecordTest {
             }
             """;
         Events.parse(
-            new UserCallbacks(set),
+            UserCallbacks.create(set),
                 json
         );
         assertThat(reference.get()).isEqualTo(
@@ -79,7 +79,7 @@ public class JsonRecordTest {
             ));
         AtomicReference<Address> reference1 = new AtomicReference<>();
         Events.parse(
-            new AddressCallbacks(null, reference1::set),
+            AddressCallbacks.create(null, reference1::set),
             """
                 {
                     "streetName": "None Street",

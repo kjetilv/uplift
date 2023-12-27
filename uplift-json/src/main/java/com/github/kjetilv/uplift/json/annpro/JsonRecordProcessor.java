@@ -7,10 +7,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
 import java.util.Set;
@@ -20,7 +17,7 @@ import static com.github.kjetilv.uplift.json.annpro.Gen.enums;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
-public class JsRecProcessor extends AbstractProcessor {
+public class JsonRecordProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
@@ -40,30 +37,53 @@ public class JsRecProcessor extends AbstractProcessor {
     }
 
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
-        if (kind(e, ElementKind.RECORD, ElementKind.CLASS) &&
+        if (kind(e, ElementKind.RECORD) &&
             e instanceof TypeElement typeElement &&
             typeElement.getEnclosingElement() instanceof PackageElement packageElement
         ) {
             Builders.writeBuilder(
                 packageElement,
                 typeElement,
-                file(typeElement, "Builder"),
+                builderFile(typeElement),
                 roots,
                 enums
             );
             Callbacks.writeCallbacks(
                 packageElement,
                 typeElement,
-                file(typeElement, "Callbacks"),
+                callbackFile(typeElement),
+                roots,
+                enums
+            );
+            Factories.writeFactory(
+                packageElement,
+                typeElement,
+                factoryFile(typeElement),
                 roots,
                 enums
             );
         }
     }
 
+    private JavaFileObject factoryFile(TypeElement typeElement) {
+        return file(Gen.factoryClass(typeElement));
+    }
+
+    private JavaFileObject callbackFile(TypeElement typeElement) {
+        return file(typeElement, "Callbacks");
+    }
+
+    private JavaFileObject builderFile(TypeElement typeElement) {
+        return file(typeElement, "Builder");
+    }
+
     private JavaFileObject file(TypeElement te, String type) {
+        return file(te.getQualifiedName() + type);
+    }
+
+    private JavaFileObject file(String name) {
         try {
-            return processingEnv.getFiler().createSourceFile(te.getQualifiedName() + type);
+            return processingEnv.getFiler().createSourceFile(name);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +93,7 @@ public class JsRecProcessor extends AbstractProcessor {
 
     private static boolean isJsRec(Set<? extends TypeElement> typedElements) {
         return typedElements != null && typedElements.stream()
-            .anyMatch(JsRecProcessor::isJsRec);
+            .anyMatch(JsonRecordProcessor::isJsRec);
     }
 
     private static boolean isJsRec(TypeElement typeElement) {

@@ -7,7 +7,11 @@ import com.github.kjetilv.uplift.json.example.User;
 
 public final class UserCallbacks extends AbstractCallbacks<UserBuilder, User> {
 
-    public UserCallbacks(Consumer<User> onDone) {
+    public static UserCallbacks create(Consumer<User> onDone) {
+        return new UserCallbacks(onDone);
+    }
+
+    private UserCallbacks(Consumer<User> onDone) {
         super(new UserBuilder(), null, onDone);
         onInteger("misc", UserBuilder::addMisc);
         onInteger("birthYear", UserBuilder::setBirthYear);

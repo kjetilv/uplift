@@ -20,12 +20,8 @@ class BytesSource implements Source {
     BytesSource(InputStream stream) {
         this.stream = requireNonNull(stream, "stream");
         this.progress = new Progress();
-        try {
-            this.next1 = stream.read();
-            this.next2 = next1 < 0 ? -1 : stream.read();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to read from " + stream, e);
-        }
+        this.next1 = nextChar();
+        this.next2 = next1 < 0 ? -1 : nextChar();
     }
 
     @Override
@@ -41,11 +37,7 @@ class BytesSource implements Source {
         currentLexeme.append(chomped);
         next1 = next2;
         if (next1 >= 0) {
-            try {
-                next2 = stream.read();
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to read from " + stream, e);
-            }
+            next2 = nextChar();
         }
         return chomped;
     }
@@ -83,6 +75,14 @@ class BytesSource implements Source {
     @Override
     public boolean done() {
         return next1 < 0;
+    }
+
+    private int nextChar() {
+        try {
+            return this.stream.read();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read from " + stream, e);
+        }
     }
 
     private static char toChar(int returned) {

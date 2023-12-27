@@ -133,7 +133,7 @@ public class JsonEventCallbacksTest {
         AtomicReference<User> reference = new AtomicReference<>();
         Consumer<User> set = reference::set;
         Events.parse(
-            new UserCallbacks(set),
+            UserCallbacks.create(set),
             """
                 {
                   "name": "Kjetil",

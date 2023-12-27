@@ -6,10 +6,8 @@ import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,25 +16,17 @@ final class Builders extends Gen {
     static void writeBuilder(
         PackageElement pe,
         TypeElement te,
-        JavaFileObject builder,
+        JavaFileObject file,
         Set<? extends Element> roots,
         Set<? extends Element> enums
     ) {
-        List<String> header = List.of(
-            "package " + pe.getQualifiedName() + ";",
-            "",
-            "import java.util.ArrayList;",
-            "import java.util.List;",
-            "import java.util.function.Supplier;"
-        );
-
         List<String> setters = te.getRecordComponents()
             .stream().flatMap(el ->
                 Stream.of(
                     "    private " + el.asType() + " " + el.getSimpleName() + ";",
                     "",
-                    "    void " + setter(el) + "(" + el.asType() + " value) {",
-                    "        this." + el.getSimpleName() + " = value;",
+                    "    void " + setter(el) + "(" + el.asType() + " " + el.getSimpleName() + ") {",
+                    "        this." + el.getSimpleName() + " = " + el.getSimpleName() + ";",
                     "    }",
                     ""
                 ))
@@ -47,11 +37,11 @@ final class Builders extends Gen {
             .flatMap(element ->
                 listType(element, roots, enums).flatMap(listType ->
                     Stream.of(
-                        "    void " + adder(element) + "(" + listType + " value) {",
+                        "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
                         "        if (this." + element.getSimpleName() + " == null) {",
-                        "            this." + element.getSimpleName() + " = new ArrayList();",
+                        "            this." + element.getSimpleName() + " = new " + ArrayList.class.getName() + "();",
                         "        }",
-                        "        this." + element.getSimpleName() + ".add(value);",
+                        "        this." + element.getSimpleName() + ".add(" + singularVariableName(element) + ");",
                         "    }",
                         ""
                     ))
@@ -77,14 +67,21 @@ final class Builders extends Gen {
             "    }"
         );
 
-        try (BufferedWriter bw = writer(builder)) {
-            write(bw, header);
-//                write(bw, imports);
+        try (BufferedWriter bw = writer(file)) {
+            write(bw, "package " + pe.getQualifiedName() + ";");
             write(bw, "");
             write(
                 bw,
-                "public class " + builderClass(te) +
-                " implements Supplier<" + te.getSimpleName() + ">{"
+                "public final class " + builderClass(te) +
+                " implements " + Supplier.class.getName() + "<" + te.getSimpleName() + ">{",
+                "",
+                "    public static " + builderClass(te) + " create() {",
+                "        return new " + builderClass(te) + "();",
+                "    }",
+                "",
+                "    private " + builderClass(te) + "() {",
+                "    }",
+                ""
             );
             write(bw, "");
             write(bw, setters);
@@ -96,6 +93,9 @@ final class Builders extends Gen {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Builders() {
     }
 
     private static Stream<String> listType(
@@ -121,8 +121,5 @@ final class Builders extends Gen {
                 .map(el -> el.asType().toString());
         }
         return Stream.empty();
-    }
-
-    private Builders() {
     }
 }

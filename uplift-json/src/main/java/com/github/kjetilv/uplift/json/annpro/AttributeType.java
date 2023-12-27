@@ -42,13 +42,13 @@ record AttributeType(
         GENERATED() {
             @Override
             String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> new " + callbacksClass(generated) + "(this, builder()::" + setter(element) + ")";
+                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + setter(element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> new " + callbacksClass(generated) + "(this, builder()::" + adder(element) + ")";
+                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + adder(element) + ")";
             }
         },
         ENUM() {

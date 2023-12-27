@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -22,6 +23,11 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     public static Stream<Token> tokens(InputStream source) {
         return tokenStream(new BytesSource(source));
+    }
+
+    public static Stream<Token> tokens(Reader source) {
+        throw new UnsupportedOperationException();
+//        return tokenStream(new BytesSource(source));
     }
 
     private final Source source;
