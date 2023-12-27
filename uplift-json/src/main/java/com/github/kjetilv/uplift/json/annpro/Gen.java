@@ -3,10 +3,7 @@ package com.github.kjetilv.uplift.json.annpro;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.math.BigDecimal;
@@ -50,7 +47,7 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
             try {
                 write(bw, str);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Failed to write line `" + str + "`", e);
             }
         });
     }
@@ -59,7 +56,7 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         try {
             bw.write(str + "\n");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to write line `" + str + "`", e);
         }
     }
 
@@ -67,7 +64,7 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         try {
             return new BufferedWriter(builder.openWriter());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to write to " + builder, e);
         }
     }
 
@@ -82,7 +79,8 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
     static String factoryClass(TypeElement te) {
         JsonRecord rec = te.getAnnotation(JsonRecord.class);
         String name = te.getSimpleName().toString();
-        return rec == null || rec.factoryClass().isBlank() ? defaultFactory(name)
+        return rec == null || rec.factoryClass().isBlank()
+            ? name + DEFAULT_SUFFIX
             : rec.factoryClass();
     }
 
@@ -168,10 +166,6 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         return annotation != null ? annotation.value()
             : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
                 : plural;
-    }
-
-    private static String defaultFactory(String name) {
-        return name + DEFAULT_SUFFIX;
     }
 
     private static String listType(Object type) {

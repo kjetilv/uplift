@@ -91,7 +91,7 @@ final class Builders extends Gen {
             write(bw, creatorEnd);
             write(bw, "}");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to write builder for " + te, e);
         }
     }
 

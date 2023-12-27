@@ -6,7 +6,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -19,46 +18,44 @@ final class Callbacks extends Gen {
         Set<? extends Element> roots,
         Set<? extends Element> enums
     ) {
-        List<String> header = List.of(
-            "package " + pe.getQualifiedName() + ";",
-            ""
-        );
-
         Name name = te.getSimpleName();
         try (BufferedWriter bw = writer(file)) {
-            write(bw, header);
             write(
                 bw,
-                "public final class " + callbacksClass(te) + " extends " + AbstractCallbacks.class.getName() + "<" + builderClass(
-                    te) + ", " + name + "> {"
-            );
-            write(bw, "");
-            write(
-                bw,
-                "    public static " + callbacksClass(te) + " create(" + AbstractCallbacks.class.getName() + "<?, ?> parent, " + Consumer.class.getName() + "<" + name + "> onDone) {",
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                "public final class " + callbacksClass(te),
+                "    extends " + AbstractCallbacks.class.getName() + "<" + builderClass(te) + ", " + name + "> {",
+                "",
+                "    public static " + callbacksClass(te) + " create(",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        return create(null, onDone);",
+                "    }",
+                "",
+                "    public static " + callbacksClass(te) + " create(",
+                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
                 "        return new " + callbacksClass(te) + "(parent, onDone);",
                 "    }",
                 "",
-                "    public static " + callbacksClass(te) + " create(" + Consumer.class.getName() + "<" + name + "> onDone) {",
-                "        return new " + callbacksClass(te) + "(null, onDone);",
-                "    }",
-                "",
-                "    private " + callbacksClass(te) + "(" + AbstractCallbacks.class.getName() + "<?, ?> parent, " + Consumer.class.getName() + "<" + name + "> onDone) {"
+                "    private " + callbacksClass(te) + "(",
+                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent, ",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        super(" + builderClass(te) + ".create(), parent, onDone);"
             );
-            write(bw, "        super(" + builderClass(te) + ".create(), parent, onDone);");
             write(bw, te.getRecordComponents()
                 .stream()
-                .map(element -> {
-                        AttributeType attributeType = attributeType(element, roots, enums);
-                        String handler = attributeType.handler(te);
-                        return "        " + handler + ";";
-                    }
+                .map(element ->
+                    "        " + attributeType(element, roots, enums).handler(te) + ";"
                 )
                 .toList());
             write(bw, "    }");
             write(bw, "}");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
         }
     }
 

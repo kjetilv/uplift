@@ -33,7 +33,7 @@ final class Factories extends Gen {
                 "}"
             );
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to write factory for " + te, e);
         }
 
     }
