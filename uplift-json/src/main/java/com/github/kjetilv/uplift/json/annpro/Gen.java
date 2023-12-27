@@ -6,6 +6,8 @@ import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -13,9 +15,21 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class Gen {
+abstract sealed class Gen permits Builders, Callbacks {
 
-    protected static Stream<? extends Element> enums(Set<? extends Element> rootElements) {
+    static String listType(TypeElement te) {
+        return listType(te.getQualifiedName());
+    }
+
+    static String listType(Class<?> el) {
+        return listType(el.getName());
+    }
+
+    static String listType(Element type) {
+        return listType(type.asType());
+    }
+
+    static Stream<? extends Element> enums(Set<? extends Element> rootElements) {
         return Stream.of(
                 rootElements.stream()
                     .filter(element -> element.getKind() == ElementKind.ENUM),
@@ -27,18 +41,7 @@ public class Gen {
             .flatMap(Function.identity());
     }
 
-    protected static final Set<Class<?>> BASE_TYPES = Set.of(
-        String.class,
-        Boolean.class,
-        Integer.class,
-        Long.class,
-        Double.class,
-        Float.class,
-        Short.class,
-        Byte.class
-    );
-
-    protected static void write(BufferedWriter bw, List<String> strs) {
+    static void write(BufferedWriter bw, List<String> strs) {
         strs.forEach(str -> {
             try {
                 write(bw, str);
@@ -48,7 +51,7 @@ public class Gen {
         });
     }
 
-    protected static void write(BufferedWriter bw, String str) {
+    static void write(BufferedWriter bw, String str) {
         try {
             bw.write(str + "\n");
         } catch (Exception e) {
@@ -56,7 +59,7 @@ public class Gen {
         }
     }
 
-    protected static BufferedWriter writer(JavaFileObject builder) {
+    static BufferedWriter writer(JavaFileObject builder) {
         try {
             return new BufferedWriter(builder.openWriter());
         } catch (Exception e) {
@@ -64,27 +67,23 @@ public class Gen {
         }
     }
 
-    protected static String builderClass(TypeElement te) {
+    static String builderClass(TypeElement te) {
         return te.getSimpleName() + "Builder";
     }
 
-    protected static String callbacksClass(TypeElement te) {
+    static String callbacksClass(TypeElement te) {
         return te.getSimpleName() + "Callbacks";
     }
 
-    protected static String setter(RecordComponentElement el) {
+    static String setter(RecordComponentElement el) {
         return "set" + upcased(el.getSimpleName().toString());
     }
 
-    protected static String adder(RecordComponentElement el) {
+    static String adder(RecordComponentElement el) {
         return "add" + upcased(el.getSimpleName().toString());
     }
 
-    protected static String handler(RecordComponentElement el) {
-        return "on" + upcased(el.getSimpleName().toString());
-    }
-
-    protected static Optional<RecordComponentElement> enumType(
+    static Optional<RecordComponentElement> enumType(
         RecordComponentElement element,
         Set<? extends Element> enums
     ) {
@@ -94,24 +93,24 @@ public class Gen {
             : Optional.empty();
     }
 
-    protected static Optional<? extends Element> enumListType(
+    static Optional<? extends Element> enumListType(
         RecordComponentElement element,
         Set<? extends Element> enums
     ) {
         return enums.stream()
             .filter(type ->
-                ("java.util.List<" + type.asType() + ">").equals(element.asType().toString()))
+                listType(type).equals(element.asType().toString()))
             .findFirst();
     }
 
-    protected static Optional<Class<?>> primitiveEvent(String list) {
+    static Optional<Class<?>> primitiveEvent(String list) {
         return BASE_TYPES.stream()
             .filter(type ->
                 type.getName().equals(list))
             .findFirst();
     }
 
-    protected static Optional<TypeElement> generatedEvent(String generated, Set<? extends Element> rootElements) {
+    static Optional<TypeElement> generatedEvent(String generated, Set<? extends Element> rootElements) {
         return rootElements.stream()
             .filter(el ->
                 el instanceof TypeElement te && te.getQualifiedName().toString().equals(generated))
@@ -119,19 +118,39 @@ public class Gen {
             .map(TypeElement.class::cast);
     }
 
-    protected static Optional<TypeElement> generatedListType(String generatedList, Set<? extends Element> rootElements) {
+    static Optional<TypeElement> generatedListType(
+        String generatedList,
+        Set<? extends Element> rootElements
+    ) {
         return rootElements.stream()
             .filter(el ->
-                el instanceof TypeElement te && generatedList.equals("java.util.List<" + te.getQualifiedName() + ">"))
+                el instanceof TypeElement te && generatedList.equals(listType(te)))
             .findFirst()
             .map(TypeElement.class::cast);
     }
 
-    protected static Optional<Class<?>> primitiveListType(String list) {
+    static Optional<Class<?>> primitiveListType(String list) {
         return BASE_TYPES.stream()
             .filter(el ->
-                list.equals("java.util.List<" + el.getName() + ">"))
+                list.equals(listType(el)))
             .findFirst();
+    }
+
+    private static final Set<Class<?>> BASE_TYPES = Set.of(
+        String.class,
+        Boolean.class,
+        Integer.class,
+        Long.class,
+        Double.class,
+        Float.class,
+        Short.class,
+        Byte.class,
+        BigDecimal.class,
+        BigInteger.class
+    );
+
+    private static String listType(Object type) {
+        return "java.util.List<" + type + ">";
     }
 
     private static String upcased(String string) {

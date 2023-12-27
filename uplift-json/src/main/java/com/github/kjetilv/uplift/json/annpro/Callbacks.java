@@ -7,9 +7,9 @@ import java.io.BufferedWriter;
 import java.util.List;
 import java.util.Set;
 
-public final class Callbacks extends Gen {
+final class Callbacks extends Gen {
 
-    public static void writeCallbacks(
+    static void writeCallbacks(
         PackageElement pe,
         TypeElement te,
         JavaFileObject callbacks,
@@ -25,45 +25,37 @@ public final class Callbacks extends Gen {
             ""
         );
 
-        List<String> setups = te.getRecordComponents()
-            .stream()
-            .map(element -> {
-                    AttributeType attributeType = attributeType(element, roots, enums);
-                    String handler = attributeType.handler(te);
-                    return "        " + handler + ";";
-                }
-            )
-            .toList();
-
         Name name = te.getSimpleName();
         try (BufferedWriter bw = writer(callbacks)) {
             write(bw, header);
-            String callbacksClass = callbacksClass(te);
-            String builderClass = builderClass(te);
             write(
                 bw,
-                "public final class " + callbacksClass + " extends AbstractCallbacks<" + builderClass + ", " + name + "> {"
+                "public final class " + callbacksClass(te) + " extends AbstractCallbacks<" + builderClass(te) + ", " + name + "> {"
             );
             write(bw, "");
-            write(bw, "    public " + callbacksClass + "(Consumer<" + name + "> onDone) {");
+            write(bw, "    public " + callbacksClass(te) + "(Consumer<" + name + "> onDone) {");
             write(bw, "        this(null, onDone);");
             write(bw, "    }");
             write(bw, "");
             write(
                 bw,
-                "    public " + callbacksClass + "(AbstractCallbacks<?, ?> parent, Consumer<" + name + "> onDone) {"
+                "    public " + callbacksClass(te) + "(AbstractCallbacks<?, ?> parent, Consumer<" + name + "> onDone) {"
             );
-            write(bw, "        super(new " + builderClass + "(), parent, onDone);");
-            write(bw, setups);
+            write(bw, "        super(new " + builderClass(te) + "(), parent, onDone);");
+            write(bw, te.getRecordComponents()
+                .stream()
+                .map(element -> {
+                        AttributeType attributeType = attributeType(element, roots, enums);
+                        String handler = attributeType.handler(te);
+                        return "        " + handler + ";";
+                    }
+                )
+                .toList());
             write(bw, "    }");
             write(bw, "}");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Callbacks() {
-
     }
 
     private static AttributeType attributeType(
@@ -144,5 +136,9 @@ public final class Callbacks extends Gen {
                 ))
             .orElseThrow(() ->
                 new IllegalStateException("Unsupported: " + string));
+    }
+
+    private Callbacks() {
+
     }
 }

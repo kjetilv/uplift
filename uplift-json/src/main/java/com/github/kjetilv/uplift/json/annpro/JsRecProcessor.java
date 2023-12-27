@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import com.github.kjetilv.uplift.json.anno.JsRec;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.github.kjetilv.uplift.json.annpro.Gen.*;
+import static com.github.kjetilv.uplift.json.annpro.Gen.enums;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
@@ -24,22 +24,19 @@ public class JsRecProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
-        return typedElements.stream()
-            .filter(typeElement ->
-                typeElement.getQualifiedName().toString().equals(JsRec.class.getName()))
-            .findFirst()
-            .map(typeElement -> {
-                    Set<? extends Element> enums = enums(roundEnv.getRootElements())
-                        .collect(Collectors.toSet());
-                    Set<? extends Element> roots = roundEnv.getRootElements()
-                        .stream()
-                        .filter(element -> !enums.contains(element))
-                        .collect(Collectors.toSet());
-                    roots.forEach(element ->
-                        process(element, roots, enums));
-                    return true;
-                }
-            ).orElse(false);
+        return isJsRec(typedElements) && processed(roundEnv);
+    }
+
+    private boolean processed(RoundEnvironment roundEnv) {
+        Set<? extends Element> enums = enums(roundEnv.getRootElements())
+            .collect(Collectors.toSet());
+        Set<? extends Element> roots = roundEnv.getRootElements()
+            .stream()
+            .filter(element -> !enums.contains(element))
+            .collect(Collectors.toSet());
+        roots.forEach(element ->
+            process(element, roots, enums));
+        return true;
     }
 
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
@@ -70,6 +67,17 @@ public class JsRecProcessor extends AbstractProcessor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static final String JS_REC = JsonRecord.class.getName();
+
+    private static boolean isJsRec(Set<? extends TypeElement> typedElements) {
+        return typedElements != null && typedElements.stream()
+            .anyMatch(JsRecProcessor::isJsRec);
+    }
+
+    private static boolean isJsRec(TypeElement typeElement) {
+        return typeElement.getQualifiedName().toString().equals(JS_REC);
     }
 
     private static boolean kind(Element e, ElementKind... kinds) {

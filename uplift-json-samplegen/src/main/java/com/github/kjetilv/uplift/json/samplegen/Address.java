@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.anno.JsRec;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import java.util.List;
 
-@JsRec
+@JsonRecord
 public record Address(
     String streetName,
     Integer houseNumber,

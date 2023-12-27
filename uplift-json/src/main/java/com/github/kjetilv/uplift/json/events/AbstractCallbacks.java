@@ -26,17 +26,13 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
 
     private final Map<String, BiConsumer<B, String>> strings = new LinkedHashMap<>();
 
-    private final Map<String, BiConsumer<B, Boolean>> truths = new LinkedHashMap<>();
+    private final Map<String, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
 
     private final Map<String, Supplier<AbstractCallbacks<?, ?>>> objectFields = new LinkedHashMap<>();
 
     private String currentField;
 
-    protected AbstractCallbacks(
-        B builder,
-        AbstractCallbacks<?, ?> parent,
-        Consumer<T> onDone
-    ) {
+    protected AbstractCallbacks(B builder, AbstractCallbacks<?, ?> parent, Consumer<T> onDone) {
         this.builder = builder;
         this.parent = parent;
         this.onDone = Objects.requireNonNull(onDone, "onDone");
@@ -86,7 +82,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
 
     @Override
     public final AbstractCallbacks<?, ?> truth(boolean truth) {
-        BiConsumer<B, Boolean> consumer = truths.get(currentField);
+        BiConsumer<B, Boolean> consumer = booleans.get(currentField);
         if (consumer != null) {
             consumer.accept(builder, truth);
         }
@@ -132,7 +128,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
         String name,
         BiConsumer<B, Boolean> setter
     ) {
-        truths.put(name, setter);
+        booleans.put(name, setter);
     }
 
     protected final void onFloat(
@@ -177,8 +173,10 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
         String name,
         BiConsumer<B, BigDecimal> setter
     ) {
-        strings.put(name, (B builder, String l) ->
-            setter.accept(builder, new BigDecimal(l)));
+        strings.put(name, (builder, string) ->
+            setter.accept(builder, new BigDecimal(string)));
+        numbers.put(name, (builder, number) ->
+            setter.accept(builder, BigDecimal.valueOf(number.doubleValue())));
     }
 
     protected final void onShort(

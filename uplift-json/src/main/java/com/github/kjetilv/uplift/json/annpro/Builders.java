@@ -98,9 +98,6 @@ final class Builders extends Gen {
         }
     }
 
-    private Builders() {
-    }
-
     private static Stream<String> listType(
         RecordComponentElement element,
         Set<? extends Element> rootElements,
@@ -117,12 +114,15 @@ final class Builders extends Gen {
                 .map(el -> el.asType().toString());
         }
         Optional<? extends Element> generatedListType = rootElements.stream()
-            .filter(rootElement -> element.asType().toString().equals("java.util.List<" + rootElement.asType() + ">"))
+            .filter(rootElement -> element.asType().toString().equals(listType(rootElement)))
             .findFirst();
         if (generatedListType.isPresent()) {
             return generatedListType.stream()
                 .map(el -> el.asType().toString());
         }
         return Stream.empty();
+    }
+
+    private Builders() {
     }
 }

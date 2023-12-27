@@ -1,10 +1,11 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.anno.JsRec;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-@JsRec
+@JsonRecord
 public record User(
     String name,
     Integer birthYear,
@@ -12,7 +13,8 @@ public record User(
     boolean roadWarrior,
     byte maxAge,
     List<String> aliases,
-    List<Integer> misc) {
+    List<Integer> misc,
+    BigDecimal balance) {
 
 }
 

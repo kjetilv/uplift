@@ -3,48 +3,50 @@ package com.github.kjetilv.uplift.json.samplegen;
 import com.github.kjetilv.uplift.json.Events;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JsRecTest {
+public class JsonRecordTest {
 
     @Test
     void parseUser() {
         AtomicReference<User> reference = new AtomicReference<>();
         Consumer<User> set = reference::set;
+        String json = """
+            {
+              "name": "Kjetil",
+              "address": {
+                "streetName": "None Street",
+                "houseNumber": 1729,
+                "modifier": "B",
+                "adjacents": [ "C" ],
+                "code": 1450,
+                "residents": [
+                  {
+                    "name": "foo",
+                    "permanent": true
+                  },
+                  {
+                    "name": "bar",
+                    "permanent": false
+                  }
+                ]
+              },
+              "roadWarrior": true,
+              "birthYear": 1973,
+              "aliases": ["MrX", "Foo"],
+              "misc": [50, 60, 70],
+              "maxAge": 127,
+              "balance": "123.23"
+            }
+            """;
         Events.parse(
             new UserCallbacks(set),
-            """
-                {
-                  "name": "Kjetil",
-                  "address": {
-                    "streetName": "None Street",
-                    "houseNumber": 1729,
-                    "modifier": "B",
-                    "adjacents": [ "C" ],
-                    "code": 1450,
-                    "residents": [
-                      {
-                        "name": "foo",
-                        "permanent": true
-                      },
-                      {
-                        "name": "bar",
-                        "permanent": false
-                      }
-                    ]
-                  },
-                  "roadWarrior": true,
-                  "birthYear": 1973,
-                  "aliases": ["MrX", "Foo"],
-                  "misc": [50, 60, 70],
-                  "maxAge": 127
-                }
-                """
+                json
         );
         assertThat(reference.get()).isEqualTo(
             new User(
@@ -72,7 +74,8 @@ public class JsRecTest {
                     50,
                     60,
                     70
-                )
+                ),
+                new BigDecimal("123.23")
             ));
         AtomicReference<Address> reference1 = new AtomicReference<>();
         Events.parse(
@@ -97,9 +100,5 @@ public class JsRecTest {
                 null
             )
         );
-    }
-
-    private static List<String> lines(String text) {
-        return Arrays.stream(text.split("\\s+")).toList();
     }
 }

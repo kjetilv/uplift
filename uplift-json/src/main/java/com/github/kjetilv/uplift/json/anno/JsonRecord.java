@@ -7,5 +7,13 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface JsRec {
+public @interface JsonRecord {
+
+    String factoryClass() default "";
+
+    String factoryMethod() default "";
+
+    String createPrefix() default "create";
+
+    String factorySuffix() default "Factory";
 }
