@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Events;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,8 +33,19 @@ public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbac
         return reference.get();
     }
 
+    public T read(Reader reader) {
+        AtomicReference<T> reference = new AtomicReference<>();
+        Consumer<T> set = reference::set;
+        read(reader, set);
+        return reference.get();
+    }
+
     public void read(String string, Consumer<T> set) {
         Events.parse(newCallbacks.apply(set), string);
+    }
+
+    public void read(Reader reader, Consumer<T> set) {
+        Events.parse(newCallbacks.apply(set), reader);
     }
 
     public void read(InputStream string, Consumer<T> set) {

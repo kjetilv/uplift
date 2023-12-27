@@ -1,12 +1,9 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.Events;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,8 +11,6 @@ public class JsonRecordTest {
 
     @Test
     void parseUser() {
-        AtomicReference<User> reference = new AtomicReference<>();
-        Consumer<User> set = reference::set;
         String json = """
             {
               "name": "Kjetil",
@@ -44,11 +39,7 @@ public class JsonRecordTest {
               "balance": "123.23"
             }
             """;
-        Events.parse(
-            UserCallbacks.create(set),
-                json
-        );
-        assertThat(reference.get()).isEqualTo(
+        assertThat(com.github.kjetilv.uplift.json.samplegen.UserFactory.INSTANCE.read(json)).isEqualTo(
             new User(
                 "Kjetil",
                 1973,
@@ -77,20 +68,16 @@ public class JsonRecordTest {
                 ),
                 new BigDecimal("123.23")
             ));
-        AtomicReference<Address> reference1 = new AtomicReference<>();
-        Events.parse(
-            AddressCallbacks.create(null, reference1::set),
-            """
-                {
-                    "streetName": "None Street",
-                    "houseNumber": 1729,
-                    "modifier": "B",
-                    "adjacents": [ "C" ],
-                    "code": 1450
-                }
-                """
-        );
-        assertThat(reference1.get()).isEqualTo(
+        String addressJson = """
+            {
+                "streetName": "None Street",
+                "houseNumber": 1729,
+                "modifier": "B",
+                "adjacents": [ "C" ],
+                "code": 1450
+            }
+            """;
+        assertThat(com.github.kjetilv.uplift.json.samplegen.AddressFactory.INSTANCE.read(addressJson)).isEqualTo(
             new Address(
                 "None Street",
                 1729,

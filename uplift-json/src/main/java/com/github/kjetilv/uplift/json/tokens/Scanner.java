@@ -18,7 +18,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     static final String CANONICAL_FALSE = "false";
 
     public static Stream<Token> tokens(String source) {
-        return tokenStream(new StringSource(source));
+        return tokenStream(new CharSequenceSource(source));
     }
 
     public static Stream<Token> tokens(InputStream source) {
@@ -26,8 +26,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     }
 
     public static Stream<Token> tokens(Reader source) {
-        throw new UnsupportedOperationException();
-//        return tokenStream(new BytesSource(source));
+        return tokenStream(new CharsSource(source));
     }
 
     private final Source source;
