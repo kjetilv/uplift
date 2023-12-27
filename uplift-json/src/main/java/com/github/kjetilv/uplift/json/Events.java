@@ -7,11 +7,11 @@ import com.github.kjetilv.uplift.json.events.EventHandler;
 
 public final class Events {
 
-    public static <C extends Callbacks<C>> C parse(C callbacks, InputStream source) {
+    public static <C extends Callbacks<C>> C parse(C callbacks, String source) {
         return EventHandler.parse(callbacks, source);
     }
 
-    public static <C extends Callbacks<C>> C parse(C callbacks, String source) {
+    public static <C extends Callbacks<C>> C parse(C callbacks, InputStream source) {
         return EventHandler.parse(callbacks, source);
     }
 

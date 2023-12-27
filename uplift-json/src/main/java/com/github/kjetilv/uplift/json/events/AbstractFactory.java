@@ -13,31 +13,20 @@ public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbac
 
     private final Function<Consumer<T>, C> newCallbacks;
 
-    protected AbstractFactory(
-        Function<Consumer<T>, C> newCallbacks
-    ) {
+    protected AbstractFactory(Function<Consumer<T>, C> newCallbacks) {
         this.newCallbacks = newCallbacks;
     }
 
     public T read(String string) {
-        AtomicReference<T> reference = new AtomicReference<>();
-        Consumer<T> set = reference::set;
-        read(string, set);
-        return reference.get();
+        return extract(consumer -> read(string, consumer));
     }
 
     public T read(InputStream inputStream) {
-        AtomicReference<T> reference = new AtomicReference<>();
-        Consumer<T> set = reference::set;
-        read(inputStream, set);
-        return reference.get();
+        return extract(setter -> read(inputStream,setter));
     }
 
     public T read(Reader reader) {
-        AtomicReference<T> reference = new AtomicReference<>();
-        Consumer<T> set = reference::set;
-        read(reader, set);
-        return reference.get();
+        return extract(setter -> read(reader, setter));
     }
 
     public void read(String string, Consumer<T> set) {
@@ -50,5 +39,12 @@ public class AbstractFactory<B extends Supplier<T>, T, C extends AbstractCallbac
 
     public void read(InputStream string, Consumer<T> set) {
         Events.parse(newCallbacks.apply(set), string);
+    }
+
+    private static <T> T extract(Consumer<Consumer<T>> consumer) {
+        AtomicReference<T> reference = new AtomicReference<>();
+        Consumer<T> set = reference::set;
+        consumer.accept(set);
+        return reference.get();
     }
 }
