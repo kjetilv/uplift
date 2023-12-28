@@ -14,6 +14,7 @@ pluginManagement {
 }
 
 include("uplift-flogs")
+include("uplift-uuid")
 include("uplift-kernel")
 include("uplift-asynchttp")
 include("uplift-json")

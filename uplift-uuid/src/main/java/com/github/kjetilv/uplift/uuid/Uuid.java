@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.kernel.uuid;
+package com.github.kjetilv.uplift.uuid;
 
 import java.io.DataInput;
 import java.io.IOException;

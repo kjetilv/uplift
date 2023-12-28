@@ -4,8 +4,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalLong;
 
-import com.github.kjetilv.uplift.kernel.uuid.Uuid;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
+@SuppressWarnings("unused")
 public final class ParseBits {
 
     public static long parseLong(CharSequence s) {

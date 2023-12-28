@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.kernel.http.QueryParams;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
 import com.github.kjetilv.uplift.kernel.util.ToStrings;
-import com.github.kjetilv.uplift.kernel.uuid.Uuid;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -119,7 +119,7 @@ public record HttpReq(
         }
         int urlEnd = reqLine.indexOf(' ', urlStart);
         int queryStart = queryIndex + 1;
-        String query = null;
+        String query;
         try {
             query = urlEnd > 0
                 ? reqLine.substring(queryStart, urlEnd)

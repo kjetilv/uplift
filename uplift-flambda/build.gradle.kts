@@ -7,8 +7,9 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":uplift-flogs"))
+    implementation(project(":uplift-uuid"))
 
+    implementation(project(":uplift-flogs"))
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-lambda"))
     implementation(project(":uplift-json"))

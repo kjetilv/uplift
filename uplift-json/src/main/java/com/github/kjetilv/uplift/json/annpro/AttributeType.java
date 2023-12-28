@@ -19,7 +19,7 @@ record AttributeType(
 
     String handler(TypeElement builderType) {
         return "on" + event + "(\"" +
-               element.getSimpleName() + "\", " +
+               fieldName(element) + "\", " +
                variant.midTerm(element, internalType)
                    .map(term -> term + ", ").orElse("") +
                variant.handler(builderType, element, internalType) +

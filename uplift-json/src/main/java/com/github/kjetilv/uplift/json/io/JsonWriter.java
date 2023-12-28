@@ -1,9 +1,13 @@
 package com.github.kjetilv.uplift.json.io;
 
+import com.github.kjetilv.uplift.uuid.Uuid;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -25,6 +29,10 @@ public final class JsonWriter {
             );
             case URI uri -> writeString(sink, uri.toASCIIString());
             case URL url -> writeString(sink, url.toExternalForm());
+            case Uuid uuid -> writeString(sink, uuid.digest());
+            case UUID uuid -> writeString(sink, uuid.toString());
+            case Instant instant -> writeInteger(sink, BigInteger.valueOf(instant.toEpochMilli()));
+            case Duration duration -> writeString(sink, duration.toString());
             case Map<?, ?> map -> writeObject(sink, map);
             case List<?> list -> writeList(sink, list);
             case Set<?> set -> writeSet(sink, set);

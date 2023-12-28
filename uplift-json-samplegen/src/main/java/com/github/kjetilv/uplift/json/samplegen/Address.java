@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 import java.util.List;
 
-@JsonRecord
+@JsonRecord(root = false)
 public record Address(
     String streetName,
     Integer houseNumber,

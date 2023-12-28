@@ -25,7 +25,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
         if (isJsonRecord(typedElements)) {
             Set<? extends Element> enums = enums(roundEnv);
-            Set<? extends Element> types = roots(roundEnv, enums);
+            Set<? extends Element> types = types(roundEnv, enums);
             if (types.isEmpty()) {
                 if (enums.isEmpty()) {
                     return false;
@@ -96,9 +96,10 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .collect(Collectors.toSet());
     }
 
-    private static Set<? extends Element> roots(RoundEnvironment roundEnv, Set<? extends Element> enums) {
+    private static Set<? extends Element> types(RoundEnvironment roundEnv, Set<? extends Element> enums) {
         return roundEnv.getRootElements()
             .stream()
+            .filter(element -> element.getAnnotation(JsonRecord.class) != null)
             .filter(element -> !enums.contains(element))
             .collect(Collectors.toSet());
     }

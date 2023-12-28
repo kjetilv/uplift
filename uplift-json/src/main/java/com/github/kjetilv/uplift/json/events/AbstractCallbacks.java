@@ -1,9 +1,12 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -160,10 +163,10 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
 
     protected final void onBigInteger(
         String name,
-        BiConsumer<B, Long> setter
+        BiConsumer<B, BigInteger> setter
     ) {
-        numbers.put(name, (B builder, BigInteger bi) ->
-            setter.accept(builder, bi.longValue()));
+        numbers.put(name, (B builder, Long value) ->
+            setter.accept(builder, BigInteger.valueOf(value)));
     }
 
     protected final void onUUID(
@@ -172,6 +175,30 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     ) {
         strings.put(name, (builder, str) ->
             setter.accept(builder, UUID.fromString(str)));
+    }
+
+    protected final void onDuration(
+        String name,
+        BiConsumer<B, Duration> setter
+    ) {
+        strings.put(name, (builder, str) ->
+            setter.accept(builder, Duration.parse(str)));
+    }
+
+    protected final void onUuid(
+        String name,
+        BiConsumer<B, Uuid> setter
+    ) {
+        strings.put(name, (builder, str) ->
+            setter.accept(builder, Uuid.from(str)));
+    }
+
+    protected final void onInstant(
+        String name,
+        BiConsumer<B, Instant> setter
+    ) {
+        numbers.put(name, (builder, num) ->
+            setter.accept(builder, Instant.ofEpochMilli(num.longValue())));
     }
 
     protected final void onBigDecimal(

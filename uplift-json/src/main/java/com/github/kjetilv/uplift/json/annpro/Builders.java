@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.*;
@@ -23,10 +20,10 @@ final class Builders extends Gen {
         List<String> setters = te.getRecordComponents()
             .stream().flatMap(el ->
                 Stream.of(
-                    "    private " + el.asType() + " " + el.getSimpleName() + ";",
+                    "    private " + el.asType() + " " + fieldName(el) + ";",
                     "",
-                    "    void " + setter(el) + "(" + el.asType() + " " + el.getSimpleName() + ") {",
-                    "        this." + el.getSimpleName() + " = " + el.getSimpleName() + ";",
+                    "    void " + setter(el) + "(" + el.asType() + " " + fieldName(el) + ") {",
+                    "        this." + fieldName(el) + " = " + fieldName(el) + ";",
                     "    }",
                     ""
                 ))
@@ -38,10 +35,10 @@ final class Builders extends Gen {
                 listType(element, roots, enums).flatMap(listType ->
                     Stream.of(
                         "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
-                        "        if (this." + element.getSimpleName() + " == null) {",
-                        "            this." + element.getSimpleName() + " = new " + ArrayList.class.getName() + "();",
+                        "        if (this." + fieldName(element) + " == null) {",
+                        "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
                         "        }",
-                        "        this." + element.getSimpleName() + ".add(" + singularVariableName(element) + ");",
+                        "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
                         "    }",
                         ""
                     ))
@@ -57,7 +54,7 @@ final class Builders extends Gen {
         List<String> creatorMeat = te.getRecordComponents()
             .stream()
             .map(el ->
-                "            " + el.getSimpleName() + ",")
+                "            " + fieldName(el) + ",")
             .collect(Collectors.toCollection(LinkedList::new));
         String last = creatorMeat.removeLast();
         creatorMeat.addLast(last.substring(0, last.length() - 1));

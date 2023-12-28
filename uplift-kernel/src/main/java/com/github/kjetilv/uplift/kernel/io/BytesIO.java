@@ -15,11 +15,12 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
-import com.github.kjetilv.uplift.kernel.uuid.Uuid;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public final class BytesIO {
 
     public static final byte[] NOBODY = { };

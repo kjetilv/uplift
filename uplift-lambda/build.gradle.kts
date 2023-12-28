@@ -2,6 +2,7 @@ dependencies {
     implementation(project(":uplift-flogs"))
     implementation(project(":uplift-json"))
     implementation(project(":uplift-s3"))
+    implementation(project(":uplift-uuid"))
     implementation(project(":uplift-kernel"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")

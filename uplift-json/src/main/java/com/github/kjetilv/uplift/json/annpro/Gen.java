@@ -1,13 +1,17 @@
 package com.github.kjetilv.uplift.json.annpro;
 
+import com.github.kjetilv.uplift.json.anno.Field;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -158,15 +162,24 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         Byte.class,
         BigDecimal.class,
         BigInteger.class,
-        UUID.class
+        UUID.class,
+        Uuid.class,
+        Instant.class,
+        Duration.class
     );
 
     protected static String singularVariableName(RecordComponentElement el) {
         Singular annotation = el.getAnnotation(Singular.class);
-        String plural = el.getSimpleName().toString();
+        String plural = fieldName(el);
         return annotation != null ? annotation.value()
             : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
                 : plural;
+    }
+
+    protected static String fieldName(RecordComponentElement el) {
+        Field field = el.getAnnotation(Field.class);
+        return field == null ? el.getSimpleName().toString()
+            : field.value();
     }
 
     private static String listType(Object type) {
