@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"SameParameterValue", "unused"})
-public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Events.Callbacks<AbstractCallbacks<?, ?>> {
+public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
 
     private final B builder;
 
@@ -81,12 +81,25 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T> implements Eve
     }
 
     @Override
-    public final AbstractCallbacks<?, ?> truth(boolean truth) {
+    public final AbstractCallbacks<?, ?> bool(boolean truth) {
         BiConsumer<B, Boolean> consumer = booleans.get(currentField);
         if (consumer != null) {
             consumer.accept(builder, truth);
         }
         return this;
+    }
+
+    public final void emit(Callbacks callbacks) {
+        callbacks.objectStarted();
+        try {
+            emitProperties(callbacks);
+        } finally {
+            callbacks.objectEnded();
+        }
+    }
+
+    protected void emitProperties(Callbacks callbacks) {
+
     }
 
     protected B builder() {

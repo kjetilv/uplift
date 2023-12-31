@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import com.github.kjetilv.uplift.json.events.AbstractFactory;
+import com.github.kjetilv.uplift.json.events.AbstractJsonRW;
 
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
@@ -8,27 +8,34 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 
-final class Factories extends Gen {
+final class RWs extends Gen {
 
-    public static void writeFactory(
+    public static void writeRW(
         PackageElement pe,
         TypeElement te,
-        JavaFileObject file
+        JavaFileObject file,
+        boolean read,
+        boolean write
     ) {
-        Name name = te.getSimpleName();
+        Name name = te.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "public final class " + factoryClass(te) + " extends " + AbstractFactory.class.getName() + "<" +
-                name + ", " +
-                callbacksClass(te) + "> {",
+                "public final class " + factoryClass(te) + " extends " + AbstractJsonRW.class.getName() + "<",
+                "    " +  name + ",",
+                "    " + callbacksClass(te),
+                "> {",
                 "",
                 "    public static " + factoryClass(te) + " INSTANCE = new " + factoryClass(te) + "();",
                 "",
                 "    private " + factoryClass(te) + "() {",
-                "        super(" + callbacksClass(te) + "::create);",
+                "        super(",
+                "            " + name + ".class,",
+                "            " + (read ? callbacksClass(te) + "::create" : "null") + ",",
+                "            " + (write ? "new " + writerClass(te) + "()" : "null"),
+                "        );",
                 "    }",
                 "}"
             );
@@ -38,7 +45,7 @@ final class Factories extends Gen {
 
     }
 
-    private Factories() {
+    private RWs() {
 
     }
 }

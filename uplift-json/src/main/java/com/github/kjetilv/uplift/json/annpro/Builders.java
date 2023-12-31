@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.*;
@@ -8,7 +10,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class Builders extends Gen {
+final class
+Builders extends Gen {
 
     static void writeBuilder(
         PackageElement pe,
@@ -32,16 +35,18 @@ final class Builders extends Gen {
         List<String> adders = te.getRecordComponents()
             .stream()
             .flatMap(element ->
-                listType(element, roots, enums).flatMap(listType ->
-                    Stream.of(
-                        "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
-                        "        if (this." + fieldName(element) + " == null) {",
-                        "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
-                        "        }",
-                        "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
-                        "    }",
-                        ""
-                    ))
+                listType(element, roots, enums)
+                    .stream()
+                    .flatMap(listType ->
+                        Stream.of(
+                            "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
+                            "        if (this." + fieldName(element) + " == null) {",
+                            "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
+                            "        }",
+                            "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
+                            "    }",
+                            ""
+                        ))
             )
             .toList();
 
@@ -69,10 +74,10 @@ final class Builders extends Gen {
             write(bw, "");
             write(
                 bw,
-                "public final class " + builderClass(te) +
+                "final class " + builderClass(te) +
                 " implements " + Supplier.class.getName() + "<" + te.getSimpleName() + ">{",
                 "",
-                "    public static " + builderClass(te) + " create() {",
+                "    static " + builderClass(te) + " create() {",
                 "        return new " + builderClass(te) + "();",
                 "    }",
                 "",
@@ -93,30 +98,5 @@ final class Builders extends Gen {
     }
 
     private Builders() {
-    }
-
-    private static Stream<String> listType(
-        RecordComponentElement element,
-        Set<? extends Element> rootElements,
-        Set<? extends Element> enums
-    ) {
-        Optional<Class<?>> primitiveListType = primitiveListType(element.asType().toString());
-        if (primitiveListType.isPresent()) {
-            return primitiveListType.stream()
-                .map(Class::getName);
-        }
-        Optional<? extends Element> enumListType = enumListType(element, enums);
-        if (enumListType.isPresent()) {
-            return enumListType.stream()
-                .map(el -> el.asType().toString());
-        }
-        Optional<? extends Element> generatedListType = rootElements.stream()
-            .filter(rootElement -> element.asType().toString().equals(listType(rootElement)))
-            .findFirst();
-        if (generatedListType.isPresent()) {
-            return generatedListType.stream()
-                .map(el -> el.asType().toString());
-        }
-        return Stream.empty();
     }
 }

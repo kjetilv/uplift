@@ -11,5 +11,9 @@ public @interface JsonRecord {
 
     boolean root() default true;
 
+    boolean readOnly() default false;
+
+    boolean writeOnly() default false;
+
     String factoryClass() default "";
 }

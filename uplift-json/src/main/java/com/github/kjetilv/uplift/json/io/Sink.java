@@ -16,6 +16,10 @@ public interface Sink {
         return accept(bool ? Canonical.TRUE : Canonical.FALSE);
     }
 
+    default Sink accept(Number number) {
+        return accept(number.toString());
+    }
+
     Sink accept(String str);
 
     Mark mark();

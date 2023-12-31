@@ -1,26 +1,26 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class ValueEventHandler<C extends Events.Callbacks<C>>
-    extends AbstractEventHandler<C> {
+final class ValueEventHandler
+    extends AbstractEventHandler {
 
-    ValueEventHandler(C callbacks) {
+    ValueEventHandler(Callbacks callbacks) {
         this(null, callbacks);
     }
 
-    ValueEventHandler(AbstractEventHandler<C> scope, C callbacks) {
+    ValueEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
         super(scope, callbacks);
     }
 
     @Override
-    public EventHandler<C> process(Token token) {
+    public EventHandler process(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEventHandler<>(exit(), objectStarted());
-            case BEGIN_ARRAY -> new ArrayEventHandler<>(exit(), arrayStarted());
+            case BEGIN_OBJECT -> new ObjectEventHandler(exit(), objectStarted());
+            case BEGIN_ARRAY -> new ArrayEventHandler(exit(), arrayStarted());
             case STRING -> with(string(token)).exit();
             case BOOL -> with(truth(token)).exit();
             case NUMBER -> with(number(token)).exit();
@@ -34,7 +34,7 @@ final class ValueEventHandler<C extends Events.Callbacks<C>>
     }
 
     @Override
-    protected AbstractEventHandler<C> with(C callbacks) {
-        return new ValueEventHandler<>(exit(), callbacks);
+    protected AbstractEventHandler with(Callbacks callbacks) {
+        return new ValueEventHandler(exit(), callbacks);
     }
 }

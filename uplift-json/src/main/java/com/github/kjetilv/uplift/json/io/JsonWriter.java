@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -13,6 +14,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public final class JsonWriter {
+
+    public static Callbacks writer(Sink sink) {
+        return new RootCallbacks(sink);
+    }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     public static void write(Sink sink, Object object) {

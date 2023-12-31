@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.samplegen;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public class JsonRecordTest {
             {
               "name": "Kjetil",
               "address": {
-                "streetName": "None Street",
+                "streetName": "\\"None\\" Street",
                 "houseNumber": 1729,
                 "modifier": "B",
                 "adjacents": [ "C" ],
@@ -36,6 +37,7 @@ public class JsonRecordTest {
               },
               "roadWarrior": true,
               "birthYear": 1973,
+              "birthTime": 100,
               "aliases": ["MrX", "Foo"],
               "misc": [50, 60, 70],
               "maxAge": 127,
@@ -46,8 +48,9 @@ public class JsonRecordTest {
             new User(
                 "Kjetil",
                 1973,
+                Instant.ofEpochMilli(100L),
                 new Address(
-                    "None Street",
+                    "\"None\" Street",
                     1729,
                     Address.Modifier.B,
                     List.of(Address.Modifier.C),
@@ -93,5 +96,24 @@ public class JsonRecordTest {
                     null
                 )
             );
+
+        User user = Users.INSTANCE.read(json);
+
+        StringBuilder sb = new StringBuilder();
+//        Callbacks callbacks = JsonWriter.writer(user, new StringSink(sb));
+//        callbacks.objectStarted()
+//            .field("name").string(user.name())
+//            .field("birthYear").number(user.birthYear())
+//            .field("address")
+//            .objectStarted().field("streetName").string(user.address().streetName()).objectEnded()
+//            .field("aliases").arrayStarted()
+
+        Users.INSTANCE.write(user, sb);
+
+        System.out.println(sb);
+
+        User read2 = Users.INSTANCE.read(sb.toString());
+
+        assertThat(user).isEqualTo(read2);
     }
 }

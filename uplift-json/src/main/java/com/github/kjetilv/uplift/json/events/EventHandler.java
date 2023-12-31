@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
@@ -10,28 +10,28 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 @FunctionalInterface
-public interface EventHandler<C extends Events.Callbacks<C>> {
+public interface EventHandler {
 
-    static <C extends Events.Callbacks<C>> C parse(C callbacks, InputStream source) {
+    static Callbacks parse(Callbacks callbacks, InputStream source) {
         return parse(Scanner.tokens(source), callbacks);
     }
 
-    static <C extends Events.Callbacks<C>> C parse(C callbacks, Reader source) {
+    static Callbacks parse(Callbacks callbacks, Reader source) {
         return parse(Scanner.tokens(source), callbacks);
     }
 
-    static <C extends Events.Callbacks<C>> C parse(C callbacks, String source) {
+    static Callbacks parse(Callbacks callbacks, String source) {
         return parse(Scanner.tokens(source), callbacks);
     }
 
-    EventHandler<C> process(Token token);
+    EventHandler process(Token token);
 
-    default C callbacks() {
+    default Callbacks callbacks() {
         throw new UnsupportedOperationException(this + ": No callbacks");
     }
 
-    private static <C extends Events.Callbacks<C>> C parse(
-        Stream<Token> tokens, C callbacks
+    private static Callbacks parse(
+        Stream<Token> tokens, Callbacks callbacks
     ) {
         return tokens.reduce(
             init(callbacks),
@@ -40,8 +40,8 @@ public interface EventHandler<C extends Events.Callbacks<C>> {
         ).callbacks();
     }
 
-    private static <C extends Events.Callbacks<C>> EventHandler<C> init(C callbacks) {
-        return new ValueEventHandler<>(callbacks);
+    private static EventHandler init(Callbacks callbacks) {
+        return new ValueEventHandler(callbacks);
     }
 
     private static <T> BinaryOperator<T> noCombine() {

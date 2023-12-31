@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.function.Consumer;
 
-public interface JsonFactory<T> {
+public interface JsonReader<T extends Record> {
 
     T read(String string);
 

@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.Callbacks;
 
-final class MyCallbacks implements Events.Callbacks<MyCallbacks> {
+final class MyCallbacks implements Callbacks {
 
     static final AtomicInteger COUNT = new AtomicInteger();
 
@@ -62,7 +62,7 @@ final class MyCallbacks implements Events.Callbacks<MyCallbacks> {
     }
 
     @Override
-    public MyCallbacks truth(boolean truth) {
+    public MyCallbacks bool(boolean truth) {
         return add("truth:" + truth);
     }
 

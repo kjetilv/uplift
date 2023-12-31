@@ -49,10 +49,18 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
         if (e instanceof TypeElement te && te.getEnclosingElement() instanceof PackageElement pe) {
-            Builders.writeBuilder(pe, te, builderFile(te), roots, enums);
-            Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
+            JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
+            boolean write = !jsonRecord.readOnly();
+            boolean read = !jsonRecord.writeOnly();
+            if (read) {
+                Builders.writeBuilder(pe, te, builderFile(te), roots, enums);
+                Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
+            }
+            if (write) {
+                Writers.writeWriter(pe, te, writerFile(te), roots, enums);
+            }
             if (isRoot(te)) {
-                Factories.writeFactory(pe, te, factoryFile(pe, te));
+                RWs.writeRW(pe, te, factoryFile(pe, te), read, write);
             }
         } else {
             throw new IllegalStateException("Not a supported type: " + e);
@@ -65,6 +73,10 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private JavaFileObject callbackFile(TypeElement typeElement) {
         return file(typeElement, "Callbacks");
+    }
+
+    private JavaFileObject writerFile(TypeElement typeElement) {
+        return file(typeElement, "Writer");
     }
 
     private JavaFileObject builderFile(TypeElement typeElement) {

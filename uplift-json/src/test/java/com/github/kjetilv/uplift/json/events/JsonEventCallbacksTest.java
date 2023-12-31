@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Events;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        MyCallbacks myCallbacks = Events.parse(
+        Callbacks myCallbacks = Events.parse(
             callbacks(),
             """
                 {
@@ -22,7 +23,7 @@ public class JsonEventCallbacksTest {
                 }
                 """
         );
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
+        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -53,7 +54,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void obj() {
-        MyCallbacks myCallbacks = Events.parse(
+        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             callbacks(),
             """
                 {
@@ -79,7 +80,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        MyCallbacks myCallbacks = Events.parse(
+        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             callbacks(),
             """
                 {
@@ -106,7 +107,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parseMap() {
-        MyCallbacks callbacks = callbacks();
+        MyCallbacks callbacks = (MyCallbacks) callbacks();
         Events.parse(
             callbacks,
             """
@@ -125,7 +126,7 @@ public class JsonEventCallbacksTest {
         return Arrays.stream(text.split("\\s+")).toList();
     }
 
-    private static MyCallbacks callbacks() {
+    private static Callbacks callbacks() {
         return new MyCallbacks();
     }
 }

@@ -24,16 +24,16 @@ final class Callbacks extends Gen {
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "public final class " + callbacksClass(te),
+                "final class " + callbacksClass(te),
                 "    extends " + AbstractCallbacks.class.getName() + "<" + builderClass(te) + ", " + name + "> {",
                 "",
-                "    public static " + callbacksClass(te) + " create(",
+                "    static " + callbacksClass(te) + " create(",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
-                "    public static " + callbacksClass(te) + " create(",
+                "    static " + callbacksClass(te) + " create(",
                 "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
@@ -140,6 +140,6 @@ final class Callbacks extends Gen {
                     )
                 ))
             .orElseThrow(() ->
-                new IllegalStateException("Unsupported: " + string));
+                new IllegalStateException("Unsupported: " + element + ":" + string));
     }
 }

@@ -3,20 +3,19 @@ package com.github.kjetilv.uplift.json.annpro;
 import com.github.kjetilv.uplift.json.anno.Field;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.RecordComponentElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-abstract sealed class Gen permits Builders, Callbacks, Factories {
+abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
 
     static String listType(TypeElement te) {
         return listType(te.getQualifiedName());
@@ -80,12 +79,25 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         return te.getSimpleName() + "Callbacks";
     }
 
+    static String writerClass(TypeElement te) {
+        return te.getSimpleName() + "Writer";
+    }
+
+    static String writerClass(Object te) {
+        return te + "Writer";
+    }
+
     static String factoryClass(TypeElement te) {
         JsonRecord rec = te.getAnnotation(JsonRecord.class);
         String name = te.getSimpleName().toString();
         return rec == null || rec.factoryClass().isBlank()
             ? name + DEFAULT_SUFFIX
             : rec.factoryClass();
+    }
+
+    static String variableName(TypeElement typeElement) {
+        String name = typeElement.getSimpleName().toString();
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     static String setter(RecordComponentElement el) {
@@ -96,20 +108,28 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
         return "add" + upcased(singularVariableName(el));
     }
 
-    static Optional<RecordComponentElement> enumType(
-        RecordComponentElement element,
-        Set<? extends Element> enums
-    ) {
-        return enums.stream()
-            .map(Element::asType).anyMatch(type -> type.equals(element.asType()))
+    static Optional<RecordComponentElement> enumType(RecordComponentElement element, Set<? extends Element> enums) {
+        return isType(element, enums)
             ? Optional.of(element)
             : Optional.empty();
     }
 
-    static Optional<? extends Element> enumListType(
-        RecordComponentElement element,
-        Set<? extends Element> enums
-    ) {
+    static boolean isType(RecordComponentElement element, Set<? extends Element> candidates) {
+        TypeMirror elementType = element.asType();
+        return candidates.stream()
+            .map(Element::asType)
+            .anyMatch(elementType::equals);
+    }
+
+    static boolean isListType(RecordComponentElement element, Set<? extends Element> candidates) {
+        TypeMirror elementType = element.asType();
+        return candidates.stream()
+            .map(Element::asType)
+            .anyMatch(type ->
+                listType(type).equals(elementType.toString()));
+    }
+
+    static Optional<? extends Element> enumListType(RecordComponentElement element, Set<? extends Element> enums) {
         return enums.stream()
             .filter(type ->
                 listType(type).equals(element.asType().toString()))
@@ -117,9 +137,13 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
     }
 
     static Optional<Class<?>> primitiveEvent(String list) {
-        return BASE_TYPES.stream()
-            .filter(type ->
-                type.getName().equals(list))
+        return Arrays.stream(BaseType.values())
+            .filter(baseType ->
+                baseType.fieldTypes()
+                    .stream().anyMatch(fieldType -> fieldType.getName().equals(list)))
+            .flatMap(baseType ->
+                baseType.fieldTypes()
+                    .stream())
             .findFirst();
     }
 
@@ -143,30 +167,14 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
     }
 
     static Optional<Class<?>> primitiveListType(String list) {
-        return BASE_TYPES.stream()
+        return Arrays.stream(BaseType.values())
             .filter(el ->
-                list.equals(listType(el)))
+                el.fieldTypes().stream().anyMatch(fieldType -> list.equals(listType(fieldType))))
+            .flatMap(baseType -> baseType.fieldTypes().stream())
             .findFirst();
     }
 
-    private static final String DEFAULT_SUFFIX = "Factory";
-
-    private static final Set<Class<?>> BASE_TYPES = Set.of(
-        String.class,
-        Boolean.class,
-        Integer.class,
-        Long.class,
-        Double.class,
-        Float.class,
-        Short.class,
-        Byte.class,
-        BigDecimal.class,
-        BigInteger.class,
-        UUID.class,
-        Uuid.class,
-        Instant.class,
-        Duration.class
-    );
+    private static final String DEFAULT_SUFFIX = "RW";
 
     protected static String singularVariableName(RecordComponentElement el) {
         Singular annotation = el.getAnnotation(Singular.class);
@@ -182,8 +190,33 @@ abstract sealed class Gen permits Builders, Callbacks, Factories {
             : field.value();
     }
 
-    private static String listType(Object type) {
+    protected static String listType(Object type) {
         return List.class.getName() + "<" + type + ">";
+    }
+
+    protected static Optional<String> listType(
+        RecordComponentElement element,
+        Set<? extends Element> rootElements,
+        Set<? extends Element> enums
+    ) {
+        Optional<Class<?>> primitiveListType = primitiveListType(element.asType().toString());
+        if (primitiveListType.isPresent()) {
+            return primitiveListType
+                .map(Class::getName);
+        }
+        Optional<? extends Element> enumListType = enumListType(element, enums);
+        if (enumListType.isPresent()) {
+            return enumListType
+                .map(el -> el.asType().toString());
+        }
+        Optional<? extends Element> generatedListType = rootElements.stream()
+            .filter(rootElement -> element.asType().toString().equals(listType(rootElement)))
+            .findFirst();
+        if (generatedListType.isPresent()) {
+            return generatedListType
+                .map(el -> el.asType().toString());
+        }
+        return Optional.empty();
     }
 
     private static String upcased(String string) {
