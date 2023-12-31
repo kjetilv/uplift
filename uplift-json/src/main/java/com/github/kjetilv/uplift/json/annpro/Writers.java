@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.AbstractObjectWriter;
 import com.github.kjetilv.uplift.json.MapWriter;
-import com.github.kjetilv.uplift.json.WriteEvents;
+import com.github.kjetilv.uplift.json.FieldEvents;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -31,9 +31,9 @@ final class Writers extends Gen {
                 "final class " + writerClass(te),
                 "    extends " + AbstractObjectWriter.class.getName() + "<" + te.getQualifiedName() + "> {",
                 "",
-                "    protected " + WriteEvents.class.getName() + " doWrite(",
+                "    protected " + FieldEvents.class.getName() + " doWrite(",
                 "        " + te.getQualifiedName() + " " + variableName(te) + ", ",
-                "        " + WriteEvents.class.getName() + " events",
+                "        " + FieldEvents.class.getName() + " events",
                 "    ) {",
                 "        return events"
             );
@@ -77,8 +77,7 @@ final class Writers extends Gen {
                     : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
         return name +
                listType.map(value -> "Array").orElse("") +
-               "Field(" +
-               "\"" + element.getSimpleName() + "\", " +
+               "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
                    : isRoot ? ", new " + writerClass(listType.orElseGet(() -> element.asType().toString())) + "())"

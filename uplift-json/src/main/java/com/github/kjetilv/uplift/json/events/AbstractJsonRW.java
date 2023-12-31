@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Events;
 import com.github.kjetilv.uplift.json.ObjectWriter;
-import com.github.kjetilv.uplift.json.io.DefaultWriteEvents;
+import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
 
@@ -67,13 +67,13 @@ public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbac
     @Override
     public byte[] bytes(T t) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        objectWriter().write(t, new DefaultWriteEvents(null, new StreamSink(baos)));
+        objectWriter().write(t, new DefaultFieldEvents(null, new StreamSink(baos)));
         return baos.toByteArray();
     }
 
     @Override
     public void write(T t, StringBuilder stringBuilder) {
-        objectWriter().write(t, new DefaultWriteEvents(null, new StringSink(stringBuilder)));
+        objectWriter().write(t, new DefaultFieldEvents(null, new StringSink(stringBuilder)));
     }
 
     private ObjectWriter<T> objectWriter() {

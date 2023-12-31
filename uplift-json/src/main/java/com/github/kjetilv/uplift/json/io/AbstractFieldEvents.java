@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-import com.github.kjetilv.uplift.json.WriteEvents;
+import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.time.Duration;
@@ -9,13 +9,13 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
-public abstract class AbstractWriteEvents implements WriteEvents {
+public abstract class AbstractFieldEvents implements FieldEvents {
 
-    private final WriteEvents parent;
+    private final FieldEvents parent;
 
     private final Sink sink;
 
-    public AbstractWriteEvents(WriteEvents parent, Sink sink) {
+    public AbstractFieldEvents(FieldEvents parent, Sink sink) {
         this.parent = parent;
         this.sink = sink;
     }
@@ -44,7 +44,7 @@ public abstract class AbstractWriteEvents implements WriteEvents {
         return sink;
     }
 
-    protected final WriteEvents parent() {
+    protected final FieldEvents parent() {
         return parent;
     }
 
