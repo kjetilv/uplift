@@ -63,12 +63,6 @@ public record LambdaResult(
 
     private static final byte[] NONE = new byte[0];
 
-    private static Map<String, String> newCorsHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Cache-Control", "no-cache");
-        return headers;
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + statusCode + ": " + printBody(body, binary) + "]";
