@@ -9,6 +9,7 @@ import com.github.kjetilv.uplift.json.io.StringSink;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -86,13 +87,14 @@ public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbac
         if (newCallbacks == null) {
             throw new IllegalStateException(type + " does not support read");
         }
-        return newCallbacks.apply(set);
+        return Objects.requireNonNull(
+            newCallbacks.apply(set),
+            () -> newCallbacks +" -> " + set);
     }
 
     private static <T> T extract(Consumer<Consumer<T>> consumer) {
         AtomicReference<T> reference = new AtomicReference<>();
-        Consumer<T> set = reference::set;
-        consumer.accept(set);
+        consumer.accept(reference::set);
         return reference.get();
     }
 }

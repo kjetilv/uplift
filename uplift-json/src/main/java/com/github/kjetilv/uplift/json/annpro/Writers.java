@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.AbstractObjectWriter;
+import com.github.kjetilv.uplift.json.MapWriter;
 import com.github.kjetilv.uplift.json.WriteEvents;
 
 import javax.lang.model.element.Element;
@@ -9,6 +10,7 @@ import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -63,11 +65,16 @@ final class Writers extends Gen {
     ) {
         Optional<String> listType = listType(element, roots, enums);
         boolean isEnum = isType(element, enums) || isListType(element, enums);
-        boolean isRoot = isType(element, roots) || isListType(element,roots);
-        boolean convert = isEnum || !isRoot && listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).requiresConversion();
+        boolean isRoot = isType(element, roots) || isListType(element, roots);
+        boolean isMap = element.asType().toString().startsWith(Map.class.getName());
+        boolean convert = !(isMap || isRoot) &&
+                          (isEnum || listType.map(BaseType::of)
+                              .orElseGet(() -> BaseType.of(element))
+                              .requiresConversion());
         String name = isRoot ? "object"
-            : isEnum ? "string"
-            : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
+            : isMap ? "map"
+                : isEnum ? "string"
+                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
         return name +
                listType.map(value -> "Array").orElse("") +
                "Field(" +
@@ -75,6 +82,7 @@ final class Writers extends Gen {
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
                    : isRoot ? ", new " + writerClass(listType.orElseGet(() -> element.asType().toString())) + "())"
-                       : ")");
+                       : isMap ? ", new " + MapWriter.class.getName() + "())"
+                           : ")");
     }
 }

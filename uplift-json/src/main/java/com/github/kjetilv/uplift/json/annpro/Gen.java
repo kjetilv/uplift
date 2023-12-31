@@ -147,21 +147,32 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
             .findFirst();
     }
 
-    static Optional<TypeElement> generatedEvent(String generated, Set<? extends Element> rootElements) {
+    static Optional<TypeElement> generatedEvent(String type, Set<? extends Element> rootElements) {
         return rootElements.stream()
             .filter(el ->
-                el instanceof TypeElement te && te.getQualifiedName().toString().equals(generated))
+                el instanceof TypeElement te && te.getQualifiedName().toString().equals(type))
             .findFirst()
             .map(TypeElement.class::cast);
     }
 
     static Optional<TypeElement> generatedListType(
-        String generatedList,
+        String type,
         Set<? extends Element> rootElements
     ) {
         return rootElements.stream()
             .filter(el ->
-                el instanceof TypeElement te && generatedList.equals(listType(te)))
+                el instanceof TypeElement te && type.equals(listType(te)))
+            .findFirst()
+            .map(TypeElement.class::cast);
+    }
+
+    static Optional<TypeElement> genericMap(
+        String type,
+        Set<? extends Element> rootElements
+    ) {
+        return rootElements.stream()
+            .filter(el ->
+                el instanceof TypeElement te && type.equals(listType(te)))
             .findFirst()
             .map(TypeElement.class::cast);
     }

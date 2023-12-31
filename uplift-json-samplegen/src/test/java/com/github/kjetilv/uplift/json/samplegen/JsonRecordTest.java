@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,12 +27,18 @@ public class JsonRecordTest {
                 "residents": [
                   {
                     "name": "foo",
-                    "permanent": true
+                    "permanent": true,
+                    "properties": {
+                      "zip": "zot"
+                    }
                   },
                   {
                     "name": "bar",
                     "permanent": false,
-                    "uuid": "%s"
+                    "uuid": "%s",
+                    "properties": {
+                      "foo": "bar"
+                    }
                   }
                 ]
               },
@@ -44,36 +51,37 @@ public class JsonRecordTest {
               "balance": "123.23"
             }
             """.formatted(uuid);
-        assertThat(com.github.kjetilv.uplift.json.samplegen.Users.INSTANCE.read(json)).isEqualTo(
-            new User(
-                "Kjetil",
-                1973,
-                Instant.ofEpochMilli(100L),
-                new Address(
-                    "\"None\" Street",
-                    1729,
-                    Address.Modifier.B,
-                    List.of(Address.Modifier.C),
-                    1450,
-                    List.of(
-                        new Resident(
-                            "foo", true, null
-                        ),
-                        new Resident(
-                            "bar", false, uuid
-                        )
-                    )
-                ),
-                true,
-                (byte) 127,
-                List.of("MrX", "Foo"),
+        User readUser = Users.INSTANCE.read(json);
+        User expectedUser = new User(
+            "Kjetil",
+            1973,
+            Instant.ofEpochMilli(100L),
+            new Address(
+                "\"None\" Street",
+                1729,
+                Address.Modifier.B,
+                List.of(Address.Modifier.C),
+                1450,
                 List.of(
-                    50,
-                    60,
-                    70
-                ),
-                new BigDecimal("123.23")
-            ));
+                    new Resident(
+                        "foo", true, null, Map.of("zip", "zot")
+                    ),
+                    new Resident(
+                        "bar", false, uuid, Map.of("foo", "bar")
+                    )
+                )
+            ),
+            true,
+            (byte) 127,
+            List.of("MrX", "Foo"),
+            List.of(
+                50,
+                60,
+                70
+            ),
+            new BigDecimal("123.23")
+        );
+        assertThat(readUser).isEqualTo(expectedUser);
         String addressJson = """
             { "address":
               {
@@ -97,7 +105,7 @@ public class JsonRecordTest {
                 )
             );
 
-        User user = Users.INSTANCE.read(json);
+        User user = readUser;
 
         StringBuilder sb = new StringBuilder();
 //        Callbacks callbacks = JsonWriter.writer(user, new StringSink(sb));

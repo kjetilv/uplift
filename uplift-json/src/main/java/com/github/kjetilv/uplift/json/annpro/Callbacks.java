@@ -6,6 +6,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -139,6 +140,17 @@ final class Callbacks extends Gen {
                         generatedType
                     )
                 ))
+            .or(() ->
+                    Optional.of(element.asType().toString())
+                        .filter(mapType -> mapType.startsWith("java.util.Map"))
+                        .map(mapType ->
+                            new AttributeType(
+                                "Object",
+                                element,
+                                AttributeType.Variant.GENERIC_MAP,
+                                null
+                            ))
+                )
             .orElseThrow(() ->
                 new IllegalStateException("Unsupported: " + element + ":" + string));
     }

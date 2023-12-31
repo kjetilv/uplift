@@ -4,6 +4,7 @@ import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.WriteEvents;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -15,6 +16,46 @@ public class DefaultWriteEvents extends AbstractWriteEvents {
         super(parent, sink);
         sink().accept("{");
         mark = sink().mark();
+    }
+
+    @Override
+    public WriteEvents mapField(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer) {
+        return writeField(
+            field,
+            value,
+            Function.identity(),
+            map ->
+                writer.write(map, new DefaultWriteEvents(this, sink()))
+        );
+    }
+
+    @Override
+    public <T extends Record> WriteEvents objectField(
+        String field,
+        T value,
+        ObjectWriter<T> writer
+    ) {
+        return writeField(
+            field,
+            value,
+            Function.identity(),
+            t ->
+                writer.write(value, new DefaultWriteEvents(this, sink()))
+        );
+    }
+
+    @Override
+    public <T extends Record> WriteEvents objectArrayField(
+        String field,
+        List<? extends T> values,
+        ObjectWriter<T> writer
+    ) {
+        return writeArray(
+            field,
+            values,
+            Function.identity(),
+            t -> writer.write(t, new DefaultWriteEvents(this, sink()))
+        );
     }
 
     @Override
@@ -45,33 +86,6 @@ public class DefaultWriteEvents extends AbstractWriteEvents {
     @Override
     public <T> WriteEvents boolArrayField(String field, List<? extends T> value, Function<T, Boolean> toBool) {
         return writeArray(field, value, toBool, this::value);
-    }
-
-    @Override
-    public <T extends Record> WriteEvents objectField(
-        String field,
-        T value,
-        ObjectWriter<T> writer
-    ) {
-        return writeField(
-            field,
-            value,
-            Function.identity(),
-            t -> writer.write(value, new DefaultWriteEvents(this, sink())));
-    }
-
-    @Override
-    public <T extends Record> WriteEvents objectArrayField(
-        String field,
-        List<? extends T> values,
-        ObjectWriter<T> writer
-    ) {
-        return writeArray(
-            field,
-            values,
-            Function.identity(),
-            t -> writer.write(t, new DefaultWriteEvents(this, sink()))
-        );
     }
 
     @Override

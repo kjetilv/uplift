@@ -15,10 +15,6 @@ import java.util.stream.Stream;
 
 public final class JsonWriter {
 
-    public static Callbacks writer(Sink sink) {
-        return new RootCallbacks(sink);
-    }
-
     @SuppressWarnings("ChainOfInstanceofChecks")
     public static void write(Sink sink, Object object) {
         switch (object) {

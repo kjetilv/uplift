@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.annpro;
 
+import com.github.kjetilv.uplift.json.MapCallbacks;
+
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import java.util.Optional;
@@ -49,6 +51,12 @@ record AttributeType(
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + adder(element) + ")";
+            }
+        },
+        GENERIC_MAP() {
+            @Override
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+                return "() -> new " + MapCallbacks.class.getName() + "(this, builder()::" + setter(element) + ")";
             }
         },
         ENUM() {

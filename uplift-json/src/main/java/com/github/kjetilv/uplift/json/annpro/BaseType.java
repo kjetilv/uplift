@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 enum BaseType {
@@ -24,7 +25,8 @@ enum BaseType {
     UUID(java.util.UUID.class, String.class),
     Uuid(com.github.kjetilv.uplift.uuid.Uuid.class, String.class),
     INSTANT(Instant.class, Number.class),
-    DURATION(Duration.class, String.class);
+    DURATION(Duration.class, String.class),
+    MAP(Map.class, Map.class);
 
     static BaseType of(RecordComponentElement typeElement) {
         try {

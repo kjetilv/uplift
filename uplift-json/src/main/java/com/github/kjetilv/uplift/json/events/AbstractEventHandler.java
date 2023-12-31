@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 abstract sealed class AbstractEventHandler implements EventHandler
@@ -16,7 +17,7 @@ abstract sealed class AbstractEventHandler implements EventHandler
 
     AbstractEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
         this.scope = scope;
-        this.callbacks = callbacks;
+        this.callbacks = Objects.requireNonNull(callbacks, "callbacks");
     }
 
     @Override
@@ -31,7 +32,10 @@ abstract sealed class AbstractEventHandler implements EventHandler
     }
 
     protected final AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
-        return scope == null ? this : scope.with(action.apply(callbacks));
+        if (scope == null) {
+            return this;
+        }
+        return scope.with(action.apply(callbacks));
     }
 
     protected final Callbacks field(Token token) {

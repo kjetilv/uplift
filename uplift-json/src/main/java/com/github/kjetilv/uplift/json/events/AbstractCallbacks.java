@@ -28,7 +28,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
 
     private final Map<String, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
 
-    private final Map<String, Supplier<AbstractCallbacks<?, ?>>> objectFields = new LinkedHashMap<>();
+    private final Map<String, Supplier<Callbacks>> objectFields = new LinkedHashMap<>();
 
     private String currentField;
 
@@ -39,7 +39,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final AbstractCallbacks<?, ?> objectStarted() {
+    public final Callbacks objectStarted() {
         return currentField == null
             ? this
             : Optional.ofNullable(objectFields.get(currentField))
@@ -48,19 +48,19 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final AbstractCallbacks<?, T> field(String name) {
+    public final Callbacks field(String name) {
         currentField = name;
         return this;
     }
 
     @Override
-    public AbstractCallbacks<?, ?> objectEnded() {
+    public Callbacks objectEnded() {
         onDone.accept(builder.get());
         return parent == null ? this : parent;
     }
 
     @Override
-    public final AbstractCallbacks<?, ?> string(String string) {
+    public final Callbacks string(String string) {
         if (currentField == null) {
             return fail();
         }
@@ -72,7 +72,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final <N extends Number> AbstractCallbacks<?, ?> number(N number) {
+    public final <N extends Number> Callbacks number(N number) {
         BiConsumer<B, Number> consumer = numberConsumer();
         if (consumer != null) {
             consumer.accept(builder, number);
@@ -81,10 +81,10 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final AbstractCallbacks<?, ?> bool(boolean truth) {
+    public final Callbacks bool(boolean bool) {
         BiConsumer<B, Boolean> consumer = booleans.get(currentField);
         if (consumer != null) {
-            consumer.accept(builder, truth);
+            consumer.accept(builder, bool);
         }
         return this;
     }
@@ -108,7 +108,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
 
     protected final void onObject(
         String name,
-        Supplier<AbstractCallbacks<?, ?>> nested
+        Supplier<Callbacks> nested
     ) {
         objectFields.put(name, nested);
     }

@@ -26,7 +26,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks bool(boolean truth) {
+    default Callbacks bool(boolean bool) {
         return this;
     }
 

@@ -1,10 +1,13 @@
 package com.github.kjetilv.uplift.json;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface WriteEvents {
+
+    WriteEvents mapField(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);
 
     <T extends Record> WriteEvents objectField(String field, T value, ObjectWriter<T> writer);
 

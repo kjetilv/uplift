@@ -62,8 +62,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks bool(boolean truth) {
-        return add("truth:" + truth);
+    public MyCallbacks bool(boolean bool) {
+        return add("truth:" + bool);
     }
 
     @Override
