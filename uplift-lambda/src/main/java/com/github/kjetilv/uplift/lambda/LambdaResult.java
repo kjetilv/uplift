@@ -45,11 +45,11 @@ public record LambdaResult(
         this.headers = headers == null
             ? Collections.emptyMap()
             : Collections.unmodifiableMap(new LinkedHashMap<>(headers));
-        this.body = body == null ? NONE : body.clone();
+        this.body = body == null ? NONE : body;
         this.binary = binary;
     }
 
-    public Map<String, Object> toMap(boolean post) {
+    public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("statusCode", statusCode());
         byte[] body = body();

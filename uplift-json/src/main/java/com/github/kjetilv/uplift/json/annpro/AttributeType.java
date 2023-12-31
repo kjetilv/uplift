@@ -22,32 +22,32 @@ record AttributeType(
                fieldName(element) + "\", " +
                variant.midTerm(element, internalType)
                    .map(term -> term + ", ").orElse("") +
-               variant.handler(builderType, element, internalType) +
+               variant.callbackHandler(builderType, element, internalType) +
                ")";
     }
 
     enum Variant {
         PRIMITIVE() {
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return builderClass(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return builderClass(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + setter(element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + adder(element) + ")";
             }
         },
@@ -58,7 +58,7 @@ record AttributeType(
             }
 
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return builderClass(builderType) + "::" + setter(element);
             }
         },
@@ -69,7 +69,7 @@ record AttributeType(
             }
 
             @Override
-            String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
                 return builderClass(builderType) + "::" + adder(element);
             }
         };
@@ -83,6 +83,6 @@ record AttributeType(
             return Optional.empty();
         }
 
-        abstract String handler(TypeElement builderType, RecordComponentElement element, TypeElement generated);
+        abstract String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated);
     }
 }

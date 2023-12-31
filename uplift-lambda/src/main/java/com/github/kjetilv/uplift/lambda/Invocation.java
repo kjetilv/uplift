@@ -128,8 +128,7 @@ public record Invocation<Q, R>(
     }
 
     Map<String, Object> toResult() {
-        LambdaPayload payload = payload();
-        return result().toMap(payload != null && payload.isPost());
+        return result().toMap();
     }
 
     Duration timeTaken() {
