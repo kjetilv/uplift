@@ -14,6 +14,10 @@ public class MapCallbacks implements Callbacks {
 
     private String currentField;
 
+    public static MapCallbacks create(Callbacks parent, Consumer<Map<String, Object>> onDone) {
+        return new MapCallbacks(parent, onDone);
+    }
+
     public MapCallbacks(Callbacks parent, Consumer<Map<String, Object>> onDone) {
         this.parent = parent;
         this.map = new LinkedHashMap<>();

@@ -56,7 +56,7 @@ record AttributeType(
         GENERIC_MAP() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> new " + MapCallbacks.class.getName() + "(this, builder()::" + setter(element) + ")";
+                return "() -> " + MapCallbacks.class.getName() + ".create(this, builder()::" + setter(element) + ")";
             }
         },
         ENUM() {

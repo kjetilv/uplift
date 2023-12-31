@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.json;
 
+import java.util.List;
 import java.util.Map;
 
 public class MapWriter implements ObjectWriter<Map<?, ?>> {
+
     @Override
     public FieldEvents write(Map<?, ?> object, FieldEvents calls) {
         object.forEach((key, value) ->
@@ -17,6 +19,7 @@ public class MapWriter implements ObjectWriter<Map<?, ?>> {
             case Number number -> calls.number(key.toString(), number);
             case Boolean bool -> calls.bool(key.toString(), bool);
             case Map<?, ?> submap -> new MapWriter().write(submap, calls);
+            case List<?> sublist -> new ListWriter().write(sublist, calls);
             default -> throw new IllegalStateException("Not supported " + key + " -> " + value);
         }
     }
