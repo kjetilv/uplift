@@ -14,7 +14,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
     private static final Pattern QUOTE = Pattern.compile("\"");
 
     @Override
-    public final WriteEvents write(T object, WriteEvents events) {
+     public final FieldEvents write(T object, FieldEvents events) {
         try {
             return doWrite(object, events);
         } finally {
@@ -22,7 +22,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
         }
     }
 
-    protected abstract WriteEvents doWrite(T object, WriteEvents events);
+    protected abstract FieldEvents doWrite(T object, FieldEvents events);
 
     protected String value(String value) {
         String contents = value.indexOf('"') >= 0

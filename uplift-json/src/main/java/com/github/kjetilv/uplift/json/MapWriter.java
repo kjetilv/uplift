@@ -18,6 +18,6 @@ public class MapWriter implements ObjectWriter<Map<?, ?>> {
             case Boolean bool -> calls.bool(key.toString(), bool);
             case Map<?, ?> submap -> new MapWriter().write(submap, calls);
             default -> throw new IllegalStateException("Not supported " + key + " -> " + value);
-        };
+        }
     }
 }
