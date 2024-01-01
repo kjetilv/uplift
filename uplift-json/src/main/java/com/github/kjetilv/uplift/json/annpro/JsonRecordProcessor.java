@@ -11,6 +11,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
 import java.util.Objects;
@@ -52,12 +53,13 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
             boolean write = !jsonRecord.readOnly();
             boolean read = !jsonRecord.writeOnly();
+            Types typeUtils = processingEnv.getTypeUtils();
             if (read) {
-                Builders.writeBuilder(pe, te, builderFile(te), roots, enums);
+                Builders.writeBuilder(pe, te, builderFile(te), roots, enums, typeUtils);
                 Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
             }
             if (write) {
-                Writers.writeWriter(pe, te, writerFile(te), roots, enums);
+                Writers.writeWriter(pe, te, writerFile(te), roots, enums, typeUtils);
             }
             if (isRoot(te)) {
                 RWs.writeRW(pe, te, factoryFile(pe, te), read, write);

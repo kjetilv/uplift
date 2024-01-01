@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.annpro;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.*;
@@ -18,7 +19,8 @@ Builders extends Gen {
         TypeElement te,
         JavaFileObject file,
         Set<? extends Element> roots,
-        Set<? extends Element> enums
+        Set<? extends Element> enums,
+        Types typeUtils
     ) {
         List<String> setters = te.getRecordComponents()
             .stream().flatMap(el ->
@@ -35,7 +37,7 @@ Builders extends Gen {
         List<String> adders = te.getRecordComponents()
             .stream()
             .flatMap(element ->
-                listType(element, roots, enums)
+                listType(element, roots, enums, typeUtils)
                     .stream()
                     .flatMap(listType ->
                         Stream.of(

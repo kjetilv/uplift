@@ -7,6 +7,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -59,8 +60,8 @@ record RecordAttribute(
                ")";
     }
 
-    String writeCall(TypeElement te) {
-        Optional<String> listType = listType(element, roots, enums);
+    String writeCall(TypeElement te, Types typeUtils) {
+        Optional<String> listType = listType(element, roots, enums, typeUtils);
         boolean isEnum = isType(element, enums) || isListType(element, enums);
         boolean isRoot = isType(element, roots) || isListType(element, roots);
         boolean isMap = element.asType().toString().startsWith(Map.class.getName());

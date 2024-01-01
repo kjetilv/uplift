@@ -9,6 +9,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.*;
@@ -108,12 +109,6 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         return "add" + upcased(singularVariableName(el));
     }
 
-    static Optional<RecordComponentElement> enumType(RecordComponentElement element, Set<? extends Element> enums) {
-        return isType(element, enums)
-            ? Optional.of(element)
-            : Optional.empty();
-    }
-
     static boolean isType(RecordComponentElement element, Set<? extends Element> candidates) {
         TypeMirror elementType = element.asType();
         return candidates.stream()
@@ -127,6 +122,12 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
             .map(Element::asType)
             .anyMatch(type ->
                 listType(type).equals(elementType.toString()));
+    }
+
+    static Optional<RecordComponentElement> enumType(RecordComponentElement element, Set<? extends Element> enums) {
+        return isType(element, enums)
+            ? Optional.of(element)
+            : Optional.empty();
     }
 
     static Optional<? extends Element> enumListType(RecordComponentElement element, Set<? extends Element> enums) {
@@ -147,8 +148,8 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
             .findFirst();
     }
 
-    static Optional<TypeElement> generatedEvent(RecordComponentElement element, Set<? extends Element> rootElements) {
-        return rootElements.stream()
+    static Optional<TypeElement> generatedEvent(RecordComponentElement element, Set<? extends Element> roots) {
+        return roots.stream()
             .filter(el ->
                 el instanceof TypeElement te && te.getQualifiedName().toString().equals(element.asType().toString()))
             .findFirst()
@@ -208,8 +209,10 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
     protected static Optional<String> listType(
         RecordComponentElement element,
         Set<? extends Element> rootElements,
-        Set<? extends Element> enums
+        Set<? extends Element> enums,
+        Types typeUtils
     ) {
+        Element element1 = typeUtils.asElement(element.asType());
         Optional<Class<?>> primitiveListType = primitiveListType(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType

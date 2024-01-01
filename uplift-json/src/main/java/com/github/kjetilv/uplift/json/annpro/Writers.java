@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.json.FieldEvents;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.Set;
@@ -17,7 +18,8 @@ final class Writers extends Gen {
         TypeElement te,
         JavaFileObject file,
         Set<? extends Element> roots,
-        Set<? extends Element> enums
+        Set<? extends Element> enums,
+        Types typeUtils
     ) {
         try (BufferedWriter bw = writer(file)) {
             write(
@@ -39,7 +41,7 @@ final class Writers extends Gen {
                 .forEach(recordAttribute ->
                     write(
                         bw,
-                        "            ." + recordAttribute.writeCall(te)
+                        "            ." + recordAttribute.writeCall(te, typeUtils)
                     ));
             write(
                 bw,
