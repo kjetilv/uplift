@@ -3,10 +3,8 @@ package com.github.kjetilv.uplift.json.annpro;
 import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -50,7 +48,7 @@ final class Callbacks extends Gen {
             write(bw, te.getRecordComponents()
                 .stream()
                 .map(element ->
-                    "        " + attributeType(element, roots, enums).handler(te) + ";"
+                    "        " + RecordAttribute.create(element, roots, enums).callbackHandler(te) + ";"
                 )
                 .toList());
             write(bw, "    }");
@@ -64,94 +62,4 @@ final class Callbacks extends Gen {
 
     }
 
-    private static AttributeType attributeType(
-        RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
-    ) {
-        return switch (element.asType().getKind()) {
-            case BOOLEAN -> new AttributeType("Boolean", element);
-            case BYTE -> new AttributeType("Byte", element);
-            case SHORT -> new AttributeType("Short", element);
-            case INT -> new AttributeType("Integer", element);
-            case LONG -> new AttributeType("Long", element);
-            case CHAR -> new AttributeType("Character", element);
-            case FLOAT -> new AttributeType("Float", element);
-            case DOUBLE -> new AttributeType("Double", element);
-            case DECLARED -> resolveDeclared(element, roots, enums);
-            default -> throw new IllegalStateException("Unsupported: " + element);
-        };
-    }
-
-    private static AttributeType resolveDeclared(
-        RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
-    ) {
-        TypeMirror type = element.asType();
-        String string = type.toString();
-        return enumType(element, enums).map(enumType ->
-                new AttributeType(
-                    "Enum",
-                    element,
-                    AttributeType.Variant.ENUM,
-                    null
-                ))
-            .or(() -> enumListType(element, enums).map(enumListType ->
-                new AttributeType(
-                    "Enum",
-                    element,
-                    AttributeType.Variant.ENUM_LIST,
-                    (TypeElement) enumListType
-                )))
-            .or(() -> primitiveEvent(string).map(event ->
-                new AttributeType(
-                    event.getSimpleName(),
-                    element,
-                    AttributeType.Variant.PRIMITIVE,
-                    null
-                )))
-            .or(() ->
-                generatedEvent(string, roots)
-                    .map(generatedType ->
-                        new AttributeType(
-                            "Object",
-                            element,
-                            AttributeType.Variant.GENERATED,
-                            generatedType
-                        )
-                    ))
-            .or(() ->
-                primitiveListType(string)
-                    .map(primtiveType ->
-                        new AttributeType(
-                            primtiveType.getSimpleName(),
-                            element,
-                            AttributeType.Variant.PRIMITIVE_LIST,
-                            null
-                        )
-                    ))
-            .or(() ->
-                generatedListType(string, roots).map(generatedType ->
-                    new AttributeType(
-                        "Object",
-                        element,
-                        AttributeType.Variant.GENERATED_LIST,
-                        generatedType
-                    )
-                ))
-            .or(() ->
-                    Optional.of(element.asType().toString())
-                        .filter(mapType -> mapType.startsWith("java.util.Map"))
-                        .map(mapType ->
-                            new AttributeType(
-                                "Object",
-                                element,
-                                AttributeType.Variant.GENERIC_MAP,
-                                null
-                            ))
-                )
-            .orElseThrow(() ->
-                new IllegalStateException("Unsupported: " + element + ":" + string));
-    }
 }

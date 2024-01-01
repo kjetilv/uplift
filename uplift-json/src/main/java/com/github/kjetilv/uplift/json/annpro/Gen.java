@@ -136,32 +136,32 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
             .findFirst();
     }
 
-    static Optional<Class<?>> primitiveEvent(String list) {
+    static Optional<Class<?>> primitiveEvent(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(baseType ->
                 baseType.fieldTypes()
-                    .stream().anyMatch(fieldType -> fieldType.getName().equals(list)))
+                    .stream().anyMatch(fieldType -> fieldType.getName().equals(element.asType().toString())))
             .flatMap(baseType ->
                 baseType.fieldTypes()
                     .stream())
             .findFirst();
     }
 
-    static Optional<TypeElement> generatedEvent(String type, Set<? extends Element> rootElements) {
+    static Optional<TypeElement> generatedEvent(RecordComponentElement element, Set<? extends Element> rootElements) {
         return rootElements.stream()
             .filter(el ->
-                el instanceof TypeElement te && te.getQualifiedName().toString().equals(type))
+                el instanceof TypeElement te && te.getQualifiedName().toString().equals(element.asType().toString()))
             .findFirst()
             .map(TypeElement.class::cast);
     }
 
     static Optional<TypeElement> generatedListType(
-        String type,
+        RecordComponentElement element,
         Set<? extends Element> rootElements
     ) {
         return rootElements.stream()
             .filter(el ->
-                el instanceof TypeElement te && type.equals(listType(te)))
+                el instanceof TypeElement te && listType(te).equals(element.asType().toString()))
             .findFirst()
             .map(TypeElement.class::cast);
     }
@@ -177,10 +177,10 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
             .map(TypeElement.class::cast);
     }
 
-    static Optional<Class<?>> primitiveListType(String list) {
+    static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(el ->
-                el.fieldTypes().stream().anyMatch(fieldType -> list.equals(listType(fieldType))))
+                el.fieldTypes().stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
             .flatMap(baseType -> baseType.fieldTypes().stream())
             .findFirst();
     }
@@ -210,7 +210,7 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         Set<? extends Element> rootElements,
         Set<? extends Element> enums
     ) {
-        Optional<Class<?>> primitiveListType = primitiveListType(element.asType().toString());
+        Optional<Class<?>> primitiveListType = primitiveListType(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType
                 .map(Class::getName);

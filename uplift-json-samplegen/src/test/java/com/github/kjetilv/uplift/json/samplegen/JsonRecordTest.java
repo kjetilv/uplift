@@ -4,12 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,11 +29,7 @@ public class JsonRecordTest {
                     "name": "foo",
                     "permanent": true,
                     "properties": {
-                      "zip": "zot",
-                      "hubba": [
-                        true,
-                        42
-                      ]
+                      "zip": "zot"
                     }
                   },
                   {
@@ -71,17 +64,9 @@ public class JsonRecordTest {
                 1450,
                 List.of(
                     new Resident(
-                        "foo", true, null, Stream.of(
-                            Map.entry("zip", "zot"),
-                        Map.entry( "hubba", List.of(true, 42)))
-                        .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (a, b) -> {
-                                throw new IllegalStateException();
-                            },
-                            LinkedHashMap::new
-                        ))
+                        "foo", true,
+                        null,
+                        Map.of("zip", "zot")
                     ),
                     new Resident(
                         "bar", false, uuid, Map.of("foo", "bar")

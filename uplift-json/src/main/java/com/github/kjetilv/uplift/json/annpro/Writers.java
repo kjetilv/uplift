@@ -1,17 +1,13 @@
 package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.AbstractObjectWriter;
-import com.github.kjetilv.uplift.json.MapWriter;
 import com.github.kjetilv.uplift.json.FieldEvents;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 final class Writers extends Gen {
@@ -38,10 +34,12 @@ final class Writers extends Gen {
                 "        return events"
             );
             te.getRecordComponents()
-                .forEach(element ->
+                .stream()
+                .map(element -> RecordAttribute.create(element, roots, enums))
+                .forEach(recordAttribute ->
                     write(
                         bw,
-                        "            ." + writeCall(te, element, roots, enums)
+                        "            ." + recordAttribute.writeCall(te)
                     ));
             write(
                 bw,
@@ -58,30 +56,4 @@ final class Writers extends Gen {
     private Writers() {
     }
 
-    private static String writeCall(
-        TypeElement te, RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
-    ) {
-        Optional<String> listType = listType(element, roots, enums);
-        boolean isEnum = isType(element, enums) || isListType(element, enums);
-        boolean isRoot = isType(element, roots) || isListType(element, roots);
-        boolean isMap = element.asType().toString().startsWith(Map.class.getName());
-        boolean convert = !(isMap || isRoot) &&
-                          (isEnum || listType.map(BaseType::of)
-                              .orElseGet(() -> BaseType.of(element))
-                              .requiresConversion());
-        String name = isRoot ? "object"
-            : isMap ? "map"
-                : isEnum ? "string"
-                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
-        return name +
-               listType.map(value -> "Array").orElse("") +
-               "(\"" + element.getSimpleName() + "\", " +
-               variableName(te) + "." + element.getSimpleName() + "()" +
-               (convert ? ", this::value)"
-                   : isRoot ? ", new " + writerClass(listType.orElseGet(() -> element.asType().toString())) + "())"
-                       : isMap ? ", new " + MapWriter.class.getName() + "())"
-                           : ")");
-    }
 }

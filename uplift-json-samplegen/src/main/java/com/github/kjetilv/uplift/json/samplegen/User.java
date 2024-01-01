@@ -18,7 +18,8 @@ public record User(
     @Singular("alias")
     List<String> aliases,
     List<Integer> misc,
-    BigDecimal balance) {
+    BigDecimal balance
+) {
 
 }
 
