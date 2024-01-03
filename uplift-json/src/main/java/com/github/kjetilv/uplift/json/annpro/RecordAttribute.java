@@ -72,13 +72,15 @@ record RecordAttribute(
         String name = isRoot ? "object"
             : isMap ? "map"
                 : isEnum ? "string"
-                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
+                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element
+                    )).methodName();
         return name +
                listType.map(value -> "Array").orElse("") +
                "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + writerClass(listType.orElseGet(() -> element.asType().toString())) + "())"
+                   : isRoot ? ", new " + JsonRecordProcessor.writerClass(listType.orElseGet(() -> element.asType()
+                       .toString())) + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
     }
@@ -175,25 +177,27 @@ record RecordAttribute(
         PRIMITIVE() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + setter(element);
+                return JsonRecordProcessor.builderClass(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + adder(element);
+                return JsonRecordProcessor.builderClass(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + setter(element) + ")";
+                return "() -> " + JsonRecordProcessor.callbacksClass(generated) + ".create(this, builder()::" + setter(
+                    element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + adder(element) + ")";
+                return "() -> " + JsonRecordProcessor.callbacksClass(generated) + ".create(this, builder()::" + adder(
+                    element) + ")";
             }
         },
         GENERIC_MAP() {
@@ -210,7 +214,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + setter(element);
+                return JsonRecordProcessor.builderClass(builderType) + "::" + setter(element);
             }
         },
         ENUM_LIST {
@@ -221,7 +225,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + adder(element);
+                return JsonRecordProcessor.builderClass(builderType) + "::" + adder(element);
             }
         };
 

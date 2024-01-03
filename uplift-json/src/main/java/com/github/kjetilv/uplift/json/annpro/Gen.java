@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.anno.Field;
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
 
 import javax.lang.model.element.Element;
@@ -14,9 +13,10 @@ import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
+abstract class Gen {
 
     static String listType(TypeElement te) {
         return listType(te.getQualifiedName());
@@ -30,14 +30,15 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         return listType(type.asType());
     }
 
-    static Stream<? extends Element> enums(Set<? extends Element> rootElements) {
+    static Stream<? extends Element> enums(Set<? extends Element> types) {
+        Predicate<Element> isEnum = element -> element.getKind() == ElementKind.ENUM;
         return Stream.of(
-                rootElements.stream()
-                    .filter(element -> element.getKind() == ElementKind.ENUM),
-                rootElements.stream().flatMap(el -> {
-                    List<? extends Element> enclosedElements = el.getEnclosedElements();
-                    return enums(new HashSet<>(enclosedElements));
-                })
+                types.stream()
+                    .filter(isEnum),
+                types.stream()
+                    .filter(isEnum.negate())
+                    .flatMap(type ->
+                        enums(new HashSet<>(type.getEnclosedElements())))
             )
             .flatMap(Function.identity());
     }
@@ -70,30 +71,6 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write to " + builder, e);
         }
-    }
-
-    static String builderClass(TypeElement te) {
-        return te.getSimpleName() + "Builder";
-    }
-
-    static String callbacksClass(TypeElement te) {
-        return te.getSimpleName() + "Callbacks";
-    }
-
-    static String writerClass(TypeElement te) {
-        return te.getSimpleName() + "Writer";
-    }
-
-    static String writerClass(Object te) {
-        return te + "Writer";
-    }
-
-    static String factoryClass(TypeElement te) {
-        JsonRecord rec = te.getAnnotation(JsonRecord.class);
-        String name = te.getSimpleName().toString();
-        return rec == null || rec.factoryClass().isBlank()
-            ? name + DEFAULT_SUFFIX
-            : rec.factoryClass();
     }
 
     static String variableName(TypeElement typeElement) {
@@ -181,12 +158,12 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
     static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(el ->
-                el.fieldTypes().stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
-            .flatMap(baseType -> baseType.fieldTypes().stream())
+                el.fieldTypes()
+                    .stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
+            .flatMap(baseType -> baseType.fieldTypes()
+                .stream())
             .findFirst();
     }
-
-    private static final String DEFAULT_SUFFIX = "RW";
 
     protected static String singularVariableName(RecordComponentElement el) {
         Singular annotation = el.getAnnotation(Singular.class);

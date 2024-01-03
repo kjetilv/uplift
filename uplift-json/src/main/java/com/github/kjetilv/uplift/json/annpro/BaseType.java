@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.annpro;
 
 import javax.lang.model.element.RecordComponentElement;
+import javax.lang.model.util.Types;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -25,8 +26,7 @@ enum BaseType {
     UUID(java.util.UUID.class, String.class),
     Uuid(com.github.kjetilv.uplift.uuid.Uuid.class, String.class),
     INSTANT(Instant.class, Number.class),
-    DURATION(Duration.class, String.class),
-    MAP(Map.class, Map.class);
+    DURATION(Duration.class, String.class);
 
     static BaseType of(RecordComponentElement typeElement) {
         try {

@@ -1,76 +1,103 @@
 package com.github.kjetilv.uplift.json.annpro;
 
+import com.github.kjetilv.uplift.json.AbstractObjectWriter;
+import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
+import com.github.kjetilv.uplift.json.events.AbstractJsonRW;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.io.BufferedWriter;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
 
+    static String builderClass(TypeElement te) {
+        return te.getSimpleName() + "Builder";
+    }
+
+    static String callbacksClass(TypeElement te) {
+        return te.getSimpleName() + "Callbacks";
+    }
+
+    static String writerClass(TypeElement te) {
+        return te.getSimpleName() + "Writer";
+    }
+
+    static String writerClass(Object te) {
+        return te + "Writer";
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
         if (isJsonRecord(typedElements)) {
-            Set<? extends Element> enums = enums(roundEnv);
-            Set<? extends Element> types = types(roundEnv, enums);
-            if (types.isEmpty()) {
-                if (enums.isEmpty()) {
-                    return false;
-                }
-                throw new IllegalStateException("No types for " + enums.size() + " enums: " + write(enums));
-            }
-            if (types.stream().allMatch(JsonRecordProcessor::isRecord)) {
-                if (hasRoots(types)) {
-                    types.forEach(element ->
-                        process(element, types, enums));
-                } else {
-                    throw new IllegalStateException(
-                        "None of " + types.size() + " elements are roots: " + write(types));
-                }
-            } else {
-                throw new IllegalStateException("Only top-level record types are supported: " + write(types));
-            }
+            return Records.mapFields(roundEnv.getRootElements(), processingEnv.getTypeUtils())
+                .map(records -> {
+
+                    Set<? extends Element> enums = enums(roundEnv);
+                    Set<? extends Element> types = types(roundEnv, enums);
+
+                    if (records.types().stream().noneMatch(JsonRecordProcessor::isRoot)) {
+                        throw new IllegalStateException(
+                            "None of " + types.size() + " elements are roots: " + write(types));
+                    } else {
+                        types.forEach(element -> {
+                            if (
+                                element instanceof TypeElement te && te.getEnclosingElement() instanceof PackageElement pe
+                            ) {
+                                process(te, pe, types, enums, records.get(te));
+                            } else {
+                                throw new IllegalStateException("Not a supported type: " + element);
+                            }
+                        });
+                    }
+                    return true;
+                }).orElse(false);
         }
         return true;
     }
 
-    private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
-        if (e instanceof TypeElement te && te.getEnclosingElement() instanceof PackageElement pe) {
-            JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
-            boolean write = !jsonRecord.readOnly();
-            boolean read = !jsonRecord.writeOnly();
-            Types typeUtils = processingEnv.getTypeUtils();
-            if (read) {
-                Builders.writeBuilder(pe, te, builderFile(te), roots, enums, typeUtils);
-                Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
-            }
-            if (write) {
-                Writers.writeWriter(pe, te, writerFile(te), roots, enums, typeUtils);
-            }
-            if (isRoot(te)) {
-                RWs.writeRW(pe, te, factoryFile(pe, te), read, write);
-            }
-        } else {
-            throw new IllegalStateException("Not a supported type: " + e);
+    private void process(
+        TypeElement te,
+        PackageElement pe,
+        Set<? extends Element> roots,
+        Set<? extends Element> enums,
+        RecordFields records
+    ) {
+        JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
+        boolean read = !jsonRecord.writeOnly();
+        boolean write = !jsonRecord.readOnly();
+        boolean root = isRoot(te);
+        if (read) {
+            writeBuilder(builderFile(te), records);
+            writeCallbacks(pe, te, callbackFile(te), roots, enums);
+        }
+        if (write) {
+            writeWriter(pe, te, writerFile(te), roots, enums, processingEnv.getTypeUtils());
+        }
+        if (!(read || write)) {
+            throw new IllegalArgumentException("Should be readable, writable or both: " + te);
+        }
+        if (root) {
+            writeRW(pe, te, factoryFile(pe, te), read, write);
         }
     }
 
     private JavaFileObject factoryFile(PackageElement pe, TypeElement te) {
-        return file(pe.getQualifiedName() + "." + Gen.factoryClass(te));
+        return file(pe.getQualifiedName() + "." + rwClass(te));
     }
 
     private JavaFileObject callbackFile(TypeElement typeElement) {
@@ -97,7 +124,216 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         }
     }
 
+    private void writeBuilder(JavaFileObject file, RecordFields records) {
+        List<String> setters = records.values()
+            .stream().flatMap(recordField ->
+                Stream.of(
+                    "    private " + recordField.fieldTypeMirror().toString() + " " + recordField.fieldName() + ";",
+                    "",
+                    "    void " + recordField.setter() + "(" + recordField.fieldTypeMirror() + " " + recordField.fieldName() + ") {",
+                    "        this." + recordField.fieldName() + " = " + recordField.fieldName() + ";",
+                    "    }",
+                    ""
+                ))
+            .toList();
+
+        List<String> adders = records.values()
+            .stream()
+            .filter(RecordField::isCollection)
+            .flatMap(recordField ->
+                Stream.of(
+                    "    void " + recordField.adder() + "(" + recordField.collectionTypeMirror() + " " + recordField.singularName() + ") {",
+                    "        if (this." + recordField.fieldName() + " == null) {",
+                    "            this." + recordField.fieldName() + " = new " + ArrayList.class.getName() + "();",
+                    "        }",
+                    "        this." + recordField.fieldName() + ".add(" + recordField.singularName() + ");",
+                    "    }",
+                    ""
+                ))
+            .toList();
+
+        TypeElement te = records.typeElement();
+        List<String> creatorStart = List.of(
+            "    @Override",
+            "    public " + te + " get() {",
+            "        return new " + te + "("
+        );
+
+        List<String> creatorMeat = te.getRecordComponents()
+            .stream()
+            .map(el ->
+                "            " + Gen.fieldName(el) + ",")
+            .collect(Collectors.toCollection(LinkedList::new));
+        String last = creatorMeat.removeLast();
+        creatorMeat.addLast(last.substring(0, last.length() - 1));
+
+        List<String> creatorEnd = List.of(
+            "        );",
+            "    }"
+        );
+
+        try (BufferedWriter bw = Gen.writer(file)) {
+            Gen.write(bw, "package " + records.packageElement().getQualifiedName() + ";");
+            Gen.write(bw, "");
+            Gen.write(
+                bw,
+                "final class " + builderClass(te) +
+                " implements " + Supplier.class.getName() + "<" + te.getSimpleName() + ">{",
+                "",
+                "    static " + builderClass(te) + " create() {",
+                "        return new " + builderClass(te) + "();",
+                "    }",
+                "",
+                "    private " + builderClass(te) + "() {",
+                "    }",
+                ""
+            );
+            Gen.write(bw, "");
+            Gen.write(bw, setters);
+            Gen.write(bw, adders);
+            Gen.write(bw, creatorStart);
+            Gen.write(bw, creatorMeat);
+            Gen.write(bw, creatorEnd);
+            Gen.write(bw, "}");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write builder for " + te, e);
+        }
+    }
+
+    private void writeCallbacks(
+        PackageElement pe,
+        TypeElement te,
+        JavaFileObject file,
+        Set<? extends Element> roots,
+        Set<? extends Element> enums
+    ) {
+        Name name = te.getSimpleName();
+        try (BufferedWriter bw = Gen.writer(file)) {
+            Gen.write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                "final class " + callbacksClass(te),
+                "    extends " + AbstractCallbacks.class.getName() + "<" + builderClass(te) + ", " + name + "> {",
+                "",
+                "    static " + callbacksClass(te) + " create(",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        return create(null, onDone);",
+                "    }",
+                "",
+                "    static " + callbacksClass(te) + " create(",
+                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        return new " + callbacksClass(te) + "(parent, onDone);",
+                "    }",
+                "",
+                "    private " + callbacksClass(te) + "(",
+                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent, ",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        super(" + builderClass(te) + ".create(), parent, onDone);"
+            );
+            Gen.write(bw, te.getRecordComponents()
+                .stream()
+                .map(element ->
+                    "        " + RecordAttribute.create(element, roots, enums).callbackHandler(te) + ";"
+                )
+                .toList());
+            Gen.write(bw, "    }");
+            Gen.write(bw, "}");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
+        }
+    }
+
+    private void writeWriter(
+        PackageElement pe,
+        TypeElement te,
+        JavaFileObject file,
+        Set<? extends Element> roots,
+        Set<? extends Element> enums,
+        Types typeUtils
+    ) {
+        try (BufferedWriter bw = Gen.writer(file)) {
+            Gen.write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                "final class " + writerClass(te),
+                "    extends " + AbstractObjectWriter.class.getName() + "<" + te.getQualifiedName() + "> {",
+                "",
+                "    protected " + FieldEvents.class.getName() + " doWrite(",
+                "        " + te.getQualifiedName() + " " + Gen.variableName(te) + ", ",
+                "        " + FieldEvents.class.getName() + " events",
+                "    ) {",
+                "        return events"
+            );
+            te.getRecordComponents()
+                .stream()
+                .map(element -> RecordAttribute.create(element, roots, enums))
+                .forEach(recordAttribute ->
+                    Gen.write(
+                        bw,
+                        "            ." + recordAttribute.writeCall(te, typeUtils)
+                    ));
+            Gen.write(
+                bw,
+                "        ;",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
+        }
+
+    }
+
+    private void writeRW(
+        PackageElement pe,
+        TypeElement te,
+        JavaFileObject file,
+        boolean read,
+        boolean write
+    ) {
+        Name name = te.getQualifiedName();
+        try (BufferedWriter bw = Gen.writer(file)) {
+            Gen.write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                "public final class " + rwClass(te) + " extends " + AbstractJsonRW.class.getName() + "<",
+                "    " + name + ",",
+                "    " + callbacksClass(te),
+                "> {",
+                "",
+                "    public static " + rwClass(te) + " INSTANCE = new " + rwClass(te) + "();",
+                "",
+                "    private " + rwClass(te) + "() {",
+                "        super(",
+                "            " + name + ".class,",
+                "            " + (read ? callbacksClass(te) + "::create" : "null") + ",",
+                "            " + (write ? "new " + writerClass(te) + "()" : "null"),
+                "        );",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write factory for " + te, e);
+        }
+
+    }
+
     private static final String JS_REC = JsonRecord.class.getName();
+
+    private static String rwClass(TypeElement te) {
+        JsonRecord rec = te.getAnnotation(JsonRecord.class);
+        String name = te.getSimpleName().toString();
+        return rec == null || rec.factoryClass().isBlank()
+            ? name + "RW"
+            : rec.factoryClass();
+    }
 
     private static boolean isRecord(Element element) {
         return kind(element, ElementKind.RECORD) &&
@@ -113,8 +349,8 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     private static Set<? extends Element> types(RoundEnvironment roundEnv, Set<? extends Element> enums) {
         return roundEnv.getRootElements()
             .stream()
-            .filter(element -> element.getAnnotation(JsonRecord.class) != null)
-            .filter(element -> !enums.contains(element))
+            .filter(element ->
+                !enums.contains(element) && element.getAnnotation(JsonRecord.class) != null)
             .collect(Collectors.toSet());
     }
 
@@ -125,13 +361,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private static boolean isRoot(TypeElement typeElement) {
         return typeElement.getAnnotation(JsonRecord.class).root();
-    }
-
-    private static boolean hasRoots(Set<? extends Element> roots) {
-        return roots.stream()
-            .filter(TypeElement.class::isInstance)
-            .map(TypeElement.class::cast)
-            .anyMatch(JsonRecordProcessor::isRoot);
     }
 
     private static String write(Set<? extends Element> roots) {
