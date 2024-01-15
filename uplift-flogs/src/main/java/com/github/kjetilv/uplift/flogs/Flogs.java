@@ -21,14 +21,6 @@ public final class Flogs {
         initialize(logLevel, null, null);
     }
 
-    public static void initialize(ExecutorService background) {
-        initialize(null, null, background);
-    }
-
-    public static void initialize(LogLevel logLevel, ExecutorService background) {
-        initialize(logLevel, null, background);
-    }
-
     public static void initialize(LogLevel logLevel, Consumer<String> printer) {
         initialize(logLevel, printer, null);
     }
@@ -55,7 +47,6 @@ public final class Flogs {
     }
 
     public static void close() {
-        stop();
     }
 
     private Flogs() {
@@ -68,20 +59,7 @@ public final class Flogs {
     private static final FLoggers emergencyLoggers = initialized(null, null, null);
 
     private static FLoggers initialized(LogLevel logLevel, Consumer<String> printer, ExecutorService background) {
-        return floggers.updateAndGet(current -> {
-            if (background != null) {
-                Runtime.getRuntime().addShutdownHook(new Thread(Flogs::stop, "stop logger"));
-            }
-            return new FLoggers(logLevel, printer, Instant::now, background, null);
-        });
-    }
-
-    private static void stop() {
-        floggers.updateAndGet(loggers -> {
-            if (loggers != null) {
-                loggers.close();
-            }
-            return null;
-        });
+        return floggers.updateAndGet(current ->
+            new FLoggers(logLevel, printer, Instant::now, null));
     }
 }

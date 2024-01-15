@@ -17,7 +17,7 @@ public final class Main {
 
     public static void main(String[] args) {
         ManagedExecutors.configure(4, 10);
-        Flogs.initialize(LogLevel.DEBUG, ManagedExecutors.backgroundLogging());
+        Flogs.initialize(LogLevel.DEBUG);
         Integer lambdaPort =
             Arrays.stream(args).map(Integer::parseInt).findFirst().orElse(8081);
         Integer apiPort =
