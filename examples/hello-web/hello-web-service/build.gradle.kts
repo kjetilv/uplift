@@ -1,5 +1,3 @@
-import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
-
 plugins {
     java
     id("com.github.kjetilv.uplift.plugins.lambda") version "0.1.1-SNAPSHOT"
