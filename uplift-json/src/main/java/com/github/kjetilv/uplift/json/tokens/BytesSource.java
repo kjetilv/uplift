@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
 import java.io.InputStream;
-import java.util.function.Supplier;
+import java.util.function.IntSupplier;
 
 final class BytesSource extends AbstractBytesSource {
 
@@ -9,7 +9,7 @@ final class BytesSource extends AbstractBytesSource {
         super(reader(stream));
     }
 
-    private static Supplier<Integer> reader(InputStream stream) {
+    private static IntSupplier reader(InputStream stream) {
         return () -> {
             try {
                 return stream.read();

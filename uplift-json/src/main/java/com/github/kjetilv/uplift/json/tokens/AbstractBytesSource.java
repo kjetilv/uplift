@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
 import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.function.IntSupplier;
 
 public abstract sealed class AbstractBytesSource implements Source
     permits BytesSource, CharSequenceSource, CharsSource {
@@ -15,12 +15,12 @@ public abstract sealed class AbstractBytesSource implements Source
     @SuppressWarnings("StringBufferField")
     private StringBuilder currentLexeme = new StringBuilder();
 
-    private final Supplier<Integer> nextChar;
+    private final IntSupplier nextChar;
 
-    public AbstractBytesSource(Supplier<Integer> nextChar) {
+    public AbstractBytesSource(IntSupplier nextChar) {
         this.nextChar = Objects.requireNonNull(nextChar, "nextChar");
-        this.next1 = this.nextChar.get();
-        this.next2 = next1 < 0 ? -1 : this.nextChar.get();
+        this.next1 = this.nextChar.getAsInt();
+        this.next2 = next1 < 0 ? -1 : this.nextChar.getAsInt();
         this.progress = new Progress();
     }
 
@@ -78,7 +78,7 @@ public abstract sealed class AbstractBytesSource implements Source
     }
 
     private int nextChar() {
-        return this.nextChar.get();
+        return this.nextChar.getAsInt();
     }
 
     private static char toChar(int returned) {
