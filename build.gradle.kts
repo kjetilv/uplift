@@ -24,9 +24,17 @@ subprojects {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
-    tasks.test {
-        useJUnitPlatform()
+    tasks {
+        withType<JavaCompile> {
+            options.compilerArgs.add("--enable-preview")
+        }
+        withType<Test>() {
+            jvmArgs("--enable-preview")
+            useJUnitPlatform()
+        }
+        withType<JavaExec>() {
+            jvmArgs("--enable-preview")
+        }
     }
 
     if (project.name != "uplift-gradle-plugins") {
