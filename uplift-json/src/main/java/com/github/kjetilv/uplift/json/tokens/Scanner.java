@@ -14,10 +14,6 @@ import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
 public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
-    static final String CANONICAL_TRUE = "true";
-
-    static final String CANONICAL_FALSE = "false";
-
     public static Stream<Token> tokens(String source) {
         return tokenStream(new CharSequenceSource(source));
     }
@@ -59,6 +55,11 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + source + "]";
+    }
+
     private Token scanToken() {
         return switch (source.chomp()) {
             case '{' -> token(BEGIN_OBJECT, null, source.lexeme());
@@ -81,7 +82,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     }
 
     private Token expectedTokenTail(char[] tail, TokenType type, Object literal, String canonical) {
-        for (char c: tail) {
+        for (char c : tail) {
             if (source.chomp() != c) {
                 fail("Unknown identifier");
             }
@@ -89,7 +90,6 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return token(type, literal, canonical == null ? source.lexeme() : canonical);
     }
 
-    @SuppressWarnings("QuestionableName")
     private Token string() {
         boolean quoted = false;
         while (source.peek() != '"' && !source.done()) {
@@ -122,10 +122,9 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         // Look for a fractional part.
         if (source.peek() == '.' && isDigit(source.peekNext())) {
             // Consume the "."
-            source.advance();
-            while (isDigit(source.peek())) {
+            do {
                 source.advance();
-            }
+            } while (isDigit(source.peek()));
         }
         return token(NUMBER, number(source.lexeme()), source.lexeme());
     }
@@ -147,6 +146,10 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     private Token token(TokenType type, Object literal, String lexeme) {
         return new Token(type, lexeme, literal, source.line(), source.column() - lexeme.length());
     }
+
+    static final String CANONICAL_TRUE = "true";
+
+    static final String CANONICAL_FALSE = "false";
 
     private static final char[] RUE = "rue".toCharArray();
 
@@ -179,10 +182,5 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     private static boolean isWS(char c) {
         return Character.isWhitespace(c);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + source + "]";
     }
 }

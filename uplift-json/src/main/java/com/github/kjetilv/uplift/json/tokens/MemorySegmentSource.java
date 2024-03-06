@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
 import java.lang.foreign.MemorySegment;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -14,7 +15,18 @@ public final class MemorySegmentSource extends AbstractBytesSource {
 
     public static final int ALIGNMENT = Math.toIntExact(JAVA_LONG.byteSize());
 
-    private static IntSupplier reader(MemorySegment memorySegment, long startIndex, long endIndex) {
+    private static IntSupplier reader(
+        MemorySegment memorySegment,
+        long startIndex,
+        long endIndex
+    ) {
+        Objects.requireNonNull(memorySegment, "memorySegment");
+        if (startIndex < 0) {
+            throw new IllegalArgumentException("startIndex < 0: " + startIndex);
+        }
+        if (endIndex < startIndex) {
+            throw new IllegalArgumentException("endIndex < startIndex: " + endIndex + " < " + startIndex);
+        }
         return new IntSupplier() {
 
             private final long length = endIndex - startIndex;
