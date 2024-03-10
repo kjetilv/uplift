@@ -9,7 +9,6 @@ import com.github.kjetilv.uplift.json.io.StringSink;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -61,11 +60,6 @@ public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbac
     }
 
     @Override
-    public void read(MemorySegment memorySegment, long startIndex, long endIndex, Consumer<T> set) {
-        Events.parse(callbacks(set), memorySegment, startIndex, endIndex);
-    }
-
-    @Override
     public String write(T t) {
         return null;
     }
@@ -95,7 +89,8 @@ public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbac
         }
         return Objects.requireNonNull(
             newCallbacks.apply(set),
-            () -> newCallbacks +" -> " + set);
+            () -> newCallbacks + " -> " + set
+        );
     }
 
     private static <T> T extract(Consumer<Consumer<T>> consumer) {

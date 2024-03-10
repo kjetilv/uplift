@@ -3,8 +3,7 @@ package com.github.kjetilv.uplift.json.tokens;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 
-public abstract sealed class AbstractBytesSource implements Source
-    permits BytesSource, CharSequenceSource, CharsSource, MemorySegmentSource {
+public abstract class AbstractBytesSource implements Source {
 
     private final Progress progress;
 

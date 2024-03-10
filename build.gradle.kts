@@ -26,15 +26,11 @@ subprojects {
     }
     tasks {
         withType<JavaCompile> {
-            options.compilerArgs.add("--enable-preview")
-            options.forkOptions.jvmArgs!!.add("--enable-preview")
         }
         withType<Test>() {
-            jvmArgs("--enable-preview")
             useJUnitPlatform()
         }
         withType<JavaExec>() {
-            jvmArgs("--enable-preview")
         }
     }
 

@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.json.tokens.Token;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.foreign.MemorySegment;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
@@ -25,17 +24,7 @@ public interface EventHandler {
         return parse(Scanner.tokens(source), callbacks);
     }
 
-    static Callbacks parse(Callbacks callbacks, MemorySegment memorySegment, long startIndex, long endIndex) {
-        return parse(Scanner.tokens(memorySegment, startIndex, endIndex), callbacks);
-    }
-
-    EventHandler process(Token token);
-
-    default Callbacks callbacks() {
-        throw new UnsupportedOperationException(this + ": No callbacks");
-    }
-
-    private static Callbacks parse(
+    static Callbacks parse(
         Stream<Token> tokens, Callbacks callbacks
     ) {
         return tokens.reduce(
@@ -43,6 +32,12 @@ public interface EventHandler {
             EventHandler::process,
             noCombine()
         ).callbacks();
+    }
+
+    EventHandler process(Token token);
+
+    default Callbacks callbacks() {
+        throw new UnsupportedOperationException(this + ": No callbacks");
     }
 
     private static EventHandler init(Callbacks callbacks) {

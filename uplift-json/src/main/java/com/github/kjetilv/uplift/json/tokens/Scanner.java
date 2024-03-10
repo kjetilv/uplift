@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.json.tokens;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.foreign.MemorySegment;
 import java.math.BigDecimal;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -26,13 +25,9 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return tokenStream(new CharsSource(source));
     }
 
-    public static Stream<Token> tokens(MemorySegment memorySegment, long startIndex, long endIndex) {
-        return tokenStream(new MemorySegmentSource(memorySegment, startIndex, endIndex));
-    }
-
     private final Source source;
 
-    private Scanner(Source source) {
+    public Scanner(Source source) {
         super(Long.MAX_VALUE, IMMUTABLE | ORDERED);
         this.source = source;
     }

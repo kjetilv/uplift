@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.tokens;
 
-interface Source {
+public interface Source {
 
     default String lexeme() {
         return lexeme(false);
