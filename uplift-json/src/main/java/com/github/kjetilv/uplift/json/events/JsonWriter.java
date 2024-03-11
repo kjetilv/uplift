@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.json.events;
 
-public interface JsonWriter<T extends Record> {
+public interface JsonWriter<S, T extends Record, O> {
 
-    String write(T t);
+    S write(T t);
 
-    byte[] bytes(T t);
-
-    void write(T t, StringBuilder stringBuilder);
+    void write(T t, O out);
 }

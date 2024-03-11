@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
+import com.github.kjetilv.uplift.json.events.JsonReader;
+import com.github.kjetilv.uplift.json.events.JsonWriter;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -51,7 +53,7 @@ public class JsonRecordTest {
               "balance": "123.23"
             }
             """.formatted(uuid);
-        User readUser = Users.INSTANCE.read(json);
+        User readUser = STRING_READER.read(json);
         User expectedUser = new User(
             "Kjetil",
             1973,
@@ -95,7 +97,9 @@ public class JsonRecordTest {
               }
             }
             """;
-        assertThat(com.github.kjetilv.uplift.json.samplegen.Users.INSTANCE.read(addressJson).address())
+        assertThat(STRING_READER
+            .read(addressJson)
+            .address())
             .isEqualTo(
                 new Address(
                     "None Street",
@@ -118,12 +122,18 @@ public class JsonRecordTest {
 //            .objectStarted().field("streetName").string(user.address().streetName()).objectEnded()
 //            .field("aliases").arrayStarted()
 
-        Users.INSTANCE.write(user, sb);
+        WRITER.write(user, sb);
 
         System.out.println(sb);
 
-        User read2 = Users.INSTANCE.read(sb.toString());
+        User read2 = STRING_READER.read(sb.toString());
 
         assertThat(user).isEqualTo(read2);
     }
+
+    public static final JsonReader<String, User> STRING_READER =
+        Users.INSTANCE.stringReader();
+
+    public static final JsonWriter<String, User, StringBuilder> WRITER =
+        Users.INSTANCE.stringWriter();
 }

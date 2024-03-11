@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Events;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

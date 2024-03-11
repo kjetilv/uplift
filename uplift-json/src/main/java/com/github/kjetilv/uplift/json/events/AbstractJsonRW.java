@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.Events;
+import com.github.kjetilv.uplift.json.JsonRW;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
 import com.github.kjetilv.uplift.json.io.StreamSink;
@@ -14,8 +14,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbacks<?, T>>
-    implements JsonReader<T>, JsonWriter<T> {
+public abstract class AbstractJsonRW<
+    T extends Record,
+    C extends AbstractCallbacks<?, T>
+    > implements JsonRW<
+    T,
+    C
+    > {
 
     private final Class<T> type;
 
@@ -30,50 +35,87 @@ public abstract class AbstractJsonRW<T extends Record, C extends AbstractCallbac
     }
 
     @Override
-    public T read(String string) {
-        return extract(consumer -> read(string, consumer));
+    public final JsonReader<String, T> stringReader() {
+        return new JsonReader<>() {
+
+            @Override
+            public T read(String source) {
+                return extract(consumer -> read(source, consumer));
+            }
+
+            @Override
+            public void read(String source, Consumer<T> set) {
+                Events.parse(callbacks(set), source);
+            }
+        };
     }
 
     @Override
-    public T read(InputStream inputStream) {
-        return extract(setter -> read(inputStream, setter));
+    public final JsonReader<InputStream, T> streamReader() {
+        return new JsonReader<>() {
+
+            @Override
+            public T read(InputStream source) {
+                return extract(consumer -> read(source, consumer));
+            }
+
+            @Override
+            public void read(InputStream source, Consumer<T> set) {
+                Events.parse(callbacks(set), source);
+            }
+        };
     }
 
     @Override
-    public T read(Reader reader) {
-        return extract(setter -> read(reader, setter));
+    public final JsonReader<Reader, T> readerReader() {
+        return new JsonReader<>() {
+
+            @Override
+            public T read(Reader source) {
+                return extract(consumer -> read(source, consumer));
+            }
+
+            @Override
+            public void read(Reader source, Consumer<T> set) {
+                Events.parse(callbacks(set), source);
+            }
+        };
     }
 
     @Override
-    public void read(String string, Consumer<T> set) {
-        Events.parse(callbacks(set), string);
+    public final JsonWriter<String, T, StringBuilder> stringWriter() {
+        return new JsonWriter<>() {
+
+            @Override
+            public String write(T t) {
+                StringBuilder out = new StringBuilder();
+                write(t, out);
+                return out.toString();
+            }
+
+            @Override
+            public void write(T t, StringBuilder out) {
+                objectWriter().write(t, new DefaultFieldEvents(null, new StringSink(out)));
+            }
+        };
     }
 
     @Override
-    public void read(Reader reader, Consumer<T> set) {
-        Events.parse(callbacks(set), reader);
-    }
+    public final JsonWriter<byte[], T, ByteArrayOutputStream> streamWriter() {
+        return new JsonWriter<>() {
 
-    @Override
-    public void read(InputStream string, Consumer<T> set) {
-        Events.parse(callbacks(set), string);
-    }
+            @Override
+            public byte[] write(T t) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                write(t, baos);
+                return baos.toByteArray();
+            }
 
-    @Override
-    public String write(T t) {
-        return null;
-    }
-
-    @Override
-    public byte[] bytes(T t) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        objectWriter().write(t, new DefaultFieldEvents(null, new StreamSink(baos)));
-        return baos.toByteArray();
-    }
-
-    @Override
-    public void write(T t, StringBuilder stringBuilder) {
-        objectWriter().write(t, new DefaultFieldEvents(null, new StringSink(stringBuilder)));
+            @Override
+            public void write(T t, ByteArrayOutputStream out) {
+                objectWriter().write(t, new DefaultFieldEvents(null, new StreamSink(out)));
+            }
+        };
     }
 
     private ObjectWriter<T> objectWriter() {
