@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-public interface Canonical {
+interface Canonical {
 
     String TRUE = "true";
 

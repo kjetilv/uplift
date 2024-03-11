@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.io.Canonical;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.time.Duration;
@@ -32,7 +31,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
     }
 
     protected String value(Boolean value) {
-        return value ? Canonical.TRUE : Canonical.FALSE;
+        return value ? "true" : "false";
     }
 
     protected String value(Number value) {
