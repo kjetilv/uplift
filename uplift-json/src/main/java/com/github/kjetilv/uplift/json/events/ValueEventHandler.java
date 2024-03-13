@@ -5,10 +5,10 @@ import com.github.kjetilv.uplift.json.tokens.Token;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class ValueEventHandler
+public final class ValueEventHandler
     extends AbstractEventHandler {
 
-    ValueEventHandler(Callbacks callbacks) {
+    public ValueEventHandler(Callbacks callbacks) {
         this(null, callbacks);
     }
 

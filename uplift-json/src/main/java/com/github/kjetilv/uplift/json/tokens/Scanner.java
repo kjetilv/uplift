@@ -167,7 +167,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return Long.parseLong(value);
     }
 
-    private static Stream<Token> tokenStream(Source source) {
+    public static Stream<Token> tokenStream(Source source) {
         return StreamSupport.stream(new Scanner(source), false);
     }
 

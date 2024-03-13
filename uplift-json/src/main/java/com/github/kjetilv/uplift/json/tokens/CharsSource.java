@@ -3,9 +3,9 @@ package com.github.kjetilv.uplift.json.tokens;
 import java.io.Reader;
 import java.util.function.IntSupplier;
 
-final class CharsSource extends AbstractBytesSource {
+public final class CharsSource extends AbstractBytesSource {
 
-    CharsSource(Reader reader) {
+    public CharsSource(Reader reader) {
         super(reader(reader));
     }
 
