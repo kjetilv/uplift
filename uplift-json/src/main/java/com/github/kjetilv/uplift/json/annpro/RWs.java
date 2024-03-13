@@ -59,7 +59,7 @@ final class RWs extends Gen {
                 "        super(",
                 "            " + name + ".class,",
                 "            " + (read ? callbacksClassQ(te) + "::create" : "null") + ",",
-                "            " + (write ? "new " + writerClass(te) + "()" : "null"),
+                "            " + (write ? "new " + writerClassQ(te) + "()" : "null"),
                 "        );",
                 "    }",
                 "}"
