@@ -175,25 +175,25 @@ record RecordAttribute(
         PRIMITIVE() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + setter(element);
+                return builderClassQ(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + adder(element);
+                return builderClassQ(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + setter(element) + ")";
+                return "() -> " + callbacksClassQ(generated) + ".create(this, builder()::" + setter(element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClass(generated) + ".create(this, builder()::" + adder(element) + ")";
+                return "() -> " + callbacksClassQ(generated) + ".create(this, builder()::" + adder(element) + ")";
             }
         },
         GENERIC_MAP() {
@@ -210,7 +210,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + setter(element);
+                return builderClassQ(builderType) + "::" + setter(element);
             }
         },
         ENUM_LIST {
@@ -221,7 +221,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClass(builderType) + "::" + adder(element);
+                return builderClassQ(builderType) + "::" + adder(element);
             }
         };
 

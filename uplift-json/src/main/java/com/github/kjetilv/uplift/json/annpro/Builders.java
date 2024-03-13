@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json.annpro;
 
+import javax.annotation.processing.Generated;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
@@ -73,21 +75,27 @@ final class Builders extends Gen {
             "    }"
         );
 
+        Name name = te.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
             write(bw, "package " + pe.getQualifiedName() + ";");
             write(bw, "");
             write(
                 bw,
-                "final class " + builderClass(te) +
-                " implements " + Supplier.class.getName() + "<" + te.getSimpleName() + ">{",
+                "@" + Generated.class.getName() + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time() + "\"",
+                ")",
+                "final class " + builderClass(te),
+                "    implements " + Supplier.class.getName() + "<",
+                "        " + name,
+                "    > {",
                 "",
-                "    static " + builderClass(te) + " create() {",
-                "        return new " + builderClass(te) + "();",
+                "    static " + builderClassQ(te) + " create() {",
+                "        return new " + builderClassQ(te) + "();",
                 "    }",
                 "",
                 "    private " + builderClass(te) + "() {",
-                "    }",
-                ""
+                "    }"
             );
             write(bw, "");
             write(bw, setters);

@@ -13,7 +13,6 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -146,7 +145,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static boolean kind(Element e, ElementKind... kinds) {
-        return Arrays.asList(kinds).contains(e.getKind());
+        return Set.of(kinds).contains(e.getKind());
     }
-
 }

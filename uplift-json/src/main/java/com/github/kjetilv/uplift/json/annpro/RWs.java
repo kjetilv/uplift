@@ -2,11 +2,14 @@ package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.events.AbstractJsonRW;
 
+import javax.annotation.processing.Generated;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 final class RWs extends Gen {
 
@@ -23,35 +26,39 @@ final class RWs extends Gen {
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "import java.util.function.Consumer;",
-                "import java.util.function.Function;",
-                "",
-                "public final class " + factoryClass(te) + " extends " + AbstractJsonRW.class.getName() + "<",
-                "    " + name + ",",
-                "    " + callbacksClass(te),
-                "> {",
+                "@" + Generated.class.getName() + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time() + "\"",
+                ")",
+                "public final class " + factoryClass(te),
+                "    extends " + AbstractJsonRW.class.getName() + "<",
+                "        " + name + ",",
+                "        " + callbacksClassQ(te),
+                "    > {",
                 "",
                 "    public static com.github.kjetilv.uplift.json.JsonRW<",
                 "        " + name + ",",
-                "        " + callbacksClass(te),
+                "        " + callbacksClassQ(te),
                 "    > INSTANCE = new " + factoryClass(te) + "();",
                 "",
-                "    public static Function<",
-                "        Consumer<"+ name+  ">,",
-                "        " + callbacksClass(te),
+                "    public static " + Function.class.getName() + "< ",
+                "        " + Consumer.class.getName() + "<" + name + ">,",
+                "        " + callbacksClassQ(te),
                 "    > callbacks() {",
-                "        return " + callbacksClass(te)+ "::create;",
+                "        return " + callbacksClassQ(te) + "::create;",
                 "    }",
                 "",
                 "    @Override",
-                "    public " + callbacksClass(te) + " callbacks(Consumer<" + name + "> onDone) {",
-                "        return " + callbacksClass(te) + ".create(onDone);",
+                "    public " + callbacksClassQ(te) + " callbacks(",
+                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "    ) {",
+                "        return " + callbacksClassQ(te) + ".create(onDone);",
                 "    }",
                 "",
                 "    private " + factoryClass(te) + "() {",
                 "        super(",
                 "            " + name + ".class,",
-                "            " + (read ? callbacksClass(te) + "::create" : "null") + ",",
+                "            " + (read ? callbacksClassQ(te) + "::create" : "null") + ",",
                 "            " + (write ? "new " + writerClass(te) + "()" : "null"),
                 "        );",
                 "    }",

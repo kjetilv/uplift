@@ -12,6 +12,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -76,12 +80,24 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         return te.getSimpleName() + "Builder";
     }
 
+    static String builderClassQ(TypeElement te) {
+        return te.getQualifiedName() + "Builder";
+    }
+
     static String callbacksClass(TypeElement te) {
         return te.getSimpleName() + "Callbacks";
     }
 
+    static String callbacksClassQ(TypeElement te) {
+        return te.getQualifiedName() + "Callbacks";
+    }
+
     static String writerClass(TypeElement te) {
         return te.getSimpleName() + "Writer";
+    }
+
+    static String writerClassQ(TypeElement te) {
+        return te.getQualifiedName() + "Writer";
     }
 
     static String writerClass(Object te) {
@@ -181,9 +197,17 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
     static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(el ->
-                el.fieldTypes().stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
-            .flatMap(baseType -> baseType.fieldTypes().stream())
+                el.fieldTypes()
+                    .stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
+            .flatMap(baseType -> baseType.fieldTypes()
+                .stream())
             .findFirst();
+    }
+
+    static String time() {
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of("Z"))
+            .format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     private static final String DEFAULT_SUFFIX = "RW";

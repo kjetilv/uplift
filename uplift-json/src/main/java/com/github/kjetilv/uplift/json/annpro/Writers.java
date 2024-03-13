@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.annpro;
 import com.github.kjetilv.uplift.json.AbstractObjectWriter;
 import com.github.kjetilv.uplift.json.FieldEvents;
 
+import javax.annotation.processing.Generated;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -26,8 +27,14 @@ final class Writers extends Gen {
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
+                "@" + Generated.class.getName() + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time() + "\"",
+                ")",
                 "final class " + writerClass(te),
-                "    extends " + AbstractObjectWriter.class.getName() + "<" + te.getQualifiedName() + "> {",
+                "    extends " + AbstractObjectWriter.class.getName() + "<",
+                "        " + te.getQualifiedName(),
+                "    > {",
                 "",
                 "    protected " + FieldEvents.class.getName() + " doWrite(",
                 "        " + te.getQualifiedName() + " " + variableName(te) + ", ",
@@ -57,5 +64,4 @@ final class Writers extends Gen {
 
     private Writers() {
     }
-
 }

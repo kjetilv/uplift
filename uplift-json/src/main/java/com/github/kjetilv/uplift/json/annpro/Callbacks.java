@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.annpro;
 
 import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
 
+import javax.annotation.processing.Generated;
 import javax.lang.model.element.*;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
@@ -17,36 +18,40 @@ final class Callbacks extends Gen {
         Set<? extends Element> roots,
         Set<? extends Element> enums
     ) {
-        Name name = te.getSimpleName();
+        Name name = te.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "import java.util.function.Consumer;",
-                "import java.util.function.Function;",
-                "",
+                "@" + Generated.class.getName() + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time() + "\"",
+                ")",
                 "public final class " + callbacksClass(te),
-                "    extends " + AbstractCallbacks.class.getName() + "<" + builderClass(te) + ", " + name + "> {",
+                "    extends " + AbstractCallbacks.class.getName() + "<",
+                "        " + builderClassQ(te) + ",",
+                "        " + name,
+                "    > {",
                 "",
-                "    public static " + callbacksClass(te) + " create(",
+                "    public static " + callbacksClassQ(te) + " create(",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
-                "    static " + callbacksClass(te) + " create(",
+                "    static " + callbacksClassQ(te) + " create(",
                 "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
-                "        return new " + callbacksClass(te) + "(parent, onDone);",
+                "        return new " + callbacksClassQ(te) + "(parent, onDone);",
                 "    }",
                 "",
                 "    " + callbacksClass(te) + "(",
                 "        " + AbstractCallbacks.class.getName() + "<?, ?> parent, ",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
-                "        super(" + builderClass(te) + ".create(), parent, onDone);"
+                "        super(" + builderClassQ(te) + ".create(), parent, onDone);"
             );
             write(bw, te.getRecordComponents()
                 .stream()
