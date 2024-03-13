@@ -29,6 +29,8 @@ public abstract class AbstractJsonRW<
         this.objectWriter = objectWriter;
     }
 
+    public abstract C callbacks(Consumer<T> onDone);
+
     @Override
     public final JsonReader<String, T> stringReader() {
         return new StringJsonReader<>(callbacks);
@@ -53,5 +55,7 @@ public abstract class AbstractJsonRW<
     public final JsonWriter<byte[], T, ByteArrayOutputStream> streamWriter() {
         return new OutputStreamJsonWriter<>(objectWriter);
     }
+
+
 
 }

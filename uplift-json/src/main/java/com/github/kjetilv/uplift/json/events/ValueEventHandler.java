@@ -34,7 +34,7 @@ public final class ValueEventHandler
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks callbacks) {
+    protected ValueEventHandler with(Callbacks callbacks) {
         return new ValueEventHandler(exit(), callbacks);
     }
 }

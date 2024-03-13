@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json.ffm;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;
@@ -16,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -24,6 +22,24 @@ public class JsonEventCallbacksMemorySegmentTest {
 
     public static MemorySegment of(String json) {
         return MemorySegment.ofBuffer(byteBuffer(json.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public static Stream<Token> tokens(Source source) {
+        return StreamSupport.stream(new Scanner(source), false);
+    }
+
+    static Callbacks parse(Callbacks callbacks, Stream<Token> tokens) {
+        return parse(tokens, callbacks);
+    }
+
+    static Callbacks parse(Stream<Token> tokens, Callbacks callbacks) {
+        return tokens.reduce(
+            new ValueEventHandler(callbacks),
+            EventHandler::process,
+            (_, _) -> {
+                throw new IllegalStateException();
+            }
+        ).callbacks();
     }
 
     @Test
@@ -38,9 +54,7 @@ public class JsonEventCallbacksMemorySegmentTest {
         MemorySegment memorySegment = of(source);
         Callbacks myCallbacks = parse(
             callbacks(),
-            memorySegment,
-            0L,
-            memorySegment.byteSize()
+            tokens(new MemorySegmentSource(memorySegment, 0L, memorySegment.byteSize()))
         );
         Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -71,39 +85,6 @@ public class JsonEventCallbacksMemorySegmentTest {
         );
     }
 
-    public static Callbacks parse(Callbacks callbacks, MemorySegment memorySegment) {
-        return parse(
-            callbacks,
-            Objects.requireNonNull(memorySegment, "memorySegment"),
-            0L,
-            memorySegment.byteSize()
-        );
-    }
-
-    static Callbacks parse(Callbacks callbacks, MemorySegment memorySegment, long startIndex, long endIndex) {
-        return parse(tokens(memorySegment, startIndex, endIndex), callbacks);
-    }
-
-    public static Stream<Token> tokens(MemorySegment memorySegment, long startIndex, long endIndex) {
-        return tokenStream(new MemorySegmentSource(memorySegment, startIndex, endIndex));
-    }
-
-    static Callbacks parse(
-        Stream<Token> tokens, Callbacks callbacks
-    ) {
-        return tokens.reduce(
-            new ValueEventHandler(callbacks),
-            EventHandler::process,
-            (_, _) -> {
-                throw new IllegalStateException();
-            }
-        ).callbacks();
-    }
-
-    public static Stream<Token> tokenStream(Source source) {
-        return StreamSupport.stream(new Scanner(source), false);
-    }
-
     @Test
     void obj() {
         String source = """
@@ -117,9 +98,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            of(source),
-            0L,
-            source.length()
+            tokens(new MemorySegmentSource(of(source), 0L, source.length()))
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -146,9 +125,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            of(source),
-            0L,
-            source.length()
+            tokens(new MemorySegmentSource(of(source), 0L, source.length()))
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
@@ -177,15 +154,14 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         parse(
             callbacks,
-            of(source),
-            0L,
-            source.length()
+            tokens(new MemorySegmentSource(of(source), 0L, source.length()))
         );
     }
 
+    private static final Pattern WS = Pattern.compile("\\s+");
+
     private static List<String> lines(String text) {
-        return Arrays.stream(text.split("\\s+"))
-            .toList();
+        return Arrays.stream(WS.split(text)).toList();
     }
 
     private static Callbacks callbacks() {
