@@ -1,22 +1,39 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.events.JsonReader;
-import com.github.kjetilv.uplift.json.events.JsonWriter;
+import com.github.kjetilv.uplift.json.events.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface JsonRW<T extends Record, C extends Callbacks> {
 
-    JsonReader<String, T> stringReader();
+    C callbacks(Consumer<T> onDone);
 
-    JsonReader<InputStream, T> streamReader();
+    Function<Consumer<T>, C> callbacks();
 
-    JsonReader<Reader, T> readerReader();
+    ObjectWriter<T> objectWriter();
 
-    JsonWriter<String, T, StringBuilder> stringWriter();
+    default JsonReader<String, T> stringReader() {
+        return new StringJsonReader<>(callbacks());
+    }
 
-    JsonWriter<byte[], T, ByteArrayOutputStream> streamWriter();
+    default JsonReader<InputStream, T> streamReader() {
+        return new InputStreamJsonReader<>(callbacks());
+    }
+
+    default JsonReader<Reader, T> readerReader() {
+        return new ReaderJsonReader<>(callbacks());
+    }
+
+    default JsonWriter<String, T, StringBuilder> stringWriter() {
+        return new StringJsonWriter<>(objectWriter());
+    }
+
+    default JsonWriter<byte[], T, ByteArrayOutputStream> streamWriter() {
+        return new OutputStreamJsonWriter<>(objectWriter());
+    }
 }

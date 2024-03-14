@@ -4,10 +4,7 @@ import com.github.kjetilv.uplift.json.anno.Field;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -98,6 +95,10 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
 
     static String writerClassQ(TypeElement te) {
         return te.getQualifiedName() + "Writer";
+    }
+
+    static String factoryClassQ(PackageElement pe, TypeElement te) {
+        return pe.getQualifiedName() + "." + factoryClass(te);
     }
 
     static String writerClass(Object te) {

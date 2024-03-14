@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class MemorySegmentJsonReaderTest {
 
     @Test
@@ -51,9 +53,12 @@ public class MemorySegmentJsonReaderTest {
             """.formatted(uuid);
 
         MemorySegmentJsonReader<User, UserCallbacks> reader =
-            new MemorySegmentJsonReader<>(Users.callbacks());
+            new MemorySegmentJsonReader<>(Users.INSTANCE.callbacks());
 
         User user = reader.read(LineSegments.of(json));
         System.out.println(user);
+
+        String written = Users.INSTANCE.stringWriter().write(user);
+        assertThat(reader.read(LineSegments.of(written))).isEqualTo(user);
     }
 }

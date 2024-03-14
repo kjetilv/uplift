@@ -4,9 +4,9 @@ import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.Sink;
 import com.github.kjetilv.uplift.json.io.StringSink;
 
-class StringJsonWriter<T extends Record, B> extends AbstractJsonWriter<T, StringBuilder, String> {
+public class StringJsonWriter<T extends Record, B> extends AbstractJsonWriter<T, StringBuilder, String> {
 
-    StringJsonWriter(ObjectWriter<T> objectWriter) {
+    public StringJsonWriter(ObjectWriter<T> objectWriter) {
         super(objectWriter);
     }
 

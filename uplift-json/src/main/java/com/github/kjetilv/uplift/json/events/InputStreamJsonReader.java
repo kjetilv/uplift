@@ -8,9 +8,9 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class InputStreamJsonReader<T extends Record, C extends Callbacks> extends AbstractJsonReader<InputStream, T, C> {
+public class InputStreamJsonReader<T extends Record, C extends Callbacks> extends AbstractJsonReader<InputStream, T, C> {
 
-    InputStreamJsonReader(Function<Consumer<T>, C> callbacks) {
+    public InputStreamJsonReader(Function<Consumer<T>, C> callbacks) {
         super(callbacks);
     }
 

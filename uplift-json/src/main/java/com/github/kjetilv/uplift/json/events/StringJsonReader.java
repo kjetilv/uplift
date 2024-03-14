@@ -7,9 +7,9 @@ import com.github.kjetilv.uplift.json.tokens.Source;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class StringJsonReader<T extends Record, C extends Callbacks> extends AbstractJsonReader<String, T, C> {
+public class StringJsonReader<T extends Record, C extends Callbacks> extends AbstractJsonReader<String, T, C> {
 
-    StringJsonReader(Function<Consumer<T>, C> callbacks) {
+    public StringJsonReader(Function<Consumer<T>, C> callbacks) {
         super(callbacks);
     }
 

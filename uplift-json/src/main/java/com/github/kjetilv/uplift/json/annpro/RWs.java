@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import com.github.kjetilv.uplift.json.events.AbstractJsonRW;
+import com.github.kjetilv.uplift.json.JsonRW;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 
 import javax.annotation.processing.Generated;
 import javax.lang.model.element.Name;
@@ -13,13 +14,7 @@ import java.util.function.Function;
 
 final class RWs extends Gen {
 
-    public static void writeRW(
-        PackageElement pe,
-        TypeElement te,
-        JavaFileObject file,
-        boolean read,
-        boolean write
-    ) {
+    public static void writeRW(PackageElement pe, TypeElement te, JavaFileObject file) {
         Name name = te.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
             write(
@@ -31,7 +26,7 @@ final class RWs extends Gen {
                 "    date = \"" + time() + "\"",
                 ")",
                 "public final class " + factoryClass(te),
-                "    extends " + AbstractJsonRW.class.getName() + "<",
+                "    implements " + JsonRW.class.getName() + "<",
                 "        " + name + ",",
                 "        " + callbacksClassQ(te),
                 "    > {",
@@ -41,7 +36,8 @@ final class RWs extends Gen {
                 "        " + callbacksClassQ(te),
                 "    > INSTANCE = new " + factoryClass(te) + "();",
                 "",
-                "    public static " + Function.class.getName() + "< ",
+                "    @Override",
+                "    public " + Function.class.getName() + "< ",
                 "        " + Consumer.class.getName() + "<" + name + ">,",
                 "        " + callbacksClassQ(te),
                 "    > callbacks() {",
@@ -55,12 +51,12 @@ final class RWs extends Gen {
                 "        return " + callbacksClassQ(te) + ".create(onDone);",
                 "    }",
                 "",
+                "    @Override",
+                "    public " + ObjectWriter.class.getName() + "<" + name + "> objectWriter() {",
+                "        return new " + writerClassQ(te) + "();",
+                "    }",
+                "",
                 "    private " + factoryClass(te) + "() {",
-                "        super(",
-                "            " + name + ".class,",
-                "            " + (read ? callbacksClassQ(te) + "::create" : "null") + ",",
-                "            " + (write ? "new " + writerClassQ(te) + "()" : "null"),
-                "        );",
                 "    }",
                 "}"
             );
