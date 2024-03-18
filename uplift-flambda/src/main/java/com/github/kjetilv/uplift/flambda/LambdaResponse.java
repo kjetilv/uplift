@@ -21,8 +21,10 @@ record LambdaResponse(
     }
 
     private byte[] resolveBody() {
-        return body == null || body.isEmpty() ? BytesIO.NOBODY
+        return body == null || body.isEmpty() ? NO_BODY
             : isBase64Encoded() ? BytesIO.fromBase64(body())
                 : body().getBytes(StandardCharsets.UTF_8);
     }
+
+    public static final byte[] NO_BODY = {};
 }

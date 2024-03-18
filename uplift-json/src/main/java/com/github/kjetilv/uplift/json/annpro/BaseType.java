@@ -30,16 +30,17 @@ enum BaseType {
 
     static BaseType of(RecordComponentElement typeElement) {
         try {
-            return pick(typeElement, baseType -> isFor(baseType, typeElement));
+            return pick(typeElement, baseType ->
+                isFor(baseType, typeElement));
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for element " + typeElement, e);
-
         }
     }
 
     static BaseType of(String name) {
         try {
-            return pick(name, baseType -> isFor(baseType, name));
+            return pick(name, baseType ->
+                isFor(baseType, name));
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for type named " + name, e);
         }
@@ -95,7 +96,7 @@ enum BaseType {
             .filter(baseTypePredicate)
             .findFirst()
             .orElseThrow(() ->
-                new IllegalArgumentException("Unsupported: " + name));
+                new IllegalArgumentException("Unsupported: " + name + " (" + name.getClass() + ")"));
     }
 
     private static boolean isFor(BaseType type, RecordComponentElement typeElement) {

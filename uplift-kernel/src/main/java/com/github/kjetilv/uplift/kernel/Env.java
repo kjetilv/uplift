@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.kernel.aws.DefaultEnv;
 
-@SuppressWarnings("unused")
 public interface Env {
 
     static Env actual() {
@@ -29,10 +28,6 @@ public interface Env {
     String secretKey(String profile);
 
     String sessionToken();
-
-    String authorizationToken();
-
-    String credentialsFullUri();
 
     AtomicReference<DefaultEnv> ENV = new AtomicReference<>();
 }

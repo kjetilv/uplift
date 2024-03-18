@@ -31,7 +31,7 @@ final class Writers extends Gen {
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time() + "\"",
                 ")",
-                "final class " + writerClass(te),
+                "final class " + writerClassPlain(te),
                 "    extends " + AbstractObjectWriter.class.getName() + "<",
                 "        " + te.getQualifiedName(),
                 "    > {",

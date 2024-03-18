@@ -8,11 +8,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public record Range(
-    Long start,
-    Long exclusiveEnd,
-    Long length
-) {
+public record Range(Long start, Long exclusiveEnd, Long length) {
 
     private static final Logger log = LoggerFactory.getLogger(Range.class);
 
@@ -29,12 +25,12 @@ public record Range(
                         if (dashIndex < 0) {
                             return empty(header);
                         }
-                        Long start = dashIndex == 0 ? null : ParseBits.parseLong(range.substring(0, dashIndex));
+                        Long start = dashIndex == 0 ? null : Long.parseLong(range.substring(0, dashIndex));
                         Long
                             exclusiveEnd =
                             range.endsWith("-")
                                 ? null
-                                : ParseBits.parseLong(range.substring(dashIndex + 1)) + 1;
+                                : Long.parseLong(range.substring(dashIndex + 1)) + 1;
                         if (start == null || exclusiveEnd == null || start < exclusiveEnd) {
                             return Stream.of(new Range(start, exclusiveEnd));
                         }

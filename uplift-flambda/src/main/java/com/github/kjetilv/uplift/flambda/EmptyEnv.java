@@ -32,13 +32,4 @@ public class EmptyEnv implements Env {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public String authorizationToken() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String credentialsFullUri() {
-        throw new UnsupportedOperationException();
-    }
 }

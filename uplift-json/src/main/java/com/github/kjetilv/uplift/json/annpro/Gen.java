@@ -73,36 +73,27 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         }
     }
 
-    static String builderClass(TypeElement te) {
-        return te.getSimpleName() + "Builder";
+    static String builderClassPlain(TypeElement te) {
+        return simpleName(te) + "_Builder";
     }
 
-    static String builderClassQ(TypeElement te) {
-        return te.getQualifiedName() + "Builder";
+    static String callbacksClassPlain(TypeElement te) {
+        return simpleName(te) + "_Callbacks";
     }
 
-    static String callbacksClass(TypeElement te) {
-        return te.getSimpleName() + "Callbacks";
+    static String writerClassPlain(TypeElement te) {
+        return simpleName(te) + "_Writer";
     }
 
-    static String callbacksClassQ(TypeElement te) {
-        return te.getQualifiedName() + "Callbacks";
-    }
-
-    static String writerClass(TypeElement te) {
-        return te.getSimpleName() + "Writer";
-    }
-
-    static String writerClassQ(TypeElement te) {
-        return te.getQualifiedName() + "Writer";
+    static String simpleName(TypeElement te) {
+        String packageName = packageElement(te).toString();
+        return te.getQualifiedName().toString()
+            .substring(packageName.length() + 1)
+            .replace('.', '_');
     }
 
     static String factoryClassQ(PackageElement pe, TypeElement te) {
         return pe.getQualifiedName() + "." + factoryClass(te);
-    }
-
-    static String writerClass(Object te) {
-        return te + "Writer";
     }
 
     static String factoryClass(TypeElement te) {
@@ -166,11 +157,11 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
     }
 
     static Optional<TypeElement> generatedEvent(RecordComponentElement element, Set<? extends Element> roots) {
+        String string = element.asType().toString();
         return roots.stream()
-            .filter(el ->
-                el instanceof TypeElement te && te.getQualifiedName().toString().equals(element.asType().toString()))
-            .findFirst()
-            .map(TypeElement.class::cast);
+            .filter(root -> root instanceof TypeElement te && te.getQualifiedName().toString().equals(string))
+            .map(TypeElement.class::cast)
+            .findFirst();
     }
 
     static Optional<TypeElement> generatedListType(
@@ -180,17 +171,6 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         return rootElements.stream()
             .filter(el ->
                 el instanceof TypeElement te && listType(te).equals(element.asType().toString()))
-            .findFirst()
-            .map(TypeElement.class::cast);
-    }
-
-    static Optional<TypeElement> genericMap(
-        String type,
-        Set<? extends Element> rootElements
-    ) {
-        return rootElements.stream()
-            .filter(el ->
-                el instanceof TypeElement te && type.equals(listType(te)))
             .findFirst()
             .map(TypeElement.class::cast);
     }
@@ -209,6 +189,13 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         return Instant.now().truncatedTo(ChronoUnit.SECONDS)
             .atZone(ZoneId.of("Z"))
             .format(DateTimeFormatter.ISO_DATE_TIME);
+    }
+
+    static PackageElement packageElement(Element te) {
+        Element enclosingElement = te.getEnclosingElement();
+        return enclosingElement instanceof PackageElement pe
+            ? pe
+            : packageElement(enclosingElement);
     }
 
     private static final String DEFAULT_SUFFIX = "RW";
@@ -237,7 +224,6 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
         Set<? extends Element> enums,
         Types typeUtils
     ) {
-        Element element1 = typeUtils.asElement(element.asType());
         Optional<Class<?>> primitiveListType = primitiveListType(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType

@@ -58,7 +58,8 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
-        if (e instanceof TypeElement te && te.getEnclosingElement() instanceof PackageElement pe) {
+        if (e instanceof TypeElement te) {
+            PackageElement pe = Gen.packageElement(te);
             JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
             Types typeUtils = processingEnv.getTypeUtils();
             Builders.writeBuilder(pe, te, builderFile(te), roots, enums, typeUtils);
@@ -89,7 +90,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private JavaFileObject file(TypeElement te, String type) {
-        return file(te.getQualifiedName() + type);
+        return file(Gen.simpleName(te) + '_' + type);
     }
 
     private JavaFileObject file(String name) {
@@ -102,10 +103,22 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private static final String JSON_RECORD = JsonRecord.class.getName();
 
+    private static boolean isJsonRecord(Set<? extends TypeElement> typedElements) {
+        return Stream.ofNullable(typedElements)
+            .flatMap(Collection::stream)
+            .anyMatch(typeElement ->
+                typeElement.getQualifiedName().toString().equals(JSON_RECORD));
+    }
+
     private static boolean isRecord(Element element) {
         return kind(element, ElementKind.RECORD) &&
                element instanceof TypeElement typeElement &&
-               typeElement.getEnclosingElement() instanceof PackageElement;
+               isPackageOrClass(typeElement.getEnclosingElement());
+    }
+
+    private static boolean isPackageOrClass(Element enclosingElement) {
+        return enclosingElement instanceof PackageElement ||
+               enclosingElement instanceof TypeElement;
     }
 
     private static Set<? extends Element> enums(RoundEnvironment roundEnv) {
@@ -114,24 +127,30 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static Set<? extends Element> types(RoundEnvironment roundEnv, Set<? extends Element> enums) {
-        return roundEnv.getRootElements()
-            .stream()
+        return typeStream(enums, roundEnv.getRootElements()
+            .stream())
+            .collect(Collectors.toSet());
+    }
+
+    private static Stream<? extends Element> typeStream(
+        Set<? extends Element> enums,
+        Stream<? extends Element> stream
+    ) {
+        return stream
             .filter(element ->
                 element.getAnnotation(JsonRecord.class) != null)
             .filter(element ->
                 !enums.contains(element))
-            .collect(Collectors.toSet());
-    }
-
-    private static boolean isJsonRecord(Set<? extends TypeElement> typedElements) {
-        return Stream.ofNullable(typedElements)
-            .flatMap(Collection::stream)
-            .anyMatch(typeElement ->
-                typeElement.getQualifiedName().toString().equals(JSON_RECORD));
-    }
-
-    private static boolean isRoot(TypeElement typeElement) {
-        return typeElement.getAnnotation(JsonRecord.class).root();
+            .flatMap(element ->
+                Stream.concat(
+                    Stream.of(element),
+                    typeStream(
+                        enums,
+                        element.getEnclosedElements()
+                            .stream()
+                            .filter(enc -> element.getKind().isClass())
+                    )
+                ));
     }
 
     private static boolean hasRoots(Set<? extends Element> roots) {
@@ -139,6 +158,10 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .filter(TypeElement.class::isInstance)
             .map(TypeElement.class::cast)
             .anyMatch(JsonRecordProcessor::isRoot);
+    }
+
+    private static boolean isRoot(TypeElement typeElement) {
+        return typeElement.getAnnotation(JsonRecord.class).root();
     }
 
     private static String write(Set<? extends Element> roots) {

@@ -4,9 +4,9 @@ import com.github.kjetilv.uplift.json.MapCallbacks;
 import com.github.kjetilv.uplift.json.MapWriter;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.util.Map;
 import java.util.Optional;
@@ -78,9 +78,18 @@ record RecordAttribute(
                "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + writerClass(listType.orElseGet(() -> element.asType().toString())) + "())"
+                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType()
+                       .toString())) + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
+    }
+
+    private String writerClass(String name) {
+        PackageElement packageElement = packageElement(element);
+        String prefix = packageElement.toString();
+        return packageElement + "." + name
+            .substring(prefix.length() + 1)
+            .replace('.', '_') + "_Writer";
     }
 
     private static RecordAttribute resolveDeclared(
@@ -88,8 +97,6 @@ record RecordAttribute(
         Set<? extends Element> roots,
         Set<? extends Element> enums
     ) {
-        TypeMirror type = element.asType();
-        String string = type.toString();
         return enumType(element, enums).map(enumType ->
                 new RecordAttribute(
                     "Enum",
@@ -117,83 +124,78 @@ record RecordAttribute(
                     roots,
                     enums
                 )))
-            .or(() ->
-                generatedEvent(element, roots)
-                    .map(generatedType ->
-                        new RecordAttribute(
-                            "Object",
-                            element,
-                            Variant.GENERATED,
-                            generatedType,
-                            roots,
-                            enums
-                        )
+            .or(() -> generatedEvent(element, roots).map(generatedType ->
+                new RecordAttribute(
+                    "Object",
+                    element,
+                    Variant.GENERATED,
+                    generatedType,
+                    roots,
+                    enums
+                )
+            ))
+            .or(() -> primitiveListType(element).map(primtiveType ->
+                new RecordAttribute(
+                    primtiveType.getSimpleName(),
+                    element,
+                    Variant.PRIMITIVE_LIST,
+                    null,
+                    roots,
+                    enums
+                )
+            ))
+            .or(() -> generatedListType(element, roots).map(generatedType ->
+                new RecordAttribute(
+                    "Object",
+                    element,
+                    Variant.GENERATED_LIST,
+                    generatedType,
+                    roots,
+                    enums
+                )
+            ))
+            .or(() -> Optional.of(element.asType().toString())
+                .filter(mapType ->
+                    mapType.startsWith("java.util.Map"))
+                .map(mapType ->
+                    new RecordAttribute(
+                        "Object",
+                        element,
+                        Variant.GENERIC_MAP,
+                        null,
+                        roots,
+                        enums
                     ))
-            .or(() ->
-                primitiveListType(element)
-                    .map(primtiveType ->
-                        new RecordAttribute(
-                            primtiveType.getSimpleName(),
-                            element,
-                            Variant.PRIMITIVE_LIST,
-                            null,
-                            roots,
-                            enums
-                        )
-                    ))
-            .or(() ->
-                generatedListType(element, roots)
-                    .map(generatedType ->
-                        new RecordAttribute(
-                            "Object",
-                            element,
-                            Variant.GENERATED_LIST,
-                            generatedType,
-                            roots,
-                            enums
-                        )
-                    ))
-            .or(() ->
-                Optional.of(element.asType().toString())
-                    .filter(mapType ->
-                        mapType.startsWith("java.util.Map"))
-                    .map(mapType ->
-                        new RecordAttribute(
-                            "Object",
-                            element,
-                            Variant.GENERIC_MAP,
-                            null,
-                            roots,
-                            enums
-                        ))
             )
             .orElseThrow(() ->
-                new IllegalStateException("Unsupported: " + element + ":" + string));
+                new IllegalStateException("Unsupported element/type: " + element + "/" + element.asType() + ", roots are: " + roots));
     }
 
     enum Variant {
         PRIMITIVE() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassQ(builderType) + "::" + setter(element);
+                return packageElement(builderType) + "." + builderClassPlain(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassQ(builderType) + "::" + adder(element);
+                return packageElement(builderType) + "." + builderClassPlain(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClassQ(generated) + ".create(this, builder()::" + setter(element) + ")";
+                return "() -> " + packageElement(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + setter(
+                    element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + callbacksClassQ(generated) + ".create(this, builder()::" + adder(element) + ")";
+                return "() -> " + packageElement(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + adder(
+                    element) + ")";
             }
         },
         GENERIC_MAP() {
@@ -210,7 +212,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassQ(builderType) + "::" + setter(element);
+                return builderClassPlain(builderType) + "::" + setter(element);
             }
         },
         ENUM_LIST {
@@ -221,7 +223,7 @@ record RecordAttribute(
 
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassQ(builderType) + "::" + adder(element);
+                return builderClassPlain(builderType) + "::" + adder(element);
             }
         };
 

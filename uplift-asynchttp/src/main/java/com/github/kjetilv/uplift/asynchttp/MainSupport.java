@@ -7,8 +7,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.kjetilv.uplift.kernel.io.ParseBits;
-
 @SuppressWarnings("unused")
 public final class MainSupport {
 
@@ -33,7 +31,7 @@ public final class MainSupport {
     public static Optional<Integer> possibleIntArg(Map<String, String> map, String param) {
         return Optional.ofNullable(map.get(param))
             .or(() -> caseInsensitiveLookup(param, map))
-            .map(ParseBits::parseLong)
+            .map(Long::parseLong)
             .map(Math::toIntExact);
     }
 

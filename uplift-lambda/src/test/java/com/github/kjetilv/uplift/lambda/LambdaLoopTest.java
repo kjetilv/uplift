@@ -1,19 +1,14 @@
 package com.github.kjetilv.uplift.lambda;
 
+import org.junit.jupiter.api.Test;
+
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.github.kjetilv.uplift.json.Json;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +27,7 @@ class LambdaLoopTest {
                     : Optional.of(CompletableFuture.supplyAsync(() -> Invocation.create(
                             UUID.randomUUID().toString(),
                             request,
-                            LambdaPayload.create(Json.INSTANCE.jsonMap(REQ)), Instant.now()
+                            LambdaPayload.parse(REQ), Instant.now()
                         )
                     )),
             httpPayload ->

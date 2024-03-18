@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.github.kjetilv.uplift.kernel.io.BytesIO.NOBODY;
-
 @SuppressWarnings("unused")
 public record HttpRes(
     int status,
@@ -29,7 +27,7 @@ public record HttpRes(
     }
 
     public HttpRes(int status, Uuid reqId) {
-        this(status, Collections.emptyMap(), NOBODY, reqId);
+        this(status, Collections.emptyMap(), NO_BODY, reqId);
     }
 
     public HttpRes(int status, Map<String, List<String>> headers, byte[] body, Uuid reqId) {
@@ -75,6 +73,8 @@ public record HttpRes(
     private static final int INTERNAL_ERROR = 500;
 
     private static final int OOB = 600;
+
+    public static final byte[] NO_BODY = {};
 
     private static int httpStatus(int status) {
         return status < OOB

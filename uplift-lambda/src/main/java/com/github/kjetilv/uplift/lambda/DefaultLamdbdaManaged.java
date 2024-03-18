@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.Json;
-
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -52,7 +50,6 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
                 client,
                 lambdaUri,
                 settings.responseTimeout(),
-                Json.INSTANCE::jsonMap,
                 settings.time()
             );
         InvocationSink<HttpRequest, HttpResponse<InputStream>> sink =

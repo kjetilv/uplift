@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.ffm;
 
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.samplegen.User;
-import com.github.kjetilv.uplift.json.samplegen.UserCallbacks;
+import com.github.kjetilv.uplift.json.samplegen.User_Callbacks;
 import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,9 @@ public class MemorySegmentJsonReaderTest {
                     "permanent": false,
                     "uuid": "%s",
                     "properties": {
-                      "foo": "bar"
+                      "foo": "bar",
+                      "zip": true,
+                      "zot": 42,
                     }
                   }
                 ]
@@ -52,7 +54,7 @@ public class MemorySegmentJsonReaderTest {
             }
             """.formatted(uuid);
 
-        MemorySegmentJsonReader<User, UserCallbacks> reader =
+        MemorySegmentJsonReader<User, User_Callbacks> reader =
             new MemorySegmentJsonReader<>(Users.INSTANCE.callbacks());
 
         User user = reader.read(LineSegments.of(json));

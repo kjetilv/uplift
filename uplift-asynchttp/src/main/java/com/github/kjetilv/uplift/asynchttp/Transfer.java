@@ -4,10 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unused")
-public record Transfer(
-    long totalSize,
-    int bufferSize
-) {
+public record Transfer(long totalSize, int bufferSize) {
 
     private static final Logger log = LoggerFactory.getLogger(Transfer.class);
 

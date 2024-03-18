@@ -1,9 +1,11 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.util.Maps;
 
-import java.util.*;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 import static java.util.Objects.requireNonNull;
@@ -11,48 +13,30 @@ import static java.util.Objects.requireNonNull;
 public record LambdaPayload(
     String method,
     String path,
-    Map<?, ?> queryParameters,
-    Map<?, ?> headers,
+    Map<String, String> queryParameters,
+    Map<String, String> headers,
     String body,
     Map<?, ?> source
 ) {
 
-    public static LambdaPayload create(Map<?, ?> source) {
-        if (source.isEmpty()) {
-            throw new IllegalArgumentException("Empty request");
+    public static LambdaPayload parse(String json) {
+        return payload(json, RequestRW.INSTANCE.stringReader().read(json));
+    }
+
+    public static LambdaPayload parse(InputStream json) {
+        return payload(json, RequestRW.INSTANCE.streamReader().read(json));
+    }
+
+    private static LambdaPayload payload(Object json, Request req) {
+        String version = req.version();
+        if (version == null) {
+            return lambda10(req);
         }
-        try {
-            String version = stringVal(source, "version", "1.0");
-            Map<?, ?> queryParameters = submap(source, "queryStringParameters");
-            Map<?, ?> headers = submap(source, "headers");
-            String body = body(source);
-            switch (version) {
-                case "2.0" -> {
-                    Map<?, ?> http = submap(source, "requestContext", "http");
-                    return new LambdaPayload(
-                        stringVal(http, "method").toUpperCase(Locale.ROOT),
-                        stringVal(http, "path"),
-                        queryParameters,
-                        headers,
-                        body,
-                        source
-                    );
-                }
-                case "1.0" -> {
-                    return new LambdaPayload(
-                        stringVal(source, "httpMethod").toUpperCase(Locale.ROOT),
-                        stringVal(source, "path"),
-                        queryParameters,
-                        headers,
-                        body,
-                        source
-                    );
-                }
-                default -> throw new IllegalArgumentException("Unknown version: " + source);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Failed to parse payload: " + Json.INSTANCE.write(source), e);
-        }
+        return switch (version) {
+            case "1.0" -> lambda10(req);
+            case "2.0" -> lambda20(req);
+            default -> throw new IllegalArgumentException("Unknown version: " + json);
+        };
     }
 
     public boolean isPost() {
@@ -109,9 +93,9 @@ public record LambdaPayload(
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + method + " " + path +
-            (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
-            (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
-            "]]";
+               (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
+               (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
+               "]]";
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -121,50 +105,26 @@ public record LambdaPayload(
 
     private static final String BLANK = "";
 
-    @SuppressWarnings("StringEquality")
-    private static String body(Map<?, ?> req) {
-        String bodyString = stringVal(req, "body", BLANK);
-        if (bodyString == BLANK || bodyString.isBlank()) {
-            return null;
-        }
-        if (looksJsony(bodyString)) {
-            return bodyString;
-        }
-        return base64(bodyString);
+    private static LambdaPayload lambda10(Request req) {
+        return new LambdaPayload(
+            req.httpMethod(),
+            req.path(),
+            Maps.mapValues(req.queryStringParameters(), String::valueOf),
+            Maps.mapValues(req.headers(), String::valueOf),
+            req.body(),
+            null
+        );
     }
 
-    private static String base64(String bodyString) {
-        return BytesIO.stringFromBase64(bodyString);
-    }
-
-    private static boolean looksJsony(String bodyString) {
-        boolean lookJsony =
-            wrapped('{', bodyString, '}') || wrapped('[', bodyString, ']');
-        return lookJsony;
-    }
-
-    private static boolean wrapped(char start, CharSequence bodyString, char end) {
-        return bodyString.charAt(0) == start || bodyString.charAt(bodyString.length() - 1) == end;
-    }
-
-    private static Map<?, ?> submap(Map<?, ?> root, String... keys) {
-        Map<?, ?> map = root;
-        for (String key : keys) {
-            Object value = map.get(key);
-            if (value == null) {
-                return Collections.emptyMap();
-            }
-            if (value instanceof Map<?, ?> level) {
-                map = level;
-            } else {
-                throw new IllegalStateException("Not a level in " + root + ": " + Arrays.toString(keys));
-            }
-        }
-        return map == null ? Collections.emptyMap() : map;
-    }
-
-    private static <V> String stringVal(Map<?, ? super V> map, String key) {
-        return stringVal(map, key, null);
+    private static LambdaPayload lambda20(Request req) {
+        return new LambdaPayload(
+            req.requestContext().http().method(),
+            req.requestContext().http().path(),
+            Maps.mapValues(req.queryStringParameters(), String::valueOf),
+            Maps.mapValues(req.headers(), String::valueOf),
+            req.body(),
+            null
+        );
     }
 
     private static <V> String stringVal(Map<?, ? super V> map, String key, String defaultValue) {

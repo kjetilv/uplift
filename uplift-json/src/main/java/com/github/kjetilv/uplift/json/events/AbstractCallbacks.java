@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.MapCallbacks;
+import com.github.kjetilv.uplift.json.NullCallbacks;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -44,7 +46,8 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
             ? this
             : Optional.ofNullable(objectFields.get(currentField))
                 .map(Supplier::get)
-                .orElseGet(this::fail);
+                .orElseGet(() ->
+                    new NullCallbacks(this));
     }
 
     @Override
@@ -247,12 +250,12 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
 
     private <R> R fail() {
         throw new IllegalStateException(
-            "Unexpected object value for " + currentField);
+            "Unexpected object value for `" + currentField + '`');
     }
 
     private <R> R fail(Object value) {
         throw new IllegalStateException(
-            "Unexpected value for " + currentField + ": " + value);
+            "Unexpected value for `" + currentField + "`: " + value);
     }
 
     private static Character toChar(String string) {

@@ -6,8 +6,10 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-@JsonRecord(factoryClass = "Users")
+@JsonRecord(factoryClass = "Users", root = true)
 public record User(
     String name,
     Integer birthYear,
@@ -21,5 +23,24 @@ public record User(
     BigDecimal balance
 ) {
 
+    @JsonRecord(root = false)
+    public record Address(
+        String streetName,
+        Integer houseNumber,
+        Modifier modifier,
+        List<Modifier> adjacents,
+        Integer code,
+        @Singular("rezzie") List<Resident> residents
+    ) {
+
+        public enum Modifier {
+            A, B, C, D, E
+        }
+
+        @JsonRecord(root = false)
+        public record Resident(String name, boolean permanent, UUID uuid, Map<String, Object> properties) {
+
+        }
+    }
 }
 

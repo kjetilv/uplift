@@ -76,6 +76,11 @@ public abstract class AbstractBytesSource implements Source {
         return next1 < 0;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + nextChar + " " + pr(next1) + "/" + pr(next2) + "]";
+    }
+
     private int nextChar() {
         return this.nextChar.getAsInt();
     }
@@ -88,5 +93,15 @@ public abstract class AbstractBytesSource implements Source {
             throw new IllegalStateException("Invalid char: " + returned);
         }
         return (char) returned;
+    }
+
+    private static String pr(int c) {
+        return switch (c) {
+            case (int)'\n' -> "\\n";
+            case (int)'\t' -> "\\t";
+            case (int)'\r' -> "\\r";
+            case (int)'\b' -> "\\b";
+            default -> "'" + (char)c + "'";
+        };
     }
 }

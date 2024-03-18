@@ -45,16 +45,6 @@ public final class DefaultEnv implements Env {
     }
 
     @Override
-    public String authorizationToken() {
-        return EnvLookup.get(null, "AWS_CONTAINER_AUTHORIZATION_TOKEN");
-    }
-
-    @Override
-    public String credentialsFullUri() {
-        return EnvLookup.get(null, "AWS_CONTAINER_CREDENTIALS_FULL_URI");
-    }
-
-    @Override
     public String toString() {
         return getClass().getSimpleName() + "[]";
     }

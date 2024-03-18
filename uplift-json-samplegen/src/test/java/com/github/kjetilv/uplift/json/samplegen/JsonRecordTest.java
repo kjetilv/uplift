@@ -26,6 +26,10 @@ public class JsonRecordTest {
                 "modifier": "B",
                 "adjacents": [ "C" ],
                 "code": 1450,
+                "unrecognized": "gurba",
+                "unrecognized2": { 
+                  "foo": "gurba"
+                },
                 "residents": [
                   {
                     "name": "foo",
@@ -58,19 +62,19 @@ public class JsonRecordTest {
             "Kjetil",
             1973,
             Instant.ofEpochMilli(100L),
-            new Address(
+            new User.Address(
                 "\"None\" Street",
                 1729,
-                Address.Modifier.B,
-                List.of(Address.Modifier.C),
+                User.Address.Modifier.B,
+                List.of(User.Address.Modifier.C),
                 1450,
                 List.of(
-                    new Resident(
+                    new User.Address.Resident(
                         "foo", true,
                         null,
                         Map.of("zip", "zot")
                     ),
-                    new Resident(
+                    new User.Address.Resident(
                         "bar", false, uuid, Map.of("foo", "bar")
                     )
                 )
@@ -101,11 +105,11 @@ public class JsonRecordTest {
             .read(addressJson)
             .address())
             .isEqualTo(
-                new Address(
+                new User.Address(
                     "None Street",
                     1729,
-                    Address.Modifier.B,
-                    List.of(Address.Modifier.C),
+                    User.Address.Modifier.B,
+                    List.of(User.Address.Modifier.C),
                     1450,
                     null
                 )

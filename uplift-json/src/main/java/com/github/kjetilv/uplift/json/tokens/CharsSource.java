@@ -10,12 +10,29 @@ public final class CharsSource extends AbstractBytesSource {
     }
 
     private static IntSupplier reader(Reader reader) {
-        return () -> {
+        return new Chars(reader);
+    }
+
+    private static final class Chars implements IntSupplier {
+
+        private final Reader reader;
+
+        private Chars(Reader reader) {
+            this.reader = reader;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" + reader + "]";
+        }
+
+        @Override
+        public int getAsInt() {
             try {
                 return reader.read();
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + reader, e);
             }
-        };
+        }
     }
 }

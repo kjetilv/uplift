@@ -6,11 +6,7 @@ import java.util.OptionalInt;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
-record HttpBytes(
-    byte[] req,
-    byte[] headers,
-    byte[] body
-) {
+record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
     static Optional<HttpBytes> read(ByteBuffer buffer) {
         OptionalInt lineEnd = IntStream.range(0, buffer.position())

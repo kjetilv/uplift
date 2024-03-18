@@ -85,16 +85,16 @@ final class Builders extends Gen {
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time() + "\"",
                 ")",
-                "final class " + builderClass(te),
+                "final class " + builderClassPlain(te),
                 "    implements " + Supplier.class.getName() + "<",
                 "        " + name,
                 "    > {",
                 "",
-                "    static " + builderClassQ(te) + " create() {",
-                "        return new " + builderClassQ(te) + "();",
+                "    static " + builderClassPlain(te) + " create() {",
+                "        return new " + builderClassPlain(te) + "();",
                 "    }",
                 "",
-                "    private " + builderClass(te) + "() {",
+                "    private " + builderClassPlain(te) + "() {",
                 "    }"
             );
             write(bw, "");

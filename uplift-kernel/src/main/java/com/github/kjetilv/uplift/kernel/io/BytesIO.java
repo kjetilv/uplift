@@ -1,11 +1,8 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InputStream;
+import com.github.kjetilv.uplift.uuid.Uuid;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
@@ -13,17 +10,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
-import java.util.zip.GZIPInputStream;
-
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
 
-@SuppressWarnings("unused")
 public final class BytesIO {
-
-    public static final byte[] NOBODY = { };
 
     public static byte[] readInputStream(InputStream stream) {
         return readBytesFrom(null, requireNonNull(stream, "stream"));
@@ -150,33 +141,11 @@ public final class BytesIO {
         }
     }
 
-    public static byte[] fromBase64(byte[] base64) {
-        try {
-            return DECODER.decode(base64);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not decode " + base64.length + " bytes", e);
-        }
-    }
-
-    public static String toBase64(String body) {
-        return toBase64(body.getBytes(StandardCharsets.UTF_8));
-    }
-
     public static String toBase64(byte[] body) {
         try {
             return new String(ENCODER.encode(body), ISO_8859_1);
         } catch (Exception e) {
             throw new IllegalStateException("Could not encode " + body.length + " bytes", e);
-        }
-    }
-
-    public static String unzipString(byte[] gzipped) {
-        try (
-            InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzipped))
-        ) {
-            return readUTF8(inputStream);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to unzip " + gzipped.length + " bytes", e);
         }
     }
 
@@ -187,6 +156,8 @@ public final class BytesIO {
     private BytesIO() {
 
     }
+
+    private static final byte[] NOBODY = {};
 
     private static final int ATE_KAY = 8192;
 

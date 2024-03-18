@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -26,8 +24,6 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
     private static final Logger log = LoggerFactory.getLogger(HttpInvocationSource.class);
 
     private final URI endpoint;
-
-    private final Function<InputStream, Map<?, ?>> jsonParser;
 
     private final Supplier<Instant> time;
 
@@ -45,12 +41,10 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch,
         URI endpoint,
         Duration timeout,
-        Function<InputStream, Map<?, ?>> jsonParser,
         Supplier<Instant> time
     ) {
         this.fetch = requireNonNull(fetch, "send");
         this.endpoint = requireNonNull(endpoint, "api");
-        this.jsonParser = requireNonNull(jsonParser, "jsonParser");
         this.time = () -> {
             Instant instant = time.get();
             return instant == null ? Instant.now() : instant;
@@ -119,26 +113,8 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         return Invocation.create(id, request, payload, time.get());
     }
 
-    private LambdaPayload payload(HttpResponse<? extends InputStream> response) {
-        InputStream body = validBody(response);
-        Map<?, ?> object = object(body);
-        return payload(object);
-    }
-
-    private Map<?, ?> object(InputStream body) {
-        try {
-            return parsedBody(body);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to process object", e);
-        }
-    }
-
-    private Map<?, ?> parsedBody(InputStream body) {
-        try {
-            return jsonParser.apply(body);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse body contents: " + body, e);
-        }
+    private static LambdaPayload payload(HttpResponse<? extends InputStream> response) {
+        return LambdaPayload.parse(validBody(response));
     }
 
     private static InputStream validBody(HttpResponse<? extends InputStream> response) {
@@ -149,14 +125,6 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         throw new IllegalArgumentException("No body in request: " + response);
     }
 
-    private static LambdaPayload payload(Map<?, ?> input) {
-        try {
-            return LambdaPayload.create(input);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to build payload: " + toEmergencyJsonString(input), e);
-        }
-    }
-
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
         return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id")
             .stream()
@@ -165,11 +133,4 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
             .findFirst();
     }
 
-    private static String toEmergencyJsonString(Map<?, ?> input) {
-        try {
-            return Json.INSTANCE.write(input);
-        } catch (Exception ex) {
-            return String.valueOf(input);
-        }
-    }
 }

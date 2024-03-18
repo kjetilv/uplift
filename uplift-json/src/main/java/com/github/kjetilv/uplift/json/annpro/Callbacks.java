@@ -28,33 +28,35 @@ final class Callbacks extends Gen {
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time() + "\"",
                 ")",
-                "public final class " + callbacksClass(te),
+                "public final class " + callbacksClassPlain(te),
                 "    extends " + AbstractCallbacks.class.getName() + "<",
-                "        " + builderClassQ(te) + ",",
+                "        " + packageElement(te) + "." + builderClassPlain(te) + ",",
                 "        " + name,
                 "    > {",
                 "",
-                "    public static " + callbacksClassQ(te) + " create(",
+                "    public static " + callbacksClassPlain(te) + " create(",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
-                "    static " + callbacksClassQ(te) + " create(",
+                "    static " + callbacksClassPlain(te) + " create(",
                 "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
-                "        return new " + callbacksClassQ(te) + "(parent, onDone);",
+                "        return new " + packageElement(te) + "." + callbacksClassPlain(te) + "(parent, onDone);",
                 "    }",
                 "",
-                "    " + callbacksClass(te) + "(",
+                "    " + callbacksClassPlain(te) + "(",
                 "        " + AbstractCallbacks.class.getName() + "<?, ?> parent, ",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
-                "        super(" + builderClassQ(te) + ".create(), parent, onDone);"
+                "        super(" + packageElement(te) + "." + builderClassPlain(te) + ".create(), parent, onDone);"
             );
             write(bw, te.getRecordComponents()
                 .stream()
+                .filter(recordComponentElement ->
+                    recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
                 .map(element ->
                     "        " + RecordAttribute.create(element, roots, enums).callbackHandler(te) + ";"
                 )
