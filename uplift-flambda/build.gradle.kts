@@ -20,7 +20,6 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.3")
 }
 
-
 tasks.register<Copy>("copy-libs") {
     from(configurations.compileOnly)
     into("build/libs")
