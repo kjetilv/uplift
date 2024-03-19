@@ -1,23 +1,29 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.util.Maps;
 import com.github.kjetilv.uplift.uuid.Uuid;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
 
 record LambdaResponse(
     int statusCode,
-    Map<String, List<String>> headers,
+    Map<String, String> headers,
     String body,
     boolean isBase64Encoded,
     Uuid reqId
 ) {
 
     HttpRes toHttpResponse() {
-        return new HttpRes(statusCode(), headers(), resolveBody(), reqId());
+        return new HttpRes(
+            statusCode(),
+            Maps.mapValues(headers(), Collections::singletonList),
+            resolveBody(),
+            reqId()
+        );
     }
 
     private byte[] resolveBody() {

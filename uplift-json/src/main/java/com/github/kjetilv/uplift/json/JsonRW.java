@@ -33,7 +33,7 @@ public interface JsonRW<T extends Record, C extends Callbacks> {
         return new StringJsonWriter<>(objectWriter());
     }
 
-    default JsonWriter<byte[], T, ByteArrayOutputStream> streamWriter() {
-        return new OutputStreamJsonWriter<>(objectWriter());
+    default JsonWriter<byte[], T, ByteArrayOutputStream> bytesWriter() {
+        return new BytesJsonWriter<>(objectWriter());
     }
 }

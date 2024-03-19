@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.flambda;
 
-import com.github.kjetilv.uplift.json.Json;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,11 +19,6 @@ record ReqsImpl(URI uri) implements Reqs {
     @Override
     public Reqs path(String uri) {
         return new ReqsImpl(this.uri.resolve(uri));
-    }
-
-    @Override
-    public CompletableFuture<HttpResponse<String>> execute(String method, Map<String, Object> body) {
-        return execute(method, body == null || body.isEmpty() ? null : json(body), true);
     }
 
     @Override
@@ -59,14 +52,6 @@ record ReqsImpl(URI uri) implements Reqs {
             }
         } catch (Exception e) {
             throw new IllegalStateException(e);
-        }
-    }
-
-    private static String json(Map<String, Object> value) {
-        try {
-            return Json.OBJECT_2_STRING.apply(value);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not write: " + value, e);
         }
     }
 

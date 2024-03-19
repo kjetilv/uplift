@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "unused"})
+@SuppressWarnings("unused")
 public interface Json {
 
     default Map<?, ?> jsonMap(InputStream source) {

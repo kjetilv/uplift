@@ -23,7 +23,6 @@ public record User(
     BigDecimal balance
 ) {
 
-    @JsonRecord(root = false)
     public record Address(
         String streetName,
         Integer houseNumber,
@@ -37,9 +36,7 @@ public record User(
             A, B, C, D, E
         }
 
-        @JsonRecord(root = false)
         public record Resident(String name, boolean permanent, UUID uuid, Map<String, Object> properties) {
-
         }
     }
 }

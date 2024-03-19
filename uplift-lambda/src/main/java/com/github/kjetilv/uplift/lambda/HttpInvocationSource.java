@@ -75,11 +75,18 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         if (closed.get()) {
             return Optional.empty();
         }
-        return Optional.of(fetch.apply(request)
+        return Optional.ofNullable(fetch.apply(request)
             .thenApply(response ->
-                invocationId(response).map(id ->
-                        invocation(response, id))
-                    .orElseGet(this::failed))
+                invocationId(response)
+                    .map(id ->
+                        Invocation.<HttpRequest, HttpResponse<InputStream>>create(
+                            id,
+                            request,
+                            LambdaPayload.parse(((HttpResponse<? extends InputStream>) response).body()),
+                            time.get()
+                        ))
+                    .orElseGet(() ->
+                        Invocation.failed(request, time.get())))
             .exceptionally(throwable ->
                 closed.get()
                     ? Invocation.none(request, time.get())
@@ -89,40 +96,8 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
-            (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
-            "]";
-    }
-
-    private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
-        HttpResponse<? extends InputStream> response,
-        String id
-    ) {
-        return invocation(id, request, response);
-    }
-
-    private Invocation<HttpRequest, HttpResponse<InputStream>> failed() {
-        return Invocation.failed(request, null, time.get());
-    }
-
-    private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
-        String id,
-        HttpRequest request,
-        HttpResponse<? extends InputStream> response
-    ) {
-        LambdaPayload payload = payload(response);
-        return Invocation.create(id, request, payload, time.get());
-    }
-
-    private static LambdaPayload payload(HttpResponse<? extends InputStream> response) {
-        return LambdaPayload.parse(validBody(response));
-    }
-
-    private static InputStream validBody(HttpResponse<? extends InputStream> response) {
-        InputStream body = response.body();
-        if (body != null) {
-            return body;
-        }
-        throw new IllegalArgumentException("No body in request: " + response);
+               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
+               "]";
     }
 
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
@@ -132,5 +107,4 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
             .filter(value -> !value.isBlank())
             .findFirst();
     }
-
 }

@@ -6,9 +6,9 @@ import com.github.kjetilv.uplift.json.io.StreamSink;
 
 import java.io.ByteArrayOutputStream;
 
-public class OutputStreamJsonWriter<T extends Record, B> extends AbstractJsonWriter<T, ByteArrayOutputStream, byte[]> {
+public class BytesJsonWriter<T extends Record, B> extends AbstractJsonWriter<T, ByteArrayOutputStream, byte[]> {
 
-    public OutputStreamJsonWriter(ObjectWriter<T> objectWriter) {
+    public BytesJsonWriter(ObjectWriter<T> objectWriter) {
         super(objectWriter);
     }
 

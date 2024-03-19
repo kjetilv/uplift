@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.io.InputStream;
@@ -20,14 +21,14 @@ public record LambdaPayload(
 ) {
 
     public static LambdaPayload parse(String json) {
-        return payload(json, RequestRW.INSTANCE.stringReader().read(json));
+        return payload(json, RequestInRW.INSTANCE.stringReader().read(json));
     }
 
     public static LambdaPayload parse(InputStream json) {
-        return payload(json, RequestRW.INSTANCE.streamReader().read(json));
+        return payload(json, RequestInRW.INSTANCE.streamReader().read(json));
     }
 
-    private static LambdaPayload payload(Object json, Request req) {
+    private static LambdaPayload payload(Object json, RequestIn req) {
         String version = req.version();
         if (version == null) {
             return lambda10(req);
@@ -73,7 +74,7 @@ public record LambdaPayload(
     }
 
     public String queryParam(String key) {
-        return stringVal(queryParameters, key, null);
+        return stringVal(queryParameters, key);
     }
 
     public Optional<String> header(String header) {
@@ -105,37 +106,45 @@ public record LambdaPayload(
 
     private static final String BLANK = "";
 
-    private static LambdaPayload lambda10(Request req) {
+    private static LambdaPayload lambda10(RequestIn req) {
         return new LambdaPayload(
             req.httpMethod(),
             req.path(),
             Maps.mapValues(req.queryStringParameters(), String::valueOf),
             Maps.mapValues(req.headers(), String::valueOf),
-            req.body(),
+            reqBody(req),
             null
         );
     }
 
-    private static LambdaPayload lambda20(Request req) {
+    private static LambdaPayload lambda20(RequestIn req) {
         return new LambdaPayload(
             req.requestContext().http().method(),
             req.requestContext().http().path(),
             Maps.mapValues(req.queryStringParameters(), String::valueOf),
             Maps.mapValues(req.headers(), String::valueOf),
-            req.body(),
+            reqBody(req),
             null
         );
     }
 
-    private static <V> String stringVal(Map<?, ? super V> map, String key, String defaultValue) {
+    private static String reqBody(RequestIn req) {
+        if (req.body() == null || req.body().isEmpty()) {
+            return null;
+        }
+        return req.isBase64Encoded() ? base64(req.body()) : req.body();
+    }
+
+    private static <V> String stringVal(Map<?, ? super V> map, String key) {
         Object value = map.get(key);
         if (value != null) {
             return value.toString().trim();
         }
-        if (defaultValue != null) {
-            return defaultValue;
-        }
         throw new IllegalArgumentException(
             "No string field `" + key + "`" + (map.isEmpty() ? ", no query params" : " in query params: " + map));
+    }
+
+    private static String base64(String bodyString) {
+        return BytesIO.stringFromBase64(bodyString);
     }
 }

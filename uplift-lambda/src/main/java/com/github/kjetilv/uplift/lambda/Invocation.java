@@ -61,6 +61,10 @@ public record Invocation<Q, R>(
         return failed(null, exception, created);
     }
 
+    public static <Q, R> Invocation<Q, R> failed(Q initRequest, Instant created) {
+        return failed(initRequest, null, created);
+    }
+
     public static <Q, R> Invocation<Q, R> failed(Q initRequest, Throwable exception, Instant created) {
         return new Invocation<>(
             created,

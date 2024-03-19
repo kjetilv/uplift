@@ -1,11 +1,12 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.lambda.RequestOut;
+
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
@@ -24,40 +25,28 @@ public record LambdaRequest(String id, HttpReq request) {
         return new LambdaRequest(requireNonNull(id, "id"), request);
     }
 
-    Map<String, Object> toPayload() {
-        return Map.of(
-            "version", "2.0",
-            "httpMethod", request.method(),
-            "path", request.path(),
-            "headers", toSingleValue(request.headers()),
-            "queryStringParameters", toSingleValue(request.queryParams()),
-            "requestContext", Map.of(
-                "http", Map.of(
-                    "method", request.method(),
-                    "path", request.path()
-                )
-            ),
-            "isBase64Encoded", true,
-            "body", BytesIO.toBase64(request.body())
+    RequestOut out() {
+        return new RequestOut(
+            request.method(),
+            request.path(),
+            toSingleValue(request.headers()),
+            toSingleValue(request.queryParams()),
+            BytesIO.toBase64(request.body())
         );
     }
 
-    private static Map<String, String> toSingleValue(Map<String, ? extends List<String>> map) {
-        return map.entrySet().stream().collect(
-            Collectors.toMap(
-                Map.Entry::getKey,
-                entry -> {
-                    List<String> values = entry.getValue();
-                    int size = values.size();
-                    return size == 0 ? ""
-                        : size == 1 ? String.valueOf(values.getFirst())
-                            : concated(values, size);
-                }
-            )
-        );
+    private static Map<String, Object> toSingleValue(Map<String, ? extends List<String>> map) {
+        return map == null || map.isEmpty()
+            ? null
+            : Maps.mapValues(map, values ->
+                switch (values.size()) {
+                    case 0 -> "";
+                    case 1 -> String.valueOf(values.getFirst());
+                    default -> cat(values, values.size());
+                });
     }
 
-    private static String concated(List<String> values, int size) {
+    private static String cat(List<String> values, int size) {
         StringBuilder stringBuilder = new StringBuilder();
         boolean firstDone = false;
         for (int i = 0; i < size; i++) {

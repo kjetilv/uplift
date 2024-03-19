@@ -52,8 +52,6 @@ public interface Reqs {
         return execute(method, (URI) null, null, body, json);
     }
 
-    CompletableFuture<HttpResponse<String>> execute(String method, Map<String, Object> body);
-
     CompletableFuture<HttpResponse<String>> execute(String method, String body);
 
     default CompletableFuture<HttpResponse<String>> execute(

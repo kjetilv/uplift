@@ -1,5 +1,5 @@
-import com.github.kjetilv.uplift.bld.Native
-import com.github.kjetilv.uplift.bld.Native.runCommand
+//import com.github.kjetilv.uplift.bld.Native
+//import com.github.kjetilv.uplift.bld.Native.runCommand
 
 repositories {
     mavenCentral()

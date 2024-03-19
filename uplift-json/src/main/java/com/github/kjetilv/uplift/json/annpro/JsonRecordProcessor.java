@@ -27,7 +27,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
         if (isJsonRecord(typedElements)) {
             Set<? extends Element> enums = enums(roundEnv);
-            Set<? extends Element> types = types(roundEnv, enums);
+            Set<? extends Element> types = types(roundEnv);
             return extracted(types, enums);
         }
         return false;
@@ -60,7 +60,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
         if (e instanceof TypeElement te) {
             PackageElement pe = Gen.packageElement(te);
-            JsonRecord jsonRecord = te.getAnnotation(JsonRecord.class);
             Types typeUtils = processingEnv.getTypeUtils();
             Builders.writeBuilder(pe, te, builderFile(te), roots, enums, typeUtils);
             Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
@@ -126,31 +125,23 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .collect(Collectors.toSet());
     }
 
-    private static Set<? extends Element> types(RoundEnvironment roundEnv, Set<? extends Element> enums) {
-        return typeStream(enums, roundEnv.getRootElements()
-            .stream())
+    private static Set<? extends Element> types(RoundEnvironment roundEnv) {
+        Stream<? extends Element> annotatedRecords = roundEnv.getRootElements()
+            .stream()
+            .filter(element ->
+                element.getAnnotation(JsonRecord.class) != null);
+        return typeStream(annotatedRecords)
             .collect(Collectors.toSet());
     }
 
-    private static Stream<? extends Element> typeStream(
-        Set<? extends Element> enums,
-        Stream<? extends Element> stream
-    ) {
-        return stream
-            .filter(element ->
-                element.getAnnotation(JsonRecord.class) != null)
-            .filter(element ->
-                !enums.contains(element))
-            .flatMap(element ->
-                Stream.concat(
-                    Stream.of(element),
-                    typeStream(
-                        enums,
-                        element.getEnclosedElements()
-                            .stream()
-                            .filter(enc -> element.getKind().isClass())
-                    )
-                ));
+    private static Stream<? extends Element> typeStream(Stream<? extends Element> stream) {
+        return stream.flatMap(element ->
+            Stream.concat(
+                Stream.of(element),
+                typeStream(element.getEnclosedElements()
+                    .stream()
+                    .filter(enc -> enc.getKind() == ElementKind.RECORD))
+            ));
     }
 
     private static boolean hasRoots(Set<? extends Element> roots) {
@@ -161,7 +152,8 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static boolean isRoot(TypeElement typeElement) {
-        return typeElement.getAnnotation(JsonRecord.class).root();
+        JsonRecord annotation = typeElement.getAnnotation(JsonRecord.class);
+        return annotation != null && annotation.root();
     }
 
     private static String write(Set<? extends Element> roots) {

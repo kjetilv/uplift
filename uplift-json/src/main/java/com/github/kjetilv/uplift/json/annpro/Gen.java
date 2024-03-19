@@ -97,11 +97,11 @@ abstract sealed class Gen permits Builders, Callbacks, RWs, Writers {
     }
 
     static String factoryClass(TypeElement te) {
-        JsonRecord rec = te.getAnnotation(JsonRecord.class);
+        JsonRecord annotation = te.getAnnotation(JsonRecord.class);
         String name = te.getSimpleName().toString();
-        return rec == null || rec.factoryClass().isBlank()
+        return annotation == null || annotation.factoryClass().isBlank()
             ? name + DEFAULT_SUFFIX
-            : rec.factoryClass();
+            : annotation.factoryClass();
     }
 
     static String variableName(TypeElement typeElement) {

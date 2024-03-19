@@ -8,19 +8,17 @@ import java.util.Map;
  * Record structure that can capture both 1.0 and 2.0 inputs.
  */
 @JsonRecord(root = true)
-public record Request(
+public record RequestIn(
     String version,
     String httpMethod,
     String path,
-    String rawPath,
     RequestContext requestContext,
     Map<String, Object> headers,
     Map<String, Object> queryStringParameters,
-    String body
+    String body,
+    boolean isBase64Encoded
 ) {
-    @JsonRecord
     public record RequestContext(Http http) {
-        @JsonRecord
         public record Http(String method, String path) {
         }
     }
