@@ -32,10 +32,10 @@ public record CorsSettings(
     }
 
     boolean credentials() {
-        return origins.size() > 1 || !origins.get(0).equals("*");
+        return origins.size() > 1 || !origins.getFirst().equals("*");
     }
 
     private static String value(List<String> list) {
-        return String.join(", ", list);
+        return String.join(",", list);
     }
 }
