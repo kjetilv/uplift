@@ -84,9 +84,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             copyTo(dist.toPath(), uplift, target = "dist.tar.gz")
         }
 
-        exe(uplift, "docker build --tag ${buildsite.get()}:latest $uplift")
-        exe(uplift, "docker build --tag ${identifier.get()}:latest $uplift")
-        exe(uplift, "docker run -v ${uplift.toAbsolutePath()}:/out ${buildsite.get()}:latest")
+        docker(cwd = uplift, dockerCmd = "build --tag ${buildsite.get()}:latest $uplift")
+        docker(cwd = uplift, dockerCmd = "build --tag ${identifier.get()}:latest $uplift")
+        docker(cwd = uplift, dockerCmd = "run -v ${uplift.toAbsolutePath()}:/out ${buildsite.get()}:latest")
 
         zipFile(uplift.resolve(identifier.get()), zipFile = zipFile.get())
     }

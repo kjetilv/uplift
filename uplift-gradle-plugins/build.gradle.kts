@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     `java-gradle-plugin`
 }
 
@@ -16,8 +16,14 @@ gradlePlugin {
     }
 }
 
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+    mavenLocal()
+}
+
 dependencies {
-implementation("software.amazon.awscdk:aws-cdk-lib:2.124.0")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.132.1")
     implementation("software.amazon.awssdk:lambda:2.23.4")
     implementation("software.amazon.awssdk:cloudformation:2.23.4")
     implementation("software.amazon.awssdk:auth:2.23.4")

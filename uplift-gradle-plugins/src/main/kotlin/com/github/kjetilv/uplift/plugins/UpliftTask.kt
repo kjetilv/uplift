@@ -79,9 +79,9 @@ abstract class UpliftTask : DefaultTask() {
         profile?.also(this.profile::set)
     }
 
-    protected fun runCdk(cmd: String): ExecResult = exe(
+    protected fun runCdk(cmd: String): ExecResult = docker(
         upliftDir(),
-        "docker run " +
+        "run " +
                 volumes(
                     awsAuth.get() to "/root/.aws",
                     cdkApp() to "/opt/app",
@@ -300,7 +300,7 @@ abstract class UpliftTask : DefaultTask() {
         Files.write(
             upliftDir().resolve("Dockerfile"), "Dockerfile-cdk.st4".renderResource("arch" to arch.get())
         )
-        exe(cwd = upliftDir(), cmd = "docker build --tag cdk-site:latest ${upliftDir()}")
+        docker( upliftDir(), "build --tag cdk-site:latest ${upliftDir()}")
     }
 
     private fun volumes(vararg vols: Pair<*, *>) =

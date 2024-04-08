@@ -2,18 +2,26 @@ package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal operator fun <T> Property<T>.remAssign(value: T): Unit = set(value)
+internal operator fun <T> Property<T>.remAssign(value: T?): Unit = set(value)
+
+internal operator fun <T> ListProperty<T>.remAssign(values: Iterable<T>?): Unit = set(values)
 
 internal fun Project.propertyOrNull(name: String) = takeIf { hasProperty(name) }?.let { this.property(name) }
 
 internal fun Project.buildSubDirectory(dir: String): Path =
     layout.buildDirectory.dir(dir).get().asFile.toPath()
         .also(Files::createDirectories)
+
+internal inline fun <reified T : Task> Project.register(name: String, crossinline reg: T.() -> Unit) =
+    this.also {
+        tasks.register(name, T::class.java) { it.reg() }
+    }
 
 internal val Project.classpath: List<File>
     get() =

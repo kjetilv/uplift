@@ -13,6 +13,8 @@ pluginManagement {
     }
 }
 
+includeBuild("uplift-gradle-plugins")
+
 include("uplift-flogs")
 include("uplift-uuid")
 include("uplift-kernel")
@@ -24,4 +26,4 @@ include("uplift-s3")
 include("uplift-flambda")
 include("uplift-lambda")
 include("uplift-cdk")
-include("uplift-gradle-plugins")
+

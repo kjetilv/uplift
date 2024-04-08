@@ -18,11 +18,11 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(22))
         }
         withSourcesJar()
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_22
+        targetCompatibility = JavaVersion.VERSION_22
     }
     tasks {
         withType<JavaCompile> {
@@ -37,11 +37,11 @@ subprojects {
     if (project.name != "uplift-gradle-plugins") {
         java {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(22))
                 vendor.set(JvmVendorSpec.GRAAL_VM)
             }
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
+            sourceCompatibility = JavaVersion.VERSION_22
+            targetCompatibility = JavaVersion.VERSION_22
             withSourcesJar()
         }
 

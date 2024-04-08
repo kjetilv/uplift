@@ -8,33 +8,27 @@ import java.nio.file.Path
 class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.tasks.apply {
-            register("uplift-init", UpliftInitTask::class.java) {
-                it.configureFor(project) {
-                    activeJar.set(project.cdkFile(it.stackbuilderJar.get()))
-                    activePom.set(project.cdkFile("pom.xml"))
-                }
+        project.register<UpliftInitTask>("uplift-init") {
+            configureFor(project) {
+                activeJar.set(project.cdkFile(stackbuilderJar.get()))
+                activePom.set(project.cdkFile("pom.xml"))
             }
-            register("uplift-bootstrap", UpliftBootstrapTask::class.java) {
-                it.configureFor(project) {
-                    template.set(project.templateFile(it))
-                    dependsOn("uplift-init")
-                }
+        }.register<UpliftBootstrapTask>("uplift-bootstrap") {
+            configureFor(project) {
+                template.set(project.templateFile(this))
+                dependsOn("uplift-init")
             }
-            register("uplift", UpliftDeployTask::class.java) {
-                it.configureFor(project) {
-                    dependsOn("uplift-bootstrap")
-                }
+        }.register<UpliftDeployTask>("uplift") {
+            configureFor(project) {
+                dependsOn("uplift-bootstrap")
             }
-            register("uplift-ping", UpliftPingTask::class.java) {
-                it.configureFor(project) {
-                    clearDependencies()
-                }
+        }.register<UpliftPingTask>("uplift-ping") {
+            configureFor(project) {
+                clearDependencies()
             }
-            register("uplift-destroy", UpliftDestroyTask::class.java) {
-                it.configureFor(project) {
-                    clearDependencies()
-                }
+        }.register<UpliftDestroyTask>("uplift-destroy") {
+            configureFor(project) {
+                clearDependencies()
             }
         }
     }
@@ -66,7 +60,8 @@ class UpliftPlugin : Plugin<Project> {
         else "${project.group}-${project.name}"
     )
 
-    private fun normalize(s: String) = s.toCharArray().joinToString("") { c -> if (Character.isLetterOrDigit(c)) "$c" else "-" }
+    private fun normalize(s: String) =
+        s.toCharArray().joinToString("") { c -> if (Character.isLetterOrDigit(c)) "$c" else "-" }
 
     private fun jarOutput(project: Project) = project.tasks.findByName("jar")?.outputs?.files?.singleFile?.toPath()
 
