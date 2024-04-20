@@ -40,10 +40,14 @@ class UpliftPlugin : Plugin<Project> {
         project.cdkApp().resolve("cdk.out").resolve("${task.stack.get()}.template.json")
 
     private fun <T : UpliftTask> T.configureFor(project: Project, aob: T.() -> Unit = {}) {
-        account %= "${project.propertyOrNull("account") ?: ""}"
-        region %= "${project.propertyOrNull("region") ?: ""}"
-        profile %= "${project.propertyOrNull("profile") ?: "default"}"
-        stack %= "${project.propertyOrNull("stack") ?: composeName(project)}"
+        account %= project.propertyOr("account")
+        region %= project.propertyOr("region")
+        profile %= project.propertyOr("profile") {
+            "default"
+        }
+        stack %= project.propertyOr("stack") {
+            composeName(project)
+        }
         arch %= resolveArchitecture()
         awsAuth %= resolveAwsAuth()
         if (this is UpliftCdkTask) {

@@ -12,7 +12,8 @@ internal operator fun <T> Property<T>.remAssign(value: T?): Unit = set(value)
 
 internal operator fun <T> ListProperty<T>.remAssign(values: Iterable<T>?): Unit = set(values)
 
-internal fun Project.propertyOrNull(name: String) = takeIf { hasProperty(name) }?.let { this.property(name) }
+internal fun Project.propertyOr(name: String, def: () -> String = { "" }): String =
+    takeIf { hasProperty(name) }?.let { this.property(name) }?.toString() ?: def()
 
 internal fun Project.buildSubDirectory(dir: String): Path =
     layout.buildDirectory.dir(dir).get().asFile.toPath()
@@ -34,7 +35,7 @@ internal val Project.classpath: List<File>
 internal fun Project.resolve(property: String) =
     System.getProperty(property)
         ?: System.getenv("UPLIFT_${property.uppercase()}")
-        ?: propertyOrNull(property)?.toString()
+        ?: propertyOr(property)
 
 internal val Project.shortGroupName
     get() = (base().let { group ->
