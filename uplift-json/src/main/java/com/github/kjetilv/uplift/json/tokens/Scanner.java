@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+import static java.lang.Character.isDigit;
+import static java.lang.Character.isWhitespace;
 
 public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
@@ -76,7 +78,12 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         };
     }
 
-    private Token expectedTokenTail(char[] tail, TokenType type, Object literal, String canonical) {
+    private Token expectedTokenTail(
+        char[] tail,
+        TokenType type,
+        Object literal,
+        String canonical
+    ) {
         for (char c : tail) {
             if (source.chomp() != c) {
                 fail("Unknown identifier");
@@ -125,7 +132,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
     }
 
     private void spoolWhitespace() {
-        while (isWS(source.peek())) {
+        while (isWhitespace(source.peek())) {
             source.advance();
         }
     }
@@ -169,13 +176,5 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     public static Stream<Token> tokenStream(Source source) {
         return StreamSupport.stream(new Scanner(source), false);
-    }
-
-    private static boolean isDigit(char c) {
-        return Character.isDigit(c) || c == '.';
-    }
-
-    private static boolean isWS(char c) {
-        return Character.isWhitespace(c);
     }
 }
