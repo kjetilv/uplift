@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.json.samplegen.User_Callbacks;
 import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +58,7 @@ public class MemorySegmentJsonReaderTest {
         MemorySegmentJsonReader<User, User_Callbacks> reader =
             new MemorySegmentJsonReader<>(Users.INSTANCE.callbacks());
 
-        User user = reader.read(LineSegments.of(json));
+        User user = reader.read(LineSegments.of(json, StandardCharsets.UTF_8));
         System.out.println(user);
 
         String written = Users.INSTANCE.stringWriter().write(user);
