@@ -16,7 +16,6 @@ RUN chmod 777 /graalvm/*/bin/*
 
 FROM ⎨buildsite⎬ AS ⎨target⎬
 CMD /graalvm/*/bin/native-image ⎨main⎬ \
- --static \
  --verbose \
  --no-fallback \
  -g \

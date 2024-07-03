@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
     `java-gradle-plugin`
 }
 
@@ -23,16 +23,16 @@ repositories {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.132.1")
-    implementation("software.amazon.awssdk:lambda:2.23.4")
-    implementation("software.amazon.awssdk:cloudformation:2.23.4")
-    implementation("software.amazon.awssdk:auth:2.23.4")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.147.2")
+    implementation("software.amazon.awssdk:lambda:2.25.27")
+    implementation("software.amazon.awssdk:cloudformation:2.25.52")
+    implementation("software.amazon.awssdk:auth:2.25.27")
     implementation("software.constructs:constructs:10.2.69")
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation(gradleApi())
-    implementation("org.antlr:ST4:4.3.4")
+    implementation("org.antlr:ST4:4.3")
 }
 
 kotlin {
