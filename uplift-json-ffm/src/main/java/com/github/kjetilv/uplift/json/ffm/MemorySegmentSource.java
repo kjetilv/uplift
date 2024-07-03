@@ -1,10 +1,14 @@
 package com.github.kjetilv.uplift.json.ffm;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.bits.Bits;
+import com.github.kjetilv.flopp.kernel.bits.MemorySegments;
 import com.github.kjetilv.uplift.json.tokens.AbstractBytesSource;
 
 import java.lang.foreign.MemorySegment;
 import java.util.Objects;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
@@ -15,6 +19,10 @@ public final class MemorySegmentSource extends AbstractBytesSource {
         super(reader(memorySegment, startIndex, endIndex));
     }
 
+    public MemorySegmentSource(LineSegment lineSegment) {
+        super(reader(lineSegment));
+    }
+
     private static final int ALIGNMENT = Math.toIntExact(JAVA_LONG.byteSize());
 
     private static IntSupplier reader(
@@ -22,10 +30,34 @@ public final class MemorySegmentSource extends AbstractBytesSource {
         long startIndex,
         long endIndex
     ) {
-        return new MemSeg(endIndex, startIndex, memorySegment);
+        return new MemSegIntSupplier(endIndex, startIndex, memorySegment);
     }
 
-    private static final class MemSeg implements IntSupplier {
+    private static IntSupplier reader(LineSegment lineSegment) {
+        return new IntSupplier() {
+
+            private final LongSupplier longSupplier = lineSegment.longSupplier();
+
+            private int index = 0;
+
+            private long data = longSupplier.getAsLong();
+
+            @Override
+            public int getAsInt() {
+                try {
+                    return Bits.getByte(data, index);
+                } finally {
+                    index++;
+                    if (index == MemorySegments.ALIGNMENT_INT) {
+                        data = longSupplier.getAsLong();
+                        index = 0;
+                    }
+                }
+            }
+        };
+    }
+
+    private static final class MemSegIntSupplier implements IntSupplier {
 
         private final long length;
 
@@ -43,7 +75,7 @@ public final class MemorySegmentSource extends AbstractBytesSource {
 
         private final MemorySegment memorySegment;
 
-        private MemSeg(long endIndex, long startIndex, MemorySegment memorySegment) {
+        private MemSegIntSupplier(long endIndex, long startIndex, MemorySegment memorySegment) {
             this.memorySegment = Objects.requireNonNull(memorySegment, "memorySegment");
             if (startIndex < 0) {
                 throw new IllegalArgumentException("startIndex < 0: " + startIndex);

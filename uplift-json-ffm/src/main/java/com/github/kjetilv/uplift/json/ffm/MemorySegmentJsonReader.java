@@ -16,7 +16,7 @@ public class MemorySegmentJsonReader<T extends Record, C extends Callbacks>
     }
 
     @Override
-    protected Source input(LineSegment source) {
-        return new MemorySegmentSource(source.memorySegment(), source.startIndex(), source.endIndex());
+    protected Source input(LineSegment lineSegment) {
+        return new MemorySegmentSource(lineSegment);
     }
 }

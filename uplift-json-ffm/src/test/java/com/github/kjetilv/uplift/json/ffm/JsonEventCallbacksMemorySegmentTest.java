@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.ffm;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;
@@ -22,6 +24,10 @@ public class JsonEventCallbacksMemorySegmentTest {
 
     public static MemorySegment of(String json) {
         return MemorySegment.ofBuffer(byteBuffer(json.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public static LineSegment ls(String json) {
+        return LineSegments.of(json,StandardCharsets.UTF_8);
     }
 
     public static Stream<Token> tokens(Source source) {
