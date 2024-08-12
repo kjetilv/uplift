@@ -33,14 +33,14 @@ public final class CharSequenceSource extends AbstractBytesSource {
             int index = this.index.intValue();
             if (index < length) {
                 try {
-                    return (int) sequence.charAt(index);
+                    return sequence.charAt(index);
                 } catch (Exception e) {
                     throw new IllegalStateException("Failed to read from " + sequence, e);
                 } finally {
                     this.index.increment();
                 }
             }
-            return -1;
+            return 0;
         }
 
         @Override

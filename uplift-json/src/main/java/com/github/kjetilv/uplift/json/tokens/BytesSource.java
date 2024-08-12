@@ -30,7 +30,7 @@ public final class BytesSource extends AbstractBytesSource {
         @Override
         public int getAsInt() {
             try {
-                return stream.read();
+                return Math.max(0, stream.read());
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + stream, e);
             }

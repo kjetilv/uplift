@@ -74,7 +74,8 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
                 spoolWhitespace();
                 yield null;
             }
-            default -> fail("Unrecognized token");
+            default ->
+                fail("Unrecognized token");
         };
     }
 

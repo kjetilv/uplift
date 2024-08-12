@@ -77,10 +77,10 @@ final class Builders extends Gen {
 
         Name name = te.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
-            write(bw, "package " + pe.getQualifiedName() + ";");
-            write(bw, "");
             write(
                 bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
                 "@" + Generated.class.getName() + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time() + "\"",
