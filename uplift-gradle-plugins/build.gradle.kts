@@ -16,23 +16,17 @@ gradlePlugin {
     }
 }
 
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    mavenLocal()
-}
-
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.147.2")
-    implementation("software.amazon.awssdk:lambda:2.25.27")
-    implementation("software.amazon.awssdk:cloudformation:2.25.52")
-    implementation("software.amazon.awssdk:auth:2.25.27")
-    implementation("software.constructs:constructs:10.2.69")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.151.0")
+    implementation("software.amazon.awssdk:lambda:2.27.3")
+    implementation("software.amazon.awssdk:cloudformation:2.27.3")
+    implementation("software.amazon.awssdk:auth:2.27.3")
+    implementation("software.constructs:constructs:10.3.0")
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation(gradleApi())
-    implementation("org.antlr:ST4:4.3")
+    implementation("org.antlr:ST4:4.3.4")
 }
 
 kotlin {

@@ -7,14 +7,14 @@ plugins {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.150.0")
-    implementation("software.constructs:constructs:10.2.69")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.151.0")
+    implementation("software.constructs:constructs:10.3.0")
 }
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(22))
-//        vendor.set(JvmVendorSpec.GRAAL_VM)
+        vendor.set(JvmVendorSpec.GRAAL_VM)
     }
     sourceCompatibility = JavaVersion.VERSION_22
     targetCompatibility = JavaVersion.VERSION_22

@@ -5,19 +5,20 @@ import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
-import java.util.Objects;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 abstract sealed class AbstractEventHandler implements EventHandler
     permits ArrayEventHandler, ObjectEventHandler, ValueEventHandler {
 
-    private final AbstractEventHandler scope;
+    private final AbstractEventHandler parentScope;
 
     private final Callbacks callbacks;
 
-    AbstractEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
-        this.scope = scope;
-        this.callbacks = Objects.requireNonNull(callbacks, "callbacks");
+    AbstractEventHandler(AbstractEventHandler parentScope, Callbacks callbacks) {
+        this.parentScope = parentScope;
+        this.callbacks = requireNonNull(callbacks, "callbacks");
     }
 
     @Override
@@ -28,14 +29,11 @@ abstract sealed class AbstractEventHandler implements EventHandler
     protected abstract AbstractEventHandler with(Callbacks callbacks);
 
     protected final AbstractEventHandler exit() {
-        return scope == null ? this : scope.with(callbacks);
+        return parentScope == null ? this : parentScope.with(callbacks);
     }
 
     protected final AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
-        if (scope == null) {
-            return this;
-        }
-        return scope.with(action.apply(callbacks));
+        return parentScope == null ? this : parentScope.with(requireNonNull(action, "action").apply(callbacks));
     }
 
     protected final Callbacks field(Token token) {
@@ -72,6 +70,6 @@ abstract sealed class AbstractEventHandler implements EventHandler
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "[" + (scope == null ? "" : "->" + scope) + "]";
+        return getClass().getSimpleName() + "[" + (parentScope == null ? "" : "->" + parentScope) + "]";
     }
 }

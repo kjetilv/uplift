@@ -5,7 +5,7 @@ import org.gradle.api.Project
 import java.nio.file.Path
 
 internal fun DefaultTask.docker(cwd: Path, dockerCmd: String) =
-    project.resolveProperty("docker.binary", "docker").let { docker ->
+    project.resolveProperty("docker.binary", defValue = "docker").let { docker ->
         exe(cwd, "$docker $dockerCmd")
     }
 

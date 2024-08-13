@@ -16,10 +16,10 @@ final class ArrayEventHandler extends AbstractEventHandler {
         return switch (token.type()) {
             case BEGIN_OBJECT -> new ObjectEventHandler(this, objectStarted());
             case BEGIN_ARRAY -> new ArrayEventHandler(this, arrayStarted());
-            case STRING -> with(string(token));
-            case BOOL -> with(truth(token));
-            case NUMBER -> with(number(token));
-            case NIL -> with(nil());
+            case STRING -> this.with(string(token));
+            case BOOL -> this.with(truth(token));
+            case NUMBER -> this.with(number(token));
+            case NIL -> this.with(nil());
             case END_ARRAY -> exit(Callbacks::arrayEnded);
             case COMMA -> this;
             case COLON, END_OBJECT -> fail(

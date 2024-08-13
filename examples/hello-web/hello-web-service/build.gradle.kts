@@ -1,3 +1,6 @@
+import com.github.kjetilv.uplift.plugins.NativeLambdaPlugin
+import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
+
 plugins {
     java
     id("com.github.kjetilv.uplift.plugins.lambda") version "0.1.1-SNAPSHOT"
@@ -18,10 +21,15 @@ dependencies {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(22))
-//        vendor.set(JvmVendorSpec.GRAAL_VM)
+        vendor.set(JvmVendorSpec.GRAAL_VM)
     }
     sourceCompatibility = JavaVersion.VERSION_22
     targetCompatibility = JavaVersion.VERSION_22
     withSourcesJar()
 }
 
+apply<NativeLambdaPlugin>()
+
+tasks.withType<NativeLamdbdaTask> {
+    main = "uplift.examples.helloweb.HelloWeb"
+}

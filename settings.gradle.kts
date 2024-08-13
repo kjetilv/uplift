@@ -13,17 +13,16 @@ pluginManagement {
     }
 }
 
-includeBuild("uplift-gradle-plugins")
-
-include("uplift-flogs")
-include("uplift-uuid")
-include("uplift-kernel")
 include("uplift-asynchttp")
-include("uplift-json")
-//include("uplift-json-ffm")
-include("uplift-json-samplegen")
-include("uplift-s3")
-include("uplift-flambda")
-include("uplift-lambda")
-include("uplift-cdk")
 
+include("uplift-cdk")
+//include("uplift-json-ffm")
+include("uplift-flambda")
+include("uplift-flogs")
+include("uplift-gradle-plugins")
+include("uplift-json")
+include("uplift-json-samplegen")
+include("uplift-kernel")
+include("uplift-lambda")
+include("uplift-uuid")
+include("uplift-s3")
