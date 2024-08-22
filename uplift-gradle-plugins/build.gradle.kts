@@ -17,7 +17,7 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.151.0")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.153.0")
     implementation("software.amazon.awssdk:lambda:2.27.3")
     implementation("software.amazon.awssdk:cloudformation:2.27.3")
     implementation("software.amazon.awssdk:auth:2.27.3")
@@ -26,7 +26,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation(gradleApi())
-    implementation("org.antlr:ST4:4.3.4")
+    implementation("org.antlr:ST4:4.3")
 }
 
 kotlin {

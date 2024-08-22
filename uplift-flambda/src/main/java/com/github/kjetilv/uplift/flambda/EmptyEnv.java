@@ -31,5 +31,4 @@ public class EmptyEnv implements Env {
     public String sessionToken() {
         throw new UnsupportedOperationException();
     }
-
 }

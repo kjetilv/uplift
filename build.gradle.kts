@@ -6,6 +6,7 @@ plugins {
 subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "java")
+    apply(plugin = "jvm-test-suite")
 
     group = "com.github.kjetilv.uplift"
     version = "0.1.1-SNAPSHOT"

@@ -1,7 +1,9 @@
-package com.github.kjetilv.uplift.flambda;
+package uplift.flambda;
 
 import java.lang.reflect.Method;
 
+import com.github.kjetilv.uplift.flambda.LambdaHarness;
+import com.github.kjetilv.uplift.flambda.Reqs;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
