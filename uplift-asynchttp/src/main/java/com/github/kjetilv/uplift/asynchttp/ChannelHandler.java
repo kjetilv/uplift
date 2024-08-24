@@ -9,5 +9,5 @@ public interface ChannelHandler<S extends ChannelState, C extends ChannelHandler
 
     S channelState(ByteBuffer byteBuffer);
 
-    C bind(AsynchronousByteChannel medium);
+    C bind(AsynchronousByteChannel channel);
 }

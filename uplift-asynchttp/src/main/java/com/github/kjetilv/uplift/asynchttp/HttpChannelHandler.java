@@ -44,8 +44,8 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
     }
 
     @Override
-    public HttpChannelHandler bind(AsynchronousByteChannel medium) {
-        return new HttpChannelHandler(server, maxRequestLength(), medium, clock());
+    public HttpChannelHandler bind(AsynchronousByteChannel channel) {
+        return new HttpChannelHandler(server, maxRequestLength(), channel, clock());
     }
 
     @Override
