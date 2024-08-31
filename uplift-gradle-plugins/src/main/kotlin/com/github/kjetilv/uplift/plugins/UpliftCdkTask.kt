@@ -29,7 +29,7 @@ abstract class UpliftCdkTask : UpliftTask() {
     protected fun initCdkApp() {
         clearCdkApp()
         runCdk("cdk init --language=java --generate-only")
-        copyTo(resolvedStackbuilderJar(), cdkApp())
+        copyTo(resolvedStackBuilderJar(), cdkApp())
 
         val writeCdkCode = loadResource("CloudApp.java").split('\n')
         val sourcePackage = cdkApp().resolve("src/main/java/lambda/uplift/app")
@@ -62,7 +62,7 @@ abstract class UpliftCdkTask : UpliftTask() {
         property("$indent  ", "uplift.account" to account.get()),
         property("$indent  ", "uplift.region" to region.get()),
         property("$indent  ", "uplift.stack" to stack.get()),
-        property("$indent  ", "uplift.stackbuilderJar" to resolvedStackbuilderJar().fileName),
+        property("$indent  ", "uplift.stackbuilderJar" to resolvedStackBuilderJar().fileName),
         property("$indent  ", "uplift.stackbuilderClass" to stackbuilderClass.get()),
         "$indent</systemProperties>"
     )
@@ -90,7 +90,7 @@ abstract class UpliftCdkTask : UpliftTask() {
             "$indent  <systemProperty><key>${key}</key><value>${value}</value></systemProperty>"
         }
 
-    private fun resolvedStackbuilderJar() =
+    private fun resolvedStackBuilderJar() =
         stackbuilderJar.orNull ?: throw IllegalStateException("Required a stackbuilderJar")
 
     private fun isAws(dep: Dependency) =

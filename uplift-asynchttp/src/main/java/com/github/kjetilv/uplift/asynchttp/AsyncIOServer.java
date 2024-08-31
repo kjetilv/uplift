@@ -224,7 +224,7 @@ final class AsyncIOServer implements IOServer {
 
         private void read(AsynchronousSocketChannel channel) {
             ChannelHandler<S, C> asyncHandler = provider.apply(channel);
-            ByteBuffer byteBuffer = ByteBuffer.allocate(requestBufferSize);
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(requestBufferSize);
             S state = asyncHandler.channelState(byteBuffer);
             channel.read(byteBuffer, state, asyncHandler);
         }

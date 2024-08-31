@@ -8,10 +8,14 @@ import java.util.stream.IntStream;
 
 record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
+    private HttpBytes(byte[] req, byte[] headers) {
+        this(req, headers, null);
+    }
+
     static Optional<HttpBytes> read(ByteBuffer buffer) {
         OptionalInt lineEnd = IntStream.range(0, buffer.position())
-            .filter(oneLinebreak(buffer))
-            .findFirst();
+                .filter(oneLinebreak(buffer))
+                .findFirst();
 
         if (lineEnd.isEmpty()) {
             return Optional.empty();
@@ -19,33 +23,32 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
         byte[] req = extractRequestLine(buffer, lineEnd.getAsInt());
 
-        OptionalInt headerEnd =
-            IntStream.range(lineEnd.getAsInt() + 2, buffer.position() - 1).filter(twoLinebreaks(
-                buffer)).findFirst();
+        OptionalInt headerEnd = IntStream.range(
+                lineEnd.getAsInt() + 2,
+                buffer.position() - 1).filter(twoLinebreaks(buffer)
+        ).findFirst();
 
         if (headerEnd.isEmpty()) {
-            byte[] headers = extractHeaders(buffer, lineEnd.getAsInt(), buffer.position());
+            byte[] headers = extractHeaders(
+                    buffer,
+                    lineEnd.getAsInt(),
+                    buffer.position());
             return Optional.of(new HttpBytes(req, headers));
         }
 
         return Optional.of(new HttpBytes(
-            req,
-            extractHeaders(buffer, lineEnd.getAsInt(), headerEnd.getAsInt()),
-            extractBody(buffer, headerEnd.getAsInt())
+                req,
+                extractHeaders(buffer, lineEnd.getAsInt(), headerEnd.getAsInt()),
+                extractBody(buffer, headerEnd.getAsInt())
         ));
     }
 
-    private HttpBytes(byte[] req, byte[] headers) {
-        this(req, headers, null);
-    }
-
     private static IntPredicate oneLinebreak(ByteBuffer buffer) {
-        return index -> cr(buffer, index) && lf(buffer, index + 1);
+        return index -> crlf(buffer, index);
     }
 
     private static IntPredicate twoLinebreaks(ByteBuffer buf) {
-        return idx ->
-            cr(buf, idx) && lf(buf, idx + 1) && cr(buf, idx + 2) && lf(buf, idx + 3);
+        return idx -> crlf(buf, idx) && crlf(buf, idx + 2);
     }
 
     private static byte[] extractRequestLine(ByteBuffer buffer, int lineEnd) {
@@ -66,6 +69,10 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
         byte[] body = new byte[length];
         buffer.get(start, body, 0, length);
         return body;
+    }
+
+    private static boolean crlf(ByteBuffer buf, int idx) {
+        return cr(buf, idx) && lf(buf, idx + 1);
     }
 
     private static boolean cr(ByteBuffer buffer, int index) {

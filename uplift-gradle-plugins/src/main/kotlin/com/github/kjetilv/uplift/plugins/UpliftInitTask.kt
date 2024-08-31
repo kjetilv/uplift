@@ -14,6 +14,5 @@ abstract class UpliftInitTask : UpliftCdkTask() {
     @get:OutputFile
     abstract val activePom: Property<Path>
 
-    override fun perform() =
-        initCdkApp()
+    override fun perform() = initCdkApp()
 }

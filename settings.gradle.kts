@@ -10,6 +10,7 @@ pluginManagement {
             url = uri("https://maven.pkg.github.com/kjetilv/uplift")
         }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -26,3 +27,5 @@ include("uplift-kernel")
 include("uplift-lambda")
 include("uplift-uuid")
 include("uplift-s3")
+
+includeBuild("examples/hello-web")

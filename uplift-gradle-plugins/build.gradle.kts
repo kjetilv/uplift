@@ -16,11 +16,17 @@ gradlePlugin {
     }
 }
 
+publishing {
+    publications.withType<MavenPublication> {
+        suppressAllPomMetadataWarnings()
+    }
+}
+
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.153.0")
-    implementation("software.amazon.awssdk:lambda:2.27.3")
-    implementation("software.amazon.awssdk:cloudformation:2.27.3")
-    implementation("software.amazon.awssdk:auth:2.27.3")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.154.1")
+    implementation("software.amazon.awssdk:lambda:2.27.11")
+    implementation("software.amazon.awssdk:cloudformation:2.27.11")
+    implementation("software.amazon.awssdk:auth:2.27.11")
     implementation("software.constructs:constructs:10.3.0")
 
     implementation(kotlin("stdlib"))

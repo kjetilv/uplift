@@ -5,8 +5,8 @@ plugins {
 
 subprojects {
     apply(plugin = "maven-publish")
-    apply(plugin = "java")
     apply(plugin = "jvm-test-suite")
+    apply(plugin = "java")
 
     group = "com.github.kjetilv.uplift"
     version = "0.1.1-SNAPSHOT"
@@ -36,6 +36,7 @@ subprojects {
     }
 
     if (project.name != "uplift-gradle-plugins") {
+
         java {
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(22))
@@ -58,13 +59,14 @@ subprojects {
                     }
                 }
             }
+
             publications {
                 register<MavenPublication>("upliftPublication") {
+                    suppressAllPomMetadataWarnings()
                     pom {
                         name.set("uplift")
                         description.set("Uplift")
                         url.set("https://github.com/kjetilv/uplift")
-
                         licenses {
                             license {
                                 name.set("GNU General Public License v3.0")
@@ -90,4 +92,4 @@ fun resolveProperty(property: String, variable: String? = null, defValue: String
         ?: variable?.let { System.getenv(it) }
         ?: project.takeIf { it.hasProperty(property) }?.property(property)?.toString()
         ?: defValue
-        ?: "$\\{$property}"
+        ?: throw IllegalStateException("No variable $property found, no default value provided")

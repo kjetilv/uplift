@@ -26,7 +26,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.*
 import java.time.temporal.ChronoUnit
 
-
 abstract class UpliftTask : DefaultTask() {
 
     init {

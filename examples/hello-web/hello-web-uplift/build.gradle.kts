@@ -1,4 +1,5 @@
 import com.github.kjetilv.uplift.plugins.UpliftPingTask
+import com.github.kjetilv.uplift.plugins.UpliftPlugin
 import com.github.kjetilv.uplift.plugins.UpliftTask
 
 plugins {
@@ -7,7 +8,8 @@ plugins {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.151.0")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.154.1")
+    implementation("software.amazon.awssdk:cloudformation:2.27.11")
     implementation("software.constructs:constructs:10.3.0")
 }
 
@@ -21,14 +23,19 @@ java {
     withSourcesJar()
 }
 
-tasks.withType<UpliftTask> {
+apply<UpliftPlugin>()
 
+tasks.withType<UpliftTask> {
     admonish() // TODO Remove this when you have your properties in order
 
     // Minimal config, assuming gradle.properties are found
     configure(
         stack = "hello-web-uplift"
     )
+
+    if (this !is UpliftPingTask) {
+        dependsOn(":hello-web-service:native-lambda", "jar")
+    }
 
 // TODO: Either:
 //  1. Uncomment and tweak + replace above configure with this one, or
@@ -39,13 +46,6 @@ tasks.withType<UpliftTask> {
 //        profile = "<AWS profile holding key/secret>",
 //        stack = "hello-web-uplift"
 //    )
-
-    if (this !is UpliftPingTask) {
-        dependsOn(
-            ":hello-web-service:native-lambda",
-            "jar"
-        )
-    }
 }
 
 fun admonish() =
