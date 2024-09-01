@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @SuppressWarnings({"MethodMayBeStatic", "unused"})
-public abstract class AbstractObjectWriter<T extends Record> implements ObjectWritOer<T> {
+public abstract class AbstractObjectWriter<T extends Record> implements ObjectWriter<T> {
 
     private static final Pattern QUOTE = Pattern.compile("\"");
 

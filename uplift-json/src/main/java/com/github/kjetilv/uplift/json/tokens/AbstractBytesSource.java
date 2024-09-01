@@ -90,7 +90,7 @@ public abstract class AbstractBytesSource implements Source {
 
     private static final char NIL = '\0';
 
-    private static final double MAX;
+    private static final double MAX = Character.MAX_VALUE;
 
     private static char toChar(int returned) {
         if (returned <= 0) {
