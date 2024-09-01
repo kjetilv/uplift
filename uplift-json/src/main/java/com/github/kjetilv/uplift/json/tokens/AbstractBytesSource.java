@@ -33,8 +33,8 @@ public abstract class AbstractBytesSource implements Source {
     @Override
     public char chomp() {
         char chomped = progress.chomped(toChar(next1));
-        if (chomped == '\0') {
-            return '\0';
+        if (chomped == NIL) {
+            return NIL;
         }
         currentLexeme.append(chomped);
         next1 = next2;
@@ -81,24 +81,28 @@ public abstract class AbstractBytesSource implements Source {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + nextChar + " " + pr(next1) + "/" + pr(next2) + "]";
+        return getClass().getSimpleName() + "[" + nextChar + " " + print(next1) + "/" + print(next2) + "]";
     }
 
     private int nextChar() {
         return this.nextChar.getAsInt();
     }
 
+    private static final char NIL = '\0';
+
+    private static final double MAX;
+
     private static char toChar(int returned) {
-        if (returned > 0) {
-            if (returned > Character.MAX_VALUE) {
-                throw new IllegalStateException("Invalid char: " + returned);
-            }
-            return (char) returned;
+        if (returned <= 0) {
+            return NIL;
         }
-        return '\0';
+        if (returned > MAX) {
+            throw new IllegalStateException("Invalid char: " + returned);
+        }
+        return (char) returned;
     }
 
-    private static String pr(int c) {
+    private static String print(int c) {
         return switch (c) {
             case (int)'\n' -> "\\n";
             case (int)'\t' -> "\\t";
