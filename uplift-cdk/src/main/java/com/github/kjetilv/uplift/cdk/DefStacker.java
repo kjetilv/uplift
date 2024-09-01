@@ -1,15 +1,11 @@
 package com.github.kjetilv.uplift.cdk;
 
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.services.lambda.*;
+
 import java.util.Objects;
 
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.FunctionUrl;
-import software.amazon.awscdk.services.lambda.FunctionUrlAuthType;
-import software.amazon.awscdk.services.lambda.FunctionUrlCorsOptions;
-
-import static software.amazon.awscdk.services.lambda.Runtime.PROVIDED_AL2;
+import static software.amazon.awscdk.services.lambda.Runtime.PROVIDED_AL2023;
 
 record DefStacker(
     String name,
@@ -86,7 +82,7 @@ record DefStacker(
                 .logRetention(this.settings().logRetention())
                 .architecture(settings.architecture())
                 .memorySize(settings.memoryMb())
-                .runtime(PROVIDED_AL2)
+                .runtime(PROVIDED_AL2023)
                 .timeout(software.amazon.awscdk.Duration.seconds(this.settings().timeout().getSeconds()))
                 .build())
             .authType(FunctionUrlAuthType.NONE)
