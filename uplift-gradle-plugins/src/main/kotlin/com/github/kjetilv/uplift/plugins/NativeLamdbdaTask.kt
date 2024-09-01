@@ -65,7 +65,7 @@ abstract class NativeLamdbdaTask : DefaultTask() {
 
         cp.forEach { copyTo(it, upliftClasspath) }
 
-        val split = "Dockerfile-lambda.st4".renderResource(
+        val split = "lambda-st4/Dockerfile".renderResource(
             "buildsite" to buildsite.get(),
             "target" to identifier.get(),
             "arch" to arch.get(),

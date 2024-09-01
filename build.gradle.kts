@@ -12,9 +12,9 @@ subprojects {
     version = "0.1.1-SNAPSHOT"
 
     repositories {
-        gradlePluginPortal()
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
     }
 
     java {

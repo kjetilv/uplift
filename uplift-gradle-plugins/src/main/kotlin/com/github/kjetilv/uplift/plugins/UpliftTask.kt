@@ -297,7 +297,7 @@ abstract class UpliftTask : DefaultTask() {
 
     private fun initialize() {
         Files.write(
-            upliftDir().resolve("Dockerfile"), "Dockerfile-cdk.st4".renderResource("arch" to arch.get())
+            upliftDir().resolve("Dockerfile"), "cdk-st4/Dockerfile".renderResource("arch" to arch.get())
         )
         docker( upliftDir(), "build --tag cdk-site:latest ${upliftDir()}")
     }

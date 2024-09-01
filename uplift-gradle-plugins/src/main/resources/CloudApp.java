@@ -128,7 +128,7 @@ public final class CloudApp {
                 .map(toUrl())
                 .toList();
         } catch (Exception e) {
-            throw new IllegalStateException("COuld not list additkonal jars", e);
+            throw new IllegalStateException("Could not list additional jars", e);
         }
     }
 
