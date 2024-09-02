@@ -1,7 +1,7 @@
 FROM --platform=linux/⎨arch⎬ ubuntu:24.04 AS ⎨buildsite⎬
 VOLUME [ "/out" ]
 RUN apt-get update
-RUN apt-get install -y build-essential gcc zlib1g-dev libz-dev
+RUN apt-get install -y build-essential gcc zlib1g-dev libz-dev libc6
 RUN mkdir /graalvm
 ⎨if(disturi)⎬
 ADD ⎨disturi⎬ /graal.tar.gz
