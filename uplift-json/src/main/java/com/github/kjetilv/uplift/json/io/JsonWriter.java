@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.json.io;
 
-import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;

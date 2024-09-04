@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.io;
 
-import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 
 import java.util.List;
 import java.util.Map;

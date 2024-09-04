@@ -1,12 +1,12 @@
 package com.github.kjetilv.uplift.json;
 
+import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.tokens.TokenType;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.stream.Collectors;
-
-import com.github.kjetilv.uplift.json.tokens.Token;
-import com.github.kjetilv.uplift.json.tokens.TokenType;
 
 public final class ParseException extends RuntimeException {
 

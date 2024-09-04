@@ -1,15 +1,10 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
+
+import java.util.*;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.MapCallbacks;
 import com.github.kjetilv.uplift.json.NullCallbacks;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
