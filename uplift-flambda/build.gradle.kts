@@ -1,11 +1,6 @@
 //import com.github.kjetilv.uplift.bld.Native
 //import com.github.kjetilv.uplift.bld.Native.runCommand
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
 dependencies {
     implementation(project(":uplift-uuid"))
 
