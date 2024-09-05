@@ -11,13 +11,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.github.kjetilv.uplift.json.annpro.Gen.*;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
@@ -25,55 +28,36 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
-        if (isJsonRecord(typedElements)) {
-            Set<? extends Element> enums = enums(roundEnv);
-            Set<? extends Element> types = types(roundEnv);
-            return extracted(types, enums);
-        }
-        return false;
-    }
-
-    private boolean extracted(
-        Set<? extends Element> types,
-        Set<? extends Element> enums
-    ) {
-        if (types.isEmpty()) {
-            if (enums.isEmpty()) {
+        if (containsJsonRecord(typedElements)) {
+            Collection<? extends Element> types = types(roundEnv);
+            Collection<? extends Element> enums = enums(roundEnv);
+            if (types.isEmpty()) {
+                requireEmptyEnums(enums);
                 return true;
             }
-            throw new IllegalStateException("No types for " + enums.size() + " enums: " + write(enums));
-        }
-        if (types.stream().allMatch(JsonRecordProcessor::isRecord)) {
-            if (hasRoots(types)) {
-                types.forEach(element ->
-                    process(element, types, enums));
-            } else {
-                throw new IllegalStateException(
-                    "None of " + types.size() + " elements are roots: " + write(types));
-            }
-        } else {
-            throw new IllegalStateException("Only top-level record types are supported: " + write(types));
+            requireAllRecords(types);
+            requireAnyRootType(types);
+
+            write(types, enums);
         }
         return false;
     }
 
-    private void process(Element e, Set<? extends Element> roots, Set<? extends Element> enums) {
-        if (e instanceof TypeElement te) {
-            PackageElement pe = Gen.packageElement(te);
-            Types typeUtils = processingEnv.getTypeUtils();
-            Builders.writeBuilder(pe, te, builderFile(te), roots, enums, typeUtils);
-            Callbacks.writeCallbacks(pe, te, callbackFile(te), roots, enums);
-            Writers.writeWriter(pe, te, writerFile(te), roots, enums, typeUtils);
-            if (isRoot(te)) {
-                RWs.writeRW(pe, te, factoryFile(pe, te));
-            }
-        } else {
-            throw new IllegalStateException("Not a supported type: " + e);
+    private void write(Collection<? extends Element> types, Collection<? extends Element> enums) {
+        for (Element el : types) {
+            TypeElement typeEl = typeEl(el);
+            PackageElement packageEl = packageEl(typeEl);
+            writeBuilder(packageEl, typeEl, builderFile(typeEl), types, enums);
+            writeCallbacks(packageEl, typeEl, callbackFile(typeEl), types, enums);
+            writeWriter(packageEl, typeEl, writerFile(typeEl), types, enums);
+            rootElement(typeEl).ifPresent(rootEl ->
+                writeRW(packageEl, rootEl, factoryFile(packageEl, rootEl))
+            );
         }
     }
 
     private JavaFileObject factoryFile(PackageElement pe, TypeElement te) {
-        return file(Gen.factoryClassQ(pe, te));
+        return file(factoryClassQ(pe, te));
     }
 
     private JavaFileObject callbackFile(TypeElement typeElement) {
@@ -89,7 +73,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private JavaFileObject file(TypeElement te, String type) {
-        return file(Gen.simpleName(te) + '_' + type);
+        return file(simpleName(te) + '_' + type);
     }
 
     private JavaFileObject file(String name) {
@@ -102,11 +86,58 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private static final String JSON_RECORD = JsonRecord.class.getName();
 
-    private static boolean isJsonRecord(Set<? extends TypeElement> typedElements) {
-        return Stream.ofNullable(typedElements)
-            .flatMap(Collection::stream)
+    private static void requireAllRecords(Collection<? extends Element> types) {
+        if (types.stream().anyMatch(JsonRecordProcessor::isNotRecord)) {
+            throw new IllegalStateException(
+                "Only top-level record types are supported, found " + print(
+                    types,
+                    JsonRecordProcessor::isNotRecord
+                ));
+        }
+    }
+
+    private static void requireEmptyEnums(Collection<? extends Element> enums) {
+        if (!enums.isEmpty()) {
+            throw new IllegalStateException(
+                "No types for " + enums.size() + " enums: " + print(enums));
+        }
+    }
+
+    private static void requireAnyRootType(Collection<? extends Element> types) {
+        if (rootType(types).isEmpty()) {
+            throw new IllegalStateException(
+                "None of " + types.size() + " elements are roots: " + print(types));
+        }
+    }
+
+    private static Optional<TypeElement> rootType(Collection<? extends Element> types) {
+        return typeElements(types)
+            .flatMap(typeElement ->
+                rootElement(typeElement).stream())
+            .findAny();
+    }
+
+    private static TypeElement typeEl(Element element) {
+        if (element instanceof TypeElement typeElement) {
+            return typeElement;
+        }
+        throw new IllegalStateException("Not a supported type: " + element);
+    }
+
+    private static Stream<TypeElement> typeElements(Collection<? extends Element> types) {
+        return types.stream()
+            .filter(TypeElement.class::isInstance)
+            .map(TypeElement.class::cast);
+    }
+
+    private static boolean containsJsonRecord(Set<? extends TypeElement> typedElements) {
+        return Stream.ofNullable(typedElements).flatMap(Collection::stream)
             .anyMatch(typeElement ->
                 typeElement.getQualifiedName().toString().equals(JSON_RECORD));
+    }
+
+    private static boolean isNotRecord(Element element) {
+        return !isRecord(element);
     }
 
     private static boolean isRecord(Element element) {
@@ -120,12 +151,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                enclosingElement instanceof TypeElement;
     }
 
-    private static Set<? extends Element> enums(RoundEnvironment roundEnv) {
+    private static Collection<? extends Element> enums(RoundEnvironment roundEnv) {
         return Gen.enums(roundEnv.getRootElements())
             .collect(Collectors.toSet());
     }
 
-    private static Set<? extends Element> types(RoundEnvironment roundEnv) {
+    private static Collection<? extends Element> types(RoundEnvironment roundEnv) {
         Stream<? extends Element> annotatedRecords = roundEnv.getRootElements()
             .stream()
             .filter(element ->
@@ -144,20 +175,20 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             ));
     }
 
-    private static boolean hasRoots(Set<? extends Element> roots) {
-        return roots.stream()
-            .filter(TypeElement.class::isInstance)
-            .map(TypeElement.class::cast)
-            .anyMatch(JsonRecordProcessor::isRoot);
+    private static Optional<TypeElement> rootElement(TypeElement typeElement) {
+        return Optional.of(typeElement).flatMap(element ->
+            Optional.ofNullable(element.getAnnotation(JsonRecord.class))
+                .filter(JsonRecord::root)
+                .map(_ -> element));
     }
 
-    private static boolean isRoot(TypeElement typeElement) {
-        JsonRecord annotation = typeElement.getAnnotation(JsonRecord.class);
-        return annotation != null && annotation.root();
+    private static <E extends Element> String print(Collection<E> roots) {
+        return print(roots, null);
     }
 
-    private static String write(Set<? extends Element> roots) {
+    private static <E extends Element> String print(Collection<E> roots, Predicate<E> filter) {
         return roots.stream()
+            .filter(filter == null ? _ -> true : filter)
             .map(Element::getSimpleName)
             .map(Objects::toString)
             .collect(Collectors.joining(", "));

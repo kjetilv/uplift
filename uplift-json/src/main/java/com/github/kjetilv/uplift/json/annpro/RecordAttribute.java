@@ -7,10 +7,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Types;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.github.kjetilv.uplift.json.annpro.Gen.*;
 
@@ -19,14 +18,14 @@ record RecordAttribute(
     RecordComponentElement element,
     Variant variant,
     TypeElement internalType,
-    Set<? extends Element> roots,
-    Set<? extends Element> enums
+    Collection<? extends Element> roots,
+    Collection<? extends Element> enums
 ) {
 
     static RecordAttribute create(
         RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums
     ) {
         return switch (element.asType().getKind()) {
             case BOOLEAN -> new RecordAttribute("Boolean", element, roots, enums);
@@ -45,8 +44,8 @@ record RecordAttribute(
     RecordAttribute(
         String event,
         RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums
     ) {
         this(event, element, Variant.PRIMITIVE, null, roots, enums);
     }
@@ -60,8 +59,8 @@ record RecordAttribute(
                ")";
     }
 
-    String writeCall(TypeElement te, Types typeUtils) {
-        Optional<String> listType = listType(element, roots, enums, typeUtils);
+    String writeCall(TypeElement te) {
+        Optional<String> listType = listType(element, roots, enums);
         boolean isEnum = isType(element, enums) || isListType(element, enums);
         boolean isRoot = isType(element, roots) || isListType(element, roots);
         boolean isMap = element.asType().toString().startsWith(Map.class.getName());
@@ -74,7 +73,7 @@ record RecordAttribute(
                 : isEnum ? "string"
                     : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
         return name +
-               listType.map(value -> "Array").orElse("") +
+               listType.map(_ -> "Array").orElse("") +
                "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
@@ -85,7 +84,7 @@ record RecordAttribute(
     }
 
     private String writerClass(String name) {
-        PackageElement packageElement = packageElement(element);
+        PackageElement packageElement = packageEl(element);
         String prefix = packageElement.toString();
         return packageElement + "." + name
             .substring(prefix.length() + 1)
@@ -94,10 +93,10 @@ record RecordAttribute(
 
     private static RecordAttribute resolveDeclared(
         RecordComponentElement element,
-        Set<? extends Element> roots,
-        Set<? extends Element> enums
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums
     ) {
-        return enumType(element, enums).map(enumType ->
+        return enumType(element, enums).map(_ ->
                 new RecordAttribute(
                     "Enum",
                     element,
@@ -157,7 +156,7 @@ record RecordAttribute(
             .or(() -> Optional.of(element.asType().toString())
                 .filter(mapType ->
                     mapType.startsWith("java.util.Map"))
-                .map(mapType ->
+                .map(_ ->
                     new RecordAttribute(
                         "Object",
                         element,
@@ -175,26 +174,26 @@ record RecordAttribute(
         PRIMITIVE() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return packageElement(builderType) + "." + builderClassPlain(builderType) + "::" + setter(element);
+                return packageEl(builderType) + "." + builderClassPlain(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return packageElement(builderType) + "." + builderClassPlain(builderType) + "::" + adder(element);
+                return packageEl(builderType) + "." + builderClassPlain(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + packageElement(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + setter(
+                return "() -> " + packageEl(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + setter(
                     element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + packageElement(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + adder(
+                return "() -> " + packageEl(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + adder(
                     element) + ")";
             }
         },
