@@ -61,19 +61,19 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private JavaFileObject callbackFile(TypeElement typeElement) {
-        return file(typeElement, "Callbacks");
+        return classFileName(typeElement, "Callbacks");
     }
 
     private JavaFileObject writerFile(TypeElement typeElement) {
-        return file(typeElement, "Writer");
+        return classFileName(typeElement, "Writer");
     }
 
     private JavaFileObject builderFile(TypeElement typeElement) {
-        return file(typeElement, "Builder");
+        return classFileName(typeElement, "Builder");
     }
 
-    private JavaFileObject file(TypeElement te, String type) {
-        return file(simpleName(te) + '_' + type);
+    private JavaFileObject classFileName(TypeElement typeElement, String callbacks) {
+        return file(fqName(typeElement) + '_' + callbacks);
     }
 
     private JavaFileObject file(String name) {
