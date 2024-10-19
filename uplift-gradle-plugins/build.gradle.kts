@@ -35,6 +35,12 @@ dependencies {
     implementation("org.antlr:ST4:4.3")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 kotlin {
-    jvmToolchain(22)
+    jvmToolchain(21)
 }
