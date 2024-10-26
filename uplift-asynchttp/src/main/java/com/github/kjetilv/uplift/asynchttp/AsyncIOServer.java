@@ -1,16 +1,15 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousServerSocketChannel;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import java.nio.channels.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -21,9 +20,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.lang.Long.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
@@ -129,6 +125,11 @@ final class AsyncIOServer implements IOServer {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + localAddress + "]";
+    }
+
     private boolean awaitTermination(Duration timeout) {
         try {
             if (terminatedWithin(timeout)) {
@@ -163,6 +164,20 @@ final class AsyncIOServer implements IOServer {
                     throw new RuntimeException("Failed to terminate: " + channelGroup, e);
                 }
             }
+        }
+    }
+
+    private static final String ALL = "0.0.0.0";
+
+    private static final int MINIMUM_REQUEST_SIZE = 1024;
+
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(5);
+
+    private static InetAddress getInetAddress() {
+        try {
+            return InetAddress.getByName(ALL);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to resolve bind address", e);
         }
     }
 
@@ -242,24 +257,5 @@ final class AsyncIOServer implements IOServer {
                 log.error("Processing failed, failed to close {}", channel, e == null ? ex : e);
             }
         }
-    }
-
-    private static final String ALL = "0.0.0.0";
-
-    private static final int MINIMUM_REQUEST_SIZE = 1024;
-
-    private static final Duration GRACE_PERIOD = Duration.ofSeconds(5);
-
-    private static InetAddress getInetAddress() {
-        try {
-            return InetAddress.getByName(ALL);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to resolve bind address", e);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + localAddress + "]";
     }
 }

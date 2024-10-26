@@ -2,11 +2,7 @@ package org.slf4j;
 
 import org.slf4j.event.Level;
 
-import static com.github.kjetilv.uplift.flogs.LogLevel.DEBUG;
-import static com.github.kjetilv.uplift.flogs.LogLevel.ERROR;
-import static com.github.kjetilv.uplift.flogs.LogLevel.INFO;
-import static com.github.kjetilv.uplift.flogs.LogLevel.TRACE;
-import static com.github.kjetilv.uplift.flogs.LogLevel.WARN;
+import static com.github.kjetilv.uplift.flogs.LogLevel.*;
 
 class Slf4jLogger implements Logger {
 

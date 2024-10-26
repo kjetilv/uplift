@@ -38,12 +38,14 @@ public record LambdaRequest(String id, HttpReq request) {
     private static Map<String, Object> toSingleValue(Map<String, ? extends List<String>> map) {
         return map == null || map.isEmpty()
             ? null
-            : Maps.mapValues(map, values ->
-                switch (values.size()) {
-                    case 0 -> "";
-                    case 1 -> String.valueOf(values.getFirst());
-                    default -> cat(values, values.size());
-                });
+            : Maps.mapValues(
+                map, values ->
+                    switch (values.size()) {
+                        case 0 -> "";
+                        case 1 -> String.valueOf(values.getFirst());
+                        default -> cat(values, values.size());
+                    }
+            );
     }
 
     private static String cat(List<String> values, int size) {

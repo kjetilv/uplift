@@ -1,8 +1,5 @@
 package com.github.kjetilv.uplift.json.ffm;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.bits.Bits;
-import com.github.kjetilv.flopp.kernel.bits.MemorySegments;
 import com.github.kjetilv.uplift.json.tokens.AbstractBytesSource;
 
 import java.util.function.IntSupplier;

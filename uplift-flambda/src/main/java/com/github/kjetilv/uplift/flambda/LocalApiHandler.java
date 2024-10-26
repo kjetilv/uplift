@@ -1,14 +1,14 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 final class LocalApiHandler implements HttpChannelHandler.Server {
 
@@ -37,6 +37,11 @@ final class LocalApiHandler implements HttpChannelHandler.Server {
         return lambdaResponse.toHttpResponse().updateHeaders(this::withCors);
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + handler + ", cors=" + corsHeaders + "]";
+    }
+
     private Map<String, List<String>> withCors(Map<String, ? extends List<String>> headers) {
         if (headers == null || headers.isEmpty()) {
             return corsHeaders;
@@ -47,9 +52,4 @@ final class LocalApiHandler implements HttpChannelHandler.Server {
     }
 
     private static final int OK = 200;
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + handler + ", cors=" + corsHeaders + "]";
-    }
 }

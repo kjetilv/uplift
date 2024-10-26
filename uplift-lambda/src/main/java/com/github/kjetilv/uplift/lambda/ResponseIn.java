@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
+import java.io.InputStream;
 import java.util.Map;
 
 @JsonRecord
@@ -13,4 +14,8 @@ public record ResponseIn(
     boolean isBase64Encoded,
     Uuid reqId
 ) {
+
+    public static ResponseIn read(InputStream bytes) {
+        return ResponseInRW.INSTANCE.streamReader().read(bytes);
+    }
 }

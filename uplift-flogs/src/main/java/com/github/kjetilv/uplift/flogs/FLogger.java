@@ -15,8 +15,6 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings("unused")
 public final class FLogger implements Logger {
 
-    public static final Object[] NO_ARGS = new Object[0];
-
     private final String name;
 
     private final LogLevel logLevel;
@@ -73,6 +71,23 @@ public final class FLogger implements Logger {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceName);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this ||
+               obj instanceof FLogger logger &&
+               Objects.equals(sourceName, logger.sourceName);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + name + "]";
+    }
+
     private void write(String logLine) {
         try {
             linesWriter.accept(logLine);
@@ -91,6 +106,8 @@ public final class FLogger implements Logger {
         }
     }
 
+    public static final Object[] NO_ARGS = new Object[0];
+
     private static final PrintStream STDERR = System.err;
 
     private static String shorten(String sourceName) {
@@ -106,22 +123,5 @@ public final class FLogger implements Logger {
                            : p.substring(0, Math.min(len, count.getAndIncrement()));
                    })
                    .collect(Collectors.joining(".")) + "." + className;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sourceName);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj == this ||
-               obj instanceof FLogger logger &&
-               Objects.equals(sourceName, logger.sourceName);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + name + "]";
     }
 }

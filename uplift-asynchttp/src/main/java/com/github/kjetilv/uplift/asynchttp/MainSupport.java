@@ -10,8 +10,6 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public final class MainSupport {
 
-    public static final int MAX_REQUEST_SIZE = 4096;
-
     public static boolean boolArg(Map<String, String> map, String param) {
         return Optional.ofNullable(map.get(param))
             .or(() -> caseInsensitiveLookup(param, map))
@@ -49,6 +47,8 @@ public final class MainSupport {
     private MainSupport() {
     }
 
+    public static final int MAX_REQUEST_SIZE = 4096;
+
     private static final int PORT_80 = 80;
 
     private static final int PORTS_AVAILABLE = 65535;
@@ -57,7 +57,8 @@ public final class MainSupport {
     private static final Optional<Map.Entry<String, String>> EMPTY = Optional.empty();
 
     private static Optional<String> caseInsensitiveLookup(String param, Map<String, String> map) {
-        return map.entrySet().stream()
+        return map.entrySet()
+            .stream()
             .filter(e ->
                 e.getKey()
                     .equalsIgnoreCase(param))

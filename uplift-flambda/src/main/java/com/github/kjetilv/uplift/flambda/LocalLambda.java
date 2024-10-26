@@ -1,17 +1,13 @@
 package com.github.kjetilv.uplift.flambda;
 
+import com.github.kjetilv.uplift.asynchttp.*;
+
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
-import com.github.kjetilv.uplift.asynchttp.HttpReq;
-import com.github.kjetilv.uplift.asynchttp.HttpRes;
-import com.github.kjetilv.uplift.asynchttp.IOServer;
-import com.github.kjetilv.uplift.asynchttp.ServerRunner;
 
 /**
  * Emulates AWS lambda service.
@@ -98,6 +94,11 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         return apiUri;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[api@" + apiUri + " -> lambda@" + lambdaUri + "]";
+    }
+
     void join() {
         lambdaServer.join();
     }
@@ -107,9 +108,4 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
     }
 
     private static final String URL = "http://localhost:%1$d";
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[api@" + apiUri + " -> lambda@" + lambdaUri + "]";
-    }
 }

@@ -1,6 +1,6 @@
 package org.slf4j;
 
-@SuppressWarnings({ "WeakerAccess", "unused" })
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class MarkerFactory {
 
     public static Marker getMarker(String name) {

@@ -41,9 +41,11 @@ record ReqsImpl(URI uri) implements Reqs {
             if (headers != null) {
                 headers.forEach(base::header);
             }
-            base.method(method, body == null || body.isBlank() ?
-                HttpRequest.BodyPublishers.noBody()
-                : HttpRequest.BodyPublishers.ofString(body));
+            base.method(
+                method, body == null || body.isBlank() ?
+                    HttpRequest.BodyPublishers.noBody()
+                    : HttpRequest.BodyPublishers.ofString(body)
+            );
             if (body != null && json) {
                 base.header("Content-Type", "application/json");
             }

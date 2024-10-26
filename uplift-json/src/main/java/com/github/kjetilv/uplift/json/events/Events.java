@@ -11,10 +11,12 @@ final class Events {
         return EventHandler.parse(callbacks, source);
     }
 
+    @SuppressWarnings("unused")
     static Callbacks parse(Callbacks callbacks, InputStream source) {
         return EventHandler.parse(callbacks, source);
     }
 
+    @SuppressWarnings("unused")
     static Callbacks parse(Callbacks callbacks, Reader source) {
         return EventHandler.parse(callbacks, source);
     }

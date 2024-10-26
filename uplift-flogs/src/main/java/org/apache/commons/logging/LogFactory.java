@@ -1,13 +1,13 @@
 package org.apache.commons.logging;
 
+import com.github.kjetilv.uplift.flogs.Flogs;
+import com.github.kjetilv.uplift.flogs.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.github.kjetilv.uplift.flogs.Flogs;
-import com.github.kjetilv.uplift.flogs.Logger;
-
-@SuppressWarnings({ "unused", "WeakerAccess" })
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class LogFactory {
 
     public static Log getLog(Class<?> clazz) {
@@ -18,16 +18,16 @@ public final class LogFactory {
         return logger(Flogs.get(name));
     }
 
-    private static Log logger(Logger logger) {
-        return new CommonsLogger(logger);
+    private LogFactory() {
     }
 
     private static final Map<String, Log> LOGGERS = new HashMap<>();
 
-    private static Function<String, Log> newLogger() {
-        return name -> new CommonsLogger(Flogs.get(name));
+    private static Log logger(Logger logger) {
+        return new CommonsLogger(logger);
     }
 
-    private LogFactory() {
+    private static Function<String, Log> newLogger() {
+        return name -> new CommonsLogger(Flogs.get(name));
     }
 }

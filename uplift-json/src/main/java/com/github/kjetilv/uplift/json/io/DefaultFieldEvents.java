@@ -15,46 +15,46 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
     public DefaultFieldEvents(FieldEvents parent, Sink sink) {
         super(parent, sink);
         sink().accept("{");
-        mark = sink().mark();
+        this.mark = sink().mark();
     }
 
     @Override
     public FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer) {
         return writeField(
-            field,
-            value,
-            Function.identity(),
-            map ->
-                writer.write(map, new DefaultFieldEvents(this, sink()))
+                field,
+                value,
+                Function.identity(),
+                map ->
+                        writer.write(map, new DefaultFieldEvents(this, sink()))
         );
     }
 
     @Override
     public <T extends Record> FieldEvents object(
-        String field,
-        T value,
-        ObjectWriter<T> writer
+            String field,
+            T value,
+            ObjectWriter<T> writer
     ) {
         return writeField(
-            field,
-            value,
-            Function.identity(),
-            t ->
-                writer.write(value, new DefaultFieldEvents(this, sink()))
+                field,
+                value,
+                Function.identity(),
+                _ ->
+                        writer.write(value, new DefaultFieldEvents(this, sink()))
         );
     }
 
     @Override
     public <T extends Record> FieldEvents objectArray(
-        String field,
-        List<? extends T> values,
-        ObjectWriter<T> writer
+            String field,
+            List<? extends T> values,
+            ObjectWriter<T> writer
     ) {
         return writeArray(
-            field,
-            values,
-            Function.identity(),
-            t -> writer.write(t, new DefaultFieldEvents(this, sink()))
+                field,
+                values,
+                Function.identity(),
+                t -> writer.write(t, new DefaultFieldEvents(this, sink()))
         );
     }
 
@@ -94,10 +94,10 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
     }
 
     protected <T, V> FieldEvents writeArray(
-        String field,
-        List<? extends T> values,
-        Function<T, V> map,
-        Consumer<V> setter
+            String field,
+            List<? extends T> values,
+            Function<T, V> map,
+            Consumer<V> setter
     ) {
         if (values == null || values.isEmpty()) {
             return this;

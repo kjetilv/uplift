@@ -4,8 +4,6 @@ import java.time.ZonedDateTime;
 
 final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
 
-    static final LogFormatter<LogEntry> INSTANCE = new LogEntryFormatter();
-
     private LogEntryFormatter() {
     }
 
@@ -56,6 +54,8 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
     Throwable throwable(LogEntry entry) {
         return entry.throwable();
     }
+
+    static final LogFormatter<LogEntry> INSTANCE = new LogEntryFormatter();
 
     private static String pad(int i) {
         return i < 10 ? "0" : "";

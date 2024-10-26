@@ -16,6 +16,10 @@ public record RequestOut(
     String body
 ) {
 
+    public static byte[] write(RequestOut requestOut) {
+        return RequestOutRW.INSTANCE.bytesWriter().write(requestOut);
+    }
+
     public RequestOut {
         if (version != null && !version.equals(VERSION)) {
             throw new IllegalStateException("Version can only be set to " + VERSION + ": " + version);

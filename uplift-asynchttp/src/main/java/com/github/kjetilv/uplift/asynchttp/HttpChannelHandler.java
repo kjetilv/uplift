@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.time.Instant;
@@ -7,20 +10,12 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState, HttpChannelHandler> {
 
     private static final Logger log = LoggerFactory.getLogger(HttpChannelHandler.class);
-
-    public interface Server {
-
-        HttpRes handle(HttpReq req);
-    }
 
     private final Server server;
 
@@ -97,5 +92,10 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
             return Processing.REJECTED;
         }
         return Processing.FAIL;
+    }
+
+    public interface Server {
+
+        HttpRes handle(HttpReq req);
     }
 }

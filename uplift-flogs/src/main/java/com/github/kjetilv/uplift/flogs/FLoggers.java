@@ -30,12 +30,12 @@ final class FLoggers {
         this.formatter = formatter == null ? LogEntryFormatter.INSTANCE : formatter;
     }
 
-    FLogger create(String name) {
-        return new FLogger(name, logLevel, formatter, printer, emergencyPrinter, time);
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + logLevel + "]";
+    }
+
+    FLogger create(String name) {
+        return new FLogger(name, logLevel, formatter, printer, emergencyPrinter, time);
     }
 }

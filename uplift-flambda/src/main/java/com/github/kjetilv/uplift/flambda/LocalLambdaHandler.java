@@ -4,9 +4,8 @@ import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.kernel.util.Maps;
-import com.github.kjetilv.uplift.lambda.RequestOutRW;
+import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
-import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,11 +140,11 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
 
     private static LambdaResponse lambdaResponse(byte[] response) {
         try (ByteArrayInputStream source = new ByteArrayInputStream(response)) {
-            ResponseIn responseIn = ResponseInRW.INSTANCE.streamReader().read(source);
+            ResponseIn responseIn = ResponseIn.read(source);
             return new LambdaResponse(
                 responseIn.statusCode(),
                 Maps.mapValues(responseIn.headers(), String::valueOf),
-                    responseIn.body(),
+                responseIn.body(),
                 responseIn.isBase64Encoded(),
                 responseIn.reqId()
             );
@@ -156,7 +155,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
 
     private static byte[] lambdaRequest(LambdaRequest request) {
         try {
-            return RequestOutRW.INSTANCE.bytesWriter().write(request.out());
+            return RequestOut.write(request.out());
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to produce lambda payload from " + request, e);

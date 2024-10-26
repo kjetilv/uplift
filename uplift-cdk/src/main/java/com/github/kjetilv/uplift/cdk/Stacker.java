@@ -1,5 +1,10 @@
 package com.github.kjetilv.uplift.cdk;
 
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.services.lambda.Architecture;
+import software.amazon.awscdk.services.lambda.HttpMethod;
+import software.amazon.awscdk.services.logs.RetentionDays;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,11 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.lambda.Architecture;
-import software.amazon.awscdk.services.lambda.HttpMethod;
-import software.amazon.awscdk.services.logs.RetentionDays;
 
 public interface Stacker extends Consumer<Stack> {
 
@@ -37,10 +37,12 @@ public interface Stacker extends Consumer<Stack> {
     ) {
 
         public Settings() {
-            this(Architecture.ARM_64,
+            this(
+                Architecture.ARM_64,
                 Duration.ofMinutes(1),
                 128,
-                RetentionDays.ONE_DAY);
+                RetentionDays.ONE_DAY
+            );
         }
     }
 
@@ -49,7 +51,8 @@ public interface Stacker extends Consumer<Stack> {
         List<String> origins,
         List<String> headers,
         Duration maxAge,
-        boolean allowCredentials) {
+        boolean allowCredentials
+    ) {
 
         public Cors() {
             this(
@@ -57,7 +60,8 @@ public interface Stacker extends Consumer<Stack> {
                 List.of("http://localhost:8080"),
                 Collections.emptyList(),
                 Duration.ofDays(1),
-                false);
+                false
+            );
         }
 
         public Cors(
@@ -122,7 +126,9 @@ public interface Stacker extends Consumer<Stack> {
         private static <T extends Comparable<T>> List<T> sanitize(List<T> ts) {
             return ts == null || ts.isEmpty()
                 ? Collections.emptyList()
-                : ts.stream().filter(Objects::nonNull).distinct().sorted().toList();
+                : ts.stream()
+                    .filter(Objects::nonNull).distinct().sorted()
+                    .toList();
         }
     }
 }

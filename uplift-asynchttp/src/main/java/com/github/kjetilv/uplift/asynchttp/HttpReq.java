@@ -1,15 +1,15 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import com.github.kjetilv.uplift.kernel.http.QueryParams;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
 import com.github.kjetilv.uplift.kernel.util.ToStrings;
 import com.github.kjetilv.uplift.uuid.Uuid;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -71,12 +71,30 @@ public record HttpReq(
         return body == null || body.length >= contentLength();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+            .append("[").append(id).append(" ").append(method).append(" ").append(path);
+        if (!queryParams.isEmpty()) {
+            ToStrings.print(base, queryParams);
+        }
+        if (!headers.isEmpty()) {
+            ToStrings.print(base, headers);
+        }
+        if (body != null && body.length > 0) {
+            ToStrings.print(base, body);
+        }
+        return base.append("]").toString();
+    }
+
     private Integer contentLength() {
         List<String> value = this.headers().get("Content-Length");
         if (value == null) {
             return 0;
         }
-        return value.stream().findFirst().map(Integer::parseInt).orElse(0);
+        return value.stream()
+            .findFirst()
+            .map(Integer::parseInt).orElse(0);
     }
 
     private static Map<String, List<String>> headers(String headers) {
@@ -92,7 +110,8 @@ public record HttpReq(
     }
 
     private static List<String> values(String line, int index) {
-        return Arrays.stream(line.substring(index + 1).trim().split(",")).toList();
+        return Arrays.stream(line.substring(index + 1).trim().split(","))
+            .toList();
     }
 
     private static String url(String reqLine, int methodMark) {
@@ -128,21 +147,5 @@ public record HttpReq(
             throw new IllegalStateException("Failed to parse, " + queryStart + "/" + urlEnd + ": " + reqLine, e);
         }
         return QueryParams.read(query);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
-            .append("[").append(id).append(" ").append(method).append(" ").append(path);
-        if (!queryParams.isEmpty()) {
-            ToStrings.print(base, queryParams);
-        }
-        if (!headers.isEmpty()) {
-            ToStrings.print(base, headers);
-        }
-        if (body != null && body.length > 0) {
-            ToStrings.print(base, body);
-        }
-        return base.append("]").toString();
     }
 }

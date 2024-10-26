@@ -1,3 +1,9 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 dependencies {
     implementation(project(":uplift-uuid"))
     implementation(project(":uplift-json"))

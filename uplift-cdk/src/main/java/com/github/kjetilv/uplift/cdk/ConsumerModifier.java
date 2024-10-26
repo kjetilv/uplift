@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.cdk;
 
+import software.amazon.awscdk.Stack;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import software.amazon.awscdk.Stack;
 
 @SuppressWarnings("unused")
 record ConsumerModifier(List<Stacker> stackers) implements UpliftStacks.Session {
@@ -17,7 +17,9 @@ record ConsumerModifier(List<Stacker> stackers) implements UpliftStacks.Session 
     @Override
     public ConsumerModifier modify(Function<Stacker, Stacker> modifier) {
         return new ConsumerModifier(
-            stackers.stream().map(modifier).toList()
+            stackers.stream()
+                .map(modifier)
+                .toList()
         );
     }
 
@@ -28,6 +30,7 @@ record ConsumerModifier(List<Stacker> stackers) implements UpliftStacks.Session 
             UpliftStacks::add,
             (stacks, stacks2) -> {
                 throw new IllegalStateException("Unexpected combone");
-            });
+            }
+        );
     }
 }

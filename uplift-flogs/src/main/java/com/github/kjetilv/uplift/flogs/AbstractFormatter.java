@@ -66,7 +66,7 @@ abstract class AbstractFormatter<E> implements LogFormatter<E> {
         String[] parts = EMPTY_ARG_PATTERN.split(pattern);
         StringBuilder stringBuilder = new StringBuilder(pattern.length() + paramsCount);
         int param = 0;
-        for (String part: parts) {
+        for (String part : parts) {
             stringBuilder.append(part);
             if (param < paramsCount) {
                 stringBuilder.append("{").append(param).append(",}");

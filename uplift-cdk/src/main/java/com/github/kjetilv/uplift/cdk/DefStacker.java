@@ -29,46 +29,54 @@ record DefStacker(
         this.url = url;
         this.settings = settings == null ? new Settings() : settings;
         this.withCors = withCors;
-        this.cors = cors == null ? new Cors(): cors;
+        this.cors = cors == null ? new Cors() : cors;
     }
 
     DefStacker(String name, String module) {
-        this(name,
+        this(
+            name,
             Objects.requireNonNull(module, "module"),
             false,
             null,
             false,
-            null);
+            null
+        );
     }
 
     @Override
     public Stacker withUrl() {
-        return new DefStacker(name,
+        return new DefStacker(
+            name,
             module,
             true,
             settings,
             withCors,
-            cors);
+            cors
+        );
     }
 
     @Override
     public Stacker cors(java.util.function.Function<Cors, Cors> cors) {
-        return new DefStacker(name,
+        return new DefStacker(
+            name,
             module,
             true,
             settings,
             true,
-            Objects.requireNonNull(cors, "cors").apply(this.cors));
+            Objects.requireNonNull(cors, "cors").apply(this.cors)
+        );
     }
 
     @Override
     public Stacker settings(java.util.function.Function<Settings, Settings> settings) {
-        return new DefStacker(name,
+        return new DefStacker(
+            name,
             module,
             url,
             Objects.requireNonNull(settings).apply(this.settings),
             withCors,
-            cors);
+            cors
+        );
 
     }
 

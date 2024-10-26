@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
@@ -7,9 +10,6 @@ import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class WriteableHandler implements CompletionHandler<Integer, Object> {
 
@@ -63,15 +63,15 @@ final class WriteableHandler implements CompletionHandler<Integer, Object> {
         }
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + writtenTracker.longValue() + "/" + expectedTotal + "]";
+    }
+
     private long trackWrites(Integer result) {
         writtenTracker.add(result != null ? result : 0);
         return writtenTracker.longValue();
     }
 
     private static final int MIN_RETRIES = 10;
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + writtenTracker.longValue() + "/" + expectedTotal + "]";
-    }
 }

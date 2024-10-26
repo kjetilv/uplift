@@ -26,6 +26,8 @@ public interface Marker {
     boolean contains(Marker other);
 
     boolean contains(String name);
+
     int hashCode();
+
     boolean equals(Object o);
 }

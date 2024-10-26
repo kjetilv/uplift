@@ -1,14 +1,14 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
@@ -50,14 +50,22 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
         log.warn("Failed to read: {}", state, exc);
     }
 
-    protected abstract Processing process(S state);
-
     protected Processing handlePreflight(Object request, boolean post) {
-        return writeResponse(post ? PREFLIGHT_HEADERS_POST : PREFLIGHT_HEADERS, "Preflight handled: {}", request);
+        return writeResponse(
+            post
+                ? PREFLIGHT_HEADERS_POST
+                : PREFLIGHT_HEADERS,
+            "Preflight handled: {}",
+            request
+        );
     }
 
     protected Processing handleHealth(Object request) {
-        return writeResponse(HEALTH_HEADERS, "Health handled: {}", request);
+        return writeResponse(
+            HEALTH_HEADERS,
+            "Health handled: {}",
+            request
+        );
     }
 
     protected final int maxRequestLength() {
@@ -84,6 +92,8 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
         return time.get();
     }
 
+    protected abstract Processing process(S state);
+
     private boolean bytesRead(Integer result, S state) {
         if (result != null && result >= 0) {
             if (result == 0) {
@@ -109,19 +119,17 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
             return processing != Processing.INCOMPLETE;
         } catch (Exception e) {
             log.warn("Failed something exceptionally: {}", state, e);
-            writeResponse(FAILED_HEADERS, null);
+            writeResponse(FAILED_HEADERS);
         } finally {
             log(state, processing);
         }
         return true;
     }
 
-    private Processing writeResponse(String response, String message, Object... values) {
-        ByteBuffer headerBuffer = ByteBuffer.wrap(response.getBytes(StandardCharsets.ISO_8859_1));
+    private Processing writeResponse(ByteBuffer headerBuffer, Object... values) {
         try (BufferedWriter<ByteBuffer> writer = responseWriter()) {
             writer.write(new WritableBuffer<>(headerBuffer, headerBuffer.capacity()));
         }
-        log.debug(message, values);
         return Processing.OK;
     }
 
@@ -150,42 +158,46 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
 
     private static final int DEFAULT_MAX_REQUEST_LENGTH = 1024;
 
-    private static final String HEALTH_HEADERS = """
-                                                 HTTP/1.1 200 No Content
-                                                 Cache-Control: no-cache
+    private static final ByteBuffer HEALTH_HEADERS = buffer("""
+        HTTP/1.1 200 No Content
+        Cache-Control: no-cache
+        
+        """);
 
-                                                 """;
+    private static final ByteBuffer FAILED_HEADERS = buffer("""
+        HTTP/1.1 500
+        Cache-Control: no-cache
+        
+        """);
 
-    private static final String FAILED_HEADERS = """
-                                                 HTTP/1.1 500
-                                                 Cache-Control: no-cache
+    private static final ByteBuffer PREFLIGHT_HEADERS = buffer("""
+        HTTP/1.1 204 No Content
+        Access-Control-Allow-Origin: *
+        Access-Control-Allow-Methods: OPTIONS, GET
+        Access-Control-Allow-Headers: Content-Type
+        Access-Control-Max-Age: 86400
+        Vary: Accept-Encoding, Origin
+        Cache-Control: no-cache
+        
+        """);
 
-                                                 """;
-
-    private static final String PREFLIGHT_HEADERS = """
-                                                    HTTP/1.1 204 No Content
-                                                    Access-Control-Allow-Origin: *
-                                                    Access-Control-Allow-Methods: OPTIONS, GET
-                                                    Access-Control-Allow-Headers: Content-Type
-                                                    Access-Control-Max-Age: 86400
-                                                    Vary: Accept-Encoding, Origin
-                                                    Cache-Control: no-cache
-
-                                                    """;
-
-    private static final String PREFLIGHT_HEADERS_POST = """
-                                                         HTTP/1.1 204 No Content
-                                                         Access-Control-Allow-Origin: *
-                                                         Access-Control-Allow-Methods: OPTIONS, GET, POST
-                                                         Access-Control-Allow-Headers: Content-Type
-                                                         Access-Control-Max-Age: 86400
-                                                         Vary: Accept-Encoding, Origin
-                                                         Cache-Control: no-cache
-
-                                                         """;
+    private static final ByteBuffer PREFLIGHT_HEADERS_POST = buffer("""
+        HTTP/1.1 204 No Content
+        Access-Control-Allow-Origin: *
+        Access-Control-Allow-Methods: OPTIONS, GET, POST
+        Access-Control-Allow-Headers: Content-Type
+        Access-Control-Max-Age: 86400
+        Vary: Accept-Encoding, Origin
+        Cache-Control: no-cache
+        
+        """);
 
     protected static ByteBuffer textBuffer(String text) {
         return ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static ByteBuffer buffer(String response) {
+        return ByteBuffer.wrap(response.getBytes(StandardCharsets.ISO_8859_1));
     }
 
     @Override

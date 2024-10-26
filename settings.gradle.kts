@@ -17,7 +17,7 @@ pluginManagement {
 include("uplift-asynchttp")
 
 include("uplift-cdk")
-//include("uplift-json-ffm")
+include("uplift-json-ffm")
 include("uplift-flambda")
 include("uplift-flogs")
 include("uplift-gradle-plugins")

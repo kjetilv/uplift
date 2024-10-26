@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.net.URI;
-
 import com.github.kjetilv.uplift.kernel.Env;
 
-@SuppressWarnings({ "NewExceptionWithoutArguments", "unused" })
+import java.net.URI;
+
+@SuppressWarnings({"NewExceptionWithoutArguments", "unused"})
 public class EmptyEnv implements Env {
 
     @Override

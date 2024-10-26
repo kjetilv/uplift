@@ -8,14 +8,10 @@ import java.util.stream.IntStream;
 
 record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
-    private HttpBytes(byte[] req, byte[] headers) {
-        this(req, headers, null);
-    }
-
     static Optional<HttpBytes> read(ByteBuffer buffer) {
         OptionalInt lineEnd = IntStream.range(0, buffer.position())
-                .filter(oneLinebreak(buffer))
-                .findFirst();
+            .filter(oneLinebreak(buffer))
+            .findFirst();
 
         if (lineEnd.isEmpty()) {
             return Optional.empty();
@@ -25,22 +21,30 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
         OptionalInt headerEnd = IntStream.range(
                 lineEnd.getAsInt() + 2,
-                buffer.position() - 1).filter(twoLinebreaks(buffer)
-        ).findFirst();
+                buffer.position() - 1
+            )
+            .filter(twoLinebreaks(buffer)
+            )
+            .findFirst();
 
         if (headerEnd.isEmpty()) {
             byte[] headers = extractHeaders(
-                    buffer,
-                    lineEnd.getAsInt(),
-                    buffer.position());
+                buffer,
+                lineEnd.getAsInt(),
+                buffer.position()
+            );
             return Optional.of(new HttpBytes(req, headers));
         }
 
         return Optional.of(new HttpBytes(
-                req,
-                extractHeaders(buffer, lineEnd.getAsInt(), headerEnd.getAsInt()),
-                extractBody(buffer, headerEnd.getAsInt())
+            req,
+            extractHeaders(buffer, lineEnd.getAsInt(), headerEnd.getAsInt()),
+            extractBody(buffer, headerEnd.getAsInt())
         ));
+    }
+
+    private HttpBytes(byte[] req, byte[] headers) {
+        this(req, headers, null);
     }
 
     private static IntPredicate oneLinebreak(ByteBuffer buffer) {

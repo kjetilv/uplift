@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface FieldEvents {
 
     FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);
@@ -43,7 +42,8 @@ public interface FieldEvents {
 
     <T> FieldEvents bool(String field, T value, Function<T, Boolean> toBool);
 
-    default <T> FieldEvents boolArray(String field, List<Boolean> value) {
+    @SuppressWarnings("unused")
+    default FieldEvents boolArray(String field, List<Boolean> value) {
         return boolArray(field, value, Function.identity());
     }
 

@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.lang.management.ManagementFactory;
-import java.util.concurrent.ExecutorService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.management.ManagementFactory;
+import java.util.concurrent.ExecutorService;
 
 import static java.util.Objects.requireNonNull;
 

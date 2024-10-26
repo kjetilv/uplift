@@ -33,9 +33,6 @@ public abstract class AbstractJsonWriter<T extends Record, B, R> implements Json
     protected abstract R result(B out);
 
     private void write(T t, Sink sink) {
-        objectWriter.write(
-            t,
-            new DefaultFieldEvents(null, sink)
-        );
+        objectWriter.write(t, new DefaultFieldEvents(null, sink));
     }
 }

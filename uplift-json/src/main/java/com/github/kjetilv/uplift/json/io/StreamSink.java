@@ -18,15 +18,23 @@ public record StreamSink(ByteArrayOutputStream baos) implements Sink {
 
     @Override
     public Mark mark() {
-        int length = baos.size();
+        int initialLength = baos.size();
         AtomicReference<Boolean> moved = new AtomicReference<>();
         return () ->
-            moved.updateAndGet(alreadyMoved ->
-                alreadyMoved != null && alreadyMoved || baos.size() > length);
+                moved.updateAndGet(alreadyMoved ->
+                        getABoolean(alreadyMoved, initialLength));
+    }
+
+    private Boolean getABoolean(Boolean alreadyMoved, int initialLength) {
+        return truDat(alreadyMoved) || length() > initialLength ? true : null;
     }
 
     @Override
     public int length() {
         return baos.size();
+    }
+
+    private static boolean truDat(Boolean b) {
+        return b != null;
     }
 }

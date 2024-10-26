@@ -80,7 +80,8 @@ public record Transfer(long totalSize, int bufferSize) {
                         throw new IllegalStateException(
                             "Failed to write " + bytesRead + " bytes to " + writer + " for " + totalSize + " " +
                             "bytes, transferred " + transferred + " in " + turnarounds + " turnarounds, " +
-                            "empty turnarounds: " + emptyTurnarundsTotal, e);
+                            "empty turnarounds: " + emptyTurnarundsTotal, e
+                        );
                     } finally {
                         transferred += writableBytes;
                         turnarounds++;
@@ -103,7 +104,8 @@ public record Transfer(long totalSize, int bufferSize) {
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to write " + totalSize + " bytes to " + writer +
-                ", transferred " + transferred + " in " + turnarounds + " turnarounds", e);
+                ", transferred " + transferred + " in " + turnarounds + " turnarounds", e
+            );
         }
     }
 

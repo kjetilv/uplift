@@ -85,9 +85,8 @@ public final class JsonWriter {
             if (mark.moved()) {
                 sink.accept(",");
             }
-            Map.Entry<?, ?> entry = value;
-            sink.accept("\"").accept(entry.getKey()).accept("\":");
-            write(sink, entry.getValue());
+            sink.accept("\"").accept(value.getKey()).accept("\":");
+            write(sink, value.getValue());
         }
         sink.accept("}");
     }

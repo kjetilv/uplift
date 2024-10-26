@@ -47,6 +47,24 @@ public record HttpRes(
         return headersSize() + body.length;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+            .append("[")
+            .append(reqId)
+            .append(" ")
+            .append(status);
+
+        if (!headers.isEmpty()) {
+            ToStrings.print(base, headers);
+        }
+        if (body != null && body.length > 0) {
+            ToStrings.print(base, body);
+        }
+        return base.append("]")
+            .toString();
+    }
+
     String toResponseHeader() {
         StringBuilder sb = new StringBuilder();
         sb.append("HTTP/1.1 ").append(status).append(" ").append(readable(status)).append('\n');
@@ -68,13 +86,13 @@ public record HttpRes(
             .stream().mapToInt(e -> length(e.getKey(), e.getValue())).sum();
     }
 
+    public static final byte[] NO_BODY = {};
+
     private static final int OK = 200;
 
     private static final int INTERNAL_ERROR = 500;
 
     private static final int OOB = 600;
-
-    public static final byte[] NO_BODY = {};
 
     private static int httpStatus(int status) {
         return status < OOB
@@ -105,23 +123,5 @@ public record HttpRes(
 
     private static int length(CharSequence key, List<String> values) {
         return key.length() + 5 + values.stream().mapToInt(String::length).sum() + (values.size() - 1) * 2;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
-            .append("[")
-            .append(reqId)
-            .append(" ")
-            .append(status);
-
-        if (!headers.isEmpty()) {
-            ToStrings.print(base, headers);
-        }
-        if (body != null && body.length > 0) {
-            ToStrings.print(base, body);
-        }
-        return base.append("]")
-            .toString();
     }
 }
