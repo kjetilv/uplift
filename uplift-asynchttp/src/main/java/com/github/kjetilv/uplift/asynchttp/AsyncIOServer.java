@@ -9,7 +9,11 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.nio.channels.spi.AsynchronousChannelProvider;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -19,7 +23,6 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 
 import static java.lang.Long.MAX_VALUE;
 import static java.util.Objects.requireNonNull;
@@ -62,10 +65,12 @@ final class AsyncIOServer implements IOServer {
     private AsyncIOServer(InetSocketAddress address, ExecutorService executorService, int requestBufferSize) {
         this.requestBufferSize = requestBufferSize;
         try {
-            this.channelGroup = AsynchronousChannelGroup.withThreadPool(
-                executorService == null ? ForkJoinPool.commonPool() : executorService
-            );
-            this.serverSocketChannel = AsynchronousServerSocketChannel.open(channelGroup).bind(address);
+            ExecutorService executor = executorService == null ? ForkJoinPool.commonPool() : executorService;
+            this.channelGroup = AsynchronousChannelProvider.provider()
+                .openAsynchronousChannelGroup(executor, 0);
+            this.serverSocketChannel = AsynchronousServerSocketChannel
+                .open(channelGroup)
+                .bind(address);
             this.localAddress = this.serverSocketChannel.getLocalAddress();
             log.info("{} bound", this.toString());
         } catch (Exception e) {
@@ -117,17 +122,12 @@ final class AsyncIOServer implements IOServer {
 
     @Override
     public <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(
-        Function<? super AsynchronousByteChannel, ? extends ChannelHandler<S, C>> handler
+        HandlerProvider<S, C> handlerProvider
     ) {
         if (!closed.get() && serverSocketChannel.isOpen()) {
-            serverSocketChannel.accept(null, new ChannelReader<>(handler));
+            serverSocketChannel.accept(null, new ChannelReader<>(handlerProvider));
         }
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + localAddress + "]";
     }
 
     private boolean awaitTermination(Duration timeout) {
@@ -145,8 +145,11 @@ final class AsyncIOServer implements IOServer {
     }
 
     private boolean terminatedWithin(Duration timeout) throws InterruptedException {
-        return timeout.isZero() && channelGroup.awaitTermination(MAX_VALUE, DAYS) ||
-               channelGroup.awaitTermination(timeout.toMillis(), MILLISECONDS);
+        boolean limited = !timeout.isZero();
+        return channelGroup.awaitTermination(
+            limited ? timeout.toMillis() : MAX_VALUE,
+            limited ? MILLISECONDS : DAYS
+        );
     }
 
     private void doClose() {
@@ -184,9 +187,9 @@ final class AsyncIOServer implements IOServer {
     private final class ChannelReader<S extends ChannelState, C extends ChannelHandler<S, C>>
         implements CompletionHandler<AsynchronousSocketChannel, Object> {
 
-        private final Function<? super AsynchronousSocketChannel, ? extends ChannelHandler<S, C>> provider;
+        private final HandlerProvider<S, C> provider;
 
-        private ChannelReader(Function<? super AsynchronousSocketChannel, ? extends ChannelHandler<S, C>> provider) {
+        private ChannelReader(HandlerProvider<S, C> provider) {
             try {
                 this.provider = provider;
             } finally {
@@ -238,10 +241,10 @@ final class AsyncIOServer implements IOServer {
         }
 
         private void read(AsynchronousSocketChannel channel) {
-            ChannelHandler<S, C> asyncHandler = provider.apply(channel);
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(requestBufferSize);
-            S state = asyncHandler.channelState(byteBuffer);
-            channel.read(byteBuffer, state, asyncHandler);
+            ChannelHandler<S, C> handler = provider.handler(channel);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(requestBufferSize);
+            S state = handler.channelState(buffer);
+            channel.read(buffer, state, handler);
         }
 
         private static void handleClosed(Closeable channel, Exception e) {
@@ -257,5 +260,10 @@ final class AsyncIOServer implements IOServer {
                 log.error("Processing failed, failed to close {}", channel, e == null ? ex : e);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + localAddress + "]";
     }
 }

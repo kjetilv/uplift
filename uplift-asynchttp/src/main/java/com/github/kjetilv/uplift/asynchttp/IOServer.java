@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousByteChannel;
 import java.time.Duration;
-import java.util.function.Function;
 
 public interface IOServer extends Closeable {
 
@@ -17,7 +16,10 @@ public interface IOServer extends Closeable {
 
     void awaitActive(Duration timeout);
 
-    <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(
-        Function<? super AsynchronousByteChannel, ? extends ChannelHandler<S, C>> channelHandler
-    );
+    <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(HandlerProvider<S, C> handlerProvider);
+
+    interface HandlerProvider<S extends ChannelState, C extends ChannelHandler<S, C>> {
+
+        ChannelHandler<S, C> handler(AsynchronousByteChannel channel);
+    }
 }

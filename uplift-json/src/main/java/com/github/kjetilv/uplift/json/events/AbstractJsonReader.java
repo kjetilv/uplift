@@ -10,12 +10,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
-public abstract class AbstractJsonReader<S, T extends Record, C extends Callbacks>
-    implements JsonReader<S, T> {
+public abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, T> {
 
-    private final Function<Consumer<T>, C> callbacks;
+    private final Function<Consumer<T>, Callbacks> callbacks;
 
-    protected AbstractJsonReader(Function<Consumer<T>, C> callbacks) {
+    protected AbstractJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
         this.callbacks = Objects.requireNonNull(callbacks, "callbacks");
     }
 

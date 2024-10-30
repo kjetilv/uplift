@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.annpro;
 
-import com.github.kjetilv.uplift.json.AbstractObjectWriter;
-import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.json.JsonRW;
-import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.*;
 import com.github.kjetilv.uplift.json.anno.Field;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import com.github.kjetilv.uplift.json.anno.Singular;
@@ -45,19 +42,17 @@ final class Gen {
                     ")",
                     "public final class " + factoryClass(te),
                     "    implements " + JsonRW.class.getName() + "<",
-                    "        " + name + ",",
-                    "        " + packageEl(te) + "." + callbacksClassPlain(te),
+                    "        " + name,
                     "    > {",
                     "",
                     "    public static com.github.kjetilv.uplift.json.JsonRW<",
-                    "        " + name + ",",
-                    "        " + packageEl(te) + "." + callbacksClassPlain(te),
+                    "        " + name,
                     "    > INSTANCE = new " + factoryClass(te) + "();",
                     "",
                     "    @Override",
                     "    public " + Function.class.getName() + "< ",
                     "        " + Consumer.class.getName() + "<" + name + ">,",
-                    "        " + packageEl(te) + "." + callbacksClassPlain(te),
+                    "        " + Callbacks.class.getName() +
                     "    > callbacks() {",
                     "        return " + callbacksClassPlain(te) + "::create;",
                     "    }",

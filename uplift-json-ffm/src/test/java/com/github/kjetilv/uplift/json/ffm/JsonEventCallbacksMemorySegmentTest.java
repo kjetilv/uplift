@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.ffm;
 
-import com.github.kjetilv.flopp.kernel.LineSegments;
+import com.github.kjetilv.flopp.kernel.segments.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;

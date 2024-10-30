@@ -9,11 +9,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
-public interface JsonRW<T extends Record, C extends Callbacks> {
+public interface JsonRW<T extends Record> {
 
-    C callbacks(Consumer<T> onDone);
+    Callbacks callbacks(Consumer<T> onDone);
 
-    Function<Consumer<T>, C> callbacks();
+    Function<Consumer<T>, Callbacks> callbacks();
 
     ObjectWriter<T> objectWriter();
 
