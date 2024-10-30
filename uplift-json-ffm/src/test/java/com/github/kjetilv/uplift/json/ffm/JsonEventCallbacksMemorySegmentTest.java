@@ -1,9 +1,11 @@
 package com.github.kjetilv.uplift.json.ffm;
 
 import com.github.kjetilv.flopp.kernel.segments.LineSegments;
+import com.github.kjetilv.flopp.kernel.util.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;
+import com.github.kjetilv.uplift.json.tokens.IntsSource;
 import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Source;
 import com.github.kjetilv.uplift.json.tokens.Token;
@@ -47,7 +49,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         Callbacks myCallbacks = parse(
             callbacks(),
-            tokens(new MemorySegmentSource(LineSegments.of(source)))
+            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
         );
         Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -91,7 +93,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            tokens(new MemorySegmentSource(LineSegments.of(source)))
+            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -118,7 +120,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            tokens(new MemorySegmentSource(LineSegments.of(source)))
+            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
@@ -147,7 +149,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         parse(
             callbacks,
-            tokens(new MemorySegmentSource(LineSegments.of(source)))
+            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
         );
     }
 
