@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-public interface Sink {
+public sealed interface Sink permits StreamSink, StringSink {
 
     @FunctionalInterface
     interface Mark {

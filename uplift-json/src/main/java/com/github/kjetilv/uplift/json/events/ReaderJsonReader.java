@@ -8,7 +8,7 @@ import java.io.Reader;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ReaderJsonReader<T extends Record> extends AbstractJsonReader<Reader, T> {
+public final class ReaderJsonReader<T extends Record> extends AbstractJsonReader<Reader, T> {
 
     public ReaderJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
         super(callbacks);
