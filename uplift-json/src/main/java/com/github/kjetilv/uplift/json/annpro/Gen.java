@@ -52,7 +52,7 @@ final class Gen {
                     "    @Override",
                     "    public " + Function.class.getName() + "< ",
                     "        " + Consumer.class.getName() + "<" + name + ">,",
-                    "        " + Callbacks.class.getName() +
+                    "        " + Callbacks.class.getName(),
                     "    > callbacks() {",
                     "        return " + callbacksClassPlain(te) + "::create;",
                     "    }",
