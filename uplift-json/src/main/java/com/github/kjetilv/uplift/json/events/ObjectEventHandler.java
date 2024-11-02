@@ -16,7 +16,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler apply(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> exit(Callbacks::objectEnded);
+            case END_OBJECT -> exitScope(Callbacks::objectEnded);
             case COMMA -> this;
             case STRING -> skip(
                 token,
@@ -29,7 +29,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
 
     @Override
     protected AbstractEventHandler with(Callbacks callbacks) {
-        return new ObjectEventHandler(exit(), callbacks);
+        return new ObjectEventHandler(exitScope(), callbacks);
     }
 
     private EventHandler skip(Token token, Supplier<EventHandler> next) {

@@ -26,14 +26,16 @@ abstract sealed class AbstractEventHandler implements EventHandler
         return callbacks;
     }
 
-    protected abstract AbstractEventHandler with(Callbacks callbacks);
-
-    protected final AbstractEventHandler exit() {
-        return parentScope == null ? this : parentScope.with(callbacks);
+    protected final AbstractEventHandler exitScope() {
+        return parentScope == null
+            ? this
+            : parentScope.with(callbacks);
     }
 
-    protected final AbstractEventHandler exit(Function<Callbacks, Callbacks> action) {
-        return parentScope == null ? this : parentScope.with(requireNonNull(action, "action").apply(callbacks));
+    protected final AbstractEventHandler exitScope(Function<Callbacks, Callbacks> action) {
+        return parentScope == null
+            ? this
+            : parentScope.with(action.apply(callbacks));
     }
 
     protected final Callbacks field(Token token) {
@@ -67,6 +69,8 @@ abstract sealed class AbstractEventHandler implements EventHandler
     protected final <T> T fail(String msg, Token actual, TokenType... expected) {
         throw new IllegalStateException(this + " failed: " + msg, new ParseException(actual, expected));
     }
+
+    protected abstract AbstractEventHandler with(Callbacks callbacks);
 
     @Override
     public final String toString() {

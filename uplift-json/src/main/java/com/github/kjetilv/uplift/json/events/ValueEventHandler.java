@@ -19,12 +19,12 @@ public final class ValueEventHandler
     @Override
     public EventHandler apply(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEventHandler(exit(), objectStarted());
-            case BEGIN_ARRAY -> new ArrayEventHandler(exit(), arrayStarted());
-            case STRING -> with(string(token)).exit();
-            case BOOL -> with(truth(token)).exit();
-            case NUMBER -> with(number(token)).exit();
-            case NIL -> this.with(nil()).exit();
+            case BEGIN_OBJECT -> new ObjectEventHandler(exitScope(), objectStarted());
+            case BEGIN_ARRAY -> new ArrayEventHandler(exitScope(), arrayStarted());
+            case STRING -> with(string(token)).exitScope();
+            case BOOL -> with(truth(token)).exitScope();
+            case NUMBER -> with(number(token)).exitScope();
+            case NIL -> this.with(nil()).exitScope();
             case COMMA, COLON, END_OBJECT, END_ARRAY -> fail(
                 "Invalid value",
                 token,
@@ -36,6 +36,6 @@ public final class ValueEventHandler
 
     @Override
     protected ValueEventHandler with(Callbacks callbacks) {
-        return new ValueEventHandler(exit(), callbacks);
+        return new ValueEventHandler(exitScope(), callbacks);
     }
 }

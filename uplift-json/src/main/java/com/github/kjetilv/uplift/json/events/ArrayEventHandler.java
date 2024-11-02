@@ -20,7 +20,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
             case BOOL -> this.with(truth(token));
             case NUMBER -> this.with(number(token));
             case NIL -> this.with(nil());
-            case END_ARRAY -> exit(Callbacks::arrayEnded);
+            case END_ARRAY -> exitScope(Callbacks::arrayEnded);
             case COMMA -> this;
             case COLON, END_OBJECT -> fail(
                 "Malformed array",
@@ -33,6 +33,6 @@ final class ArrayEventHandler extends AbstractEventHandler {
 
     @Override
     protected AbstractEventHandler with(Callbacks callbacks) {
-        return new ArrayEventHandler(exit(), callbacks);
+        return new ArrayEventHandler(exitScope(), callbacks);
     }
 }

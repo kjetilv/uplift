@@ -27,19 +27,15 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
 
     @Override
     public final void read(S source, Consumer<T> setter) {
-        reduce(setter, input(source));
+        Tokens.stream(input(source))
+            .reduce(
+                new ValueEventHandler(callbacks.apply(setter)),
+                EventHandler::apply,
+                NO_COMBINE
+            );
     }
 
     protected abstract Source input(S source);
-
-    @SuppressWarnings("UnusedReturnValue")
-    private Callbacks reduce(Consumer<T> setter, Source source) {
-        return Tokens.stream(source).reduce(
-            new ValueEventHandler(callbacks.apply(setter)),
-            EventHandler::apply,
-            NO_COMBINE
-        ).callbacks();
-    }
 
     private static final BinaryOperator<EventHandler> NO_COMBINE =
         (t1, t2) -> {
