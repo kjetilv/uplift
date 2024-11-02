@@ -15,7 +15,6 @@ pluginManagement {
 }
 
 include("uplift-asynchttp")
-
 include("uplift-cdk")
 include("uplift-json-ffm")
 include("uplift-flambda")

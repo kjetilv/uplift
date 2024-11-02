@@ -27,6 +27,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
                 token,
                 BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER
             );
+            case WHITESPACE -> fail("Unexpected token", token);
         };
     }
 

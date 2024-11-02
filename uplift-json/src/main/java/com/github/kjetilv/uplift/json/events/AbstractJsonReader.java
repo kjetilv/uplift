@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Source;
+import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,16 +35,14 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
 
     @SuppressWarnings("UnusedReturnValue")
     private Callbacks reduce(Consumer<T> setter, Source source) {
-        return StreamSupport.stream(
-                new Scanner(source),
-                false
-            ).reduce(
-                new ValueEventHandler(callbacks.apply(setter)),
-                EventHandler::process,
-                (t1, t2) -> {
-                    throw new IllegalStateException(t1 + " / " + t2 + " do not combine");
-                }
-            )
-            .callbacks();
+        Scanner spliterator = new Scanner(new Tokens(source));
+        EventHandler handler = StreamSupport.stream(spliterator, false).reduce(
+            new ValueEventHandler(callbacks.apply(setter)),
+            EventHandler::process,
+            (t1, t2) -> {
+                throw new IllegalStateException(t1 + " / " + t2 + " do not combine");
+            }
+        );
+        return handler.callbacks();
     }
 }

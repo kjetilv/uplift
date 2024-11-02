@@ -30,6 +30,7 @@ public final class ValueEventHandler
                 token,
                 BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER, NIL
             );
+            case WHITESPACE -> fail("Unexpected token", token);
         };
     }
 

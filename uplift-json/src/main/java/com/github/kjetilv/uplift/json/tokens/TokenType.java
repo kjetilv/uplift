@@ -20,7 +20,9 @@ public enum TokenType {
 
     COLON,
 
-    NIL;
+    NIL,
+
+    WHITESPACE;
 
     private final boolean printable;
 

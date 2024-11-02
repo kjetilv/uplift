@@ -438,9 +438,7 @@ class JsonTest {
     }
 
     private static void assertReadException(ReadException e, String lexeme, int line, int column) {
-        assertEquals(lexeme, e.getLexeme());
-        assertEquals(line, e.getLine());
-        assertEquals(column, e.getColumn());
+        assertThat(e.toString()).contains("`" + lexeme + "` [" + line + ":" + column + "]");
     }
 
     private static Object roundtrip(String source, Json instance) {

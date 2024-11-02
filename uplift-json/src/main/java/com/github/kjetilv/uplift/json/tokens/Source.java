@@ -20,7 +20,7 @@ public interface Source {
 
     void advance();
 
-    void reset();
+    void resetLexeme();
 
     boolean done();
 }

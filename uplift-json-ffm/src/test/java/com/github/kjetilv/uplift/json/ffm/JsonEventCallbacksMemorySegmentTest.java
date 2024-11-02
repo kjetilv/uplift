@@ -5,10 +5,7 @@ import com.github.kjetilv.flopp.kernel.util.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;
-import com.github.kjetilv.uplift.json.tokens.IntsSource;
-import com.github.kjetilv.uplift.json.tokens.Scanner;
-import com.github.kjetilv.uplift.json.tokens.Source;
-import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.tokens.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +18,7 @@ import java.util.stream.StreamSupport;
 public class JsonEventCallbacksMemorySegmentTest {
 
     public static Stream<Token> tokens(Source source) {
-        return StreamSupport.stream(new Scanner(source), false);
+        return StreamSupport.stream(new Scanner(new Tokens(source)), false);
     }
 
     static Callbacks parse(Callbacks callbacks, Stream<Token> tokens) {

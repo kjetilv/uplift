@@ -4,9 +4,9 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 
-public final class BytesSource extends AbstractBytesSource {
+public final class InputStreamSource extends AbstractBytesSource {
 
-    public BytesSource(InputStream stream) {
+    public InputStreamSource(InputStream stream) {
         super(reader(stream));
     }
 
