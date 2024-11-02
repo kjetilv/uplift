@@ -11,14 +11,14 @@ public final class InputStreamSource extends AbstractBytesSource {
     }
 
     private static IntSupplier reader(InputStream stream) {
-        return new Stream(stream);
+        return new Ints(stream);
     }
 
-    private static final class Stream implements IntSupplier {
+    private static final class Ints implements IntSupplier {
 
         private final InputStream stream;
 
-        private Stream(InputStream stream) {
+        private Ints(InputStream stream) {
             this.stream = Objects.requireNonNull(stream, "stream");
         }
 

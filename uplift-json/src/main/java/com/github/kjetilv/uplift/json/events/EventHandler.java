@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Token;
-import com.github.kjetilv.uplift.json.tokens.TokensSpliterator;
+import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -14,15 +14,15 @@ import java.util.stream.Stream;
 public interface EventHandler extends Function<Token, EventHandler> {
 
     static Callbacks parse(Callbacks callbacks, InputStream source) {
-        return parse(TokensSpliterator.tokens(source), callbacks);
+        return parse(Tokens.stream(source), callbacks);
     }
 
     static Callbacks parse(Callbacks callbacks, Reader source) {
-        return parse(TokensSpliterator.tokens(source), callbacks);
+        return parse(Tokens.stream(source), callbacks);
     }
 
     static Callbacks parse(Callbacks callbacks, String source) {
-        return parse(TokensSpliterator.tokens(source), callbacks);
+        return parse(Tokens.stream(source), callbacks);
     }
 
     static Callbacks parse(

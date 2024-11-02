@@ -5,7 +5,10 @@ import com.github.kjetilv.flopp.kernel.util.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.events.ValueEventHandler;
-import com.github.kjetilv.uplift.json.tokens.*;
+import com.github.kjetilv.uplift.json.tokens.IntsSource;
+import com.github.kjetilv.uplift.json.tokens.Source;
+import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.tokens.Tokens;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,13 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class JsonEventCallbacksMemorySegmentTest {
-
-    public static Stream<Token> tokens(Source source) {
-        return StreamSupport.stream(new TokensSpliterator(new Tokens(source)), false);
-    }
 
     static Callbacks parse(Callbacks callbacks, Stream<Token> tokens) {
         return parse(tokens, callbacks);
@@ -46,7 +44,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         Callbacks myCallbacks = parse(
             callbacks(),
-            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
+            Tokens.stream(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
         );
         Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -88,9 +86,10 @@ public class JsonEventCallbacksMemorySegmentTest {
               }
             }
             """;
+        Source source1 = new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier()));
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
+            Tokens.stream(source1)
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
@@ -115,9 +114,10 @@ public class JsonEventCallbacksMemorySegmentTest {
               }
             }
             """;
+        Source source1 = new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier()));
         MyCallbacks myCallbacks = (MyCallbacks) parse(
             callbacks(),
-            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
+            Tokens.stream(source1)
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
@@ -144,9 +144,10 @@ public class JsonEventCallbacksMemorySegmentTest {
               }
             }
             """;
+        Source source1 = new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier()));
         parse(
             callbacks,
-            tokens(new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())))
+            Tokens.stream(source1)
         );
     }
 

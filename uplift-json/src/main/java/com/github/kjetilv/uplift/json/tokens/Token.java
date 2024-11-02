@@ -22,7 +22,7 @@ public record Token(
 
     public boolean literalTruth() {
         if (type == TokenType.BOOL) {
-            return Objects.equals(lexeme, TokensSpliterator.CANONICAL_TRUE);
+            return Objects.equals(lexeme, Tokens.CANONICAL_TRUE);
         }
         throw new IllegalStateException(this + ": Not boolean");
     }

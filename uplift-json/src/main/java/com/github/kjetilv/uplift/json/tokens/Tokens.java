@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.json.tokens;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -13,20 +15,20 @@ import static java.lang.Character.isWhitespace;
 
 public final class Tokens implements Supplier<Token>, SelfDescribing {
 
-    public static Stream<Token> tokens(String source) {
-        return tokenStream(new CharSequenceSource(source));
+    public static Stream<Token> stream(String source) {
+        return stream(new CharSequenceSource(source));
     }
 
-    public static Stream<Token> tokens(InputStream source) {
-        return tokenStream(new InputStreamSource(source));
+    public static Stream<Token> stream(InputStream source) {
+        return stream(new InputStreamSource(source));
     }
 
-    public static Stream<Token> tokens(Reader source) {
-        return tokenStream(new CharsSource(source));
+    public static Stream<Token> stream(Reader source) {
+        return stream(new CharsSource(source));
     }
 
-    public static Stream<Token> tokenStream(Source source) {
-        return Stream.generate(new Tokens(source));
+    public static Stream<Token> stream(Source source) {
+        return Stream.generate(new Tokens(source)).takeWhile(Objects::nonNull);
     }
 
     private final Source source;
@@ -37,7 +39,10 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     @Override
     public Token get() {
-        while (!source.done()) {
+        while (true) {
+            if (source.done()) {
+                return null;
+            }
             try {
                 Token token = scanToken();
                 if (token == null) {
@@ -48,15 +53,14 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
                 }
                 return token;
             } finally {
-                source.resetLexeme();
+                source.reset();
             }
         }
-        return null;
     }
 
     @Override
     public String bringIt() {
-        return "`" + source.lexeme() + "` [" + source.line() + ":" + (source.column() - 1) + "]";
+        return MessageFormat.format("`{0}` [{1}:{2}]", source.lexeme(), source.line(), source.column() - 1);
     }
 
     private Token scanToken() {
@@ -73,7 +77,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
             case ' ', '\r', '\t', '\n' -> spoolWs();
-            default -> fail("Unrecognized token");
+            default -> fail("Unrecognized character");
         };
     }
 
@@ -142,15 +146,13 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private <T> T fail(String msg) {
-        return fail(msg, null);
-    }
-
-    private <T> T fail(String msg, Throwable cause) {
-        throw new ReadException(msg, bringIt(), cause);
+        throw new ReadException(msg, bringIt());
     }
 
     private Token token(TokenType type, Object literal, String lexeme) {
-        return new Token(type, lexeme, literal, source.line(), source.column() - lexeme.length());
+        int line = source.line();
+        int col = source.column() - lexeme.length();
+        return new Token(type, lexeme, literal, line, col);
     }
 
     static final String CANONICAL_TRUE = "true";

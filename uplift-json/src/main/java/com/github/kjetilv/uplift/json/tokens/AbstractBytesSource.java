@@ -84,7 +84,7 @@ public abstract class AbstractBytesSource implements Source {
     }
 
     @Override
-    public void resetLexeme() {
+    public void reset() {
         currentLexemeIndex = 0;
     }
 

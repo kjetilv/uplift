@@ -18,7 +18,7 @@ public interface Source {
 
     char peekNext();
 
-    void resetLexeme();
+    void reset();
 
     boolean done();
 }
