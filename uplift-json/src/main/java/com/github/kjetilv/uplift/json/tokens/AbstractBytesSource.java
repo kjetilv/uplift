@@ -84,11 +84,6 @@ public abstract class AbstractBytesSource implements Source {
     }
 
     @Override
-    public void advance() {
-        chomp();
-    }
-
-    @Override
     public void resetLexeme() {
         currentLexemeIndex = 0;
     }

@@ -60,8 +60,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private Token scanToken() {
-        char chomp = source.chomp();
-        return switch (chomp) {
+        return switch (source.chomp()) {
             case '{' -> token(BEGIN_OBJECT, null, source.lexeme());
             case ':' -> token(COLON, null, source.lexeme());
             case ',' -> token(COMMA, null, source.lexeme());
@@ -73,14 +72,13 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             case 'n' -> expectedTokenTail(ULL, NIL, null, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
-            case ' ', '\r', '\t', '\n' -> {
-                Token whitespace =
-                    new Token(WHITESPACE, null, null, source.line(), source.column());
-                spoolWhitespace();
-                yield whitespace;
-            }
+            case ' ', '\r', '\t', '\n' -> spoolWs();
             default -> fail("Unrecognized token");
         };
+    }
+
+    private Token ws() {
+        return new Token(WHITESPACE, null, null, source.line(), source.column());
     }
 
     private Token expectedTokenTail(
@@ -106,14 +104,14 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             }
             if (next == '\\') {
                 quoted = true;
-                source.advance();
+                source.chomp();
             }
-            source.advance();
+            source.chomp();
         }
         if (source.done()) {
             fail("Unterminated string");
         }
-        source.advance();
+        source.chomp();
         // Trim the surrounding quotes.
         String substring = source.lexeme(true);
         String literal = quoted
@@ -124,22 +122,23 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     private Token number() {
         while (isDigit(source.peek())) {
-            source.advance();
+            source.chomp();
         }
         // Look for a fractional part.
         if (source.peek() == '.' && isDigit(source.peekNext())) {
             // Consume the "."
             do {
-                source.advance();
+                source.chomp();
             } while (isDigit(source.peek()));
         }
         return token(NUMBER, number(source.lexeme()), source.lexeme());
     }
 
-    private void spoolWhitespace() {
+    private Token spoolWs() {
         while (isWhitespace(source.peek())) {
-            source.advance();
+            source.chomp();
         }
+        return ws();
     }
 
     private <T> T fail(String msg) {
