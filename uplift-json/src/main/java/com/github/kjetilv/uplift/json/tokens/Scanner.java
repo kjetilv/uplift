@@ -57,14 +57,6 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
         return true;
     }
 
-    private <T> T fail(String msg, Throwable cause) {
-        throw new ReadException(
-            msg,
-            source instanceof SelfDescribing selfDescribing ? selfDescribing.bringIt() : source.toString(),
-            cause
-        );
-    }
-
     static final String CANONICAL_TRUE = "true";
 
     @Override

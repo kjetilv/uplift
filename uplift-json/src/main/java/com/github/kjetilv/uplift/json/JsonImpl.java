@@ -15,10 +15,17 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream source) {
+        Token[] tokens;
         try {
-            return new Parser(Scanner.tokens(source).toArray(Token[]::new)).parse();
+            tokens = Scanner.tokens(source).toArray(Token[]::new);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse: " + source, e);
+            throw new IllegalStateException("Failed to scan " + source, e);
+        }
+        try {
+            return new Parser(tokens).parse();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                "Failed to parse " + tokens.length + " tokens", e);
         }
     }
 
@@ -33,7 +40,8 @@ final class JsonImpl implements Json {
         try {
             return new Parser(tokens).parse();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse " + source.length() + " chars", e);
+            throw new IllegalStateException(
+                "Failed to parse " + tokens.length + " tokens/" + source.length() + " chars", e);
         }
     }
 

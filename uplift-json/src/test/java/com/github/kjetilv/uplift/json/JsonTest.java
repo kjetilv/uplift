@@ -26,7 +26,7 @@ import static com.github.kjetilv.uplift.json.tokens.TokenType.END_ARRAY;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.END_OBJECT;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.NUMBER;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.STRING;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,14 +34,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JsonTest {
 
-    public static final Json INSTANCE = Json.INSTANCE;
+    public static final Json JSON = IO.JSON;
 
     static void failedParse(
         String source,
         Consumer<? super ParseException> failer
     ) {
         try {
-            fail("Unexpected success: " + Json.INSTANCE.read(source));
+            fail("Unexpected success: " + JSON.read(source));
         } catch (ParseException e) {
             failer.accept(e);
         } catch (Exception e) {
@@ -70,27 +70,31 @@ class JsonTest {
 
     @Test
     void singleValueTrue() {
-        Object read = INSTANCE.read("true");
+        //language=json
+        Object read = JSON.read("true");
         assertThat(read).isEqualTo(true);
     }
 
     @Test
     void singleValueString() {
-        Object read = INSTANCE.read("\"foo\"");
+        //language=json
+        Object read = JSON.read("\"foo\"");
         assertThat(read).isEqualTo("foo");
     }
 
     @Test
     void singleValueDec() {
-        Object read = INSTANCE.read("0.42");
+        Object read = JSON.read("0.42");
         assertThat(read).isEqualTo(new BigDecimal("0.42"));
     }
 
     @Test
     void emprtyArray() {
-        Object read1 = INSTANCE.read("[]");
+        //language=json
+        Object read1 = JSON.read("[]");
         assertThat(read1).asInstanceOf(LIST).isEmpty();
-        Object read2 = INSTANCE.read(
+        //language=json
+        Object read2 = JSON.read(
             """
             { "foo": [] }
             """);
@@ -109,7 +113,7 @@ class JsonTest {
             }
             """,
             e ->
-                assertReadException(e, ";", 2, 10), INSTANCE
+                assertReadException(e, ";", 2, 10)
         );
     }
 
@@ -123,27 +127,27 @@ class JsonTest {
             }
             """,
             e ->
-                assertReadException(e, "s", 3, 10), INSTANCE
+                assertReadException(e, "s", 3, 10)
         );
     }
 
     @Test
     void emptyStuff() {
+        //language=json
         roundtrip(
             """
             {}
-            """,
-            INSTANCE
+            """
         );
     }
 
     @Test
     void emptyString() {
         assertThat(roundtrip(
+            //language=json
             """
             { "foo": "" }
-            """,
-            INSTANCE
+            """
         )).asInstanceOf(InstanceOfAssertFactories.MAP).containsEntry("foo", "");
     }
 
@@ -158,7 +162,7 @@ class JsonTest {
             }
             """,
             e ->
-                assertReadException(e, "\"stuff", 3, 15), INSTANCE
+                assertReadException(e, "\"stuff", 3, 15)
         );
     }
 
@@ -192,7 +196,7 @@ class JsonTest {
     @Test
     void malformednumbers1() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": .-
                                                      }
@@ -205,7 +209,7 @@ class JsonTest {
     @Test
     void malformednumbers2() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": -
                                                      }
@@ -218,7 +222,7 @@ class JsonTest {
     @Test
     void malformednumbers3() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": 0-.
                                                      }
@@ -231,7 +235,7 @@ class JsonTest {
     @Test
     void malformednumbers4() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": -.
                                                      }
@@ -244,7 +248,7 @@ class JsonTest {
     @Test
     void malformednumbers5() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": .-
                                                      }
@@ -257,7 +261,7 @@ class JsonTest {
     @Test
     void malformednumbers6() {
         try {
-            fail("Should not scan: " + INSTANCE.read("""
+            fail("Should not scan: " + JSON.read("""
                                                      {
                                                        "bar": 0.-
                                                      }
@@ -297,6 +301,7 @@ class JsonTest {
 
     @Test
     void test() {
+        //language=json
         roundtrip("""
                   {
                     "foo": {
@@ -318,18 +323,19 @@ class JsonTest {
                     ]          ,
                     "nothing"  : null
                   }
-                  """, INSTANCE);
+                  """
+        );
     }
 
     @Test
     void testEscaped() {
+        //language=json
         roundtrip(
             """
             {
             "foo": "\\{"
             }
-            """,
-            INSTANCE
+            """
         );
     }
 
@@ -343,14 +349,15 @@ class JsonTest {
               "bar": {}
             }
             """
-            , INSTANCE);
-        org.assertj.core.api.Assertions.assertThat(roundtrip)
+        );
+        assertThat(roundtrip)
             .asInstanceOf(InstanceOfAssertFactories.MAP)
             .hasSize(2);
     }
 
     @Test
     void testRestAi() {
+        //language=json
         roundtrip(
             """
             {
@@ -386,9 +393,8 @@ class JsonTest {
                },
                "body": "\\n{\\"accessToken\\":\\"EAAFqWL02SZBgBAB1GI3kuZBg2bOx05gmeo3vZCVbQtrHdZCyZC8pzlPuZAfPHseH1d77ZBvGNrNQl87Qz1KYDn0PZBeI6IHvGeWgzH8WHWm49LHUPenhIitU14yL1LZBa7uwzfxtRQjGueki4Vi44HLrHz5khNRhXNlrIBXQ9OVv2i7zBEPGZCU6BElVkoIOa6F0tUiai2zHVEBMwistgHvDAspZBqdmoGnPIkZD\\",\\"userID\\":\\"2787973921215833\\",\\"expiresIn\\":4724,\\"signedRequest\\":\\"SEGUyFsnAoJNi4VesQzEqB-wYmfuJNusT7UTKMVXGnA.eyJ1c2VyX2lkIjoiMjc4Nzk3MzkyMTIxNTgzMyIsImNvZGUiOiJBUUI0aUpTMmYzTTZfRkRFbFJWcEQ4dnA1eXVGeWVvVmIzWk5OM0JveW0tYmpHazJiMGxIZ0VGS1ZNVmhHTWV2ZXluYWtwamk2c0p4cV9QNlp4REpvMjZhdGY4WVNQSEJ0YmRTOG1QdzN0Vy1yMVpwYlBkam0zNXhWRnV3bmxXSS1YLXB0VlI3SnNnUTRQWUF3MUx0V19qV2dBT3hpcFRkalhZcFlwbHhXX1V3UkFJQTVPNzBTcDNiNm52YXlMTk8teW0tVHJnUWpYN0NuS3VNSkVzNEVESjVpWnJDY0RJYkhxczRBc2JWTUg1RWZvNWZsTWIxMGtXaDdGTHZrSFhDSjI2cHY2UVM5Rld2dW5fUHB1Rk5JbDFxX05zSkFRb1N3S2Ywek5Qc2U0V0RCaHJUYklOcHNLWXU5MEs3cy1vNjNzNjg0OGQ0WTVhVGVhVmZRSGJvLTRSQ3VIS2lZTGdxblpnQk5nNnpGa18xZlEiLCJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTY3MzE5NjA3Nn0\\",\\"graphDomain\\":\\"facebook\\",\\"data_access_expiration_time\\":1680972076}",
                "isBase64Encoded": false
-             }
-                  """,
-            INSTANCE
+            }
+            """
         );
     }
 
@@ -399,12 +405,13 @@ class JsonTest {
         written.put("url", URI.create("https://www.vg.no").toURL());
         written.put("whatever", Enum.ENUM);
         written.put("oops", null);
-        Map<?, ?> parsed = INSTANCE.jsonMap(
+        //language=json
+        Map<?, ?> parsed = JSON.jsonMap(
             """
             { "uri": "https://www.vg.no", "url": "https://www.vg.no", "whatever": "ENUM", "oops": null }
             """);
-        String expected = INSTANCE.write(parsed);
-        String actual = INSTANCE.write(written);
+        String expected = JSON.write(parsed);
+        String actual = JSON.write(written);
         assertEquals(actual, expected);
     }
 
@@ -412,7 +419,7 @@ class JsonTest {
     @Disabled
     void failOnObjects() {
         try {
-            fail("Should not accept " + INSTANCE.write(Stream.empty()));
+            fail("Should not accept " + JSON.write(Stream.empty()));
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("Bad object"));
         }
@@ -420,10 +427,10 @@ class JsonTest {
 
     private static void failedRead(
         String source,
-        Consumer<? super ReadException> failer, Json instance
+        Consumer<? super ReadException> failer
     ) {
         try {
-            fail("Unexpected success: " + instance.read(
+            fail("Unexpected success: " + JSON.read(
                 source
             ));
         } catch (ReadException e) {
@@ -441,14 +448,17 @@ class JsonTest {
         assertThat(e.toString()).contains("`" + lexeme + "` [" + line + ":" + column + "]");
     }
 
-    private static Object roundtrip(String source, Json instance) {
-        Object json = instance.read(source);
-        String source2 = instance.write(json);
+    private static Object roundtrip(
+        //language=json
+        String source
+    ) {
+        Object json = JSON.read(source);
+        String source2 = JSON.write(json);
         byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
         Object json2 =
-            instance.read(new ByteArrayInputStream(bytes));
-        assertEquals(json, instance.read(source2));
-        assertEquals(json2, instance.read(source2));
+            JSON.read(new ByteArrayInputStream(bytes));
+        assertEquals(json, JSON.read(source2));
+        assertEquals(json2, JSON.read(source2));
         return json;
     }
 }
