@@ -37,16 +37,21 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     @Override
     public Token get() {
-        if (source.done()) {
-            return null;
+        while (!source.done()) {
+            try {
+                Token token = scanToken();
+                if (token == null) {
+                    return null;
+                }
+                if (token.is(WHITESPACE)){
+                    continue;
+                }
+                return token;
+            } finally {
+                source.resetLexeme();
+            }
         }
-        try {
-            return scanToken();
-        } catch (Exception e) {
-            return fail(this + " got unexpected error", e);
-        } finally {
-            source.resetLexeme();
-        }
+        return null;
     }
 
     @Override

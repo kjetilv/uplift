@@ -1,27 +1,28 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.tokens.Scanner;
 import com.github.kjetilv.uplift.json.tokens.Token;
+import com.github.kjetilv.uplift.json.tokens.TokensSpliterator;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 @FunctionalInterface
-public interface EventHandler {
+public interface EventHandler extends Function<Token, EventHandler> {
 
     static Callbacks parse(Callbacks callbacks, InputStream source) {
-        return parse(Scanner.tokens(source), callbacks);
+        return parse(TokensSpliterator.tokens(source), callbacks);
     }
 
     static Callbacks parse(Callbacks callbacks, Reader source) {
-        return parse(Scanner.tokens(source), callbacks);
+        return parse(TokensSpliterator.tokens(source), callbacks);
     }
 
     static Callbacks parse(Callbacks callbacks, String source) {
-        return parse(Scanner.tokens(source), callbacks);
+        return parse(TokensSpliterator.tokens(source), callbacks);
     }
 
     static Callbacks parse(
@@ -29,12 +30,10 @@ public interface EventHandler {
     ) {
         return tokens.reduce(
             init(callbacks),
-            EventHandler::process,
+            EventHandler::apply,
             noCombine()
         ).callbacks();
     }
-
-    EventHandler process(Token token);
 
     default Callbacks callbacks() {
         throw new UnsupportedOperationException(this + ": No callbacks");

@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.Parser;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
-import com.github.kjetilv.uplift.json.tokens.Scanner;
+import com.github.kjetilv.uplift.json.tokens.TokensSpliterator;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
 import java.io.ByteArrayOutputStream;
@@ -17,7 +17,7 @@ final class JsonImpl implements Json {
     public Object read(InputStream source) {
         Token[] tokens;
         try {
-            tokens = Scanner.tokens(source).toArray(Token[]::new);
+            tokens = TokensSpliterator.tokens(source).toArray(Token[]::new);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to scan " + source, e);
         }
@@ -33,7 +33,7 @@ final class JsonImpl implements Json {
     public Object read(String source) {
         Token[] tokens;
         try {
-            tokens = Scanner.tokens(source).toArray(Token[]::new);
+            tokens = TokensSpliterator.tokens(source).toArray(Token[]::new);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to scan " + source.length() + " chars", e);
         }

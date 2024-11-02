@@ -14,7 +14,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
     }
 
     @Override
-    public EventHandler process(Token token) {
+    public EventHandler apply(Token token) {
         return switch (token.type()) {
             case END_OBJECT -> exit(Callbacks::objectEnded);
             case COMMA -> this;

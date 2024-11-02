@@ -9,9 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.WHITESPACE;
-
-public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
+public final class TokensSpliterator extends Spliterators.AbstractSpliterator<Token> {
 
     public static Stream<Token> tokens(String source) {
         return tokenStream(new CharSequenceSource(source));
@@ -27,7 +25,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     public static Stream<Token> tokenStream(Source source) {
         return StreamSupport.stream(
-            new Scanner(new Tokens(source)),
+            new TokensSpliterator(new Tokens(source)),
             false
         );
     }
@@ -36,7 +34,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
 
     private final AtomicBoolean done = new AtomicBoolean();
 
-    public Scanner(Supplier<Token> source) {
+    public TokensSpliterator(Supplier<Token> source) {
         super(Long.MAX_VALUE, IMMUTABLE | ORDERED);
         this.source = source;
     }
@@ -51,9 +49,7 @@ public final class Scanner extends Spliterators.AbstractSpliterator<Token> {
             done.set(true);
             return false;
         }
-        if (!token.is(WHITESPACE)) {
-            action.accept(token);
-        }
+        action.accept(token);
         return true;
     }
 

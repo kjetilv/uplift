@@ -17,7 +17,7 @@ public final class ValueEventHandler
     }
 
     @Override
-    public EventHandler process(Token token) {
+    public EventHandler apply(Token token) {
         return switch (token.type()) {
             case BEGIN_OBJECT -> new ObjectEventHandler(exit(), objectStarted());
             case BEGIN_ARRAY -> new ArrayEventHandler(exit(), arrayStarted());

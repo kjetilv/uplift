@@ -6,5 +6,7 @@ public interface JsonReader<S, T extends Record> {
 
     T read(S source);
 
+//    Stream<T> readAll(S source);
+
     void read(S source, Consumer<T> set);
 }

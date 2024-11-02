@@ -18,7 +18,7 @@ import java.util.stream.StreamSupport;
 public class JsonEventCallbacksMemorySegmentTest {
 
     public static Stream<Token> tokens(Source source) {
-        return StreamSupport.stream(new Scanner(new Tokens(source)), false);
+        return StreamSupport.stream(new TokensSpliterator(new Tokens(source)), false);
     }
 
     static Callbacks parse(Callbacks callbacks, Stream<Token> tokens) {
@@ -28,7 +28,7 @@ public class JsonEventCallbacksMemorySegmentTest {
     static Callbacks parse(Stream<Token> tokens, Callbacks callbacks) {
         return tokens.reduce(
             new ValueEventHandler(callbacks),
-            EventHandler::process,
+            EventHandler::apply,
             (_, _) -> {
                 throw new IllegalStateException();
             }

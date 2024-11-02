@@ -12,7 +12,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
     }
 
     @Override
-    public EventHandler process(Token token) {
+    public EventHandler apply(Token token) {
         return switch (token.type()) {
             case BEGIN_OBJECT -> new ObjectEventHandler(this, objectStarted());
             case BEGIN_ARRAY -> new ArrayEventHandler(this, arrayStarted());
