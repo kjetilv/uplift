@@ -2,20 +2,20 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Source;
+import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, T> {
 
-    private final Function<Consumer<T>, Callbacks> callbacks;
+    private final Function<Consumer<T>, Callbacks> callbacksInitializer;
 
-    protected AbstractJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
-        this.callbacks = Objects.requireNonNull(callbacks, "callbacks");
+    protected AbstractJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+        this.callbacksInitializer = Objects.requireNonNull(callbacksInitializer, "callbacks");
     }
 
     @Override
@@ -27,18 +27,17 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
 
     @Override
     public final void read(S source, Consumer<T> setter) {
-        Tokens.stream(input(source))
-            .reduce(
-                new ValueEventHandler(callbacks.apply(setter)),
-                EventHandler::apply,
-                NO_COMBINE
-            );
+        Callbacks callbacks = this.callbacksInitializer.apply(setter);
+        Tokens tokens = new Tokens(input(source));
+        EventHandler handler = new ValueEventHandler(callbacks);
+        while (true) {
+            Token token = tokens.next();
+            if (token == null) {
+                return;
+            }
+            handler = handler.apply(token);
+        }
     }
 
     protected abstract Source input(S source);
-
-    private static final BinaryOperator<EventHandler> NO_COMBINE =
-        (t1, t2) -> {
-            throw new IllegalStateException(t1 + " / " + t2 + " do not combine");
-        };
 }

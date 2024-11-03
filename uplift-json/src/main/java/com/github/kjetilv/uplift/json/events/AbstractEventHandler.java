@@ -62,8 +62,8 @@ abstract sealed class AbstractEventHandler implements EventHandler
         return callbacks.number(token.literalNumber());
     }
 
-    protected final Callbacks nil() {
-        return callbacks.nil();
+    protected final Callbacks null_() {
+        return callbacks.null_();
     }
 
     protected final <T> T fail(String msg, Token actual, TokenType... expected) {

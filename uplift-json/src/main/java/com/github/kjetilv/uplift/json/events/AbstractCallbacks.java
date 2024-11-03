@@ -56,7 +56,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public Callbacks objectEnded() {
+    public final Callbacks objectEnded() {
         onDone.accept(builder.get());
         return parent == null ? this : parent;
     }
@@ -124,122 +124,77 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
             setter.accept(builder, enumType.apply(str)));
     }
 
-    protected final void onString(
-        String name,
-        BiConsumer<B, String> setter
-    ) {
-        strings.put(name, setter);
+    protected final void onString(String name, BiConsumer<B, String> set) {
+        strings.put(name, set);
     }
 
-    protected final void onCharacter(
-        String name,
-        BiConsumer<B, Character> setter
-    ) {
+    protected final void onCharacter(String name, BiConsumer<B, Character> set) {
         strings.put(name, (builder, string) ->
-            setter.accept(builder, toChar(string)));
+            set.accept(builder, toChar(string)));
     }
 
-    protected final void onBoolean(
-        String name,
-        BiConsumer<B, Boolean> setter
-    ) {
-        booleans.put(name, setter);
+    protected final void onBoolean(String name, BiConsumer<B, Boolean> set) {
+        booleans.put(name, set);
     }
 
-    protected final void onFloat(
-        String name,
-        BiConsumer<B, Float> setter
-    ) {
+    protected final void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(name, (B builder, Double d) ->
-            setter.accept(builder, d.floatValue()));
+            set.accept(builder, d.floatValue()));
     }
 
-    protected final void onDouble(
-        String name,
-        BiConsumer<B, Double> setter
-    ) {
-        numbers.put(name, setter);
+    protected final void onDouble(String name, BiConsumer<B, Double> set) {
+        numbers.put(name, set);
     }
 
-    protected final void onInteger(
-        String name,
-        BiConsumer<B, Integer> setter
-    ) {
+    protected final void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(name, (B builder, Long l) ->
-            setter.accept(builder, l.intValue()));
+            set.accept(builder, l.intValue()));
     }
 
-    protected final void onLong(
-        String name,
-        BiConsumer<B, Long> setter
-    ) {
-        numbers.put(name, setter);
+    protected final void onLong(String name, BiConsumer<B, Long> set) {
+        numbers.put(name, set);
     }
 
-    protected final void onBigInteger(
-        String name,
-        BiConsumer<B, BigInteger> setter
-    ) {
+    protected final void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(name, (B builder, Long value) ->
-            setter.accept(builder, BigInteger.valueOf(value)));
+            set.accept(builder, BigInteger.valueOf(value)));
     }
 
-    protected final void onUUID(
-        String name,
-        BiConsumer<B, UUID> setter
-    ) {
+    protected final void onUUID(String name, BiConsumer<B, UUID> set) {
         strings.put(name, (builder, str) ->
-            setter.accept(builder, UUID.fromString(str)));
+            set.accept(builder, UUID.fromString(str)));
     }
 
-    protected final void onDuration(
-        String name,
-        BiConsumer<B, Duration> setter
-    ) {
+    protected final void onDuration(String name, BiConsumer<B, Duration> set) {
         strings.put(name, (builder, str) ->
-            setter.accept(builder, Duration.parse(str)));
+            set.accept(builder, Duration.parse(str)));
     }
 
-    protected final void onUuid(
-        String name,
-        BiConsumer<B, Uuid> setter
-    ) {
+    protected final void onUuid(String name, BiConsumer<B, Uuid> set) {
         strings.put(name, (builder, str) ->
-            setter.accept(builder, Uuid.from(str)));
+            set.accept(builder, Uuid.from(str)));
     }
 
-    protected final void onInstant(
-        String name,
-        BiConsumer<B, Instant> setter
-    ) {
+    protected final void onInstant(String name, BiConsumer<B, Instant> set) {
         numbers.put(name, (builder, num) ->
-            setter.accept(builder, Instant.ofEpochMilli(num.longValue())));
+            set.accept(builder, Instant.ofEpochMilli(num.longValue())));
     }
 
-    protected final void onBigDecimal(
-        String name,
-        BiConsumer<B, BigDecimal> setter
-    ) {
+    protected final void onBigDecimal(String name, BiConsumer<B, BigDecimal> set) {
         strings.put(name, (builder, string) ->
-            setter.accept(builder, new BigDecimal(string)));
+            set.accept(builder, new BigDecimal(string)));
         numbers.put(name, (builder, number) ->
-            setter.accept(builder, BigDecimal.valueOf(number.doubleValue())));
+            set.accept(builder, BigDecimal.valueOf(number.doubleValue())));
     }
 
-    protected final void onShort(
-        String name,
-        BiConsumer<B, Short> setter
-    ) {
+    protected final void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(name, (B builder, Long l) ->
-            setter.accept(builder, l.shortValue()));
+            set.accept(builder, l.shortValue()));
     }
 
-    protected final void onByte(
-        String name,
-        BiConsumer<B, Byte> setter
-    ) {
+    protected final void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(name, (B builder, Long l) ->
-            setter.accept(builder, l.byteValue()));
+            set.accept(builder, l.byteValue()));
     }
 
     @SuppressWarnings("unchecked")

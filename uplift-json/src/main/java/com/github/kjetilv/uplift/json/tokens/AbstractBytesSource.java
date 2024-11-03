@@ -35,8 +35,8 @@ public abstract class AbstractBytesSource implements Source {
     @Override
     public char chomp() {
         char chomped = progress.chomped(toChar(next1));
-        if (chomped == NIL) {
-            return NIL;
+        if (chomped == NULL_CHAR) {
+            return NULL_CHAR;
         }
         add(chomped);
         next1 = next2;
@@ -97,13 +97,13 @@ public abstract class AbstractBytesSource implements Source {
         return this.nextChar.getAsInt();
     }
 
-    private static final char NIL = '\0';
+    private static final char NULL_CHAR = '\0';
 
     private static final double MAX = Character.MAX_VALUE;
 
     private static char toChar(int returned) {
         if (returned <= 0) {
-            return NIL;
+            return NULL_CHAR;
         }
         if (returned > MAX) {
             throw new IllegalStateException("Invalid char: " + returned);

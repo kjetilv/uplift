@@ -13,8 +13,8 @@ import java.util.function.Function;
 public final class MemorySegmentJsonReader<T extends Record>
     extends AbstractJsonReader<LineSegment, T> {
 
-    public MemorySegmentJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
-        super(callbacks);
+    public MemorySegmentJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+        super(callbacksInitializer);
     }
 
     @Override

@@ -39,6 +39,10 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     @Override
     public Token get() {
+        return next();
+    }
+
+    public Token next() {
         while (true) {
             if (source.done()) {
                 return null;
@@ -73,7 +77,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             case ']' -> token(END_ARRAY, null, source.lexeme());
             case 't' -> expectedTokenTail(RUE, BOOL, true, CANONICAL_TRUE);
             case 'f' -> expectedTokenTail(ALSE, BOOL, false, CANONICAL_FALSE);
-            case 'n' -> expectedTokenTail(ULL, NIL, null, CANONICAL_NULL);
+            case 'n' -> expectedTokenTail(ULL, NULL, null, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
             case ' ', '\r', '\t', '\n' -> spoolWs();

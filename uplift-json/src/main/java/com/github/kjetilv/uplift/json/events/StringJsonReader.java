@@ -9,8 +9,8 @@ import java.util.function.Function;
 
 public final class StringJsonReader<T extends Record> extends AbstractJsonReader<String, T> {
 
-    public StringJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
-        super(callbacks);
+    public StringJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+        super(callbacksInitializer);
     }
 
     @Override

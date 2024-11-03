@@ -7,7 +7,7 @@ public interface Callbacks {
     }
 
     default Callbacks field(String name) {
-        return this;
+        throw new IllegalStateException(this + " cannot accept field " + name);
     }
 
     default Callbacks objectEnded() {
@@ -30,7 +30,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks nil() {
+    default Callbacks null_() {
         return this;
     }
 

@@ -24,11 +24,11 @@ public final class ValueEventHandler
             case STRING -> with(string(token)).exitScope();
             case BOOL -> with(truth(token)).exitScope();
             case NUMBER -> with(number(token)).exitScope();
-            case NIL -> this.with(nil()).exitScope();
+            case NULL -> this.with(null_()).exitScope();
             case COMMA, COLON, END_OBJECT, END_ARRAY -> fail(
                 "Invalid value",
                 token,
-                BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER, NIL
+                BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER, NULL
             );
             case WHITESPACE -> fail("Unexpected token", token);
         };

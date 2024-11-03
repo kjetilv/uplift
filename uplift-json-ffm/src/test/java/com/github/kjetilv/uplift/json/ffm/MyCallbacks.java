@@ -67,8 +67,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks nil() {
-        return add("nil");
+    public MyCallbacks null_() {
+        return add("null");
     }
 
     @Override

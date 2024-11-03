@@ -20,7 +20,7 @@ public enum TokenType {
 
     COLON,
 
-    NIL,
+    NULL,
 
     WHITESPACE;
 

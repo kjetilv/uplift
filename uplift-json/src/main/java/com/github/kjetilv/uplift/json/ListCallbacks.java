@@ -35,11 +35,6 @@ public class ListCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks field(String name) {
-        throw new IllegalStateException(this + " cannot accept field " + name);
-    }
-
-    @Override
     public Callbacks string(String string) {
         list.add(string);
         return this;
@@ -52,7 +47,7 @@ public class ListCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks nil() {
+    public Callbacks null_() {
         list.add(null);
         return this;
     }

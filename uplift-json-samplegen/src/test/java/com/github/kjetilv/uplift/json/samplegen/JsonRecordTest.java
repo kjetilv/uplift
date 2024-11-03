@@ -17,46 +17,48 @@ public class JsonRecordTest {
     @Test
     void parseUser() {
         UUID uuid = UUID.randomUUID();
-        String json = """
-            {
-              "name": "Kjetil",
-              "address": {
-                "streetName": "\\"None\\" Street",
-                "houseNumber": 1729,
-                "modifier": "B",
-                "adjacents": [ "C" ],
-                "code": 1450,
-                "unrecognized": "gurba",
-                "unrecognized2": { 
-                  "foo": "gurba"
-                },
-                "residents": [
-                  {
-                    "name": "foo",
-                    "permanent": true,
-                    "properties": {
-                      "zip": "zot"
-                    }
+        //language=json
+        String json =
+            """
+                {
+                  "name": "Kjetil",
+                  "address": {
+                    "streetName": "\\"None\\" Street",
+                    "houseNumber": 1729,
+                    "modifier": "B",
+                    "adjacents": [ "C" ],
+                    "code": 1450,
+                    "unrecognized": "gurba",
+                    "unrecognized2": {
+                      "foo": "gurba"
+                    },
+                    "residents": [
+                      {
+                        "name": "foo",
+                        "permanent": true,
+                        "properties": {
+                          "zip": "zot"
+                        }
+                      },
+                      {
+                        "name": "bar",
+                        "permanent": false,
+                        "uuid": "%s",
+                        "properties": {
+                          "foo": "bar"
+                        }
+                      }
+                    ]
                   },
-                  {
-                    "name": "bar",
-                    "permanent": false,
-                    "uuid": "%s",
-                    "properties": {
-                      "foo": "bar"
-                    }
-                  }
-                ]
-              },
-              "roadWarrior": true,
-              "birthYear": 1973,
-              "birthTime": 100,
-              "aliases": ["MrX", "Foo"],
-              "misc": [50, 60, 70],
-              "maxAge": 127,
-              "balance": "123.23"
-            }
-            """.formatted(uuid);
+                  "roadWarrior": true,
+                  "birthYear": 1973,
+                  "birthTime": 100,
+                  "aliases": ["MrX", "Foo"],
+                  "misc": [50, 60, 70],
+                  "maxAge": 127,
+                  "balance": "123.23"
+                }
+                """.formatted(uuid);
         User readUser = STRING_READER.read(json);
         User expectedUser = new User(
             "Kjetil",
@@ -89,18 +91,23 @@ public class JsonRecordTest {
             ),
             new BigDecimal("123.23")
         );
+        User genUser = Users.INSTANCE.stringReader().read(json);
+        assertThat(genUser).isEqualTo(expectedUser);
+
         assertThat(readUser.toString()).isEqualTo(expectedUser.toString());
-        String addressJson = """
-            { "address":
-              {
-                "streetName": "None Street",
-                "houseNumber": 1729,
-                "modifier": "B",
-                "adjacents": [ "C" ],
-                "code": 1450
-              }
-            }
-            """;
+        String addressJson =
+            //language=json
+            """
+                { "address":
+                  {
+                    "streetName": "None Street",
+                    "houseNumber": 1729,
+                    "modifier": "B",
+                    "adjacents": [ "C" ],
+                    "code": 1450
+                  }
+                }
+                """;
         assertThat(STRING_READER
             .read(addressJson)
             .address())
@@ -115,8 +122,6 @@ public class JsonRecordTest {
                 )
             );
 
-        User user = readUser;
-
         StringBuilder sb = new StringBuilder();
 //        Callbacks callbacks = JsonWriter.writer(user, new StringSink(sb));
 //        callbacks.objectStarted()
@@ -126,13 +131,13 @@ public class JsonRecordTest {
 //            .objectStarted().field("streetName").string(user.address().streetName()).objectEnded()
 //            .field("aliases").arrayStarted()
 
-        WRITER.write(user, sb);
+        WRITER.write(readUser, sb);
 
         System.out.println(sb);
 
         User read2 = STRING_READER.read(sb.toString());
 
-        assertThat(user).isEqualTo(read2);
+        assertThat(readUser).isEqualTo(read2);
     }
 
     public static final JsonReader<String, User> STRING_READER =

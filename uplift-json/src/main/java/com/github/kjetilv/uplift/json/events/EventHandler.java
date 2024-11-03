@@ -25,7 +25,11 @@ public interface EventHandler extends Function<Token, EventHandler> {
         return parse(Tokens.stream(source), callbacks);
     }
 
-    static Callbacks parse(
+    default Callbacks callbacks() {
+        throw new UnsupportedOperationException(this + ": No callbacks");
+    }
+
+    private static Callbacks parse(
         Stream<Token> tokens, Callbacks callbacks
     ) {
         return tokens.reduce(
@@ -33,10 +37,6 @@ public interface EventHandler extends Function<Token, EventHandler> {
             EventHandler::apply,
             noCombine()
         ).callbacks();
-    }
-
-    default Callbacks callbacks() {
-        throw new UnsupportedOperationException(this + ": No callbacks");
     }
 
     private static EventHandler init(Callbacks callbacks) {

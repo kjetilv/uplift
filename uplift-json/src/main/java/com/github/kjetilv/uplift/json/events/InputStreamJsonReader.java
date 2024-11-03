@@ -10,8 +10,8 @@ import java.util.function.Function;
 
 public final class InputStreamJsonReader<T extends Record> extends AbstractJsonReader<InputStream, T> {
 
-    public InputStreamJsonReader(Function<Consumer<T>, Callbacks> callbacks) {
-        super(callbacks);
+    public InputStreamJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+        super(callbacksInitializer);
     }
 
     @Override

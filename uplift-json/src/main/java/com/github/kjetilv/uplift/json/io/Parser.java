@@ -29,8 +29,8 @@ public final class Parser {
         Object value = switch (token.type()) {
             case BEGIN_OBJECT -> object();
             case BEGIN_ARRAY -> array();
-            case BOOL, STRING, NUMBER, NIL -> token.literal();
-            default -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, BOOL, STRING, NUMBER, NIL);
+            case BOOL, STRING, NUMBER, NULL -> token.literal();
+            default -> fail(token, BEGIN_OBJECT, BEGIN_ARRAY, BOOL, STRING, NUMBER, NULL);
         };
         return value == NULL_VALUE ? null : value;
     }

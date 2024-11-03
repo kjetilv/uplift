@@ -10,39 +10,33 @@ import com.github.kjetilv.uplift.json.tokens.Tokens;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 final class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream source) {
-        Token[] tokens;
-        try {
-            tokens = Tokens.stream(source).toArray(Token[]::new);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to scan " + source, e);
-        }
-        try {
-            return new Parser(tokens).parse();
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                "Failed to parse " + tokens.length + " tokens", e);
-        }
+        Token[] tokens = toArray(
+            Tokens.stream(source), () ->
+                "Failed to scan " + source
+        );
+        return parse(
+            tokens, () ->
+                "Failed to parse " + tokens.length + " tokens"
+        );
     }
 
     @Override
     public Object read(String source) {
-        Token[] tokens;
-        try {
-            tokens = Tokens.stream(source).toArray(Token[]::new);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to scan " + source.length() + " chars", e);
-        }
-        try {
-            return new Parser(tokens).parse();
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                "Failed to parse " + tokens.length + " tokens/" + source.length() + " chars", e);
-        }
+        Token[] tokens = toArray(
+            Tokens.stream(source), () ->
+                "Failed to scan " + source.length() + " chars"
+        );
+        return parse(
+            tokens, () ->
+                "Failed to parse " + tokens.length + " tokens/" + source.length() + " chars"
+        );
     }
 
     @Override
@@ -63,5 +57,21 @@ final class JsonImpl implements Json {
     public void write(Object object, OutputStream outputStream) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter.write(new StreamSink(baos), object);
+    }
+
+    private static Token[] toArray(Stream<Token> stream, Supplier<String> error) {
+        try {
+            return stream.toArray(Token[]::new);
+        } catch (Exception e) {
+            throw new IllegalStateException(error.get(), e);
+        }
+    }
+
+    private static Object parse(Token[] tokens, Supplier<String> error) {
+        try {
+            return new Parser(tokens).parse();
+        } catch (Exception e) {
+            throw new IllegalStateException(error.get(), e);
+        }
     }
 }

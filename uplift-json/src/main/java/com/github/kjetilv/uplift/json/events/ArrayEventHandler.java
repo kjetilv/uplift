@@ -19,7 +19,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
             case STRING -> this.with(string(token));
             case BOOL -> this.with(truth(token));
             case NUMBER -> this.with(number(token));
-            case NIL -> this.with(nil());
+            case NULL -> this.with(null_());
             case END_ARRAY -> exitScope(Callbacks::arrayEnded);
             case COMMA -> this;
             case COLON, END_OBJECT -> fail(
