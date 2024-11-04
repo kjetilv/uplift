@@ -35,7 +35,7 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
             if (token == null) {
                 return;
             }
-            handler = handler.apply(token);
+            handler = handler.handle(token);
         }
     }
 

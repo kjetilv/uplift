@@ -17,7 +17,7 @@ public final class ValueEventHandler
     }
 
     @Override
-    public EventHandler apply(Token token) {
+    public EventHandler handle(Token token) {
         return switch (token.type()) {
             case BEGIN_OBJECT -> new ObjectEventHandler(exitScope(), objectStarted());
             case BEGIN_ARRAY -> new ArrayEventHandler(exitScope(), arrayStarted());
@@ -35,7 +35,7 @@ public final class ValueEventHandler
     }
 
     @Override
-    protected ValueEventHandler with(Callbacks callbacks) {
+    public ValueEventHandler with(Callbacks callbacks) {
         return new ValueEventHandler(exitScope(), callbacks);
     }
 }

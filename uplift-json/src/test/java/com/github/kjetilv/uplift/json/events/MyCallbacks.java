@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 
@@ -17,6 +18,8 @@ final class MyCallbacks implements Callbacks {
     private final int count;
 
     private final AtomicBoolean called = new AtomicBoolean();
+
+    private final AtomicReference<Throwable> callStack = new AtomicReference<>();
 
     MyCallbacks() {
         this(null);
@@ -80,9 +83,10 @@ final class MyCallbacks implements Callbacks {
         if (called.compareAndSet(false, true)) {
             ArrayList<String> moreStuff = new ArrayList<>(stuff);
             moreStuff.add(event);
+            callStack.set(new Throwable());
             return new MyCallbacks(moreStuff);
         }
-        throw new IllegalStateException("Called again #" + count + "/" + stuff + ": " + event);
+        throw new IllegalStateException("Called again! Count is " + count + ", stuff: " + stuff + ", event: " + event, callStack.get());
     }
 
     @Override

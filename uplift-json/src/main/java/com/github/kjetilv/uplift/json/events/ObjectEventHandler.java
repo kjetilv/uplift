@@ -3,8 +3,6 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
-import java.util.function.Supplier;
-
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
 final class ObjectEventHandler extends AbstractEventHandler {
@@ -14,28 +12,45 @@ final class ObjectEventHandler extends AbstractEventHandler {
     }
 
     @Override
-    public EventHandler apply(Token token) {
+    public EventHandler handle(Token token) {
         return switch (token.type()) {
-            case END_OBJECT -> exitScope(Callbacks::objectEnded);
-            case COMMA -> this;
-            case STRING -> skip(
+            // A field
+            case STRING -> skipRequired(
                 token,
+                COLON,
                 () ->
-                    new ValueEventHandler(this, field(token))
+                    new ValueEventHandler(
+                        new PostValueHandler(this, callbacks()),
+                        field(token))
             );
-            default -> fail("Malformed object level", token, END_OBJECT, COMMA, STRING);
+            case END_OBJECT -> exitScope(Callbacks::objectEnded);
+            default -> fail("Malformed object level", token, END_OBJECT, STRING);
         };
     }
 
     @Override
-    protected AbstractEventHandler with(Callbacks callbacks) {
+    protected ObjectEventHandler with(Callbacks callbacks) {
         return new ObjectEventHandler(exitScope(), callbacks);
     }
 
-    private EventHandler skip(Token token, Supplier<EventHandler> next) {
-        return skipToken ->
-            skipToken.type() == COLON
-                ? next.get()
-                : fail("Expected " + COLON + " to follow field `" + token.literalString() + "`", skipToken, COLON);
+    static final class PostValueHandler extends AbstractEventHandler {
+
+        public PostValueHandler(AbstractEventHandler parentScope, Callbacks callbacks) {
+            super(parentScope, callbacks);
+        }
+
+        @Override
+        public EventHandler handle(Token token) {
+            return switch (token.type()) {
+                case END_OBJECT -> exitScope().exitScope(Callbacks::objectEnded);
+                case COMMA -> exitScope();
+                default -> fail("Malformed object level", token, END_OBJECT, COMMA);
+            };
+        }
+
+        @Override
+        protected AbstractEventHandler with(Callbacks callbacks) {
+            return new PostValueHandler(exitScope(), callbacks);
+        }
     }
 }

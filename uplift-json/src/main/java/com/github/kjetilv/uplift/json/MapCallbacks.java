@@ -51,6 +51,11 @@ public class MapCallbacks implements Callbacks {
     }
 
     @Override
+    public Callbacks null_() {
+        return set(null);
+    }
+
+    @Override
     public Callbacks arrayStarted() {
         return new ListCallbacks(this, this::set);
     }

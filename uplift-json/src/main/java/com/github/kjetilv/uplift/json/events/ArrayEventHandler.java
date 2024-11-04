@@ -7,32 +7,51 @@ import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
 final class ArrayEventHandler extends AbstractEventHandler {
 
-    ArrayEventHandler(AbstractEventHandler scope, Callbacks callbacks) {
-        super(scope, callbacks);
+    ArrayEventHandler(AbstractEventHandler parent, Callbacks callbacks) {
+        super(parent, callbacks);
     }
 
     @Override
-    public EventHandler apply(Token token) {
+    public EventHandler handle(Token token) {
         return switch (token.type()) {
-            case BEGIN_OBJECT -> new ObjectEventHandler(this, objectStarted());
-            case BEGIN_ARRAY -> new ArrayEventHandler(this, arrayStarted());
-            case STRING -> this.with(string(token));
-            case BOOL -> this.with(truth(token));
-            case NUMBER -> this.with(number(token));
-            case NULL -> this.with(null_());
+            case BEGIN_ARRAY -> new ArrayEventHandler(new PostValueHandler(this, callbacks()), arrayStarted());
+            case BEGIN_OBJECT -> new ObjectEventHandler(new PostValueHandler(this, callbacks()), objectStarted());
+            case STRING -> new PostValueHandler(this, string(token));
+            case BOOL -> new PostValueHandler(this,truth(token));
+            case NUMBER -> new PostValueHandler(this, number(token));
+            case NULL -> new PostValueHandler(this, null_());
             case END_ARRAY -> exitScope(Callbacks::arrayEnded);
-            case COMMA -> this;
-            case COLON, END_OBJECT -> fail(
+            default -> fail(
                 "Malformed array",
                 token,
-                BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER
+                BEGIN_OBJECT, BEGIN_ARRAY, STRING, BOOL, NUMBER, NULL
             );
-            case WHITESPACE -> fail("Unexpected token", token);
         };
     }
 
     @Override
     protected AbstractEventHandler with(Callbacks callbacks) {
         return new ArrayEventHandler(exitScope(), callbacks);
+    }
+
+    static final class PostValueHandler extends AbstractEventHandler {
+
+        public PostValueHandler(AbstractEventHandler parentScope, Callbacks callbacks) {
+            super(parentScope, callbacks);
+        }
+
+        @Override
+        public EventHandler handle(Token token) {
+            return switch (token.type()) {
+                case END_ARRAY -> exitScope().exitScope(Callbacks::arrayEnded);
+                case COMMA -> exitScope();
+                default -> fail("Malformed array", token, END_ARRAY, COMMA);
+            };
+        }
+
+        @Override
+        protected AbstractEventHandler with(Callbacks callbacks) {
+            return new PostValueHandler(exitScope(), callbacks());
+        }
     }
 }

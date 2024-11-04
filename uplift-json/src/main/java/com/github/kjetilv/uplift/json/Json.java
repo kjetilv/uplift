@@ -33,31 +33,31 @@ public interface Json {
         return asList(source, read(source));
     }
 
-    default Object read(byte[] source) {
-        return read(new String(source, StandardCharsets.UTF_8));
+    default Object read(byte[] bytes) {
+        return read(new String(bytes, StandardCharsets.UTF_8));
     }
 
     default byte[] writeBytes(Object object) {
         return write(object).getBytes(StandardCharsets.UTF_8);
     }
 
-    default Object read(Reader in) {
-        try (BufferedReader reader = new BufferedReader(in)) {
-            return read(reader.lines()
+    default Object read(Reader reader) {
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            return read(bufferedReader.lines()
                 .collect(Collectors.joining("\n")));
         } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to read " + in, e);
+            throw new IllegalArgumentException("Failed to read " + reader, e);
         }
     }
 
-    default Object read(String source) {
+    default Object read(String string) {
         try (
             InputStream in = new ByteArrayInputStream(
-                Objects.requireNonNull(source, "source").getBytes(StandardCharsets.UTF_8))
+                Objects.requireNonNull(string, "string").getBytes(StandardCharsets.UTF_8))
         ) {
             return read(in);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to read string of " + source.length() + " chars", e);
+            throw new IllegalStateException("Failed to read string of " + string.length() + " chars", e);
         }
     }
 
@@ -70,7 +70,7 @@ public interface Json {
         }
     }
 
-    Object read(InputStream source);
+    Object read(InputStream inputStream);
 
     void write(Object object, OutputStream outputStream);
 

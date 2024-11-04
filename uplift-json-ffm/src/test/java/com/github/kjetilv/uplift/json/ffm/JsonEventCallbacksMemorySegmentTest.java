@@ -26,7 +26,7 @@ public class JsonEventCallbacksMemorySegmentTest {
     static Callbacks parse(Stream<Token> tokens, Callbacks callbacks) {
         return tokens.reduce(
             new ValueEventHandler(callbacks),
-            EventHandler::apply,
+            EventHandler::handle,
             (_, _) -> {
                 throw new IllegalStateException();
             }

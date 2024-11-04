@@ -1,32 +1,44 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.tokens.Token;
-import com.github.kjetilv.uplift.json.tokens.Tokens;
+import com.github.kjetilv.uplift.json.tokens.*;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 @FunctionalInterface
-public interface EventHandler extends Function<Token, EventHandler> {
+public interface EventHandler {
 
     static Callbacks parse(Callbacks callbacks, InputStream source) {
-        return parse(Tokens.stream(source), callbacks);
+        return callbacks(callbacks, new InputStreamSource(source));
     }
 
     static Callbacks parse(Callbacks callbacks, Reader source) {
-        return parse(Tokens.stream(source), callbacks);
+        return callbacks(callbacks, new CharsSource(source));
     }
 
     static Callbacks parse(Callbacks callbacks, String source) {
-        return parse(Tokens.stream(source), callbacks);
+        return callbacks(callbacks, new CharSequenceSource(source));
     }
 
     default Callbacks callbacks() {
-        throw new UnsupportedOperationException(this + ": No callbacks");
+        throw new UnsupportedOperationException(this + " has no callbacks");
+    }
+
+    EventHandler handle(Token token);
+
+    private static Callbacks callbacks(Callbacks callbacks, Source source1) {
+        Tokens tokens = new Tokens(source1);
+        EventHandler handler = init(callbacks);
+        while (true) {
+            Token next = tokens.next();
+            if (next == null) {
+                return handler.callbacks();
+            }
+            handler = handler.handle(next);
+        }
     }
 
     private static Callbacks parse(
@@ -34,7 +46,7 @@ public interface EventHandler extends Function<Token, EventHandler> {
     ) {
         return tokens.reduce(
             init(callbacks),
-            EventHandler::apply,
+            EventHandler::handle,
             noCombine()
         ).callbacks();
     }

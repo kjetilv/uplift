@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
+import com.github.kjetilv.uplift.json.events.EventHandler;
 import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
@@ -14,8 +15,8 @@ public final class ParseException extends RuntimeException {
 
     private final TokenType[] expected;
 
-    public ParseException(Token token, TokenType... expected) {
-        super("Invalid token " + token + ", expected one of " + tokens(expected));
+    public ParseException(EventHandler handler, Token token, TokenType... expected) {
+        super(handler + ": Invalid token " + token + ", expected one of " + tokens(expected));
         this.token = token;
         this.expected = expected.clone();
     }

@@ -14,6 +14,7 @@ public class JsonEventCallbacksTest {
     void arr() {
         Callbacks myCallbacks = Events.parse(
             callbacks(),
+            //language=json
             """
                 {
                   "els": [1, 2, "a", "b"],
@@ -52,9 +53,28 @@ public class JsonEventCallbacksTest {
     }
 
     @Test
+    void arrSimple() {
+        Callbacks myCallbacks = Events.parse(
+            callbacks(),
+            //language=json
+            """
+                [1, 2]
+                """
+        );
+        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+            arrayStarted
+              number:1
+              number:2
+            arrayEnded
+            """)
+        );
+    }
+
+    @Test
     void obj() {
         MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             callbacks(),
+            //language=json
             """
                 {
                   "foo": "bar",
@@ -81,6 +101,7 @@ public class JsonEventCallbacksTest {
     void parse() {
         MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
             callbacks(),
+            //language=json
             """
                 {
                   "foo": "bar",
@@ -109,6 +130,7 @@ public class JsonEventCallbacksTest {
         MyCallbacks callbacks = (MyCallbacks) callbacks();
         Events.parse(
             callbacks,
+            //language=json
             """
                 {
                   "foo": "bar",

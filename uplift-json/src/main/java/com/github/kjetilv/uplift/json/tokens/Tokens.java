@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json.tokens;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -14,18 +12,6 @@ import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
 public final class Tokens implements Supplier<Token>, SelfDescribing {
-
-    public static Stream<Token> stream(String source) {
-        return stream(new CharSequenceSource(source));
-    }
-
-    public static Stream<Token> stream(InputStream source) {
-        return stream(new InputStreamSource(source));
-    }
-
-    public static Stream<Token> stream(Reader source) {
-        return stream(new CharsSource(source));
-    }
 
     public static Stream<Token> stream(Source source) {
         return Stream.generate(new Tokens(source)).takeWhile(Objects::nonNull);
@@ -55,6 +41,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
                 if (token.is(WHITESPACE)){
                     continue;
                 }
+                System.out.println(token);
                 return token;
             } finally {
                 source.reset();

@@ -60,7 +60,7 @@ class JsonTest {
         assertEquals(set.size(), e.getExpected().size(),
             () -> set + " /= " + e.getExpected()
         );
-        assertTrue(e.getExpected().containsAll(set));
+        assertThat(e.getExpected()).containsAll(set);
     }
 
     enum Enum {
@@ -89,7 +89,7 @@ class JsonTest {
     }
 
     @Test
-    void emprtyArray() {
+    void emptyArray() {
         //language=json
         Object read1 = JSON.read("[]");
         assertThat(read1).asInstanceOf(LIST).isEmpty();
@@ -108,12 +108,12 @@ class JsonTest {
         failedRead(
             """
             {
-              true: 5;
+              "foo": 5;
               "bar": true
             }
             """,
             e ->
-                assertReadException(e, ";", 2, 10)
+                assertReadException(e, ";", 2, 11)
         );
     }
 
@@ -122,7 +122,7 @@ class JsonTest {
         failedRead(
             """
             {
-              true: 5,
+              "true": 5,
               "bar": stuff
             }
             """,
@@ -156,13 +156,12 @@ class JsonTest {
         failedRead(
             """
             {
-              true: 5,
               "bar": "stuff
               "
             }
             """,
             e ->
-                assertReadException(e, "\"stuff", 3, 15)
+                assertReadException(e, "\"stuff", 2, 15)
         );
     }
 
@@ -202,7 +201,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertTrue(e.getMessage().contains("Failed to parse: ."));
         }
     }
 
@@ -215,7 +214,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertThat(e.getMessage()).contains("Not a number: -");
         }
     }
 
@@ -228,7 +227,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertThat(e.getMessage()).contains("Not a number: -");
         }
     }
 
@@ -241,7 +240,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertThat(e.getMessage()).contains("Not a number: -");
         }
     }
 
@@ -254,7 +253,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertThat(e.getMessage()).contains("Failed to parse: .");
         }
     }
 
@@ -267,7 +266,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Failed to scan"));
+            assertThat(e.getMessage()).contains("Failed to parse: .");
         }
     }
 
@@ -300,30 +299,60 @@ class JsonTest {
     }
 
     @Test
+    void requireCommaInArrayAfterArray() {
+        failedParse(
+            """
+            {
+              "foo": 5,
+              "bar": [true, 5, [3] false]
+            }
+            """,
+            e ->
+                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+        );
+    }
+
+    @Test
+    void requireCommaInArrayAfterObject() {
+        failedParse(
+            """
+            {
+              "foo": 5,
+              "bar": [true, 5, {} false]
+            }
+            """,
+            e ->
+                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+        );
+    }
+
+    @Test
     void test() {
         //language=json
         roundtrip("""
-                  {
-                    "foo": {
-
-                      "bar":    5,
-
-                      "halfdig": 3.0,
-                      "dighalf": 0.3,
-                      "flote":   -3.14,
-                      "streng" :   "dette er en test",
-                      "problemStreng": "\\"foo\\""
-                    },
-                    "zot": [
-                      421,
-                      true,
-                      { "another": ["object", "for",    17 ], "zot":     "zip" },
-                      null,
-                      "dette er en test"
-                    ]          ,
-                    "nothing"  : null
-                  }
-                  """
+            {
+              "foo": {
+            
+                "bar":    5,
+                "arr2": [2, 3],
+                
+                "halfdig": 3.0,
+                "dighalf": 0.3,
+                "flote":   -3.14,
+                "streng" :   "dette er en test",
+                "problemStreng": "\\"foo\\""
+              },
+              "zot": [
+                421,
+                true,
+                { "another": ["object", "for",    17 ], "zot":     "zip" },
+                [ "foo" ],
+                null,
+                "dette er en test"
+              ]          ,
+              "nothing"  : null
+            }
+            """
         );
     }
 
@@ -421,7 +450,7 @@ class JsonTest {
         try {
             fail("Should not accept " + JSON.write(Stream.empty()));
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Bad object"));
+            assertThat(e.getMessage()).contains("Bad object");
         }
     }
 

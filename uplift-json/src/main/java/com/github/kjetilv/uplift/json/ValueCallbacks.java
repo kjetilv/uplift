@@ -25,25 +25,25 @@ public final class ValueCallbacks implements Callbacks {
     @Override
     public Callbacks string(String string) {
         onDone.accept(string);
-        return null;
+        return this;
     }
 
     @Override
     public Callbacks bool(boolean bool) {
         onDone.accept(bool);
-        return null;
+        return this;
     }
 
     @Override
     public Callbacks null_() {
         onDone.accept(null);
-        return null;
+        return this;
     }
 
     @Override
     public <N extends Number> Callbacks number(N number) {
         onDone.accept(number);
-        return null;
+        return this;
     }
 
     @Override
