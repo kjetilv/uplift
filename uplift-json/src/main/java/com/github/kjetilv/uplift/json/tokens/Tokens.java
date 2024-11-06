@@ -2,20 +2,14 @@ package com.github.kjetilv.uplift.json.tokens;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
 public final class Tokens implements Supplier<Token>, SelfDescribing {
-
-    public static Stream<Token> stream(Source source) {
-        return Stream.generate(new Tokens(source)).takeWhile(Objects::nonNull);
-    }
 
     private final Source source;
 

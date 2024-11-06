@@ -1,29 +1,27 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.ParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                {
-                  "els": [1, 2, "a", "b"],
-                  "foo": ["tip", true, [ 3, 4 ], []],
-                  "bar": [{"zit": "quz"}, 4]
-                }
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            {
+              "els": [1, 2, "a", "b"],
+              "foo": ["tip", true, [ 3, 4 ], []],
+              "bar": [{"zit": "quz"}, 4]
+            }
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -54,14 +52,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimple() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                [1, 2, "a"]
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            [1, 2, "a"]
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
               number:2
@@ -73,14 +67,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleLong() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                [1, 2, 3, 4, 5, 6, 7, 8]
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            [1, 2, 3, 4, 5, 6, 7, 8]
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
               number:2
@@ -97,14 +87,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                [1, 2, []]
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            [1, 2, []]
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
               number:2
@@ -117,14 +103,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest2() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                [1, 2, [3]]
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            [1, 2, [3]]
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
               number:2
@@ -138,14 +120,10 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrObj() {
-        Callbacks myCallbacks = Events.parse(
-            callbacks(),
-            //language=json
-            """
-                [1, {}]
-                """
-        );
-        assertThat(((MyCallbacks)myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        MyCallbacks myCallbacks = parse("""
+            [1, {}]
+            """);
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
               objectStarted
@@ -156,20 +134,35 @@ public class JsonEventCallbacksTest {
     }
 
     @Test
-    void obj() {
-        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
+    void arrObjFail() {
+        failOn("[1, {,}]");
+        failOn("[1, ,{}]");
+        failOn("[,1, 1]");
+        failOn("[1, ,{}],");
+    }
+
+    private static void failOn(String source) {
+        assertThatThrownBy(() -> parse(source)).isInstanceOf(ParseException.class);
+    }
+
+    private static MyCallbacks parse(String source) {
+        return (MyCallbacks) Events.parse(
             callbacks(),
-            //language=json
-            """
-                {
-                  "foo": "bar",
-                  "zot": 5,
-                  "obj2": {
-                    "oops": true
-                  }
-                }
-                """
+            source
         );
+    }
+
+    @Test
+    void obj() {
+        MyCallbacks myCallbacks = parse("""
+            {
+              "foo": "bar",
+              "zot": 5,
+              "obj2": {
+                "oops": true
+              }
+            }
+            """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo string:bar
@@ -184,19 +177,15 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        MyCallbacks myCallbacks = (MyCallbacks) Events.parse(
-            callbacks(),
-            //language=json
-            """
-                {
-                  "foo": "bar",
-                  "zot": 5,
-                  "obj2": {
-                    "oops": true
-                  }
-                }
-                """
-        );
+        MyCallbacks myCallbacks = parse("""
+            {
+              "foo": "bar",
+              "zot": 5,
+              "obj2": {
+                "oops": true
+              }
+            }
+            """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
@@ -229,7 +218,8 @@ public class JsonEventCallbacksTest {
     }
 
     private static List<String> lines(String text) {
-        return Arrays.stream(text.split("\\s+")).toList();
+        return Arrays.stream(text.split("\\s+"))
+            .toList();
     }
 
     private static Callbacks callbacks() {
