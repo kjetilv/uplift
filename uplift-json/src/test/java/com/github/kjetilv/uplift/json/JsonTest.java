@@ -335,7 +335,7 @@ class JsonTest {
             
                 "bar":    5,
                 "arr2": [2, 3],
-                
+            
                 "halfdig": 3.0,
                 "dighalf": 0.3,
                 "flote":   -3.14,
