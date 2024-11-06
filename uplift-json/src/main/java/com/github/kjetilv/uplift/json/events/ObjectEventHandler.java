@@ -20,7 +20,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
                 new ValueEventHandler(new PostValueHandler(this), field(token))
             );
             case END_OBJECT -> exitScope(Callbacks::objectEnded);
-            default -> fail("Malformed object level", token, END_OBJECT, STRING);
+            default -> fail(token, END_OBJECT, STRING);
         };
     }
 
@@ -36,7 +36,6 @@ final class ObjectEventHandler extends AbstractEventHandler {
                 return then.get();
             }
             return fail(
-                "Expected " + COLON,
                 skipToken,
                 COLON
             );
@@ -58,7 +57,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
             return switch (token.type()) {
                 case END_OBJECT -> exitScope().exitScope(Callbacks::objectEnded);
                 case COMMA -> exitScope();
-                default -> fail("Malformed object level", token, END_OBJECT, COMMA);
+                default -> fail(token, END_OBJECT, COMMA);
             };
         }
 

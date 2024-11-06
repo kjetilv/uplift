@@ -133,8 +133,6 @@ public class JsonRecordTest {
 
         WRITER.write(readUser, sb);
 
-        System.out.println(sb);
-
         User read2 = STRING_READER.read(sb.toString());
 
         assertThat(readUser).isEqualTo(read2);

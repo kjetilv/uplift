@@ -7,8 +7,6 @@ import com.github.kjetilv.uplift.json.tokens.TokenType;
 
 import java.util.function.Function;
 
-import static java.util.Objects.requireNonNull;
-
 abstract sealed class AbstractEventHandler implements EventHandler permits ArrayEventHandler,
     ArrayEventHandler.PostValueHandler,
     ObjectEventHandler,
@@ -65,7 +63,7 @@ abstract sealed class AbstractEventHandler implements EventHandler permits Array
         return callbacks.null_();
     }
 
-    protected  <T> T fail(String msg, Token actual, TokenType... expected) {
+    protected  <T> T fail(Token actual, TokenType... expected) {
         throw new ParseException(this, actual, expected);
     }
 

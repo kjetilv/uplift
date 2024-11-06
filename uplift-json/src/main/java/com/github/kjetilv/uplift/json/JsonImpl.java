@@ -11,8 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 final class JsonImpl implements Json {
 
@@ -56,14 +54,6 @@ final class JsonImpl implements Json {
                 return reference.get();
             }
             handler = handler.handle(token);
-        }
-    }
-
-    private static Token[] toArray(Stream<Token> stream, Supplier<String> error) {
-        try {
-            return stream.toArray(Token[]::new);
-        } catch (Exception e) {
-            throw new IllegalStateException(error.get(), e);
         }
     }
 }

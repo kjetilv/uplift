@@ -38,10 +38,9 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
                 if (token == null) {
                     return null;
                 }
-                if (token.is(WHITESPACE)){
+                if (token.is(WHITESPACE)) {
                     continue;
                 }
-                System.out.println(token);
                 return token;
             } finally {
                 source.reset();

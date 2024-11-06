@@ -1,13 +1,10 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.*;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.function.BinaryOperator;
-import java.util.stream.Stream;
 
 @FunctionalInterface
 public interface EventHandler {
@@ -38,28 +35,12 @@ public interface EventHandler {
             if (token == null) {
                 return handler.callbacks();
             }
-            EventHandler next = handler.handle(token);
-            handler = next;
+            handler = handler.handle(token);
         }
-    }
-
-    private static Callbacks parse(
-        Stream<Token> tokens, Callbacks callbacks
-    ) {
-        return tokens.reduce(
-            init(callbacks),
-            EventHandler::handle,
-            noCombine()
-        ).callbacks();
     }
 
     private static EventHandler init(Callbacks callbacks) {
         return new ValueEventHandler(callbacks);
     }
 
-    private static <T> BinaryOperator<T> noCombine() {
-        return (t1, t2) -> {
-            throw new IllegalStateException(t1 + " / " + t2 + " do not combine");
-        };
-    }
 }

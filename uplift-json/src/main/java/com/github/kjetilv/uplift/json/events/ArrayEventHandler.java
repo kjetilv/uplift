@@ -22,7 +22,6 @@ final class ArrayEventHandler extends AbstractEventHandler {
             case NULL -> new PostValueHandler(this, null_());
             case END_ARRAY -> exitScope(Callbacks::arrayEnded);
             default -> fail(
-                "Malformed array",
                 token,
                 NUMBER, STRING, BOOL, BEGIN_ARRAY, BEGIN_OBJECT, NULL, END_ARRAY
                 );
@@ -49,7 +48,7 @@ final class ArrayEventHandler extends AbstractEventHandler {
             return switch (token.type()) {
                 case END_ARRAY -> exitScope().exitScope(Callbacks::arrayEnded);
                 case COMMA -> exitScope();
-                default -> fail("Malformed object level", token, END_ARRAY, COMMA);
+                default -> fail(token, END_ARRAY, COMMA);
             };
         }
 

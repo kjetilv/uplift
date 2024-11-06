@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public final class ValueCallbacks implements Callbacks {
@@ -9,7 +8,6 @@ public final class ValueCallbacks implements Callbacks {
 
     public ValueCallbacks(Consumer<Object> onDone) {
         this.onDone = onDone;
-        AtomicReference<Object> value = new AtomicReference<>();
     }
 
     @Override
