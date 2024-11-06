@@ -6,13 +6,13 @@ import com.github.kjetilv.uplift.json.tokens.Token;
 import com.github.kjetilv.uplift.json.tokens.TokenType;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-abstract sealed class AbstractEventHandler implements EventHandler permits
-    ArrayEventHandler, ArrayEventHandler.PostValueHandler,
-    ObjectEventHandler, ObjectEventHandler.PostValueHandler,
+abstract sealed class AbstractEventHandler implements EventHandler permits ArrayEventHandler,
+    ArrayEventHandler.PostValueHandler,
+    ObjectEventHandler,
+    ObjectEventHandler.PostValueHandler,
     ValueEventHandler {
 
     private final AbstractEventHandler parentScope;
@@ -21,7 +21,7 @@ abstract sealed class AbstractEventHandler implements EventHandler permits
 
     AbstractEventHandler(AbstractEventHandler parentScope, Callbacks callbacks) {
         this.parentScope = parentScope;
-        this.callbacks = requireNonNull(callbacks, "callbacks");
+        this.callbacks = callbacks;
     }
 
     @Override
@@ -65,30 +65,16 @@ abstract sealed class AbstractEventHandler implements EventHandler permits
         return callbacks.null_();
     }
 
-    @SuppressWarnings("SameParameterValue")
-    protected EventHandler skipRequired(
-        Token preceding,
-        TokenType expected,
-        Supplier<EventHandler> then
-    ) {
-        return skipToken -> {
-            if (skipToken.type() == expected) {
-                return then.get();
-            }
-            return fail(
-                "Expected " + expected + " to follow field `" + preceding.literalString() + "`",
-                skipToken,
-                expected
-            );
-        };
-    }
-
-    protected final <T> T fail(String msg, Token actual, TokenType... expected) {
+    protected  <T> T fail(String msg, Token actual, TokenType... expected) {
         throw new ParseException(this, actual, expected);
     }
 
     protected AbstractEventHandler with(Callbacks callbacks) {
         throw new UnsupportedOperationException(this + ": No neesting: " + callbacks);
+    }
+
+    public AbstractEventHandler parentScope() {
+        return parentScope;
     }
 
     @Override

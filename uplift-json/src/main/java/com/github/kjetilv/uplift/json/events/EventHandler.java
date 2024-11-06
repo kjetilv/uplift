@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.ParseException;
 import com.github.kjetilv.uplift.json.tokens.*;
 
 import java.io.InputStream;
@@ -33,11 +34,12 @@ public interface EventHandler {
         Tokens tokens = new Tokens(source1);
         EventHandler handler = init(callbacks);
         while (true) {
-            Token next = tokens.next();
-            if (next == null) {
+            Token token = tokens.next();
+            if (token == null) {
                 return handler.callbacks();
             }
-            handler = handler.handle(next);
+            EventHandler next = handler.handle(token);
+            handler = next;
         }
     }
 

@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.Token;
 
+import java.util.function.Supplier;
+
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
 final class ObjectEventHandler extends AbstractEventHandler {
@@ -14,14 +16,8 @@ final class ObjectEventHandler extends AbstractEventHandler {
     @Override
     public EventHandler handle(Token token) {
         return switch (token.type()) {
-            // A field
-            case STRING -> skipRequired(
-                token,
-                COLON,
-                () ->
-                    new ValueEventHandler(
-                        new PostValueHandler(this, callbacks()),
-                        field(token))
+            case STRING -> skipColon(() ->
+                new ValueEventHandler(new PostValueHandler(this), field(token))
             );
             case END_OBJECT -> exitScope(Callbacks::objectEnded);
             default -> fail("Malformed object level", token, END_OBJECT, STRING);
@@ -33,7 +29,25 @@ final class ObjectEventHandler extends AbstractEventHandler {
         return new ObjectEventHandler(exitScope(), callbacks);
     }
 
+    @SuppressWarnings("SameParameterValue")
+    private EventHandler skipColon(Supplier<EventHandler> then) {
+        return skipToken -> {
+            if (skipToken.type() == COLON) {
+                return then.get();
+            }
+            return fail(
+                "Expected " + COLON,
+                skipToken,
+                COLON
+            );
+        };
+    }
+
     static final class PostValueHandler extends AbstractEventHandler {
+
+        public PostValueHandler(AbstractEventHandler parentScope) {
+            this(parentScope, null);
+        }
 
         public PostValueHandler(AbstractEventHandler parentScope, Callbacks callbacks) {
             super(parentScope, callbacks);
@@ -50,7 +64,7 @@ final class ObjectEventHandler extends AbstractEventHandler {
 
         @Override
         protected AbstractEventHandler with(Callbacks callbacks) {
-            return new PostValueHandler(exitScope(), callbacks);
+            return new PostValueHandler(parentScope(), callbacks);
         }
     }
 }
