@@ -48,6 +48,8 @@ public abstract class AbstractFieldEvents implements FieldEvents {
         return parent;
     }
 
+    private static final Pattern QUOTE = Pattern.compile("\"");
+
     protected static String boolValue(Boolean value) {
         return value ? Canonical.TRUE : Canonical.FALSE;
     }
@@ -75,6 +77,4 @@ public abstract class AbstractFieldEvents implements FieldEvents {
     protected static String durationValue(Duration value) {
         return value.toString();
     }
-
-    private static final Pattern QUOTE = Pattern.compile("\"");
 }

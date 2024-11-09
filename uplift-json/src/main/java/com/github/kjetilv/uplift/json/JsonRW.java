@@ -11,12 +11,6 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public interface JsonRW<T extends Record> {
 
-    Callbacks callbacks(Consumer<T> onDone);
-
-    Function<Consumer<T>, Callbacks> callbacks();
-
-    ObjectWriter<T> objectWriter();
-
     default JsonReader<String, T> stringReader() {
         return new StringJsonReader<>(callbacks());
     }
@@ -36,4 +30,10 @@ public interface JsonRW<T extends Record> {
     default JsonWriter<byte[], T, ByteArrayOutputStream> bytesWriter() {
         return new BytesJsonWriter<>(objectWriter());
     }
+
+    Callbacks callbacks(Consumer<T> onDone);
+
+    Function<Consumer<T>, Callbacks> callbacks();
+
+    ObjectWriter<T> objectWriter();
 }

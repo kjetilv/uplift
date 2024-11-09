@@ -18,44 +18,46 @@ public class MemorySegmentJsonReaderTest {
     @Test
     void testMemorySegmentJsonReader() {
         UUID uuid = UUID.randomUUID();
-        String json = """
-            {
-              "name": "Kjetil",
-              "address": {
-                "streetName": "\\"None\\" Street",
-                "houseNumber": 1729,
-                "modifier": "B",
-                "adjacents": [ "C" ],
-                "code": 1450,
-                "residents": [
-                  {
-                    "name": "foo",
-                    "permanent": true,
-                    "properties": {
-                      "zip": "zot"
-                    }
+        String json =
+            //language=json
+            """
+                {
+                  "name": "Kjetil",
+                  "address": {
+                    "streetName": "\\"None\\" Street",
+                    "houseNumber": 1729,
+                    "modifier": "B",
+                    "adjacents": [ "C" ],
+                    "code": 1450,
+                    "residents": [
+                      {
+                        "name": "foo",
+                        "permanent": true,
+                        "properties": {
+                          "zip": "zot"
+                        }
+                      },
+                      {
+                        "name": "bar",
+                        "permanent": false,
+                        "uuid": "%s",
+                        "properties": {
+                          "foo": "bar",
+                          "zip": true,
+                          "zot": 42
+                        }
+                      }
+                    ]
                   },
-                  {
-                    "name": "bar",
-                    "permanent": false,
-                    "uuid": "%s",
-                    "properties": {
-                      "foo": "bar",
-                      "zip": true,
-                      "zot": 42,
-                    }
-                  }
-                ]
-              },
-              "roadWarrior": true,
-              "birthYear": 1973,
-              "birthTime": 100,
-              "aliases": ["MrX", "Foo"],
-              "misc": [50, 60, 70],
-              "maxAge": 127,
-              "balance": "123.23"
-            }
-            """.formatted(uuid);
+                  "roadWarrior": true,
+                  "birthYear": 1973,
+                  "birthTime": 100,
+                  "aliases": ["MrX", "Foo"],
+                  "misc": [50, 60, 70],
+                  "maxAge": 127,
+                  "balance": "123.23"
+                }
+                """.formatted(uuid);
 
         Function<Consumer<User>, Callbacks> callbacks = Users.INSTANCE.callbacks();
         MemorySegmentJsonReader<User> reader = new MemorySegmentJsonReader<>(callbacks);

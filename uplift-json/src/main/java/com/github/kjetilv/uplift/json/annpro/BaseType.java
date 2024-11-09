@@ -30,8 +30,10 @@ enum BaseType {
 
     static BaseType of(RecordComponentElement typeElement) {
         try {
-            return pick(typeElement, baseType ->
-                isFor(baseType, typeElement));
+            return pick(
+                typeElement, baseType ->
+                    isFor(baseType, typeElement)
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for element " + typeElement, e);
         }
@@ -39,8 +41,10 @@ enum BaseType {
 
     static BaseType of(String name) {
         try {
-            return pick(name, baseType ->
-                isFor(baseType, name));
+            return pick(
+                name, baseType ->
+                    isFor(baseType, name)
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for type named " + name, e);
         }

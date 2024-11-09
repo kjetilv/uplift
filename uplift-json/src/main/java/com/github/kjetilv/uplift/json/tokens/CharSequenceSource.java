@@ -45,7 +45,7 @@ public final class CharSequenceSource extends AbstractBytesSource {
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" +index + "/" + length + "]";
+            return getClass().getSimpleName() + "[" + index + "/" + length + "]";
         }
     }
 }

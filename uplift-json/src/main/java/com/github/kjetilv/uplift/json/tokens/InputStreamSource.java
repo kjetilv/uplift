@@ -23,17 +23,17 @@ public final class InputStreamSource extends AbstractBytesSource {
         }
 
         @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + stream + "]";
-        }
-
-        @Override
         public int getAsInt() {
             try {
                 return Math.max(0, stream.read());
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + stream, e);
             }
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" + stream + "]";
         }
     }
 }

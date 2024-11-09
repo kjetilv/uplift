@@ -19,7 +19,7 @@ public class MapWriter implements ObjectWriter<Map<?, ?>> {
             case Map<?, ?> submap -> new MapWriter().write(submap, calls);
             default -> throw new IllegalStateException(
                 "Not supported: " + value.getClass() + "(" + key + " -> " + value + ")"
-            ) ;
+            );
         }
     }
 }

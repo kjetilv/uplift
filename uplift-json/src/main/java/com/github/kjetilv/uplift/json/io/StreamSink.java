@@ -21,17 +21,17 @@ public record StreamSink(ByteArrayOutputStream baos) implements Sink {
         int initialLength = baos.size();
         AtomicReference<Boolean> moved = new AtomicReference<>();
         return () ->
-                moved.updateAndGet(alreadyMoved ->
-                        getABoolean(alreadyMoved, initialLength));
-    }
-
-    private Boolean getABoolean(Boolean alreadyMoved, int initialLength) {
-        return truDat(alreadyMoved) || length() > initialLength ? true : null;
+            moved.updateAndGet(alreadyMoved ->
+                getABoolean(alreadyMoved, initialLength));
     }
 
     @Override
     public int length() {
         return baos.size();
+    }
+
+    private Boolean getABoolean(Boolean alreadyMoved, int initialLength) {
+        return truDat(alreadyMoved) || length() > initialLength ? true : null;
     }
 
     private static boolean truDat(Boolean b) {

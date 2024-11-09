@@ -38,6 +38,10 @@ public record Token(
         return this.type == type;
     }
 
+    public boolean not(TokenType type) {
+        return this.type != type;
+    }
+
     private String printableValue() {
         if (type().printable()) {
             int length = lexeme.length();

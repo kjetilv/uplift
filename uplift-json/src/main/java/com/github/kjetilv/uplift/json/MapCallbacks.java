@@ -6,6 +6,10 @@ import java.util.function.Consumer;
 
 public class MapCallbacks implements Callbacks {
 
+    public static MapCallbacks create(Callbacks parent, Consumer<Map<String, Object>> onDone) {
+        return new MapCallbacks(parent, onDone);
+    }
+
     private final Callbacks parent;
 
     private final Consumer<Map<String, Object>> onDone;
@@ -13,10 +17,6 @@ public class MapCallbacks implements Callbacks {
     private final Map<String, Object> map;
 
     private String currentField;
-
-    public static MapCallbacks create(Callbacks parent, Consumer<Map<String, Object>> onDone) {
-        return new MapCallbacks(parent, onDone);
-    }
 
     public MapCallbacks(Callbacks parent, Consumer<Map<String, Object>> onDone) {
         this.parent = parent;

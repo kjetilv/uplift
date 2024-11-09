@@ -10,18 +10,14 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"MethodMayBeStatic", "unused"})
 public abstract class AbstractObjectWriter<T extends Record> implements ObjectWriter<T> {
 
-    private static final Pattern QUOTE = Pattern.compile("\"");
-
     @Override
-     public final FieldEvents write(T object, FieldEvents events) {
+    public final FieldEvents write(T object, FieldEvents events) {
         try {
             return doWrite(object, events);
         } finally {
             events.done();
         }
     }
-
-    protected abstract FieldEvents doWrite(T object, FieldEvents events);
 
     protected String value(String value) {
         String contents = value.indexOf('"') >= 0
@@ -57,4 +53,8 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
     protected String value(Duration value) {
         return value.toString();
     }
+
+    protected abstract FieldEvents doWrite(T object, FieldEvents events);
+
+    private static final Pattern QUOTE = Pattern.compile("\"");
 }

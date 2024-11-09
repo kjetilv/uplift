@@ -46,23 +46,6 @@ public abstract class AbstractBytesSource implements Source {
         return chomped;
     }
 
-    private void add(char chomped) {
-        try {
-            currentLexeme[currentLexemeIndex] = chomped;
-        } catch (ArrayIndexOutOfBoundsException ignore) {
-            expand();
-            currentLexeme[currentLexemeIndex] = chomped;
-        } finally {
-            currentLexemeIndex++;
-        }
-    }
-
-    private void expand() {
-        char[] biggerLexeme = new char[currentLexemeIndex * 2];
-        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, currentLexemeIndex);
-        currentLexeme = biggerLexeme;
-    }
-
     @Override
     public int line() {
         return progress.line();
@@ -91,6 +74,23 @@ public abstract class AbstractBytesSource implements Source {
     @Override
     public boolean done() {
         return next1 == 0;
+    }
+
+    private void add(char chomped) {
+        try {
+            currentLexeme[currentLexemeIndex] = chomped;
+        } catch (ArrayIndexOutOfBoundsException ignore) {
+            expand();
+            currentLexeme[currentLexemeIndex] = chomped;
+        } finally {
+            currentLexemeIndex++;
+        }
+    }
+
+    private void expand() {
+        char[] biggerLexeme = new char[currentLexemeIndex * 2];
+        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, currentLexemeIndex);
+        currentLexeme = biggerLexeme;
     }
 
     private int nextChar() {

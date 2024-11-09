@@ -14,13 +14,15 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        MyCallbacks myCallbacks = parse("""
-            {
-              "els": [1, 2, "a", "b"],
-              "foo": ["tip", true, [ 3, 4 ], []],
-              "bar": [{"zit": "quz"}, 4]
-            }
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                {
+                  "els": [1, 2, "a", "b"],
+                  "foo": ["tip", true, [ 3, 4 ], []],
+                  "bar": [{"zit": "quz"}, 4]
+                }
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
@@ -52,9 +54,11 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimple() {
-        MyCallbacks myCallbacks = parse("""
-            [1, 2, "a"]
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                [1, 2, "a"]
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
@@ -67,9 +71,11 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleLong() {
-        MyCallbacks myCallbacks = parse("""
-            [1, 2, 3, 4, 5, 6, 7, 8]
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                [1, 2, 3, 4, 5, 6, 7, 8]
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
@@ -87,9 +93,11 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest() {
-        MyCallbacks myCallbacks = parse("""
-            [1, 2, []]
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                [1, 2, []]
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
@@ -103,9 +111,11 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest2() {
-        MyCallbacks myCallbacks = parse("""
-            [1, 2, [3]]
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                [1, 2, [3]]
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
@@ -120,9 +130,11 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrObj() {
-        MyCallbacks myCallbacks = parse("""
-            [1, {}]
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                [1, {}]
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             arrayStarted
               number:1
@@ -141,28 +153,90 @@ public class JsonEventCallbacksTest {
         failOn("[1, ,{}],");
     }
 
-    private static void failOn(String source) {
-        assertThatThrownBy(() -> parse(source)).isInstanceOf(ParseException.class);
+    @Test
+    void objCommaFail() {
+        failOn("""
+            { "foo": "bar", }
+            """);
     }
 
-    private static MyCallbacks parse(String source) {
-        return (MyCallbacks) Events.parse(
-            callbacks(),
-            source
-        );
+    @Test
+    void objCommaFail2() {
+        failOn("""
+            { , "foo": "bar" }
+            """);
+    }
+
+    @Test
+    void objCommaFail3() {
+        failOn("""
+            { , }
+            """);
+    }
+
+    @Test
+    void arrCommaFail() {
+        failOn("""
+            [ 2, ]
+            """);
+    }
+
+    @Test
+    void arrCommaFail3() {
+        failOn("""
+            [ , ]
+            """);
+    }
+
+    @Test
+    void arrCommaFail2() {
+        failOn("""
+            [ , 2 ]
+            """);
+    }
+
+    @Test
+    void objFail() {
+        failOn("""
+            {
+            ,"foo": "bar"
+            }
+            """);
+        failOn("""
+            {
+            5: "bar"
+            }
+            """);
+        failOn("""
+            {
+            "foo": "bar", "zot"
+            }
+            """);
+        failOn("""
+            {
+            "foo": "bar", "zot":
+            }
+            """);
+        failOn("""
+            {
+            "foo": "bar", "zot": ,
+            }
+            """);
     }
 
     @Test
     void obj() {
-        MyCallbacks myCallbacks = parse("""
-            {
-              "foo": "bar",
-              "zot": 5,
-              "obj2": {
-                "oops": true
-              }
-            }
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                {
+                  "foo": "bar",
+                  "zot": 5,
+                  "obj2": {
+                    "oops": true
+                  }
+                }
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo string:bar
@@ -177,15 +251,17 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        MyCallbacks myCallbacks = parse("""
-            {
-              "foo": "bar",
-              "zot": 5,
-              "obj2": {
-                "oops": true
-              }
-            }
-            """);
+        MyCallbacks myCallbacks = parse(
+            //language=json
+            """
+                {
+                  "foo": "bar",
+                  "zot": 5,
+                  "obj2": {
+                    "oops": true
+                  }
+                }
+                """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
@@ -202,7 +278,7 @@ public class JsonEventCallbacksTest {
     @Test
     void parseMap() {
         MyCallbacks callbacks = (MyCallbacks) callbacks();
-        Events.parse(
+        JsonPull.parse(
             callbacks,
             //language=json
             """
@@ -215,6 +291,17 @@ public class JsonEventCallbacksTest {
                 }
                 """
         );
+    }
+
+    private static void failOn(String source) {
+        assertThatThrownBy(() ->
+            assertThat(parse(source)).isNull()
+        ).describedAs("Should not parse %s", source)
+            .isInstanceOf(ParseException.class);
+    }
+
+    private static MyCallbacks parse(String source) {
+        return (MyCallbacks) JsonPull.parse(callbacks(), source);
     }
 
     private static List<String> lines(String text) {

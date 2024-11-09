@@ -1,11 +1,12 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.events.EventHandler;
-import com.github.kjetilv.uplift.json.events.ValueEventHandler;
+import com.github.kjetilv.uplift.json.events.JsonPull;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
-import com.github.kjetilv.uplift.json.tokens.*;
+import com.github.kjetilv.uplift.json.tokens.CharSequenceSource;
+import com.github.kjetilv.uplift.json.tokens.InputStreamSource;
+import com.github.kjetilv.uplift.json.tokens.Source;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -46,14 +47,7 @@ final class JsonImpl implements Json {
 
     private static Object process(Source source) {
         AtomicReference<Object> reference = new AtomicReference<>();
-        EventHandler handler = new ValueEventHandler(new ValueCallbacks(reference::set));
-        Tokens tokens = new Tokens(source);
-        while (true) {
-            Token token = tokens.get();
-            if (token == null) {
-                return reference.get();
-            }
-            handler = handler.handle(token);
-        }
+        JsonPull.parse(source, new ValueCallbacks(reference::set));
+        return reference.get();
     }
 }

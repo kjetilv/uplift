@@ -22,17 +22,17 @@ public final class CharsSource extends AbstractBytesSource {
         }
 
         @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + reader + "]";
-        }
-
-        @Override
         public int getAsInt() {
             try {
                 return reader.read();
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + reader, e);
             }
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" + reader + "]";
         }
     }
 }

@@ -2,12 +2,6 @@ package com.github.kjetilv.uplift.json.io;
 
 public sealed interface Sink permits StreamSink, StringSink {
 
-    @FunctionalInterface
-    interface Mark {
-
-        boolean moved();
-    }
-
     default Sink accept(Object obj) {
         return accept(obj.toString());
     }
@@ -25,4 +19,10 @@ public sealed interface Sink permits StreamSink, StringSink {
     Mark mark();
 
     int length();
+
+    @FunctionalInterface
+    interface Mark {
+
+        boolean moved();
+    }
 }
