@@ -2,9 +2,14 @@ package com.github.kjetilv.uplift.json.io;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public record StreamSink(ByteArrayOutputStream baos) implements Sink {
+
+    public StreamSink {
+        Objects.requireNonNull(baos, "baos");
+    }
 
     @Override
     public Sink accept(String str) {
@@ -22,7 +27,7 @@ public record StreamSink(ByteArrayOutputStream baos) implements Sink {
         AtomicReference<Boolean> moved = new AtomicReference<>();
         return () ->
             moved.updateAndGet(alreadyMoved ->
-                getABoolean(alreadyMoved, initialLength));
+                truDat(alreadyMoved) || length() > initialLength);
     }
 
     @Override
@@ -30,11 +35,7 @@ public record StreamSink(ByteArrayOutputStream baos) implements Sink {
         return baos.size();
     }
 
-    private Boolean getABoolean(Boolean alreadyMoved, int initialLength) {
-        return truDat(alreadyMoved) || length() > initialLength ? true : null;
-    }
-
     private static boolean truDat(Boolean b) {
-        return b != null;
+        return b != null && b;
     }
 }

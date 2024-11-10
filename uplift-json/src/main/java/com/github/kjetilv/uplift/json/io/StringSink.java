@@ -1,8 +1,13 @@
 package com.github.kjetilv.uplift.json.io;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public record StringSink(StringBuilder sb) implements Sink {
+
+    public StringSink {
+        Objects.requireNonNull(sb, "sb");
+    }
 
     @Override
     public Sink accept(String str) {
