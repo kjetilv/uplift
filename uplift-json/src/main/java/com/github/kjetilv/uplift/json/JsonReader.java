@@ -1,12 +1,10 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json;
 
 import java.util.function.Consumer;
 
 public interface JsonReader<S, T extends Record> {
 
     T read(S source);
-
-//    Stream<T> readAll(S source);
 
     void read(S source, Consumer<T> set);
 }

@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JsonTest {
 
-    public static final Json JSON = IO.JSON;
+    public static final Json JSON = Json.INSTANCE;
 
     static void failedParse(
         String source,

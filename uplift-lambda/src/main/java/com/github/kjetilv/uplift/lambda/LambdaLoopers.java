@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.github.kjetilv.uplift.json.IO;
+import com.github.kjetilv.uplift.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ final class LambdaLoopers {
     private static HttpRequest toLambdaResponsePost(
         Invocation<? extends HttpRequest, HttpResponse<InputStream>> invocation
     ) {
-        String jsonResult = IO.JSON.write(invocation.toResult());
+        String jsonResult = Json.INSTANCE.write(invocation.toResult());
         return HttpRequest.newBuilder()
             .uri(responseRequestUri(invocation.request().uri(), invocation.id()))
             .POST(HttpRequest.BodyPublishers.ofString(jsonResult))

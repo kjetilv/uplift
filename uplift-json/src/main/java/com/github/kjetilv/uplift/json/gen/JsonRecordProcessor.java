@@ -1,6 +1,6 @@
-package com.github.kjetilv.uplift.json.annpro;
+package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.JsonRecord;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -20,9 +20,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.json.annpro.Gen.*;
+import static com.github.kjetilv.uplift.json.gen.Gen.*;
 
-@SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
+@SupportedAnnotationTypes({
+    "com.github.kjetilv.uplift.json.JsonRecord",
+    "com.github.kjetilv.uplift.json.Field",
+    "com.github.kjetilv.uplift.json.Singular"
+})
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
 

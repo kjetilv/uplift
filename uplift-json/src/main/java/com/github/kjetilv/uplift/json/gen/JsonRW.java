@@ -1,6 +1,10 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.gen;
 
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.JsonReader;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.events.*;
+import com.github.kjetilv.uplift.json.JsonWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

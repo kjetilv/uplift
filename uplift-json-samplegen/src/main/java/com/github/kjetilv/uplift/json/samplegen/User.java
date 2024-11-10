@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
-import com.github.kjetilv.uplift.json.anno.Singular;
+import com.github.kjetilv.uplift.json.JsonRecord;
+import com.github.kjetilv.uplift.json.Singular;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@JsonRecord(factoryClass = "Users", root = true)
+@JsonRecord(factoryClass = "Users")
 public record User(
     String name,
     Integer birthYear,

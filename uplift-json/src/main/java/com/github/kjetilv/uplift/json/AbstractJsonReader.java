@@ -1,7 +1,4 @@
-package com.github.kjetilv.uplift.json.events;
-
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.tokens.Source;
+package com.github.kjetilv.uplift.json;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,8 +22,7 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
 
     @Override
     public final void read(S source, Consumer<T> setter) {
-        Callbacks callbacks = this.callbacksInitializer.apply(setter);
-        JsonPull.parse(input(source), callbacks);
+        Json.INSTANCE.parse(input(source), callbacksInitializer.apply(setter));
     }
 
     protected abstract Source input(S source);

@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.json.events;
 
+import com.github.kjetilv.uplift.json.AbstractJsonReader;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.tokens.CharsSource;
-import com.github.kjetilv.uplift.json.tokens.Source;
+import com.github.kjetilv.uplift.json.Source;
 
 import java.io.Reader;
 import java.util.function.Consumer;

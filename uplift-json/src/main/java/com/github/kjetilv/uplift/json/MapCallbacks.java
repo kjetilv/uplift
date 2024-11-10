@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class MapCallbacks implements Callbacks {
+public final class MapCallbacks implements Callbacks {
 
     public static MapCallbacks create(Callbacks parent, Consumer<Map<String, Object>> onDone) {
         return new MapCallbacks(parent, onDone);

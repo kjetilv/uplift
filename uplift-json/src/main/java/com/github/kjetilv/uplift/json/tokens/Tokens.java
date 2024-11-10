@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
+import com.github.kjetilv.uplift.json.Source;
+
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;

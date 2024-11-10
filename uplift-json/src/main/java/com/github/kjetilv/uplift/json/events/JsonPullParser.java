@@ -8,15 +8,15 @@ import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 
-final class JsonPullParser {
+public final class JsonPullParser {
 
     private final Tokens tokens;
 
-    JsonPullParser(Tokens tokens) {
+    public JsonPullParser(Tokens tokens) {
         this.tokens = tokens;
     }
 
-    Callbacks pull(Callbacks callbacks) {
+    public Callbacks pull(Callbacks callbacks) {
         return processValue(tokens.get(), callbacks);
     }
 

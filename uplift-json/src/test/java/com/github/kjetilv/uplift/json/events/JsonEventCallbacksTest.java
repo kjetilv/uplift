@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.ParseException;
 import org.junit.jupiter.api.Test;
 
@@ -278,7 +279,7 @@ public class JsonEventCallbacksTest {
     @Test
     void parseMap() {
         MyCallbacks callbacks = (MyCallbacks) callbacks();
-        JsonPull.parse(
+        Json.INSTANCE.parse(
             callbacks,
             //language=json
             """
@@ -301,7 +302,7 @@ public class JsonEventCallbacksTest {
     }
 
     private static MyCallbacks parse(String source) {
-        return (MyCallbacks) JsonPull.parse(callbacks(), source);
+        return (MyCallbacks) Json.INSTANCE.parse(callbacks(), source);
     }
 
     private static List<String> lines(String text) {

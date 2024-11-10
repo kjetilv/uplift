@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.JsonRecord;
 
 import java.util.Map;
 
 /**
  * Record structure that can capture both 1.0 and 2.0 inputs.
  */
-@JsonRecord(root = true)
+@JsonRecord
 public record RequestIn(
     String version,
     String httpMethod,

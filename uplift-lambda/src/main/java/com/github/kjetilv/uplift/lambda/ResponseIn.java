@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.JsonRecord;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.io.InputStream;

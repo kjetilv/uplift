@@ -1,15 +1,13 @@
-package com.github.kjetilv.uplift.json.anno;
+package com.github.kjetilv.uplift.json;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.RECORD_COMPONENT)
 @Retention(RetentionPolicy.SOURCE)
-public @interface JsonRecord {
+public @interface Field {
 
-    boolean root() default true;
-
-    String factoryClass() default "";
+    String value();
 }

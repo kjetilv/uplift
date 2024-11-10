@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.NullCallbacks;
@@ -101,7 +101,6 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     protected void emitProperties(Callbacks callbacks) {
-
     }
 
     protected B builder() {

@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.gen;
 
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.time.Duration;

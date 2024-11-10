@@ -3,9 +3,9 @@ package com.github.kjetilv.uplift.json.ffm;
 import com.github.kjetilv.flopp.kernel.segments.LineSegments;
 import com.github.kjetilv.flopp.kernel.util.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.events.JsonPull;
+import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.tokens.IntsSource;
-import com.github.kjetilv.uplift.json.tokens.Source;
+import com.github.kjetilv.uplift.json.Source;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
 
-        Callbacks myCallbacks = JsonPull.parse(
+        Callbacks myCallbacks = Json.INSTANCE.parse(
             new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())), callbacks()
         );
         Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
@@ -69,7 +69,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         Source source = new IntsSource(new BytesSupplier(LineSegments.of(json).longSupplier()));
-        MyCallbacks myCallbacks = (MyCallbacks) JsonPull.parse(source, callbacks());
+        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(source, callbacks());
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo string:bar
@@ -94,7 +94,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         Source source = new IntsSource(new BytesSupplier(LineSegments.of(json).longSupplier()));
-        MyCallbacks myCallbacks = (MyCallbacks) JsonPull.parse(source, callbacks()
+        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(source, callbacks()
         );
         Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
@@ -122,7 +122,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         Source source = new IntsSource(new BytesSupplier(LineSegments.of(json).longSupplier()));
-        JsonPull.parse(source, callbacks);
+        Json.INSTANCE.parse(source, callbacks);
     }
 
     private static final Pattern WS = Pattern.compile("\\s+");

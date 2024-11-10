@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.annpro;
+package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.MapCallbacks;
 import com.github.kjetilv.uplift.json.MapWriter;
@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.kjetilv.uplift.json.annpro.Gen.*;
+import static com.github.kjetilv.uplift.json.gen.Gen.*;
 
 record RecordAttribute(
     String callbackEvent,

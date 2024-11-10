@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.tokens;
 
+import com.github.kjetilv.uplift.json.Source;
+
 import java.util.Objects;
 import java.util.function.IntSupplier;
 

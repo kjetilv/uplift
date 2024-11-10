@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.annpro;
+package com.github.kjetilv.uplift.json.gen;
 
 import javax.lang.model.element.RecordComponentElement;
 import java.math.BigDecimal;

@@ -1,10 +1,10 @@
-package com.github.kjetilv.uplift.json.annpro;
+package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.*;
-import com.github.kjetilv.uplift.json.anno.Field;
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
-import com.github.kjetilv.uplift.json.anno.Singular;
-import com.github.kjetilv.uplift.json.events.AbstractCallbacks;
+import com.github.kjetilv.uplift.json.Field;
+import com.github.kjetilv.uplift.json.JsonRecord;
+import com.github.kjetilv.uplift.json.Singular;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 
 import javax.annotation.processing.Generated;
 import javax.lang.model.element.*;
@@ -40,7 +40,7 @@ final class Gen {
                 "        " + name,
                 "    > {",
                 "",
-                "    public static com.github.kjetilv.uplift.json.JsonRW<",
+                "    public static com.github.kjetilv.uplift.json.gen.JsonRW<",
                 "        " + name,
                 "    > INSTANCE = new " + factoryClass(te) + "();",
                 "",

@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
+import com.github.kjetilv.uplift.json.JsonWriter;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
 import com.github.kjetilv.uplift.json.io.Sink;

@@ -13,7 +13,7 @@ public class ToughOneTest {
 
     @Test
     void sirParseALot() {
-        Map<?, ?> map = IO.JSON.jsonMap(
+        Map<?, ?> map = Json.INSTANCE.jsonMap(
             """
             {
               "isBase64Encoded": true,

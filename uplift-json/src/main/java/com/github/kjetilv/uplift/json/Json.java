@@ -74,6 +74,14 @@ public interface Json {
 
     void write(Object object, OutputStream outputStream);
 
+    Callbacks parse(Callbacks callbacks, String source);
+
+    Callbacks parse(Callbacks callbacks, InputStream source);
+
+    Callbacks parse(Callbacks callbacks, Reader source);
+
+    Callbacks parse(Source source, Callbacks callbacks);
+
     Json INSTANCE = new JsonImpl();
 
     Function<Object, String> OBJECT_2_STRING = INSTANCE::write;

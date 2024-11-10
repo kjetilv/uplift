@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.JsonRecord;
 
 import java.util.Map;
 
-@JsonRecord(root = true)
+@JsonRecord
 public record RequestOut(
     String version,
     String httpMethod,

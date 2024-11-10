@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json;
 
 public interface JsonWriter<S, T extends Record, O> {
 
