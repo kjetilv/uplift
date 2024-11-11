@@ -21,17 +21,17 @@ final class JsonImpl implements Json {
     }
 
     @Override
-    public Callbacks parse(Callbacks callbacks, String source) {
+    public Callbacks parse(String source, Callbacks callbacks) {
         return pull(new CharSequenceSource(source), callbacks);
     }
 
     @Override
-    public Callbacks parse(Callbacks callbacks, InputStream source) {
+    public Callbacks parse(InputStream source, Callbacks callbacks) {
         return pull(new InputStreamSource(source), callbacks);
     }
 
     @Override
-    public Callbacks parse(Callbacks callbacks, Reader source) {
+    public Callbacks parse(Reader source, Callbacks callbacks) {
         return pull(new CharsSource(source), callbacks);
     }
 

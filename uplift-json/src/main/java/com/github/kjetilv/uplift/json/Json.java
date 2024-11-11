@@ -4,24 +4,22 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.SequencedMap;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public interface Json {
 
-    default Map<?, ?> jsonMap(InputStream source) {
+    default SequencedMap<?, ?> jsonMap(InputStream source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(byte[] source) {
+    default SequencedMap<?, ?> jsonMap(byte[] source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(String source) {
+    default SequencedMap<?, ?> jsonMap(String source) {
         return asMap(source, read(source));
     }
 
@@ -74,31 +72,21 @@ public interface Json {
 
     void write(Object object, OutputStream outputStream);
 
-    Callbacks parse(Callbacks callbacks, String source);
+    Callbacks parse(String source, Callbacks callbacks);
 
-    Callbacks parse(Callbacks callbacks, InputStream source);
+    Callbacks parse(InputStream source, Callbacks callbacks);
 
-    Callbacks parse(Callbacks callbacks, Reader source);
+    Callbacks parse(Reader source, Callbacks callbacks);
 
     Callbacks parse(Source source, Callbacks callbacks);
 
     Json INSTANCE = new JsonImpl();
 
-    Function<Object, String> OBJECT_2_STRING = INSTANCE::write;
-
-    BiConsumer<Object, OutputStream> OBJECT_OUT = INSTANCE::write;
-
-    Function<String, Map<?, ?>> STRING_2_JSON_MAP = INSTANCE::jsonMap;
-
-    Function<InputStream, Map<?, ?>> BYTES_2_JSON_MAP = INSTANCE::jsonMap;
-
-    Function<String, List<?>> STRING_2_JSON_ARRAY = INSTANCE::jsonArray;
-
-    private static Map<?, ?> asMap(Object source, Object json) {
+    private static SequencedMap<?, ?> asMap(Object source, Object json) {
         if (json == null) {
-            return Collections.emptyMap();
+            return Collections.emptySortedMap();
         }
-        if (json instanceof Map<?, ?> map) {
+        if (json instanceof SequencedMap<?, ?> map) {
             return map;
         }
         throw new IllegalArgumentException("Not an object: " + source + " => " + json);

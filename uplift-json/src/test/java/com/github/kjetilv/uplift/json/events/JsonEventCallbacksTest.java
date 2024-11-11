@@ -280,8 +280,6 @@ public class JsonEventCallbacksTest {
     void parseMap() {
         MyCallbacks callbacks = (MyCallbacks) callbacks();
         Json.INSTANCE.parse(
-            callbacks,
-            //language=json
             """
                 {
                   "foo": "bar",
@@ -290,7 +288,8 @@ public class JsonEventCallbacksTest {
                     "oops": true
                   }
                 }
-                """
+                """, callbacks
+            //language=json
         );
     }
 
@@ -302,7 +301,7 @@ public class JsonEventCallbacksTest {
     }
 
     private static MyCallbacks parse(String source) {
-        return (MyCallbacks) Json.INSTANCE.parse(callbacks(), source);
+        return (MyCallbacks) Json.INSTANCE.parse(source, callbacks());
     }
 
     private static List<String> lines(String text) {
