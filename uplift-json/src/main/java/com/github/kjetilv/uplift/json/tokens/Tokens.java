@@ -73,10 +73,6 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         };
     }
 
-    private Token ws() {
-        return new Token(WHITESPACE, null, null, source.line(), source.column());
-    }
-
     private Token expectedTokenTail(
         char[] tail,
         TokenType type,
@@ -137,14 +133,18 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         return ws();
     }
 
-    private <T> T fail(String msg) {
-        throw new ReadException(msg, bringIt());
+    private Token ws() {
+        return new Token(WHITESPACE, null, null, source.line(), source.column());
     }
 
     private Token token(TokenType type, Object literal, String lexeme) {
         int line = source.line();
         int col = source.column() - lexeme.length();
         return new Token(type, lexeme, literal, line, col);
+    }
+
+    private <T> T fail(String msg) {
+        throw new ReadException(msg, bringIt());
     }
 
     static final String CANONICAL_TRUE = "true";
@@ -161,19 +161,21 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     private static final Pattern ESCAPED_QUOTE = Pattern.compile("\\\\\"");
 
-    private static Object number(String value) {
-        if (value.contains(".")) {
-            try {
-                return new BigDecimal(value);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to parse: " + value, e);
-            }
-        }
+    private static final BigDecimal TOO_LONG_UP = new BigDecimal(Long.MAX_VALUE).add(BigDecimal.ONE);
+
+    private static final BigDecimal TOO_LONG_DOWN = new BigDecimal(Long.MIN_VALUE).subtract(BigDecimal.ONE);
+
+    private static Number number(String value) {
         try {
-            return Long.parseLong(value);
+            BigDecimal dec = new BigDecimal(value);
+            return isLong(dec) ? dec.longValue() : dec;
         } catch (Exception e) {
-            throw new IllegalStateException("Not a number: " + value, e);
+            throw new IllegalArgumentException("Failed to parse: " + value, e);
         }
+    }
+
+    private static boolean isLong(BigDecimal dec) {
+        return dec.scale() == 0 && dec.compareTo(TOO_LONG_UP) < 0 && dec.compareTo(TOO_LONG_DOWN) > 0;
     }
 
     @Override

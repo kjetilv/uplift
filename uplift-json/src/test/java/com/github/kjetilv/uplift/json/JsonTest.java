@@ -214,7 +214,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Not a number: -");
+            assertThat(e.getMessage()).contains("Failed to parse: -");
         }
     }
 
@@ -227,7 +227,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Not a number: -");
+            assertThat(e.getMessage()).contains("Failed to parse: -");
         }
     }
 
@@ -240,7 +240,7 @@ class JsonTest {
                                                      }
                                                      """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Not a number: -");
+            assertThat(e.getMessage()).contains("Failed to parse: -");
         }
     }
 
