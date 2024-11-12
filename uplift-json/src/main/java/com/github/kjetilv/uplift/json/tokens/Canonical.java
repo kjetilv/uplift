@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.tokens;
 
 final class Canonical {
 
-    static String string(char c) {
+    static String string(int c) {
         return switch (c) {
             case ':' -> ":";
             case ',' -> ",";
@@ -10,7 +10,7 @@ final class Canonical {
             case '[' -> "[";
             case '}' -> "}";
             case ']' -> "]";
-            default -> String.valueOf(c);
+            default -> Character.toString(c);
         };
     }
 

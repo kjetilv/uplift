@@ -25,6 +25,11 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         return Stream.generate(this).takeWhile(Objects::nonNull);
     }
 
+    public boolean done() {
+        spoolWs();
+        return source.done();
+    }
+
     @Override
     public Token get() {
         return next();
@@ -127,14 +132,11 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private Token spoolWs() {
+        Token ws = new Token(WHITESPACE, null, null, source.line(), source.column());
         while (isWhitespace(source.peek())) {
             source.chomp();
         }
-        return ws();
-    }
-
-    private Token ws() {
-        return new Token(WHITESPACE, null, null, source.line(), source.column());
+        return ws;
     }
 
     private Token token(TokenType type, Object literal, String lexeme) {

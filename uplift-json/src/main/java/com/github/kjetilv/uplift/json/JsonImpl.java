@@ -5,7 +5,10 @@ import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
-import com.github.kjetilv.uplift.json.tokens.*;
+import com.github.kjetilv.uplift.json.tokens.CharSequenceSource;
+import com.github.kjetilv.uplift.json.tokens.CharsSource;
+import com.github.kjetilv.uplift.json.tokens.InputStreamSource;
+import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -22,22 +25,34 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(String source, Callbacks callbacks) {
-        return pull(new CharSequenceSource(source), callbacks);
+        return parse(new CharSequenceSource(source), callbacks);
     }
 
     @Override
     public Callbacks parse(InputStream source, Callbacks callbacks) {
-        return pull(new InputStreamSource(source), callbacks);
+        return parse(new InputStreamSource(source), callbacks);
     }
 
     @Override
     public Callbacks parse(Reader source, Callbacks callbacks) {
-        return pull(new CharsSource(source), callbacks);
+        return parse(new CharsSource(source), callbacks);
     }
 
     @Override
     public Callbacks parse(Source source, Callbacks callbacks) {
-        return pull(source, callbacks);
+        Tokens tokens = new Tokens(source);
+        JsonPullParser parser = new JsonPullParser(tokens);
+        if (callbacks.multi()) {
+            Callbacks walker = callbacks;
+            while (true) {
+                walker = parser.pull(walker);
+                if (tokens.done()) {
+                    return walker;
+                }
+                walker = walker.line();
+            }
+        }
+        return parser.pull(callbacks);
     }
 
     @Override
@@ -71,9 +86,4 @@ final class JsonImpl implements Json {
         return reference.get();
     }
 
-    private static Callbacks pull(Source source, Callbacks callbacks) {
-        Tokens tokens = new Tokens(source);
-        JsonPullParser parser = new JsonPullParser(tokens);
-        return parser.pull(callbacks);
-    }
 }

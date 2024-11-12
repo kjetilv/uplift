@@ -37,4 +37,12 @@ public interface Callbacks {
     default Callbacks arrayEnded() {
         return this;
     }
+
+    default boolean multi() {
+        return false;
+    }
+
+    default Callbacks line() {
+        return this;
+    }
 }
