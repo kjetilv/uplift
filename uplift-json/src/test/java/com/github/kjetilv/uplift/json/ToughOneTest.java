@@ -14,6 +14,7 @@ public class ToughOneTest {
     @Test
     void sirParseALot() {
         Map<?, ?> map = Json.INSTANCE.jsonMap(
+            //language=json
             """
             {
               "isBase64Encoded": true,
