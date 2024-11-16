@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.tokens;
 
 import java.util.Objects;
 
+import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 import static java.util.Objects.requireNonNull;
 
 public record Token(
@@ -22,7 +23,7 @@ public record Token(
 
     public boolean literalTruth() {
         if (type == TokenType.BOOL) {
-            return Objects.equals(lexeme, Tokens.CANONICAL_TRUE);
+            return lexeme.charAt(0) == 't';
         }
         throw new IllegalStateException(this + ": Not boolean");
     }
@@ -49,6 +50,24 @@ public record Token(
             return printed + ":";
         }
         return "";
+    }
+
+    public static final Token BEGIN_OBJECT_TOKEN = canonicalToken(BEGIN_OBJECT);
+
+    public static final Token COLON_TOKEN = canonicalToken(COLON);
+
+    public static final Token COMMA_TOKEN = canonicalToken(COMMA);
+
+    public static final Token END_OBJECT_TOKEN = canonicalToken(END_OBJECT);
+
+    public static final Token BEGIN_ARRAY_TOKEN = canonicalToken(BEGIN_ARRAY);
+
+    public static final Token END_ARRAY_TOKEN = canonicalToken(END_ARRAY);
+
+    public static final Token CANONICAL_WHITESPACE = canonicalToken(TokenType.WHITESPACE);
+
+    private static Token canonicalToken(TokenType type) {
+        return new Token(type, null, null, -1, -1);
     }
 
     @Override

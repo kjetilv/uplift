@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.github.kjetilv.uplift.json.tokens.Token.*;
 import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
@@ -45,7 +46,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
                 if (token == null) {
                     return null;
                 }
-                if (token.is(WHITESPACE)) {
+                if (token == CANONICAL_WHITESPACE) {
                     continue;
                 }
                 return token;
@@ -132,45 +133,21 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private Token spool() {
-        Token ws = new Token(WHITESPACE, null, null, source.line(), source.column());
         while (isWhitespace(source.peek())) {
             source.chomp();
         }
-        return ws;
+        return CANONICAL_WHITESPACE;
     }
 
     private Token token(TokenType type, Object literal, String lexeme) {
-        return token(type, literal, lexeme, null);
-    }
-
-    private Token token(TokenType type, Object literal, String lexeme, String flyweightLexeme) {
         int line = source.line();
-        String value = flyweightLexeme == null ? lexeme : flyweightLexeme;
-        int col = source.column() - (flyweightLexeme == null ? value.length() : 1);
-        return new Token(
-            type,
-            value,
-            literal,
-            line,
-            col
-        );
+        int col = source.column() - lexeme.length();
+        return new Token(type, lexeme, literal, line, col);
     }
 
     private <T> T fail(String msg) {
         throw new ReadException(msg, bringIt());
     }
-
-    public static final Token BEGIN_OBJECT_TOKEN = token(BEGIN_OBJECT);
-
-    public static final Token COLON_TOKEN = token(COLON);
-
-    public static final Token COMMA_TOKEN = token(COMMA);
-
-    public static final Token END_OBJECT_TOKEN = token(END_OBJECT);
-
-    public static final Token BEGIN_ARRAY_TOKEN = token(BEGIN_ARRAY);
-
-    public static final Token END_ARRAY_TOKEN = token(END_ARRAY);
 
     static final String CANONICAL_TRUE = "true";
 
@@ -189,10 +166,6 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     private static final String CANONICAL_LEFT_BRA = "[";
 
     private static final String CANONICAL_RIGHT_BRA = "]";
-
-    private static Token token(TokenType type) {
-        return new Token(type, null, null, -1, -1);
-    }
 
     private static Number number(String value) {
         try {

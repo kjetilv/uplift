@@ -36,8 +36,8 @@ public final class JsonPullParser {
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks c = callbacks.objectStarted();
         Token next = tokens.get();
-        while (next.not(END_OBJECT)) {
-            if (next.not(STRING)) {
+        while (next != Token.END_OBJECT_TOKEN) {
+            if (!next.is(STRING)) {
                 return fail(next, STRING, END_OBJECT);
             }
             Callbacks field = c.field(next.literalString());
@@ -51,7 +51,7 @@ public final class JsonPullParser {
     private Callbacks processArray(Callbacks callbacks) {
         Callbacks c = callbacks.arrayStarted();
         Token next = tokens.get();
-        while (next.not(END_ARRAY)) {
+        while (next != Token.END_ARRAY_TOKEN) {
             c = processValue(next, c);
             next = separatorOr(tokens.get(), END_ARRAY);
         }
@@ -59,11 +59,11 @@ public final class JsonPullParser {
     }
 
     private Token separatorOr(Token token, TokenType close) {
-        if (token.is(COMMA)) {
+        if (token == Token.COMMA_TOKEN) {
             Token nextToken = tokens.get();
-            return nextToken.not(close)
-                ? nextToken
-                : fail(nextToken, close);
+            return nextToken.is(close)
+                ? fail(nextToken, close)
+                : nextToken;
         }
         return token.is(close)
             ? token
@@ -72,7 +72,7 @@ public final class JsonPullParser {
 
     private void requireColon() {
         Token token = tokens.get();
-        if (token.not(COLON)) {
+        if (token != Token.COLON_TOKEN) {
             fail(token, COLON);
         }
     }
