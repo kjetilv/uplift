@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.ffm;
 
-import com.github.kjetilv.flopp.kernel.segments.LineSegments;
+import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.samplegen.User;
 import com.github.kjetilv.uplift.json.samplegen.Users;
@@ -62,7 +62,7 @@ public class MemorySegmentJsonReaderTest {
         Function<Consumer<User>, Callbacks> callbacks = Users.INSTANCE.callbacks();
         MemorySegmentJsonReader<User> reader = new MemorySegmentJsonReader<>(callbacks);
 
-        User user = reader.read(LineSegments.of(json, StandardCharsets.UTF_8));
+    User user = reader.read(LineSegments.of(json, StandardCharsets.UTF_8));
         System.out.println(user);
 
         String written = Users.INSTANCE.stringWriter().write(user);

@@ -40,7 +40,9 @@ public final class JsonPullParser {
             if (next.not(STRING)) {
                 return fail(next, STRING, END_OBJECT);
             }
-            c = processValue(skipColon(), c.field(next.literalString()));
+            Callbacks field = c.field(next.literalString());
+            requireColon();
+            c = processValue(tokens.get(), field);
             next = separatorOr(tokens.get(), END_OBJECT);
         }
         return c.objectEnded();
@@ -68,12 +70,11 @@ public final class JsonPullParser {
             : fail(token, COMMA, close);
     }
 
-    private Token skipColon() {
+    private void requireColon() {
         Token token = tokens.get();
-        return switch (token.type()) {
-            case COLON -> tokens.get();
-            case null, default -> fail(token, COLON);
-        };
+        if (token.not(COLON)) {
+            fail(token, COLON);
+        }
     }
 
     private <T> T fail(Token actual, TokenType... expected) {

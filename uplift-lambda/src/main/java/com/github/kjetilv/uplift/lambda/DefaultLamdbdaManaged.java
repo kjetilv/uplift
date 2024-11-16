@@ -22,18 +22,21 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final LambdaHandler handler;
 
-    private final ExecutorService lambdaExecutor;
+    private final ExecutorService executor;
+
+    private final HttpClient client;
 
     DefaultLamdbdaManaged(
         URI lambdaUri,
         LambdaClientSettings settings,
         LambdaHandler handler,
-        ExecutorService lambdaExecutor
+        ExecutorService executor
     ) {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        this.lambdaExecutor = requireNonNull(lambdaExecutor, "lambdaExecutor");
+        this.executor = requireNonNull(executor, "executor");
+        this.client = httpClient(this.executor, settings).build();
     }
 
     @Override
@@ -44,7 +47,7 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client =
-            http(lambdaExecutor, settings);
+            http(executor, settings);
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
             new HttpInvocationSource(
                 client,
@@ -61,20 +64,16 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     }
 
     @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + settings + "]";
+    public void close() {
+        client.close();
     }
 
-    private static Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(
+    private Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(
         Executor executor,
         LambdaClientSettings settings
     ) {
-        HttpClient.Builder builder = httpClient(executor, settings);
-        return request -> {
-            try (HttpClient build = builder.build()) {
-                return build.sendAsync(request, ofInputStream(), null);
-            }
-        };
+        return request ->
+            client.sendAsync(request, ofInputStream(), null);
     }
 
     private static HttpClient.Builder httpClient(Executor executor, LambdaClientSettings settings) {
@@ -85,5 +84,10 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
             builder.connectTimeout(settings.connectTimeout());
         }
         return builder;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + settings + "]";
     }
 }

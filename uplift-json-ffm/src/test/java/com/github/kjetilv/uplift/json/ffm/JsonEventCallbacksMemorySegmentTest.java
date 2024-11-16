@@ -1,17 +1,18 @@
 package com.github.kjetilv.uplift.json.ffm;
 
-import com.github.kjetilv.flopp.kernel.segments.LineSegments;
-import com.github.kjetilv.flopp.kernel.util.BytesSupplier;
+import com.github.kjetilv.flopp.kernel.LineSegments;
+import com.github.kjetilv.flopp.kernel.io.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.tokens.IntsSource;
 import com.github.kjetilv.uplift.json.Source;
-import org.assertj.core.api.Assertions;
+import com.github.kjetilv.uplift.json.tokens.IntsSource;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonEventCallbacksMemorySegmentTest {
 
@@ -28,7 +29,7 @@ public class JsonEventCallbacksMemorySegmentTest {
         Callbacks myCallbacks = Json.INSTANCE.parse(
             new IntsSource(new BytesSupplier(LineSegments.of(source).longSupplier())), callbacks()
         );
-        Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -70,7 +71,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             """;
         Source source = new IntsSource(new BytesSupplier(LineSegments.of(json).longSupplier()));
         MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(source, callbacks());
-        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo string:bar
               field:zot number:5
@@ -94,9 +95,8 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         Source source = new IntsSource(new BytesSupplier(LineSegments.of(json).longSupplier()));
-        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(source, callbacks()
-        );
-        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
+        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(source, callbacks());
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
                   field:foo string:bar

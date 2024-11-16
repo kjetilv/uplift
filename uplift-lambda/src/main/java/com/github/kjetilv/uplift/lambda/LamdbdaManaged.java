@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -7,7 +8,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings("unused")
-public interface LamdbdaManaged extends Runnable {
+public interface LamdbdaManaged extends Runnable, Closeable {
 
     static LamdbdaManaged create(
         URI uri,

@@ -3,6 +3,8 @@ dependencies {
     implementation(project(":uplift-json"))
     implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")
 
+    testAnnotationProcessor(project(":uplift-json"))
+
     testImplementation(project(":uplift-json-samplegen"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")

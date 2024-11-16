@@ -26,7 +26,9 @@ public final class Lambda {
         Duration responseTimeout,
         int parallellism
     ) {
-        managed(lambdaHandler, connectTimeout, responseTimeout, parallellism).run();
+        LamdbdaManaged managed =
+            managed(lambdaHandler, connectTimeout, responseTimeout, parallellism);
+        managed.run();
     }
 
     public static LamdbdaManaged managed(

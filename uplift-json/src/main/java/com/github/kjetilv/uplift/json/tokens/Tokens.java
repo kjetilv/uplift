@@ -26,7 +26,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     public boolean done() {
-        spoolWs();
+        spool();
         return source.done();
     }
 
@@ -62,18 +62,18 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     private Token scanToken() {
         return switch (source.chomp()) {
-            case '{' -> token(BEGIN_OBJECT, null, source.lexeme());
-            case ':' -> token(COLON, null, source.lexeme());
-            case ',' -> token(COMMA, null, source.lexeme());
-            case '}' -> token(END_OBJECT, null, source.lexeme());
-            case '[' -> token(BEGIN_ARRAY, null, source.lexeme());
-            case ']' -> token(END_ARRAY, null, source.lexeme());
-            case 't' -> expectedTokenTail(RUE, BOOL, true, CANONICAL_TRUE);
-            case 'f' -> expectedTokenTail(ALSE, BOOL, false, CANONICAL_FALSE);
-            case 'n' -> expectedTokenTail(ULL, NULL, null, CANONICAL_NULL);
+            case '{' -> BEGIN_OBJECT_TOKEN;
+            case ':' -> COLON_TOKEN;
+            case ',' -> COMMA_TOKEN;
+            case '}' -> END_OBJECT_TOKEN;
+            case '[' -> BEGIN_ARRAY_TOKEN;
+            case ']' -> END_ARRAY_TOKEN;
+            case 't' -> expectedTokenTail(_RUE, BOOL, true, CANONICAL_TRUE);
+            case 'f' -> expectedTokenTail(_ALSE, BOOL, false, CANONICAL_FALSE);
+            case 'n' -> expectedTokenTail(_ULL, NULL, null, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
-            case ' ', '\r', '\t', '\n' -> spoolWs();
+            case ' ', '\r', '\t', '\n' -> spool();
             default -> fail("Unrecognized character");
         };
     }
@@ -131,7 +131,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         return token(NUMBER, number(source.lexeme()), source.lexeme());
     }
 
-    private Token spoolWs() {
+    private Token spool() {
         Token ws = new Token(WHITESPACE, null, null, source.line(), source.column());
         while (isWhitespace(source.peek())) {
             source.chomp();
@@ -140,48 +140,71 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private Token token(TokenType type, Object literal, String lexeme) {
+        return token(type, literal, lexeme, null);
+    }
+
+    private Token token(TokenType type, Object literal, String lexeme, String flyweightLexeme) {
         int line = source.line();
-        int col = source.column() - lexeme.length();
-        return new Token(type, lexeme, literal, line, col);
+        String value = flyweightLexeme == null ? lexeme : flyweightLexeme;
+        int col = source.column() - (flyweightLexeme == null ? value.length() : 1);
+        return new Token(
+            type,
+            value,
+            literal,
+            line,
+            col
+        );
     }
 
     private <T> T fail(String msg) {
         throw new ReadException(msg, bringIt());
     }
 
+    public static final Token BEGIN_OBJECT_TOKEN = token(BEGIN_OBJECT);
+
+    public static final Token COLON_TOKEN = token(COLON);
+
+    public static final Token COMMA_TOKEN = token(COMMA);
+
+    public static final Token END_OBJECT_TOKEN = token(END_OBJECT);
+
+    public static final Token BEGIN_ARRAY_TOKEN = token(BEGIN_ARRAY);
+
+    public static final Token END_ARRAY_TOKEN = token(END_ARRAY);
+
     static final String CANONICAL_TRUE = "true";
 
     static final String CANONICAL_FALSE = "false";
 
-    private static final char[] RUE = "rue".toCharArray();
+    private static final char[] _RUE = "rue".toCharArray();
 
-    private static final char[] ALSE = "alse".toCharArray();
+    private static final char[] _ALSE = "alse".toCharArray();
 
-    private static final char[] ULL = "ull".toCharArray();
+    private static final char[] _ULL = "ull".toCharArray();
 
     private static final String CANONICAL_NULL = "null";
 
     private static final Pattern ESCAPED_QUOTE = Pattern.compile("\\\\\"");
 
-    private static final BigDecimal TOO_LONG_UP = new BigDecimal(Long.MAX_VALUE).add(BigDecimal.ONE);
+    private static final String CANONICAL_LEFT_BRA = "[";
 
-    private static final BigDecimal TOO_LONG_DOWN = new BigDecimal(Long.MIN_VALUE).subtract(BigDecimal.ONE);
+    private static final String CANONICAL_RIGHT_BRA = "]";
+
+    private static Token token(TokenType type) {
+        return new Token(type, null, null, -1, -1);
+    }
 
     private static Number number(String value) {
         try {
             BigDecimal dec = new BigDecimal(value);
-            return isLong(dec) ? dec.longValue() : dec;
+            return dec.scale() == 0 ? dec.longValue() : dec;
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse: " + value, e);
         }
     }
 
-    private static boolean isLong(BigDecimal dec) {
-        return dec.scale() == 0 && dec.compareTo(TOO_LONG_UP) < 0 && dec.compareTo(TOO_LONG_DOWN) > 0;
-    }
-
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + bringIt() + "]";
+        return getClass().getSimpleName() + CANONICAL_LEFT_BRA + bringIt() + CANONICAL_RIGHT_BRA;
     }
 }
