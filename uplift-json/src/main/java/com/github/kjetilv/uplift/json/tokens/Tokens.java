@@ -74,7 +74,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             case 'n' -> expectedTokenTail(_ULL, NULL, null, CANONICAL_NULL);
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
             case '"' -> string();
-            case ' ', '\r', '\t', '\n' -> spool();
+            case ' ', '\r', '\t', LN -> spool();
             default -> fail("Unrecognized character");
         };
     }
@@ -97,10 +97,10 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         boolean quoted = false;
         while (source.peek() != '"' && !source.done()) {
             char next = source.peek();
-            if (next == '\n') {
+            if (next == LN) {
                 fail("Line break in string: " + source.lexeme());
             }
-            if (next == '\\') {
+            if (next == QUOTE) {
                 quoted = true;
                 source.chomp();
             }
@@ -111,7 +111,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         }
         source.chomp();
         // Trim the surrounding quotes.
-        String substring = source.lexeme(true);
+        String substring = source.quotedLexeme();
         String literal = quoted
             ? ESCAPED_QUOTE.matcher(substring).replaceAll("\"")
             : substring;
@@ -166,6 +166,10 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     private static final String CANONICAL_LEFT_BRA = "[";
 
     private static final String CANONICAL_RIGHT_BRA = "]";
+
+    private static final char QUOTE = '\\';
+
+    private static final char LN = '\n';
 
     private static Number number(String value) {
         try {

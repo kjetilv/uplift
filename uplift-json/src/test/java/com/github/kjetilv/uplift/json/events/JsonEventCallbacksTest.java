@@ -297,7 +297,8 @@ public class JsonEventCallbacksTest {
         assertThatThrownBy(() ->
             assertThat(parse(source)).isNull()
         ).describedAs("Should not parse %s", source)
-            .isInstanceOf(ParseException.class);
+            .satisfies(e ->
+                assertThat(e.toString()).contains("ParseException"));
     }
 
     private static MyCallbacks parse(String source) {

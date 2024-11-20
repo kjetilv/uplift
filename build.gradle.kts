@@ -50,14 +50,14 @@ subprojects {
         publishing {
             repositories {
                 mavenLocal()
-//                maven {
-//                    name = "GitHubPackages"
-//                    url = uri("https://maven.pkg.github.com/kjetilv/uplift")
-//                    credentials {
-//                        username = resolveProperty("githubUser", "GITHUB_ACTOR")
-//                        password = resolveProperty("githubToken", "GITHUB_TOKEN")
-//                    }
-//                }
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/kjetilv/uplift")
+                    credentials {
+                        username = resolveProperty("githubUser", "GITHUB_ACTOR")
+                        password = resolveProperty("githubToken", "GITHUB_TOKEN")
+                    }
+                }
             }
 
             publications {

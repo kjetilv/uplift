@@ -6,8 +6,9 @@ import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
+import java.net.URI;
+import java.net.URL;
+import java.time.*;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     private String currentField;
 
     protected AbstractCallbacks(B builder, AbstractCallbacks<?, ?> parent, Consumer<T> onDone) {
-        this.builder = builder;
+        this.builder = Objects.requireNonNull(builder, "builder");
         this.parent = parent;
         this.onDone = Objects.requireNonNull(onDone, "onDone");
     }
@@ -68,7 +69,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
         }
         BiConsumer<B, String> consumer = strings.get(currentField);
         if (consumer != null) {
-            consumer.accept(builder, string);
+            build(consumer, string);
         }
         return this;
     }
@@ -77,7 +78,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     public final <N extends Number> Callbacks number(N number) {
         BiConsumer<B, Number> consumer = numberConsumer();
         if (consumer != null) {
-            consumer.accept(builder, number);
+            build(consumer, number);
         }
         return this;
     }
@@ -86,7 +87,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     public final Callbacks bool(boolean bool) {
         BiConsumer<B, Boolean> consumer = booleans.get(currentField);
         if (consumer != null) {
-            consumer.accept(builder, bool);
+            build(consumer, bool);
         }
         return this;
     }
@@ -132,7 +133,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     protected final void onCharacter(String name, BiConsumer<B, Character> set) {
         strings.put(
             name, (builder, string) ->
-                set.accept(builder, toChar(string))
+                build(set, toChar(string))
         );
     }
 
@@ -143,7 +144,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     protected final void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(
             name, (B builder, Double d) ->
-                set.accept(builder, d.floatValue())
+                build(set, d.floatValue())
         );
     }
 
@@ -154,7 +155,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     protected final void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(
             name, (B builder, Long l) ->
-                set.accept(builder, l.intValue())
+                build(set, l.intValue())
         );
     }
 
@@ -165,61 +166,112 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     protected final void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(
             name, (B builder, Long value) ->
-                set.accept(builder, BigInteger.valueOf(value))
+                build(set, BigInteger.valueOf(value))
         );
     }
 
     protected final void onUUID(String name, BiConsumer<B, UUID> set) {
         strings.put(
             name, (builder, str) ->
-                set.accept(builder, UUID.fromString(str))
+                build(set, UUID.fromString(str))
+        );
+    }
+
+    protected final void onURI(String name, BiConsumer<B, URI> set) {
+        strings.put(
+            name, (builder, str) ->
+                build(set, URI.create(str))
+        );
+    }
+
+    protected final void onURL(String name, BiConsumer<B, URL> set) {
+        strings.put(
+            name, (builder, str) -> {
+                try {
+                    build(set, URI.create(str).toURL());
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Not a URL: " + str, e);
+                }
+            }
         );
     }
 
     protected final void onDuration(String name, BiConsumer<B, Duration> set) {
         strings.put(
             name, (builder, str) ->
-                set.accept(builder, Duration.parse(str))
+                build(set, Duration.parse(str))
+        );
+    }
+
+    protected final void onLocalDateTime(String name, BiConsumer<B, LocalDateTime> set) {
+        strings.put(
+            name, (builder, str) ->
+                build(set, LocalDateTime.parse(str))
+        );
+    }
+
+    protected final void onLocalDate(String name, BiConsumer<B, LocalDate> set) {
+        strings.put(
+            name, (builder, str) ->
+                build(set, LocalDate.parse(str))
+        );
+    }
+
+    protected final void onOffsetDateTime(String name, BiConsumer<B, OffsetDateTime> set) {
+        strings.put(
+            name, (builder, str) ->
+                build(set, OffsetDateTime.parse(str))
         );
     }
 
     protected final void onUuid(String name, BiConsumer<B, Uuid> set) {
         strings.put(
             name, (builder, str) ->
-                set.accept(builder, Uuid.from(str))
+                build(set, Uuid.from(str))
         );
     }
 
     protected final void onInstant(String name, BiConsumer<B, Instant> set) {
         numbers.put(
             name, (builder, num) ->
-                set.accept(builder, Instant.ofEpochMilli(num.longValue()))
+                build(set, Instant.ofEpochMilli(num.longValue()))
         );
     }
 
     protected final void onBigDecimal(String name, BiConsumer<B, BigDecimal> set) {
         strings.put(
             name, (builder, string) ->
-                set.accept(builder, new BigDecimal(string))
+                build(set, new BigDecimal(string))
         );
         numbers.put(
             name, (builder, number) ->
-                set.accept(builder, BigDecimal.valueOf(number.doubleValue()))
+                build(set, BigDecimal.valueOf(number.doubleValue()))
         );
     }
 
     protected final void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(
             name, (B builder, Long l) ->
-                set.accept(builder, l.shortValue())
+                build(set, l.shortValue())
         );
     }
 
     protected final void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(
             name, (B builder, Long l) ->
-                set.accept(builder, l.byteValue())
+                build(set, l.byteValue())
         );
+    }
+
+    private <V, S extends V> void build(BiConsumer<B, V> consumer, S s) {
+        try {
+            consumer.accept(builder, s);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                this + ": Failed to set " + s + (s == null ? "" : " of " + s.getClass()),
+                e
+            );
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -245,5 +297,10 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
             return string.charAt(0);
         }
         throw new IllegalStateException("Not a char: `" + string + "`'");
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + builder + " -> " + parent + "]";
     }
 }

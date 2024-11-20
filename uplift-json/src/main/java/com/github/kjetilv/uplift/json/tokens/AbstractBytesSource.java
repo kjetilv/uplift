@@ -9,9 +9,9 @@ public abstract class AbstractBytesSource implements Source {
 
     private final Progress progress;
 
-    private int next1;
+    private char next1;
 
-    private int next2;
+    private char next2;
 
     @SuppressWarnings("StringBufferField")
     private char[] currentLexeme = new char[1024];
@@ -22,21 +22,25 @@ public abstract class AbstractBytesSource implements Source {
 
     public AbstractBytesSource(IntSupplier nextChar) {
         this.nextChar = Objects.requireNonNull(nextChar, "nextChar");
-        this.next1 = this.nextChar.getAsInt();
-        this.next2 = next1 > 0 ? this.nextChar.getAsInt() : 0;
+        this.next1 = (char) this.nextChar.getAsInt();
+        this.next2 = next1 > 0 ? (char) this.nextChar.getAsInt() : 0;
         this.progress = new Progress();
     }
 
     @Override
-    public String lexeme(boolean quoted) {
-        return quoted ? new String(currentLexeme, 1, currentLexemeIndex - 2)
-            : currentLexemeIndex == 1 ? Canonical.string(currentLexeme[0])
-                : new String(currentLexeme, 0, currentLexemeIndex);
+    public String lexeme() {
+        return currentLexemeIndex == 1 ? Canonical.string(currentLexeme[0])
+            : new String(currentLexeme, 0, currentLexemeIndex);
+    }
+
+    @Override
+    public String quotedLexeme() {
+        return new String(currentLexeme, 1, currentLexemeIndex - 2);
     }
 
     @Override
     public char chomp() {
-        char chomped = progress.chomped(toChar(next1));
+        char chomped = progress.chomped(next1);
         if (chomped == NULL_CHAR) {
             return NULL_CHAR;
         }
@@ -60,12 +64,12 @@ public abstract class AbstractBytesSource implements Source {
 
     @Override
     public char peek() {
-        return toChar(next1);
+        return next1;
     }
 
     @Override
     public char peekNext() {
-        return toChar(next2);
+        return next2;
     }
 
     @Override
@@ -95,23 +99,11 @@ public abstract class AbstractBytesSource implements Source {
         currentLexeme = biggerLexeme;
     }
 
-    private int nextChar() {
-        return this.nextChar.getAsInt();
+    private char nextChar() {
+        return (char) this.nextChar.getAsInt();
     }
 
     private static final char NULL_CHAR = '\0';
-
-    private static final double MAX = Character.MAX_VALUE;
-
-    private static char toChar(int returned) {
-        if (returned <= 0) {
-            return NULL_CHAR;
-        }
-        if (returned > MAX) {
-            throw new IllegalStateException("Invalid char: " + returned);
-        }
-        return (char) returned;
-    }
 
     private static String print(int c) {
         return switch (c) {

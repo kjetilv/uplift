@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.*;
-import com.github.kjetilv.uplift.json.Field;
-import com.github.kjetilv.uplift.json.JsonRecord;
-import com.github.kjetilv.uplift.json.Singular;
-import com.github.kjetilv.uplift.json.ObjectWriter;
 
 import javax.annotation.processing.Generated;
 import javax.lang.model.element.*;
@@ -292,7 +288,8 @@ final class Gen {
                 .map(el -> el.asType().toString());
         }
         Optional<? extends Element> generatedListType = rootElements.stream()
-            .filter(rootElement -> element.asType().toString().equals(listType(rootElement)))
+            .filter(rootElement ->
+                element.asType().toString().equals(listType(rootElement)))
             .findFirst();
         if (generatedListType.isPresent()) {
             return generatedListType
@@ -385,9 +382,11 @@ final class Gen {
         return Arrays.stream(BaseType.values())
             .filter(el ->
                 el.fieldTypes()
-                    .stream().anyMatch(fieldType -> listType(fieldType).equals(element.asType().toString())))
-            .flatMap(baseType -> baseType.fieldTypes()
-                .stream())
+                    .stream().anyMatch(fieldType ->
+                        listType(fieldType).equals(element.asType().toString())))
+            .flatMap(baseType ->
+                baseType.fieldTypes()
+                    .stream())
             .findFirst();
     }
 

@@ -3,8 +3,7 @@ package com.github.kjetilv.uplift.json.gen;
 import javax.lang.model.element.RecordComponentElement;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +22,19 @@ enum BaseType {
     BIG_DECIMAL(BigDecimal.class, Number.class),
     BIG_INTEGER(BigInteger.class, Number.class),
     UUID(java.util.UUID.class, String.class),
+    URI(java.net.URI.class, String.class),
+    URL(java.net.URL.class, String.class),
     Uuid(com.github.kjetilv.uplift.uuid.Uuid.class, String.class),
     INSTANT(Instant.class, Number.class),
     DURATION(Duration.class, String.class),
+    LOCALDATE(LocalDate.class, String.class),
+    LOCALDATETIME(LocalDateTime.class, String.class),
+    OFFSETDATETIME(OffsetDateTime.class, String.class),
     MAP(Map.class, Map.class);
 
     static BaseType of(RecordComponentElement typeElement) {
         try {
-            return pick(
-                typeElement, baseType ->
-                    isFor(baseType, typeElement)
-            );
+            return pick(typeElement, baseType -> isFor(baseType, typeElement));
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for element " + typeElement, e);
         }
@@ -41,10 +42,7 @@ enum BaseType {
 
     static BaseType of(String name) {
         try {
-            return pick(
-                name, baseType ->
-                    isFor(baseType, name)
-            );
+            return pick(name, baseType -> isFor(baseType, name));
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for type named " + name, e);
         }

@@ -2,11 +2,9 @@ package com.github.kjetilv.uplift.json;
 
 public interface Source {
 
-    default String lexeme() {
-        return lexeme(false);
-    }
+    String lexeme();
 
-    String lexeme(boolean quoted);
+    String quotedLexeme();
 
     char chomp();
 

@@ -64,8 +64,7 @@ record RecordAttribute(
         boolean isEnum = isType(element, enums) || isListType(element, enums);
         boolean isRoot = isType(element, roots) || isListType(element, roots);
         boolean isMap = element.asType().toString().startsWith(Map.class.getName());
-        boolean convert = !(isMap || isRoot) &&
-                          (isEnum || listType.map(BaseType::of)
+        boolean convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
                               .orElseGet(() -> BaseType.of(element))
                               .requiresConversion());
         String name = isRoot ? "object"

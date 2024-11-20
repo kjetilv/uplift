@@ -4,8 +4,9 @@ import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.net.URI;
+import java.net.URL;
+import java.time.*;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -40,12 +41,32 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
         return value.name();
     }
 
+    protected String value(LocalDate value) {
+        return value.toString();
+    }
+
+    protected String value(LocalDateTime value) {
+        return value.toString();
+    }
+
+    protected String value(OffsetDateTime value) {
+        return value.toString();
+    }
+
     protected String value(UUID value) {
         return value.toString();
     }
 
     protected String value(Uuid value) {
         return value.digest();
+    }
+
+    protected String value(URI value) {
+        return value.toASCIIString();
+    }
+
+    protected String value(URL value) {
+        return value.toExternalForm();
     }
 
     protected long value(Instant value) {
