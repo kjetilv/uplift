@@ -3,13 +3,13 @@ rootProject.name = "uplift"
 pluginManagement {
     repositories {
         mavenLocal()
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
+        mavenCentral()
         maven {
             url = uri("https://maven.pkg.github.com/kjetilv/uplift")
         }
-        mavenCentral()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
         gradlePluginPortal()
     }
 }
@@ -22,6 +22,7 @@ include("uplift-gradle-plugins")
 include("uplift-json")
 include("uplift-json-ffm")
 include("uplift-json-samplegen")
+include("uplift-json-jmh")
 include("uplift-kernel")
 include("uplift-lambda")
 include("uplift-uuid")

@@ -2,15 +2,20 @@ package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.process.ExecOperations
 import java.nio.file.Path
+import javax.inject.Inject
 
 internal fun DefaultTask.docker(cwd: Path, dockerCmd: String) =
     project.resolveProperty("docker.binary", defValue = "docker").let { docker ->
         exe(cwd, "$docker $dockerCmd")
     }
 
+@Inject
+lateinit var exec: ExecOperations
+
 internal fun DefaultTask.exe(cwd: Path, cmd: String) =
-    project.exec { spec ->
+    exec.exec { spec ->
         spec.run {
             workingDir = cwd.toFile()
             commandLine = cmd.toCommand().also {

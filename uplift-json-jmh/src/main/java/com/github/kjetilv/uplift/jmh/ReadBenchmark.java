@@ -6,9 +6,7 @@ import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.ffm.MemorySegmentJsonReader;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Threads;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,11 +16,17 @@ import java.util.Objects;
 
 public class ReadBenchmark {
 
-    @Fork(value = 0, warmups = 2)
-    @Threads(8)
+    @Fork(value = 2, warmups = 2)
+//    @Threads(8)
     @Benchmark
     public Tweet readTweetUplift() {
         return reader.read(lineSegment);
+    }
+
+    public static void main(String[] args)  {
+        for (int i = 0; i < 1_000_000; i++) {
+            reader.read(lineSegment);
+        }
     }
 
     @Benchmark
@@ -41,7 +45,6 @@ public class ReadBenchmark {
     private static LineSegment lineSegment;
 
     private static MemorySegmentJsonReader<Tweet> reader;
-
 
     static {
         try (

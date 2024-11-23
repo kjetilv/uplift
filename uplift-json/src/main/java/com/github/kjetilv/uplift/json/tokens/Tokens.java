@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.tokens.Token.*;
@@ -41,18 +40,14 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             if (source.done()) {
                 return null;
             }
-            try {
-                Token token = scanToken();
-                if (token == null) {
-                    return null;
-                }
-                if (token == CANONICAL_WHITESPACE) {
-                    continue;
-                }
-                return token;
-            } finally {
-                source.reset();
+            Token token = scanToken();
+            if (token == null) {
+                return null;
             }
+            if (token == CANONICAL_WHITESPACE) {
+                continue;
+            }
+            return token;
         }
     }
 
@@ -62,6 +57,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     }
 
     private Token scanToken() {
+        source.reset();
         return switch (source.chomp()) {
             case '{' -> BEGIN_OBJECT_TOKEN;
             case ':' -> COLON_TOKEN;
@@ -113,7 +109,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         // Trim the surrounding quotes.
         String substring = source.quotedLexeme();
         String literal = quoted
-            ? ESCAPED_QUOTE.matcher(substring).replaceAll("\"")
+            ? Strings.unquote(substring)
             : substring;
         return token(STRING, literal, source.lexeme());
     }
@@ -160,8 +156,6 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
     private static final char[] _ULL = "ull".toCharArray();
 
     private static final String CANONICAL_NULL = "null";
-
-    private static final Pattern ESCAPED_QUOTE = Pattern.compile("\\\\\"");
 
     private static final String CANONICAL_LEFT_BRA = "[";
 

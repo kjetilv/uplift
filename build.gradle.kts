@@ -14,7 +14,14 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        gradlePluginPortal()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/kjetilv/uplift")
+            credentials {
+                username = resolveProperty("githubUser", "GITHUB_ACTOR")
+                password = resolveProperty("githubToken", "GITHUB_TOKEN")
+            }
+        }
     }
 
     java {
@@ -35,7 +42,19 @@ subprojects {
         }
     }
 
-    if (project.name != "uplift-gradle-plugins") {
+    if (project.name in listOf(
+            "uplift-flogs",
+            "uplift-uuid",
+            "uplift-s3",
+            "uplift-lambda",
+            "uplift-flambda",
+            "uplift-json",
+            "uplift-json-ffm",
+            "uplift-json-kernel",
+            "uplift-gradle-plugins"
+        )
+    ) {
+        logger.info("Configuring ${project.name} for publishing")
 
         java {
             toolchain {
@@ -70,10 +89,9 @@ subprojects {
                         licenses {
                             license {
                                 name.set("GNU General Public License v3.0")
-                                url.set("https://github.com/kjetilv/uplift/blob/main/LICENSE")
+                                url.set("https://raw.githubusercontent.com/kjetilv/uplift/refs/heads/main/LICENSE")
                             }
                         }
-
                         scm {
                             connection.set("scm:git:https://github.com/kjetilv/uplift")
                             developerConnection.set("scm:git:https://github.com/kjetilv/uplift")

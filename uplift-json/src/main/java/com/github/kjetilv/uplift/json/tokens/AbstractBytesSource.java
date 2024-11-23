@@ -41,9 +41,6 @@ public abstract class AbstractBytesSource implements Source {
     @Override
     public char chomp() {
         char chomped = progress.chomped(next1);
-        if (chomped == NULL_CHAR) {
-            return NULL_CHAR;
-        }
         add(chomped);
         next1 = next2;
         if (next1 > 0) {
@@ -102,8 +99,6 @@ public abstract class AbstractBytesSource implements Source {
     private char nextChar() {
         return (char) this.nextChar.getAsInt();
     }
-
-    private static final char NULL_CHAR = '\0';
 
     private static String print(int c) {
         return switch (c) {
