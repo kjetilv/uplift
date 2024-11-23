@@ -32,13 +32,10 @@ subprojects {
         sourceCompatibility = JavaVersion.VERSION_23
         targetCompatibility = JavaVersion.VERSION_23
     }
+
     tasks {
-        withType<JavaCompile> {
-        }
         withType<Test> {
             useJUnitPlatform()
-        }
-        withType<JavaExec> {
         }
     }
 

@@ -4,10 +4,12 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
+import javax.inject.Inject
 import kotlin.io.path.toPath
 
 @CacheableTask
@@ -16,6 +18,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     init {
         group = "uplift"
     }
+
+    @Inject
+    lateinit var exec: ExecOperations
 
     @get:Input
     abstract val identifier: Property<String>
