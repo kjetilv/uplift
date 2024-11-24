@@ -7,11 +7,7 @@ import java.util.function.IntSupplier;
 public final class CharSequenceSource extends AbstractBytesSource {
 
     public CharSequenceSource(CharSequence sequence) {
-        super(reader(sequence));
-    }
-
-    private static IntSupplier reader(CharSequence sequence) {
-        return new CharSeq(sequence);
+        super(new CharSeq(Objects.requireNonNull(sequence, "sequence")));
     }
 
     private static final class CharSeq implements IntSupplier {

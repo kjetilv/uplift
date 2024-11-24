@@ -49,7 +49,7 @@ final class Gen {
                 "    }",
                 "",
                 "    @Override",
-                "    public " + packageEl(te) + "." + callbacksClassPlain(te) + " callbacks(",
+                "    public " + Callbacks.class.getName() + " callbacks(",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
                 "        return " + packageEl(te) + "." + callbacksClassPlain(te) + ".create(onDone);",
@@ -224,38 +224,54 @@ final class Gen {
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time() + "\"",
                 ")",
-                "final class " + callbacksClassPlain(typeElement),
-                "    extends " + AbstractCallbacks.class.getName() + "<",
+                "final class " + callbacksClassPlain(typeElement) + " {",
+                "",
+                "    static " + PresetCallbacks.class.getName() + "<",
                 "        " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ",",
                 "        " + name,
-                "    > {",
-                "",
-                "    static " + callbacksClassPlain(typeElement) + " create(",
+                "    > create(",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
-                "    static " + callbacksClassPlain(typeElement) + " create(",
-                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent,",
+                "    static " + PresetCallbacks.class.getName() + "<",
+                "        " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ",",
+                "        " + name,
+                "    > create(",
+                "        " + Callbacks.class.getName() + " parent, ",
                 "        " + Consumer.class.getName() + "<" + name + "> onDone",
                 "    ) {",
-                "        return new " + packageEl(typeElement) + "." + callbacksClassPlain(typeElement) + "(parent, onDone);",
-                "    }",
-                "",
-                "    " + callbacksClassPlain(typeElement) + "(",
-                "        " + AbstractCallbacks.class.getName() + "<?, ?> parent, ",
-                "        " + Consumer.class.getName() + "<" + name + "> onDone",
-                "    ) {",
-                "        super(" + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ".create(), parent, onDone);"
+                "        return new " + PresetCallbacks.class.getName() + "<>(",
+                "            " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ".create(),",
+                "            parent,",
+                "            PRESETS.getNumbers(),",
+                "            PRESETS.getStrings(),",
+                "            PRESETS.getBooleans(),",
+                "            PRESETS.getObjects(),",
+                "            onDone",
+                "        );",
+                "    }"
             );
+            write(bw, "");
+            write(
+                bw,
+                "    private static final " + PresetCallbacksInitializer.class.getName() + "<",
+                "            " + builderClassPlain(typeElement) + ", ",
+                "            " + name,
+                "        > PRESETS;"
+            );
+            write(bw, "");
+            write(bw, "    static {");
+            write(bw, "        PRESETS = new " + PresetCallbacksInitializer.class.getName() + "<>();");
             write(
                 bw, typeElement.getRecordComponents()
                     .stream()
                     .filter(recordComponentElement ->
                         recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
                     .map(element ->
-                        "        " + RecordAttribute.create(element, roots, enums).callbackHandler(typeElement) + ";"
+                        "        PRESETS." + RecordAttribute.create(element, roots, enums)
+                            .callbackHandler(typeElement) + ";"
                     )
                     .toList()
             );

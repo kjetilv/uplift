@@ -9,7 +9,7 @@ public class NullCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks field(Token token) {
+    public Callbacks field(Token.Field token) {
         return this;
     }
 

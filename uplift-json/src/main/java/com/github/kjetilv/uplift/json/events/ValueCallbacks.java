@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.ListCallbacks;
 import com.github.kjetilv.uplift.json.MapCallbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;
 
@@ -25,8 +26,8 @@ public final class ValueCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks string(String string) {
-        onDone.accept(string);
+    public Callbacks string(Token.String string) {
+        onDone.accept(string.value());
         return this;
     }
 
@@ -43,8 +44,8 @@ public final class ValueCallbacks implements Callbacks {
     }
 
     @Override
-    public <N extends Number> Callbacks number(N number) {
-        onDone.accept(number);
+    public Callbacks number(Token.Number number) {
+        onDone.accept(number.number());
         return this;
     }
 

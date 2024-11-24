@@ -19,6 +19,10 @@ public interface JsonRW<T extends Record> {
         return new StringJsonReader<>(callbacks());
     }
 
+    default JsonReader<byte[], T> bytesReader() {
+        return new BytesJsonReader<>(callbacks());
+    }
+
     default JsonReader<InputStream, T> streamReader() {
         return new InputStreamJsonReader<>(callbacks());
     }

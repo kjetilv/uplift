@@ -5,10 +5,7 @@ import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
-import com.github.kjetilv.uplift.json.tokens.CharSequenceSource;
-import com.github.kjetilv.uplift.json.tokens.CharsSource;
-import com.github.kjetilv.uplift.json.tokens.InputStreamSource;
-import com.github.kjetilv.uplift.json.tokens.Tokens;
+import com.github.kjetilv.uplift.json.tokens.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -40,13 +37,13 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(Source source, Callbacks callbacks) {
-        Tokens tokens = new Tokens(source).callbacks(callbacks);
+        Tokens tokens = new Tokens(source);
         JsonPullParser parser = new JsonPullParser(tokens);
         if (callbacks.multi()) {
             Callbacks walker = callbacks;
             while (true) {
                 walker = parser.pull(walker);
-                if (tokens.done()) {
+                if (parser.done()) {
                     return walker;
                 }
                 walker = walker.line();

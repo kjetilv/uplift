@@ -15,7 +15,7 @@ public interface Json {
         return asMap(source, read(source));
     }
 
-    default SequencedMap<?, ?> jsonMap(byte[] source) {
+    default SequencedMap<?, ?> jsonMap(char[] source) {
         return asMap(source, read(source));
     }
 
@@ -31,8 +31,8 @@ public interface Json {
         return asList(source, read(source));
     }
 
-    default Object read(byte[] bytes) {
-        return read(new String(bytes, StandardCharsets.UTF_8));
+    default Object read(char[] bytes) {
+        return read(new String(bytes));
     }
 
     default byte[] writeBytes(Object object) {

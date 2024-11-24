@@ -38,8 +38,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks field(Token token) {
-        return add("field:" + token.literalString());
+    public MyCallbacks field(Token.Field token) {
+        return add("field:" + token.value());
     }
 
     @Override
@@ -53,13 +53,13 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks string(String string) {
-        return add("string:" + string);
+    public MyCallbacks string(Token.String string) {
+        return add("string:" + string.value());
     }
 
     @Override
-    public MyCallbacks number(Number number) {
-        return add("number:" + number);
+    public MyCallbacks number(Token.Number number) {
+        return add("number:" + number.number());
     }
 
     @Override

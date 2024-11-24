@@ -1,14 +1,14 @@
 package com.github.kjetilv.uplift.json.events;
 
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
 
 final class MyCallbacks implements Callbacks {
 
@@ -41,8 +41,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks field(Token token) {
-        return add("field:" + token.literalString());
+    public MyCallbacks field(Token.Field token) {
+        return add("field:" + token.value());
     }
 
     @Override
@@ -56,13 +56,13 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks string(String string) {
-        return add("string:" + string);
+    public MyCallbacks string(Token.String string) {
+        return add("string:" + string.value());
     }
 
     @Override
-    public MyCallbacks number(Number number) {
-        return add("number:" + number);
+    public MyCallbacks number(Token.Number number) {
+        return add("number:" + number.number());
     }
 
     @Override
@@ -92,6 +92,6 @@ final class MyCallbacks implements Callbacks {
 
     @Override
     public String toString() {
-        return String.join("\n", stuff);
+        return java.lang.String.join("\n", stuff);
     }
 }

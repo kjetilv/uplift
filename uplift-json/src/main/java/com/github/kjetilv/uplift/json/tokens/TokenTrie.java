@@ -13,11 +13,11 @@ public class TokenTrie {
 
     private final Entry[] cached;
 
-    public TokenTrie(Collection<Token> tokens) {
+    public TokenTrie(Collection<Token.String> tokens) {
         this.index = 0;
-        Collection<Token> ts = new ArrayList<>(tokens);
-        this.lower = ts.stream().mapToInt(token -> token.charAt(index)).min().orElseThrow();
-        int higher = ts.stream().mapToInt(token -> token.charAt(index)).min().orElseThrow();
+        Collection<Token.String> ts = new ArrayList<>(tokens);
+        this.lower = ts.stream().mapToInt(token -> token.chars()[index]).min().orElseThrow();
+        int higher = ts.stream().mapToInt(token -> token.chars()[index]).min().orElseThrow();
         int entryCount = higher - lower + 1;
         this.cached = new Entry[entryCount];
 
@@ -26,5 +26,5 @@ public class TokenTrie {
         }
     }
 
-    private record Entry(int c, Token hit, TokenTrie trie) {}
+    private record Entry(int c, Token.String hit, TokenTrie trie) {}
 }

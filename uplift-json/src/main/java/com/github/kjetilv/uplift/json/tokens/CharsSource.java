@@ -1,16 +1,13 @@
 package com.github.kjetilv.uplift.json.tokens;
 
 import java.io.Reader;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 
 public final class CharsSource extends AbstractBytesSource {
 
     public CharsSource(Reader reader) {
-        super(reader(reader));
-    }
-
-    private static IntSupplier reader(Reader reader) {
-        return new Chars(reader);
+        super(new Chars(Objects.requireNonNull(reader, "reader")));
     }
 
     private static final class Chars implements IntSupplier {

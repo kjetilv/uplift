@@ -2,12 +2,11 @@ package com.github.kjetilv.uplift.json.tokens;
 
 import com.github.kjetilv.uplift.json.Source;
 
-import java.util.Objects;
 import java.util.function.IntSupplier;
 
-public abstract class AbstractBytesSource implements Source {
+import static java.lang.Character.isDigit;
 
-    private final Progress progress;
+public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     private char next1;
 
@@ -21,52 +20,124 @@ public abstract class AbstractBytesSource implements Source {
     private final IntSupplier nextChar;
 
     public AbstractBytesSource(IntSupplier nextChar) {
-        this.nextChar = Objects.requireNonNull(nextChar, "nextChar");
-        this.next1 = (char) this.nextChar.getAsInt();
-        this.next2 = next1 > 0 ? (char) this.nextChar.getAsInt() : 0;
-        this.progress = new Progress();
+        this.nextChar = nextChar;
+        this.next1 = nextChar();
+        this.next2 = next1 > 0 ? nextChar() : 0;
     }
 
     @Override
-    public String lexeme() {
-        return currentLexemeIndex == 1 ? Canonical.string(currentLexeme[0])
-            : new String(currentLexeme, 0, currentLexemeIndex);
+    public void spoolField() {
+        reset();
+        while (true) {
+            switch (peek()) {
+                case '"' -> {
+                    skip();
+                    return;
+                }
+                case 0 -> fail("Unterminated field");
+                case '\n' -> fail("Line break in field name: " + new String(lexeme()));
+                default -> chomp();
+            }
+        }
     }
 
     @Override
-    public String quotedLexeme() {
-        return new String(currentLexeme, 1, currentLexemeIndex - 2);
+    public void spoolString() {
+        reset();
+        boolean quoted = false;
+        while (true) {
+            char c = peek();
+            switch (c) {
+                case '"' -> {
+                    if (quoted) {
+                        chomp();
+                        quoted = false;
+                    } else {
+                        skip();
+                        return;
+                    }
+                }
+                case '\\' -> {
+                    if (quoted) {
+                        chomp();
+                        quoted = false;
+                    } else {
+                        skip();
+                        quoted = true;
+                    }
+                }
+                case 0 -> fail("Unterminated string");
+                case '\n' -> fail("Line break in string: " + new String(lexeme()));
+                default -> {
+                    quoted = false;
+                    chomp();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void spoolNumber() {
+        while (digital(peek())) {
+            chomp();
+        }
+        // Look for a fractional part.
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the "."
+            do {
+                chomp();
+            } while (isDigit(peek()));
+        }
+    }
+
+    @Override
+    public char[] lexeme() {
+        if (currentLexemeIndex == 1) {
+            return Canonical.chars(currentLexeme[currentLexemeIndex - 1]);
+        }
+        char[] sub = new char[currentLexemeIndex];
+        System.arraycopy(currentLexeme, 0, sub, 0, currentLexemeIndex);
+        return sub;
+    }
+
+    @Override
+    public Loan loanLexeme() {
+        return this;
+    }
+
+    @Override
+    public void skip() {
+        advance();
     }
 
     @Override
     public char chomp() {
-        char chomped = progress.chomped(next1);
-        add(chomped);
-        next1 = next2;
-        if (next1 > 0) {
-            next2 = nextChar();
-        }
-        return chomped;
+        char c = next1;
+        add(c);
+        advance();
+        return c;
     }
 
     @Override
-    public void skip(int chars) {
-        for (int i = 0; i < chars - 3; i++) {
-            nextChar();
-        }
+    public void skip5(char c0, char c1, char c2, char c3) {
+        assert next1 == c0 : next1 + "!=" + c0;
+        assert next2 == c1 : next2 + "!=" + c1;
+        int next3 = this.nextChar.getAsInt();
+        assert next3 == c2 : next3 + "!=" + c2;
+        int next4 = this.nextChar.getAsInt();
+        assert next4 == c3 : next4 + "!=" + c3;
+        next1 = nextChar();
         next2 = nextChar();
-        next1 = next2;
+    }
+
+    @Override
+    public void skip4(char c0, char c1, char c2) {
+        assert next1 == c0 : next1 + "!=" + c0;
+        assert next2 == c1 : next2 + "!=" + c1;
+        int next3 = this.nextChar.getAsInt();
+        assert next3 == c2 : next3 + "!=" + c2;
+        next1 = nextChar();
         next2 = nextChar();
-    }
-
-    @Override
-    public int line() {
-        return progress.line();
-    }
-
-    @Override
-    public int column() {
-        return progress.column();
     }
 
     @Override
@@ -86,7 +157,34 @@ public abstract class AbstractBytesSource implements Source {
 
     @Override
     public boolean done() {
-        return next1 == 0;
+        while (true) {
+            if (next1 == 0) {
+                return true;
+            }
+            if (!Character.isWhitespace(next1)) {
+                return false;
+            }
+            advance();
+        }
+    }
+
+    @Override
+    public char[] loaned() {
+        return currentLexeme;
+    }
+
+    @Override
+    public int length() {
+        return currentLexemeIndex;
+    }
+
+    private boolean digital(char peek) {
+        return peek == '.' || isDigit(peek);
+    }
+
+    private void advance() {
+        next1 = next2;
+        next2 = nextChar();
     }
 
     private void add(char chomped) {
@@ -110,18 +208,34 @@ public abstract class AbstractBytesSource implements Source {
         return (char) this.nextChar.getAsInt();
     }
 
+    private static final int LN = 10;
+
+    private static final int TAB = 9;
+
+    private static final int CR = 13;
+
+    private static final int BS = 8;
+
+    private void fail(String msg) {
+        throw new ReadException(msg, "`" + new String(lexeme()) + "`");
+    }
+
     private static String print(int c) {
         return switch (c) {
-            case (int) '\n' -> "\\n";
-            case (int) '\t' -> "\\t";
-            case (int) '\r' -> "\\r";
-            case (int) '\b' -> "\\b";
-            default -> "'" + (char) c + "'";
+            case LN -> "\\n";
+            case CR -> "\\r";
+            case TAB -> "\\t";
+            case BS -> "\\b";
+            default -> Character.toString(c);
         };
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + nextChar + " " + print(next1) + "/" + print(next2) + "]";
+        int tail = Math.min(LN, currentLexemeIndex);
+        int printOffset = currentLexemeIndex - tail;
+        return getClass().getSimpleName() + "[" + nextChar + " " +
+               "<" + new String(currentLexeme, printOffset, tail) + ">" +
+               "<" + print(next1) + print(next2) + ">]";
     }
 }

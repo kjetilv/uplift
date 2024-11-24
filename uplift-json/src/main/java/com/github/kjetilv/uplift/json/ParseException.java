@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.stream.Collectors;
 
 public final class ParseException extends RuntimeException {
@@ -14,11 +13,11 @@ public final class ParseException extends RuntimeException {
     public ParseException(Object source, Token token, TokenType... expected) {
         super(source + ": Invalid token " + token + ", expected one of " + tokens(expected));
         this.token = token;
-        this.expected = expected.clone();
+        this.expected = expected;
     }
 
     public Collection<TokenType> getExpected() {
-        return EnumSet.copyOf(Arrays.asList(expected));
+        return Arrays.asList(expected);
     }
 
     public Token getToken() {

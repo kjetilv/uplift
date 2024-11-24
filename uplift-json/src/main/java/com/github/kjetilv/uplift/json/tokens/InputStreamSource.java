@@ -7,11 +7,7 @@ import java.util.function.IntSupplier;
 public final class InputStreamSource extends AbstractBytesSource {
 
     public InputStreamSource(InputStream stream) {
-        super(reader(stream));
-    }
-
-    private static IntSupplier reader(InputStream stream) {
-        return new Ints(stream);
+        super(new Ints(Objects.requireNonNull(stream, "stream")));
     }
 
     private static final class Ints implements IntSupplier {

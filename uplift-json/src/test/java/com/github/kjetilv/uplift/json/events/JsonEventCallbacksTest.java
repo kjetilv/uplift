@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.ParseException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -203,21 +202,40 @@ public class JsonEventCallbacksTest {
             ,"foo": "bar"
             }
             """);
+    }
+
+    @Test
+    void objFail2() {
         failOn("""
             {
             5: "bar"
             }
             """);
-        failOn("""
-            {
-            "foo": "bar", "zot"
-            }
-            """);
+    }
+
+    @Test
+    void objFail3() {
+        assertThatThrownBy(() ->
+            assertThat(parse("""
+                {
+                "foo": "bar", "zot"
+                }
+                """)).isNull()
+        ).satisfies(e ->
+            assertThat(e.toString()).contains("ReadException"));
+    }
+
+    @Test
+    void objFail4() {
         failOn("""
             {
             "foo": "bar", "zot":
             }
             """);
+    }
+
+    @Test
+    void objFail5() {
         failOn("""
             {
             "foo": "bar", "zot": ,

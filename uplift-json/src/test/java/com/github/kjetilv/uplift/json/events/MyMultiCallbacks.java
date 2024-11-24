@@ -57,7 +57,7 @@ final class MyMultiCallbacks implements Callbacks {
     }
 
     @Override
-    public MyMultiCallbacks field(Token token) {
+    public MyMultiCallbacks field(Token.Field token) {
         return add("field:" + token);
     }
 
@@ -72,13 +72,13 @@ final class MyMultiCallbacks implements Callbacks {
     }
 
     @Override
-    public MyMultiCallbacks string(String string) {
-        return add("string:" + string);
+    public MyMultiCallbacks string(Token.String string) {
+        return add("string:" + string.value());
     }
 
     @Override
-    public MyMultiCallbacks number(Number number) {
-        return add("number:" + number);
+    public MyMultiCallbacks number(Token.Number number) {
+        return add("number:" + number.number());
     }
 
     @Override
@@ -107,7 +107,7 @@ final class MyMultiCallbacks implements Callbacks {
 
     @Override
     public String toString() {
-        return stuff.stream().map(part -> "  " + String.join("\n  ", part))
+        return stuff.stream().map(part -> "  " + java.lang.String.join("\n  ", part))
             .collect(Collectors.joining("\n---\n"));
     }
 }

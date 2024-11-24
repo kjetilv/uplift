@@ -179,27 +179,32 @@ record RecordAttribute(
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return packageEl(builderType) + "." + builderClassPlain(builderType) + "::" + adder(element);
+                return packageEl(builderType) +
+                       "." + builderClassPlain(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + packageEl(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + setter(
+                return "(callbacks, builder) -> " + packageEl(generated) +
+                       "." + callbacksClassPlain(generated) +
+                       ".create(callbacks, builder::" + setter(
                     element) + ")";
             }
         },
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + packageEl(generated) + "." + callbacksClassPlain(generated) + ".create(this, builder()::" + adder(
-                    element) + ")";
+                return "(callbacks, builder) -> " + packageEl(generated) +
+                       "." + callbacksClassPlain(generated) +
+                       ".create(callbacks, builder::" + adder(element) + ")";
             }
         },
         GENERIC_MAP() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "() -> " + MapCallbacks.class.getName() + ".create(this, builder()::" + setter(element) + ")";
+                return "(callbacks, builder) -> " + MapCallbacks.class.getName() +
+                       ".create(callbacks, builder::" + setter(element) + ")";
             }
         },
         ENUM() {

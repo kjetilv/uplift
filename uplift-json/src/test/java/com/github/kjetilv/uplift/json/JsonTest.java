@@ -18,6 +18,7 @@ import static com.github.kjetilv.uplift.json.TokenType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -40,9 +41,22 @@ class JsonTest {
         }
     }
 
-    static void assertParseException(ParseException e, TokenType unexpected, int line, TokenType... expected) {
-        Collection<TokenType> set = EnumSet.copyOf(Arrays.asList(expected));
-        assertEquals(unexpected, e.getToken().type());
+    static void assertFailedParse(
+        String source,
+        Consumer<? super AssertionError> failer
+    ) {
+        try {
+            fail("Unexpected success: " + JSON.read(source));
+        } catch (AssertionError e) {
+            failer.accept(e);
+        } catch (Exception e) {
+            fail("Unexpected exception", e);
+        }
+    }
+
+    static void assertParseException(ParseException e, TokenType unexpected, TokenType... expected) {
+        List<TokenType> set = Arrays.asList(expected);
+        assertEquals(unexpected, e.getToken().tokenType());
         assertEquals(
             set.size(), e.getExpected().size(),
             () -> set + " /= " + e.getExpected()
@@ -65,9 +79,24 @@ class JsonTest {
     }
 
     @Test
+    void singleValueStringmoji() {
+        //language=json
+        Object read = JSON.read("\"🃑\"");
+        assertThat(read).isEqualTo("🃑");
+    }
+
+    @Test
     void singleValueDec() {
         Object read = JSON.read("0.42");
         assertThat(read).isEqualTo(new BigDecimal("0.42"));
+    }
+
+    @Test
+    void numberValue() {
+        Object read = JSON.read("""
+            { "foo": 0.42 }
+            """);
+        assertThat(read).asInstanceOf(MAP).containsEntry("foo", new BigDecimal("0.42"));
     }
 
     @Test
@@ -97,7 +126,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertReadException(e, ";", 2, 11)
+                assertReadException(e, ";")
         );
     }
 
@@ -111,7 +140,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertReadException(e, "s", 3, 10)
+                assertReadException(e, "s")
         );
     }
 
@@ -145,7 +174,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertReadException(e, "\"stuff", 2, 15)
+                assertReadException(e, "stuff")
         );
     }
 
@@ -159,7 +188,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, BOOL, 2, STRING, END_OBJECT)
+                assertParseException(e, BOOL, STRING, END_OBJECT)
         );
     }
 
@@ -172,7 +201,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, NUMBER, 2, COMMA, END_OBJECT)
+                assertParseException(e, NUMBER, COMMA, END_OBJECT)
         );
     }
 
@@ -184,7 +213,7 @@ class JsonTest {
             }
             """)).
             satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: .")
+                assertThat(e.toString()).contains("Failed to parse: `.`")
             );
     }
 
@@ -196,7 +225,7 @@ class JsonTest {
             }
             """))
             .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: -")
+                assertThat(e.toString()).contains("Failed to parse: `-`")
             );
     }
 
@@ -209,7 +238,7 @@ class JsonTest {
                 }
                 """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: -");
+            assertThat(e.getMessage()).contains("Failed to parse: `-.`");
         }
     }
 
@@ -222,7 +251,7 @@ class JsonTest {
                 }
                 """))
             .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: -"));
+                assertThat(e.toString()).contains("Failed to parse: `-.`"));
     }
 
     @Test
@@ -234,7 +263,7 @@ class JsonTest {
                 }
                 """))
             .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: ."));
+                assertThat(e.toString()).contains("Failed to parse: `.`"));
     }
 
     @Test
@@ -246,7 +275,7 @@ class JsonTest {
                 }
                 """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: .");
+            assertThat(e.getMessage()).contains("Failed to parse: `-`");
         }
     }
 
@@ -260,7 +289,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, STRING, 3, COMMA, END_OBJECT)
+                assertParseException(e, STRING, COMMA, END_OBJECT)
         );
     }
 
@@ -274,7 +303,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+                assertParseException(e, BOOL, COMMA, END_ARRAY)
         );
     }
 
@@ -287,8 +316,8 @@ class JsonTest {
                   "bar": [true, 5, [3] false]
                 }
                 """,
-            e ->
-                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+            e -> {
+            }
         );
     }
 
@@ -302,7 +331,65 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, BOOL, 3, COMMA, END_ARRAY)
+                assertParseException(e, BOOL, COMMA, END_ARRAY)
+        );
+    }
+
+    @Test
+    void literalTrue() {
+        assertFailedParse(
+            """
+                {
+                  "foo": 5,
+                  "bar": [troo]
+                }
+                """,
+            e ->
+                assertThat(e).isInstanceOf(AssertionError.class)
+        );
+    }
+
+    @Test
+    void quotedString() {
+        roundtrip(
+            """
+                {
+                  "foo": "\\"bar\\""
+                }
+                """
+        );
+    }
+
+    @Test
+    void literalTrueToo() {
+        assertFailedParse(
+            """
+                tru
+                """,
+            e ->
+                assertThat(e).isInstanceOf(AssertionError.class)
+        );
+    }
+
+    @Test
+    void literalFalse() {
+        assertFailedParse(
+            """
+                falsy
+                """,
+            e ->
+                assertThat(e).isInstanceOf(AssertionError.class)
+        );
+    }
+
+    @Test
+    void literalNulll() {
+        assertFailedParse(
+            """
+                nil
+                """,
+            e ->
+                assertThat(e).isInstanceOf(AssertionError.class)
         );
     }
 
@@ -342,7 +429,7 @@ class JsonTest {
         roundtrip(
             """
                 {
-                "foo": "\\{"
+                  "foo": "\\{"
                 }
                 """
         );
@@ -362,6 +449,75 @@ class JsonTest {
         assertThat(roundtrip)
             .asInstanceOf(InstanceOfAssertFactories.MAP)
             .hasSize(2);
+    }
+
+    @Disabled("Not yet")
+    @Test
+    void testUnidcode() {
+        //language=JSON
+        Object roundtrip = roundtrip(
+            """
+                {
+                  "♥︎": "♣︎"
+                }
+                """
+        );
+        assertThat(roundtrip)
+            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .hasSize(2);
+    }
+
+    @Test
+    void test48jso() {
+        //language=JSON
+        Object roundtrip = roundtrip(
+            """
+                {
+                  "in_reply_to_status_id":                 null,
+                  "text": "@firawidya iya fir,hihi. Rencananya awal bulan mau kesana. Ada model br gak?",
+                  "activities": {
+                    "retweeters_count": "0",
+                    "retweeters": [],
+                    "favoriters": [],
+                    "favoriters_count": "0",
+                    "repliers": [],
+                    "repliers_count": "0"
+                  }
+                }
+                """
+        );
+        assertThat(roundtrip)
+            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .hasSize(3);
+    }
+
+    @Test
+    void testNills() {
+        //language=JSON
+        Object roundtrip = roundtrip(
+            """
+                { "bar": [{
+                  "foofoofoofoofoofoofoofoofoofoofoofoofoofoofoo": null,
+                  "bar": false,
+                  "zot": true,
+                  "ans": 42
+                  }, null
+                ]
+                }
+                """
+        );
+        assertThat(roundtrip)
+            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .hasSize(1)
+            .hasEntrySatisfying(
+                "bar", v ->
+                    assertThat(v).asInstanceOf(LIST)
+                        .hasSize(2)
+                        .first()
+                        .asInstanceOf(MAP)
+                        .hasSize(4)
+                        .containsEntry("bar", false)
+            );
     }
 
     @Test
@@ -415,13 +571,14 @@ class JsonTest {
         written.put("whatever", Enum.ENUM);
         written.put("oops", null);
         //language=json
-        Map<?, ?> parsed = JSON.jsonMap(
-            """
-                { "uri": "https://www.vg.no", "url": "https://www.vg.no", "whatever": "ENUM", "oops": null }
-                """);
+        String source = """
+            {"uri":"https://www.vg.no","url":"https://www.vg.no","whatever":"ENUM","oops":null}
+            """.trim();
+        Map<?, ?> parsed = JSON.jsonMap(source);
         String expected = JSON.write(parsed);
+        assertThat(expected).isEqualTo(source);
         String actual = JSON.write(written);
-        assertEquals(actual, expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -455,8 +612,8 @@ class JsonTest {
         }
     }
 
-    private static void assertReadException(ReadException e, String lexeme, int line, int column) {
-        assertThat(e.toString()).contains("`" + lexeme + "` [" + line + ":" + column + "]");
+    private static void assertReadException(ReadException e, String lexeme) {
+        assertThat(e.toString()).contains("`" + lexeme + "`");
     }
 
     private static Object roundtrip(

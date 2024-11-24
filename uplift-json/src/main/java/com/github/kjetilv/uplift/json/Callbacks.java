@@ -9,7 +9,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks field(Token token) {
+    default Callbacks field(Token.Field token) {
         throw new IllegalStateException(this + " cannot accept field " + token);
     }
 
@@ -21,11 +21,11 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks string(String string) {
+    default Callbacks string(Token.String string) {
         return this;
     }
 
-    default <N extends Number> Callbacks number(N number) {
+    default Callbacks number(Token.Number number) {
         return this;
     }
 
@@ -49,7 +49,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Collection<Token> canonicalTokens() {
+    default Collection<Token.Field> canonicalTokens() {
         return Collections.emptySet();
     }
 }

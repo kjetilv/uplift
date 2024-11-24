@@ -1,105 +1,237 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Objects;
+import java.util.Arrays;
 
-import static com.github.kjetilv.uplift.json.TokenType.*;
-import static java.util.Objects.requireNonNull;
+public sealed interface Token permits
+    Token.BeginObject,
+    Token.BeginArray,
+    Token.Colon,
+    Token.Comma,
+    Token.EndArray,
+    Token.EndObject,
+    Token.False,
+    Token.Field,
+    Token.Null,
+    Token.Number,
+    Token.String,
+    Token.True {
 
-public record Token(
-    TokenType type,
-    String lexeme,
-    Object literal,
-    int line,
-    int column
-) {
-
-    public Token(String lexeme) {
-        this(STRING, lexeme, lexeme, 0, 0);
+    default boolean is(TokenType tokenType) {
+        return tokenType() == tokenType;
     }
 
-    public Token(TokenType type, String lexeme, Object literal) {
-        this(type, lexeme, literal, 0, 0);
-    }
+    TokenType tokenType();
 
-    public Token {
-        requireNonNull(type, "type");
-    }
+    Token BEGIN_OBJECT = new BeginObject();
 
-    public String literalString() {
-        return literal == lexeme ? lexeme : String.valueOf(literal);
-    }
+    Token END_OBJECT = new EndObject();
 
-    public int charAt(int i) {
-        return literalString().charAt(i);
-    }
+    Token BEGIN_ARRAY = new BeginArray();
 
-    public boolean literalTruth() {
-        if (type == TokenType.BOOL) {
-            return lexeme.charAt(0) == 't';
+    Token END_ARRAY = new EndArray();
+
+    Token COLON = new Colon();
+
+    Token COMMA = new Comma();
+
+    Token TRUE = new True();
+
+    Token FALSE = new False();
+
+    Token NULL = new Null();
+
+    record BeginObject() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.BEGIN_OBJECT;
         }
-        throw new IllegalStateException(this + ": Not boolean");
-    }
 
-    public Number literalNumber() {
-        if (type == TokenType.NUMBER) {
-            return (Number) literal;
+        @Override
+        public java.lang.String toString() {
+            return "{";
         }
-        throw new IllegalStateException(this + ": Not numeric");
     }
 
-    public boolean is(TokenType type) {
-        return this.type == type;
-    }
-
-    public boolean not(TokenType type) {
-        return this.type != type;
-    }
-
-    private String printableValue() {
-        if (type().printable()) {
-            int length = lexeme.length();
-            String printed = length > 10 ? lexeme.substring(0, 9) + "⋯" + " [" + length + "]" : lexeme;
-            return printed + ":";
+    record EndObject() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.END_OBJECT;
         }
-        return "";
+
+        @Override
+        public java.lang.String toString() {
+            return "}";
+        }
     }
 
-    public static final Token BEGIN_OBJECT_TOKEN = canonicalToken(BEGIN_OBJECT);
+    record BeginArray() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.BEGIN_ARRAY;
+        }
 
-    public static final Token COLON_TOKEN = canonicalToken(COLON);
-
-    public static final Token COMMA_TOKEN = canonicalToken(COMMA);
-
-    public static final Token END_OBJECT_TOKEN = canonicalToken(END_OBJECT);
-
-    public static final Token BEGIN_ARRAY_TOKEN = canonicalToken(BEGIN_ARRAY);
-
-    public static final Token END_ARRAY_TOKEN = canonicalToken(END_ARRAY);
-
-    public static final Token CANONICAL_WHITESPACE = canonicalToken(TokenType.WHITESPACE);
-
-    public static final Token FALSE_TOKEN = new Token(BOOL, "false", false);
-
-    public static final Token TRUE_TOKEN = new Token(BOOL, "true", true);
-
-    public static final Token NULL_TOKEN = new Token(NULL, "null", null);
-
-    private static Token canonicalToken(TokenType type) {
-        return new Token(type, null, null, -1, -1);
+        @Override
+        public java.lang.String toString() {
+            return "[";
+        }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Token token && Objects.equals(lexeme, token.lexeme) && type == token.type;
+    record EndArray() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.END_ARRAY;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return "]";
+        }
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, lexeme);
+    record Colon() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.COLON;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return ":";
+        }
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + printableValue() + type + " @ " + line + ":" + column + "]";
+    record Comma() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.COMMA;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return ",";
+        }
+    }
+
+    record True() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.BOOL;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return "true";
+        }
+    }
+
+    record False() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.BOOL;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return "false";
+        }
+    }
+
+    record Null() implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.NULL;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return "null";
+        }
+    }
+
+    record String(char[] chars) implements Token {
+
+        public java.lang.String value() {
+            return new java.lang.String(chars);
+        }
+
+        @Override
+        public TokenType tokenType() {
+            return TokenType.STRING;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof String(char[] otherChars) && Arrays.equals(chars, otherChars);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(chars);
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return getClass().getName() + "[" + new java.lang.String(chars) + "]";
+        }
+    }
+
+    record Field(char[] chars, int length) implements Token {
+
+        public Field(char[] chars) {
+            this(chars, chars.length);
+        }
+
+        public java.lang.String value() {
+            return new java.lang.String(chars, 0, length);
+        }
+
+        @Override
+        public TokenType tokenType() {
+            return TokenType.STRING;
+        }
+
+        private static int mismatch(char[] c1, char[] c2, int length) {
+            for (int i = 0; i < length; i++) {
+                if (c1[i] != c2[i]) {
+                    return length;
+                }
+            }
+            return -1;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Field(char[] otherChars, int otherLength) &&
+                   length == otherLength &&
+                   mismatch(chars, otherChars, length) < 0;
+        }
+
+        @Override
+        public int hashCode() {
+            int hc = Integer.hashCode(length);
+            for (int i = 0; i < length; i++) {
+                hc += 31 * chars[i];
+            }
+            return hc;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return getClass().getName() + "[" + new java.lang.String(chars, 0, length) + "]";
+        }
+
+    }
+
+    record Number(java.lang.Number number) implements Token {
+        @Override
+        public TokenType tokenType() {
+            return TokenType.NUMBER;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return getClass().getSimpleName() + "[" + number + "/" + number.getClass() + "]";
+        }
+
     }
 }
