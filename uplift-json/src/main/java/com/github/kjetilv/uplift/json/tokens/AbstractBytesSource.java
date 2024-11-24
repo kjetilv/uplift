@@ -50,6 +50,16 @@ public abstract class AbstractBytesSource implements Source {
     }
 
     @Override
+    public void skip(int chars) {
+        for (int i = 0; i < chars - 3; i++) {
+            nextChar();
+        }
+        next2 = nextChar();
+        next1 = next2;
+        next2 = nextChar();
+    }
+
+    @Override
     public int line() {
         return progress.line();
     }

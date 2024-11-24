@@ -2,11 +2,11 @@ package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.ParseException;
-import com.github.kjetilv.uplift.json.tokens.Token;
-import com.github.kjetilv.uplift.json.tokens.TokenType;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenType;
 import com.github.kjetilv.uplift.json.tokens.Tokens;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.*;
 
 public final class JsonPullParser {
 
@@ -24,7 +24,7 @@ public final class JsonPullParser {
         return switch (token.type()) {
             case BEGIN_OBJECT -> processObject(callbacks);
             case BEGIN_ARRAY -> processArray(callbacks);
-            case NULL -> callbacks.null_();
+            case NULL -> callbacks.nuul();
             case STRING -> callbacks.string(token.literalString());
             case NUMBER -> callbacks.number(token.literalNumber());
             case BOOL -> callbacks.bool(token.literalTruth());
@@ -35,12 +35,12 @@ public final class JsonPullParser {
 
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks c = callbacks.objectStarted();
-        Token next = tokens.get();
+        Token next = tokens.getCanonical();
         while (next != Token.END_OBJECT_TOKEN) {
             if (!next.is(STRING)) {
                 return fail(next, STRING, END_OBJECT);
             }
-            Callbacks field = c.field(next.literalString());
+            Callbacks field = c.field(next);
             requireColon();
             c = processValue(tokens.get(), field);
             next = separatorOr(tokens.get(), END_OBJECT);

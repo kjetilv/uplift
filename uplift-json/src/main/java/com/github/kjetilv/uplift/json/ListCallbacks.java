@@ -47,7 +47,7 @@ public final class ListCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks null_() {
+    public Callbacks nuul() {
         list.add(null);
         return this;
     }

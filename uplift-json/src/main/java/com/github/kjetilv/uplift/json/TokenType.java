@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json;
 
 public enum TokenType {
 
@@ -41,7 +41,7 @@ public enum TokenType {
         return value;
     }
 
-    boolean printable() {
+    public boolean printable() {
         return printable;
     }
 }

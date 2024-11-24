@@ -1,8 +1,8 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json;
 
 import java.util.Objects;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.*;
 import static java.util.Objects.requireNonNull;
 
 public record Token(
@@ -13,12 +13,24 @@ public record Token(
     int column
 ) {
 
+    public Token(String lexeme) {
+        this(STRING, lexeme, lexeme, 0, 0);
+    }
+
+    public Token(TokenType type, String lexeme, Object literal) {
+        this(type, lexeme, literal, 0, 0);
+    }
+
     public Token {
         requireNonNull(type, "type");
     }
 
     public String literalString() {
-        return literal.toString();
+        return literal == lexeme ? lexeme : String.valueOf(literal);
+    }
+
+    public int charAt(int i) {
+        return literalString().charAt(i);
     }
 
     public boolean literalTruth() {
@@ -66,8 +78,24 @@ public record Token(
 
     public static final Token CANONICAL_WHITESPACE = canonicalToken(TokenType.WHITESPACE);
 
+    public static final Token FALSE_TOKEN = new Token(BOOL, "false", false);
+
+    public static final Token TRUE_TOKEN = new Token(BOOL, "true", true);
+
+    public static final Token NULL_TOKEN = new Token(NULL, "null", null);
+
     private static Token canonicalToken(TokenType type) {
         return new Token(type, null, null, -1, -1);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Token token && Objects.equals(lexeme, token.lexeme) && type == token.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, lexeme);
     }
 
     @Override

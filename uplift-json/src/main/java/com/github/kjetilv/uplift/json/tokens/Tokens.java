@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.json.tokens;
 
+import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Source;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenType;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -8,8 +11,9 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.json.tokens.Token.*;
-import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+import static com.github.kjetilv.uplift.json.Token.*;
+import static com.github.kjetilv.uplift.json.TokenType.NUMBER;
+import static com.github.kjetilv.uplift.json.TokenType.STRING;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
@@ -17,8 +21,15 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     private final Source source;
 
+    private final TokenTrie tokenTrie;
+
     public Tokens(Source source) {
+        this(source, null);
+    }
+
+    private Tokens(Source source, TokenTrie tokenTrie) {
         this.source = source;
+        this.tokenTrie = tokenTrie;
     }
 
     public Stream<Token> stream() {
@@ -32,15 +43,35 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     @Override
     public Token get() {
-        return next();
+        return scan(false);
     }
 
-    public Token next() {
+    public Token getCanonical() {
+        return scan(true);
+    }
+
+    @Override
+    public String bringIt() {
+        return MessageFormat.format("`{0}` [{1}:{2}]", source.lexeme(), source.line(), source.column() - 1);
+    }
+
+    public Tokens callbacks(Callbacks callbacks) {
+//        if (callbacks == null) {
+        return this;
+//        }
+//        Collection<Token> tokens = callbacks.canonicalTokens();
+//        if (tokens == null || tokens.isEmpty()) {
+//            return this;
+//        }
+//        return new Tokens(source, new TokenTrie(tokens));
+    }
+
+    private Token scan(boolean canonical) {
         while (true) {
             if (source.done()) {
                 return null;
             }
-            Token token = scanToken();
+            Token token = scanToken(canonical);
             if (token == null) {
                 return null;
             }
@@ -51,12 +82,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         }
     }
 
-    @Override
-    public String bringIt() {
-        return MessageFormat.format("`{0}` [{1}:{2}]", source.lexeme(), source.line(), source.column() - 1);
-    }
-
-    private Token scanToken() {
+    private Token scanToken(boolean fieldName) {
         source.reset();
         return switch (source.chomp()) {
             case '{' -> BEGIN_OBJECT_TOKEN;
@@ -65,39 +91,34 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
             case '}' -> END_OBJECT_TOKEN;
             case '[' -> BEGIN_ARRAY_TOKEN;
             case ']' -> END_ARRAY_TOKEN;
-            case 't' -> expectedTokenTail(_RUE, BOOL, true, CANONICAL_TRUE);
-            case 'f' -> expectedTokenTail(_ALSE, BOOL, false, CANONICAL_FALSE);
-            case 'n' -> expectedTokenTail(_ULL, NULL, null, CANONICAL_NULL);
+            case 't' -> {
+                source.skip(4);
+                yield TRUE_TOKEN;
+            }
+            case 'f' -> {
+                source.skip(5);
+                yield FALSE_TOKEN;
+            }
+            case 'n' -> {
+                source.skip(4);
+                yield NULL_TOKEN;
+            }
             case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.' -> number();
-            case '"' -> string();
+            case '"' -> fieldName ? fieldName() : stringValue();
             case ' ', '\r', '\t', LN -> spool();
             default -> fail("Unrecognized character");
         };
     }
 
-    private Token expectedTokenTail(
-        char[] tail,
-        TokenType type,
-        Object literal,
-        String canonical
-    ) {
-        for (char c : tail) {
-            if (source.chomp() != c) {
-                fail("Unknown identifier");
-            }
-        }
-        return token(type, literal, canonical == null ? source.lexeme() : canonical);
-    }
-
-    private Token string() {
-        boolean quoted = false;
+    private Token stringValue() {
+        boolean escaped = false;
         while (source.peek() != '"' && !source.done()) {
             char next = source.peek();
             if (next == LN) {
                 fail("Line break in string: " + source.lexeme());
             }
-            if (next == QUOTE) {
-                quoted = true;
+            if (next == ESC) {
+                escaped = true;
                 source.chomp();
             }
             source.chomp();
@@ -108,10 +129,26 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         source.chomp();
         // Trim the surrounding quotes.
         String substring = source.quotedLexeme();
-        String literal = quoted
+        String literal = escaped
             ? Strings.unquote(substring)
             : substring;
-        return token(STRING, literal, source.lexeme());
+        String lexeme = source.lexeme();
+        return token(STRING, literal, lexeme);
+    }
+
+    private Token fieldName() {
+        while (source.peek() != '"' && !source.done()) {
+            char next = source.peek();
+            if (next == LN) {
+                fail("Line break in string: " + source.lexeme());
+            }
+            source.chomp();
+        }
+        if (source.done()) {
+            fail("Unterminated string");
+        }
+        source.chomp();
+        return token(STRING, source.quotedLexeme(), source.lexeme());
     }
 
     private Token number() {
@@ -145,23 +182,7 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
         throw new ReadException(msg, bringIt());
     }
 
-    static final String CANONICAL_TRUE = "true";
-
-    static final String CANONICAL_FALSE = "false";
-
-    private static final char[] _RUE = "rue".toCharArray();
-
-    private static final char[] _ALSE = "alse".toCharArray();
-
-    private static final char[] _ULL = "ull".toCharArray();
-
-    private static final String CANONICAL_NULL = "null";
-
-    private static final String CANONICAL_LEFT_BRA = "[";
-
-    private static final String CANONICAL_RIGHT_BRA = "]";
-
-    private static final char QUOTE = '\\';
+    private static final char ESC = '\\';
 
     private static final char LN = '\n';
 
@@ -176,6 +197,6 @@ public final class Tokens implements Supplier<Token>, SelfDescribing {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + CANONICAL_LEFT_BRA + bringIt() + CANONICAL_RIGHT_BRA;
+        return getClass().getSimpleName() + "[" + bringIt() + "]";
     }
 }

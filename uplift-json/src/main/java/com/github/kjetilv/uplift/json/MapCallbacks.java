@@ -30,8 +30,8 @@ public final class MapCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks field(String name) {
-        this.currentField = name;
+    public Callbacks field(Token token) {
+        this.currentField = token.literalString();
         return this;
     }
 
@@ -51,7 +51,7 @@ public final class MapCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks null_() {
+    public Callbacks nuul() {
         return set(null);
     }
 

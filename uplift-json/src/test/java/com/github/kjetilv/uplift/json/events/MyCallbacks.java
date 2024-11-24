@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 final class MyCallbacks implements Callbacks {
 
@@ -40,8 +41,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks field(String name) {
-        return add("field:" + name);
+    public MyCallbacks field(Token token) {
+        return add("field:" + token.literalString());
     }
 
     @Override
@@ -70,7 +71,7 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks null_() {
+    public MyCallbacks nuul() {
         return add("nil");
     }
 

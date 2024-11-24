@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,8 +57,8 @@ final class MyMultiCallbacks implements Callbacks {
     }
 
     @Override
-    public MyMultiCallbacks field(String name) {
-        return add("field:" + name);
+    public MyMultiCallbacks field(Token token) {
+        return add("field:" + token);
     }
 
     @Override
@@ -87,7 +87,7 @@ final class MyMultiCallbacks implements Callbacks {
     }
 
     @Override
-    public MyMultiCallbacks null_() {
+    public MyMultiCallbacks nuul() {
         return add("nil");
     }
 

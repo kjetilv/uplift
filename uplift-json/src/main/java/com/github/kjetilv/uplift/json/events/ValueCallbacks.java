@@ -37,7 +37,7 @@ public final class ValueCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks null_() {
+    public Callbacks nuul() {
         onDone.accept(null);
         return this;
     }

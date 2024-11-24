@@ -23,9 +23,10 @@ public class ReadBenchmark {
         return reader.read(lineSegment);
     }
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws IOException {
         for (int i = 0; i < 1_000_000; i++) {
             reader.read(lineSegment);
+            objectMapper.readValue(data, Tweet.class);
         }
     }
 

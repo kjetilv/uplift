@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.ffm;
 
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,8 +38,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks field(String name) {
-        return add("field:" + name);
+    public MyCallbacks field(Token token) {
+        return add("field:" + token.literalString());
     }
 
     @Override
@@ -67,7 +68,7 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks null_() {
+    public MyCallbacks nuul() {
         return add("null");
     }
 

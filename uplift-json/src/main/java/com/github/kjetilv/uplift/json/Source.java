@@ -8,6 +8,8 @@ public interface Source {
 
     char chomp();
 
+    void skip(int chars);
+
     int line();
 
     int column();

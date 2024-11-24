@@ -1,13 +1,16 @@
 package com.github.kjetilv.uplift.json;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public interface Callbacks {
 
     default Callbacks objectStarted() {
         return this;
     }
 
-    default Callbacks field(String name) {
-        throw new IllegalStateException(this + " cannot accept field " + name);
+    default Callbacks field(Token token) {
+        throw new IllegalStateException(this + " cannot accept field " + token);
     }
 
     default Callbacks objectEnded() {
@@ -30,7 +33,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks null_() {
+    default Callbacks nuul() {
         return this;
     }
 
@@ -44,5 +47,9 @@ public interface Callbacks {
 
     default Callbacks line() {
         return this;
+    }
+
+    default Collection<Token> canonicalTokens() {
+        return Collections.emptySet();
     }
 }

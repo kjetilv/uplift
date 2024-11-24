@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.NullCallbacks;
+import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SuppressWarnings({"SameParameterValue", "unused"})
 public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
@@ -24,15 +26,15 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
 
     private final Consumer<T> onDone;
 
-    private final Map<String, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
+    private final Map<Token, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
 
-    private final Map<String, BiConsumer<B, String>> strings = new LinkedHashMap<>();
+    private final Map<Token, BiConsumer<B, String>> strings = new LinkedHashMap<>();
 
-    private final Map<String, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
+    private final Map<Token, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
 
-    private final Map<String, Supplier<Callbacks>> objectFields = new LinkedHashMap<>();
+    private final Map<Token, Supplier<Callbacks>> objectFields = new LinkedHashMap<>();
 
-    private String currentField;
+    private Token currentField;
 
     protected AbstractCallbacks(B builder, AbstractCallbacks<?, ?> parent, Consumer<T> onDone) {
         this.builder = Objects.requireNonNull(builder, "builder");
@@ -51,8 +53,8 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final Callbacks field(String name) {
-        currentField = name;
+    public final Callbacks field(Token token) {
+        currentField = token;
         return this;
     }
 
@@ -63,13 +65,13 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
     }
 
     @Override
-    public final Callbacks string(String string) {
+    public final Callbacks string(String token) {
         if (currentField == null) {
             return fail();
         }
         BiConsumer<B, String> consumer = strings.get(currentField);
         if (consumer != null) {
-            build(consumer, string);
+            build(consumer, token);
         }
         return this;
     }
@@ -92,16 +94,16 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
         return this;
     }
 
-    public final void emit(Callbacks callbacks) {
-        callbacks.objectStarted();
-        try {
-            emitProperties(callbacks);
-        } finally {
-            callbacks.objectEnded();
-        }
-    }
-
-    protected void emitProperties(Callbacks callbacks) {
+    @Override
+    public Collection<Token> canonicalTokens() {
+        return Stream.of(
+                numbers,
+                strings,
+                booleans,
+                objectFields
+            )
+            .map(Map::keySet).flatMap(Set::stream).distinct()
+            .toList();
     }
 
     protected B builder() {
@@ -112,7 +114,7 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
         String name,
         Supplier<Callbacks> nested
     ) {
-        objectFields.put(name, nested);
+        objectFields.put(new Token(name), nested);
     }
 
     protected final <E> void onEnum(
@@ -121,72 +123,80 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
         BiConsumer<B, E> setter
     ) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 setter.accept(builder, enumType.apply(str))
         );
     }
 
     protected final void onString(String name, BiConsumer<B, String> set) {
-        strings.put(name, set);
+        strings.put(new Token(name), set);
     }
 
     protected final void onCharacter(String name, BiConsumer<B, Character> set) {
         strings.put(
-            name, (builder, string) ->
+            new Token(name),
+            (builder, string) ->
                 build(set, toChar(string))
         );
     }
 
     protected final void onBoolean(String name, BiConsumer<B, Boolean> set) {
-        booleans.put(name, set);
+        booleans.put(new Token(name), set);
     }
 
     protected final void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(
-            name, (B builder, Double d) ->
+            new Token(name),
+            (B builder, Double d) ->
                 build(set, d.floatValue())
         );
     }
 
     protected final void onDouble(String name, BiConsumer<B, Double> set) {
-        numbers.put(name, set);
+        numbers.put(new Token(name), set);
     }
 
     protected final void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(
-            name, (B builder, Long l) ->
+            new Token(name),
+            (B builder, Long l) ->
                 build(set, l.intValue())
         );
     }
 
     protected final void onLong(String name, BiConsumer<B, Long> set) {
-        numbers.put(name, set);
+        numbers.put(new Token(name), set);
     }
 
     protected final void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(
-            name, (B builder, Long value) ->
+            new Token(name),
+            (B builder, Long value) ->
                 build(set, BigInteger.valueOf(value))
         );
     }
 
     protected final void onUUID(String name, BiConsumer<B, UUID> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, UUID.fromString(str))
         );
     }
 
     protected final void onURI(String name, BiConsumer<B, URI> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, URI.create(str))
         );
     }
 
     protected final void onURL(String name, BiConsumer<B, URL> set) {
         strings.put(
-            name, (builder, str) -> {
+            new Token(name),
+            (builder, str) -> {
                 try {
                     build(set, URI.create(str).toURL());
                 } catch (Exception e) {
@@ -198,67 +208,77 @@ public abstract class AbstractCallbacks<B extends Supplier<T>, T extends Record>
 
     protected final void onDuration(String name, BiConsumer<B, Duration> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, Duration.parse(str))
         );
     }
 
     protected final void onLocalDateTime(String name, BiConsumer<B, LocalDateTime> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, LocalDateTime.parse(str))
         );
     }
 
     protected final void onLocalDate(String name, BiConsumer<B, LocalDate> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, LocalDate.parse(str))
         );
     }
 
     protected final void onOffsetDateTime(String name, BiConsumer<B, OffsetDateTime> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, OffsetDateTime.parse(str))
         );
     }
 
     protected final void onUuid(String name, BiConsumer<B, Uuid> set) {
         strings.put(
-            name, (builder, str) ->
+            new Token(name),
+            (builder, str) ->
                 build(set, Uuid.from(str))
         );
     }
 
     protected final void onInstant(String name, BiConsumer<B, Instant> set) {
         numbers.put(
-            name, (builder, num) ->
+            new Token(name),
+            (builder, num) ->
                 build(set, Instant.ofEpochMilli(num.longValue()))
         );
     }
 
     protected final void onBigDecimal(String name, BiConsumer<B, BigDecimal> set) {
         strings.put(
-            name, (builder, string) ->
+            new Token(name),
+            (builder, string) ->
                 build(set, new BigDecimal(string))
         );
         numbers.put(
-            name, (builder, number) ->
+            new Token(name),
+            (builder, number) ->
                 build(set, BigDecimal.valueOf(number.doubleValue()))
         );
     }
 
     protected final void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(
-            name, (B builder, Long l) ->
+            new Token(name),
+            (B builder, Long l) ->
                 build(set, l.shortValue())
         );
     }
 
     protected final void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(
-            name, (B builder, Long l) ->
+            new Token(name),
+            (B builder, Long l) ->
                 build(set, l.byteValue())
         );
     }

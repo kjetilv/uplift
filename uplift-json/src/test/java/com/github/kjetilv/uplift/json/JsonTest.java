@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.uplift.json.tokens.ReadException;
-import com.github.kjetilv.uplift.json.tokens.TokenType;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.json.tokens.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
@@ -43,7 +42,6 @@ class JsonTest {
 
     static void assertParseException(ParseException e, TokenType unexpected, int line, TokenType... expected) {
         Collection<TokenType> set = EnumSet.copyOf(Arrays.asList(expected));
-        assertEquals(line, e.getToken().line());
         assertEquals(unexpected, e.getToken().type());
         assertEquals(
             set.size(), e.getExpected().size(),

@@ -40,7 +40,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(Source source, Callbacks callbacks) {
-        Tokens tokens = new Tokens(source);
+        Tokens tokens = new Tokens(source).callbacks(callbacks);
         JsonPullParser parser = new JsonPullParser(tokens);
         if (callbacks.multi()) {
             Callbacks walker = callbacks;
