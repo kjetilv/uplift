@@ -249,14 +249,11 @@ final class Gen {
                 "            PRESETS.getStrings(),",
                 "            PRESETS.getBooleans(),",
                 "            PRESETS.getObjects(),",
-                "            onDone",
-                "        );",
-                "    }"
-            );
-            write(bw, "");
-            write(
-                bw,
-                "    private static final " + PresetCallbacksInitializer.class.getName() + "<",
+                "            onDone,",
+                "            PRESETS.getTokenTrie());",
+                "    }",
+                "",
+                "    static final " + PresetCallbacksInitializer.class.getName() + "<",
                 "            " + builderClassPlain(typeElement) + ", ",
                 "            " + name,
                 "        > PRESETS;"
@@ -265,18 +262,36 @@ final class Gen {
             write(bw, "    static {");
             write(bw, "        PRESETS = new " + PresetCallbacksInitializer.class.getName() + "<>();");
             write(
-                bw, typeElement.getRecordComponents()
+                bw,
+                typeElement.getRecordComponents()
                     .stream()
-                    .filter(recordComponentElement ->
-                        recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
+                    .filter(element ->
+                        element.getKind() == ElementKind.RECORD_COMPONENT)
                     .map(element ->
                         "        PRESETS." + RecordAttribute.create(element, roots, enums)
                             .callbackHandler(typeElement) + ";"
                     )
                     .toList()
             );
-            write(bw, "    }");
-            write(bw, "}");
+            List<String> subs = typeElement.getRecordComponents()
+                .stream()
+                .filter(recordComponentElement ->
+                    recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
+                .map(element ->
+                    RecordAttribute.create(element, roots, enums))
+                .filter(attribute ->
+                    attribute.variant() == RecordAttribute.Variant.GENERATED_LIST || attribute.variant() == RecordAttribute.Variant.GENERATED)
+                    .map(attribute ->
+                    "        PRESETS.sub(" + callbacksClass(attribute.internalType()) + ".PRESETS);")
+                    .toList();
+            write(bw, subs);
+            write(
+                bw,
+                "        PRESETS.buildTokens();",
+
+                "    }",
+                "}"
+            );
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write callbacks for " + typeElement, e);
         }
@@ -431,6 +446,10 @@ final class Gen {
 
     static String callbacksClassPlain(TypeElement te) {
         return simpleName(te) + "_Callbacks";
+    }
+
+    static String callbacksClass(TypeElement te) {
+        return canonicalClassName(te, true) + "_Callbacks";
     }
 
     static String factoryClassQ(PackageElement pe, TypeElement te) {

@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.json.Token;
 import java.lang.Number;
 import java.lang.String;
 import java.math.BigDecimal;
+import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.json.Token.*;
 
@@ -13,8 +14,11 @@ public final class Tokens {
 
     private final Source source;
 
-    public Tokens(Source source) {
+    private final Function<char[], Field> tokenResolver;
+
+    public Tokens(Source source, Function<char[], Token.Field> tokenResolver) {
         this.source = source;
+        this.tokenResolver = tokenResolver;
     }
 
     public boolean done() {
@@ -99,17 +103,18 @@ public final class Tokens {
 
     private Field fieldToken() {
         source.spoolField();
-        return new Field(source.lexeme());
+        char[] chars = source.lexeme();
+        return tokenResolver.apply(chars);
     }
 
-    private Token skipThen(char c0, char c1, char c2, Token token) {
-        source.skip4(c0, c1, c2);
+    private Token skipThen(char r, char u, char e, Token token) {
+        source.skip4(r, u, e);
         return token;
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Token skipThen(char c0, char c1, char c2, char c3, Token token) {
-        source.skip5(c0, c1, c2, c3);
+    private Token skipThen(char a, char l, char s, char e, Token token) {
+        source.skip5(a, l, s, e);
         return token;
     }
 

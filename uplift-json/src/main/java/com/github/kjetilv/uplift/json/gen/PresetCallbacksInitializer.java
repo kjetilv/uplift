@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenTrie;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -9,10 +10,12 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
 import java.time.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.*;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SuppressWarnings({"SameParameterValue", "unused"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
@@ -25,8 +28,22 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     private final Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> objects = new LinkedHashMap<>();
 
-    public GenerationCallbacks<B, T> create(Callbacks parent, B builder, Consumer<T> onDone) {
-        return new GenerationCallbacks<>(builder, parent, numbers, strings, booleans, objects, onDone);
+    private final List<PresetCallbacksInitializer<?, ?>> subs = new ArrayList<>();
+
+    private TokenTrie tokenTrie;
+
+    public void sub(PresetCallbacksInitializer<?, ?> sub) {
+        subs.add(sub);
+    }
+
+    public Stream<Token.Field> fields() {
+        return Stream.concat(
+            Stream.of(numbers, strings, booleans, objects)
+                .map(Map::keySet).flatMap(Set::stream),
+            subs.stream()
+                .flatMap(PresetCallbacksInitializer::fields)
+        ).sorted(Comparator.comparing(Token.Field::value))
+            .distinct();
     }
 
     public void onObject(String name, BiFunction<Callbacks, B, Callbacks> nested) {
@@ -213,6 +230,14 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> getObjects() {
         return objects;
+    }
+
+    public TokenTrie getTokenTrie() {
+        return tokenTrie;
+    }
+
+    public void buildTokens() {
+        tokenTrie = new TokenTrie(fields().toList());
     }
 
     private <V, S extends V> void build(B builder, BiConsumer<B, V> consumer, S s) {

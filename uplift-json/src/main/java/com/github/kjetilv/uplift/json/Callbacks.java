@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.function.Function;
 
 public interface Callbacks {
 
@@ -49,7 +48,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Collection<Token.Field> canonicalTokens() {
-        return Collections.emptySet();
+    default Function<char[], Token.Field> tokenTrie() {
+        return null;
     }
 }

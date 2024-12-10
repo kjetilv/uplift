@@ -104,13 +104,6 @@ public class GenerationCallbacks<B extends Supplier<T>, T extends Record> implem
         return this;
     }
 
-    @Override
-    public Collection<Token.Field> canonicalTokens() {
-        return Stream.of(numbers, strings, booleans, objects)
-            .map(Map::keySet).flatMap(Set::stream).distinct()
-            .toList();
-    }
-
     protected B builder() {
         return builder;
     }

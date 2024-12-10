@@ -31,7 +31,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         while (true) {
             switch (peek()) {
                 case '"' -> {
-                    skip();
+                    advance();
                     return;
                 }
                 case 0 -> fail("Unterminated field");
@@ -44,32 +44,45 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @Override
     public void spoolString() {
         reset();
-        boolean quoted = false;
+        boolean quo = false;
         while (true) {
             char c = peek();
             switch (c) {
                 case '"' -> {
-                    if (quoted) {
+                    if (quo) {
                         chomp();
-                        quoted = false;
+                        quo = false;
                     } else {
-                        skip();
+                        advance();
                         return;
                     }
                 }
                 case '\\' -> {
-                    if (quoted) {
+                    if (quo) {
                         chomp();
-                        quoted = false;
+                        quo = false;
                     } else {
-                        skip();
-                        quoted = true;
+                        advance();
+                        quo = true;
+                    }
+                }   // -----------------------------
+                case 0, // ------------/^^^^^\------
+                     1, 2, // ---------|o   o|------
+                     3, 4, 5, // -------\_._/-------
+                     6, 7, 8, 9, // ----- \=--------
+                     10, 11, 12, 13, // ---\_-------
+                     14, 15, 16, 17, 18, // -\------
+                     19, 20, 21, 22, 23, 24, // ----
+                     25, 26, 27, 28, 29, 30, 31 -> {
+                    if (quo) {
+                        chomp();
+                        quo = false;
+                    } else {
+                        fail("Unespaced control char: " + (int) c);
                     }
                 }
-                case 0 -> fail("Unterminated string");
-                case '\n' -> fail("Line break in string: " + new String(lexeme()));
                 default -> {
-                    quoted = false;
+                    quo = false;
                     chomp();
                 }
             }
@@ -106,16 +119,12 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
-    public void skip() {
-        advance();
-    }
-
-    @Override
     public char chomp() {
-        char c = next1;
-        add(c);
-        advance();
-        return c;
+        try {
+            return added(next1);
+        } finally {
+            advance();
+        }
     }
 
     @Override
@@ -140,13 +149,11 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         next2 = nextChar();
     }
 
-    @Override
-    public char peek() {
+    private char peek() {
         return next1;
     }
 
-    @Override
-    public char peekNext() {
+    private char peekNext() {
         return next2;
     }
 
@@ -187,7 +194,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         next2 = nextChar();
     }
 
-    private void add(char chomped) {
+    private char added(char chomped) {
         try {
             currentLexeme[currentLexemeIndex] = chomped;
         } catch (ArrayIndexOutOfBoundsException ignore) {
@@ -196,6 +203,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         } finally {
             currentLexemeIndex++;
         }
+        return chomped;
     }
 
     private void expand() {
@@ -208,6 +216,10 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         return (char) this.nextChar.getAsInt();
     }
 
+    private void fail(String msg) {
+        throw new ReadException(msg, "`" + new String(lexeme()) + "`");
+    }
+
     private static final int LN = 10;
 
     private static final int TAB = 9;
@@ -215,10 +227,6 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     private static final int CR = 13;
 
     private static final int BS = 8;
-
-    private void fail(String msg) {
-        throw new ReadException(msg, "`" + new String(lexeme()) + "`");
-    }
 
     private static String print(int c) {
         return switch (c) {

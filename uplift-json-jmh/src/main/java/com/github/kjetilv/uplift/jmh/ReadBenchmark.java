@@ -27,6 +27,9 @@ public class ReadBenchmark {
     public static void main(String[] args) throws IOException {
         System.out.println("OK");
 
+        Instant initTime = Instant.now();
+        System.out.println(TweetRW.INSTANCE.callbacks()  + " in " + Duration.between(initTime, Instant.now()).toMillis());
+
         LongAdder longAdder = new LongAdder();
         for (int i = 0; i < X / 5; i++) {
             Tweet upliftTweet = bReader.read(data);
@@ -90,7 +93,7 @@ public class ReadBenchmark {
 
     private static final JsonReader<byte[], Tweet> bReader;
 
-    private static final int X = 2_000_000;
+    private static final int X = 1_000_000;
 
     static {
         try (

@@ -155,6 +155,25 @@ class JsonTest {
     }
 
     @Test
+    void readLineBreak() {
+        //language=json
+        String source = """
+            { "foo":  "\\x"}
+            """.replace('x', '\n');
+        Object json = JSON.read(source);
+        assertThat(json).asInstanceOf(MAP).containsEntry("foo", "\n");
+    }
+
+    @Disabled // TODO
+    @Test
+    void readWriteLineBreak() {
+        //language=json
+        roundtrip("""
+            { "foo":  "\\x"}
+            """.replace('x', '\n'));
+    }
+
+    @Test
     void emptyString() {
         assertThat(roundtrip(
             //language=json

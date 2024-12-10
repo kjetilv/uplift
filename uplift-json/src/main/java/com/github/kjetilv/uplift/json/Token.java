@@ -171,7 +171,7 @@ public sealed interface Token permits
 
         @Override
         public java.lang.String toString() {
-            return getClass().getName() + "[" + new java.lang.String(chars) + "]";
+            return getClass().getSimpleName() + "[" + new java.lang.String(chars) + "]";
         }
     }
 
@@ -217,7 +217,7 @@ public sealed interface Token permits
 
         @Override
         public java.lang.String toString() {
-            return getClass().getName() + "[" + new java.lang.String(chars, 0, length) + "]";
+            return getClass().getSimpleName() + "[" + new java.lang.String(chars, 0, length) + "]";
         }
 
     }

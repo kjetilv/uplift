@@ -3,13 +3,10 @@ package com.github.kjetilv.uplift.json.gen;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.NullCallbacks;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenTrie;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.function.*;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
 
@@ -18,6 +15,8 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
     private final Callbacks parent;
 
     private final Consumer<T> onDone;
+
+    private final TokenTrie tokenTrie;
 
     private final Map<Token.Field, BiConsumer<B, ? extends Number>> numbers;
 
@@ -36,7 +35,8 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         Map<Token.Field, BiConsumer<B, String>> strings,
         Map<Token.Field, BiConsumer<B, Boolean>> booleans,
         Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> objects,
-        Consumer<T> onDone
+        Consumer<T> onDone,
+        TokenTrie tokenTrie
     ) {
         this.builder = Objects.requireNonNull(builder, "builder");
         this.parent = parent;
@@ -45,6 +45,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         this.booleans = Objects.requireNonNull(booleans, "booleans");
         this.objects = Objects.requireNonNull(objects, "objects");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
+        this.tokenTrie = tokenTrie;
     }
 
     @Override
@@ -92,19 +93,17 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
     }
 
     @Override
+    public Function<char[], Token.Field> tokenTrie() {
+        return tokenTrie;
+    }
+
+    @Override
     public Callbacks bool(boolean bool) {
         BiConsumer<B, Boolean> consumer = booleans.get(currentField);
         if (consumer != null) {
             build(consumer, bool);
         }
         return this;
-    }
-
-    @Override
-    public Collection<Token.Field> canonicalTokens() {
-        return Stream.of(numbers, strings, booleans, objects)
-            .map(Map::keySet).flatMap(Set::stream).distinct()
-            .toList();
     }
 
     private <V, S extends V> void build(BiConsumer<B, V> consumer, S s) {
