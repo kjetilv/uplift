@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 final class JsonImpl implements Json {
 
@@ -42,8 +41,8 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(Source source, Callbacks callbacks) {
-        Function<char[], Token.Field> tokenResolver =
-            Optional.ofNullable(callbacks.tokenTrie()).orElse(ALLOCATOR);
+        TokenResolver tokenResolver =
+            Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
         Tokens tokens = new Tokens(source, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
         if (callbacks.multi()) {
@@ -84,7 +83,7 @@ final class JsonImpl implements Json {
         JsonWriter.write(new StreamSink(baos), object);
     }
 
-    public static final Function<char[], Token.Field> ALLOCATOR = new Allocator();
+    public static final TokenResolver ALLOCATOR = new Allocator();
 
     private static Object process(Source source) {
         AtomicReference<Object> reference = new AtomicReference<>();
@@ -92,11 +91,11 @@ final class JsonImpl implements Json {
         return reference.get();
     }
 
-    private static class Allocator implements Function<char[], Token.Field> {
+    private static class Allocator implements TokenResolver {
 
         @Override
-        public Token.Field apply(char[] chars) {
-            return new Token.Field(chars);
+        public Token.Field get(byte[] chars, int offset, int length) {
+            return new Token.Field(chars, offset, length);
         }
 
         @Override

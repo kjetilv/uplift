@@ -212,7 +212,8 @@ final class Gen {
         TypeElement typeElement,
         JavaFileObject file,
         Collection<? extends Element> roots,
-        Collection<? extends Element> enums
+        Collection<? extends Element> enums,
+        boolean isRoot
     ) {
         Name name = typeElement.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
@@ -273,22 +274,32 @@ final class Gen {
                     )
                     .toList()
             );
-            List<String> subs = typeElement.getRecordComponents()
+
+            List<RecordAttribute> recordAttributes = typeElement.getRecordComponents()
                 .stream()
                 .filter(recordComponentElement ->
                     recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
                 .map(element ->
                     RecordAttribute.create(element, roots, enums))
-                .filter(attribute ->
-                    attribute.variant() == RecordAttribute.Variant.GENERATED_LIST || attribute.variant() == RecordAttribute.Variant.GENERATED)
-                    .map(attribute ->
-                    "        PRESETS.sub(" + callbacksClass(attribute.internalType()) + ".PRESETS);")
-                    .toList();
-            write(bw, subs);
+                .toList();
+
             write(
                 bw,
-                "        PRESETS.buildTokens();",
+                recordAttributes.stream()
+                    .filter(RecordAttribute::isGenerated)
+                    .map(attribute ->
+                        "        PRESETS.sub(" + callbacksClass(attribute.internalType()) + ".PRESETS);")
+                    .toList()
+            );
 
+            if (isRoot) {
+                write(
+                    bw,
+                    "        PRESETS.buildTokens(null);"
+                );
+            }
+            write(
+                bw,
                 "    }",
                 "}"
             );
@@ -342,7 +353,10 @@ final class Gen {
     }
 
     static boolean isType(RecordComponentElement element, Collection<? extends Element> candidates) {
-        TypeMirror elementType = element.asType();
+        return isType(element.asType(), candidates);
+    }
+
+    static boolean isType(TypeMirror elementType, Collection<? extends Element> candidates) {
         return candidates.stream()
             .map(Element::asType)
             .anyMatch(elementType::equals);
@@ -350,6 +364,10 @@ final class Gen {
 
     static boolean isListType(RecordComponentElement element, Collection<? extends Element> candidates) {
         TypeMirror elementType = element.asType();
+        return isListType(elementType, candidates);
+    }
+
+    static boolean isListType(TypeMirror elementType, Collection<? extends Element> candidates) {
         return candidates.stream()
             .map(Element::asType)
             .anyMatch(type ->

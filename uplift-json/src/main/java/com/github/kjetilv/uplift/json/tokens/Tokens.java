@@ -2,11 +2,11 @@ package com.github.kjetilv.uplift.json.tokens;
 
 import com.github.kjetilv.uplift.json.Source;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
 
 import java.lang.Number;
 import java.lang.String;
 import java.math.BigDecimal;
-import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.json.Token.*;
 
@@ -14,9 +14,9 @@ public final class Tokens {
 
     private final Source source;
 
-    private final Function<char[], Field> tokenResolver;
+    private final TokenResolver tokenResolver;
 
-    public Tokens(Source source, Function<char[], Token.Field> tokenResolver) {
+    public Tokens(Source source, TokenResolver tokenResolver) {
         this.source = source;
         this.tokenResolver = tokenResolver;
     }
@@ -31,6 +31,10 @@ public final class Tokens {
 
     public Token next(boolean name) {
         return scanToken(name, false);
+    }
+
+    public Token next(boolean name, boolean canonical) {
+        return scanToken(name, canonical);
     }
 
     public Token nextField(boolean canonical) {
@@ -52,7 +56,7 @@ public final class Tokens {
             return fail("Unexpected end of stream");
         }
         source.reset();
-        char c = source.chomp();
+        byte c = source.chomp();
         return switch (c) {
             case ':' -> COLON;
             case ',' -> COMMA;
@@ -64,22 +68,22 @@ public final class Tokens {
                 ? fieldToken(canonical)
                 : stringToken();
             case 'f' -> skipThen(
-                'a',
-                'l',
-                's',
-                'e',
+                (byte) 'a',
+                (byte) 'l',
+                (byte) 's',
+                (byte) 'e',
                 FALSE
             );
             case 't' -> skipThen(
-                'r',
-                'u',
-                'e',
+                (byte) 'r',
+                (byte) 'u',
+                (byte) 'e',
                 TRUE
             );
             case 'n' -> skipThen(
-                'u',
-                'l',
-                'l',
+                (byte) 'u',
+                (byte) 'l',
+                (byte) 'l',
                 NULL
             );
             case '0',
@@ -100,33 +104,46 @@ public final class Tokens {
 
     private Token.String stringToken() {
         source.spoolString();
-        return new Token.String(source.lexeme());
+        return new Token.String(source.lexemeCopy());
     }
 
     private Field fieldToken(boolean canonical) {
         source.spoolField();
-        char[] chars = source.lexeme();
-        return canonical
-            ? tokenResolver.apply(chars)
-            : new Token.Field(chars);
+        if (canonical) {
+            Source.Loan loan = source.lexemeLoan();
+            Field found = tokenResolver.get(loan.loaned(), loan.offset(), loan.length());
+            if (found != null) {
+                return found;
+            }
+        }
+        return new Field(source.lexemeCopy());
     }
 
-    private Token skipThen(char r, char u, char e, Token token) {
+    private Token skipThen(byte r, byte u, byte e, Token token) {
         source.skip4(r, u, e);
         return token;
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Token skipThen(char a, char l, char s, char e, Token token) {
+    private Token skipThen(byte a, byte l, byte s, byte e, Token token) {
         source.skip5(a, l, s, e);
         return token;
     }
 
     private Token numberToken() {
         source.spoolNumber();
-        Source.Loan loan = source.loanLexeme();
+        Source.Loan loan = source.lexemeLoan();
         try {
-            BigDecimal dec = new BigDecimal(loan.loaned(), loan.offset(), loan.length());
+            //            int length = loan.length();
+//            char[] chars = new char[length];
+//            for (int i = 0; i < length; i++) {
+//                chars[i] = (char) bytes[i];
+//            }
+            BigDecimal dec = new BigDecimal(new String(
+                loan.loaned(),
+                loan.offset(),
+                loan.length()
+            ));
             Number number = dec.scale() == 0 ? dec.longValue() : dec;
             return new Token.Number(number);
         } catch (Exception e) {
@@ -135,15 +152,15 @@ public final class Tokens {
     }
 
     private <T> T fail(String msg) {
-        throw new ReadException(msg, "`" + new String(source.lexeme()) + "`");
+        throw new ReadException(msg, "`" + new String(source.lexemeCopy()) + "`");
     }
 
-    private <T> T fail(char c) {
-        throw new ReadException("Unrecognized character", "`" + c + "`");
+    private <T> T fail(byte c) {
+        throw new ReadException("Unrecognized character", "`" + (char)c + "`");
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + new String(source.lexeme()) + "]";
+        return getClass().getSimpleName() + "[" + new String(source.lexemeCopy()) + "]";
     }
 }

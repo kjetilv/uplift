@@ -148,10 +148,10 @@ public sealed interface Token permits
         }
     }
 
-    record String(char[] chars) implements Token {
+    record String(byte[] bytes) implements Token {
 
         public java.lang.String value() {
-            return new java.lang.String(chars);
+            return new java.lang.String(bytes);
         }
 
         @Override
@@ -161,28 +161,46 @@ public sealed interface Token permits
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof String(char[] otherChars) && Arrays.equals(chars, otherChars);
+            return o instanceof String(byte[] otherBytes) && Arrays.equals(bytes, otherBytes);
         }
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(chars);
+            return Arrays.hashCode(bytes);
         }
 
         @Override
         public java.lang.String toString() {
-            return getClass().getSimpleName() + "[" + new java.lang.String(chars) + "]";
+            return getClass().getSimpleName() + "[" + new java.lang.String(bytes) + "]";
         }
     }
 
-    record Field(char[] chars, int length) implements Token {
+    record Field(byte[] bytes, int offset, int length, int hash) implements Token {
 
-        public Field(char[] chars) {
-            this(chars, chars.length);
+        public Field(byte[] chars, int offset, int length) {
+            this(chars, offset, length, hc(chars, offset, length));
+        }
+
+        public Field(byte[] chars) {
+            this(chars, 0, chars.length, hc(chars, 0, chars.length));
         }
 
         public java.lang.String value() {
-            return new java.lang.String(chars, 0, length);
+            return new java.lang.String(bytes, offset, length);
+        }
+
+        public int charAt(int index) {
+            return bytes[offset + index];
+        }
+
+        public boolean is(byte[] b, int o, int l) {
+            if (this.length != l) {
+                return false;
+            }
+            return Arrays.mismatch(
+                this.bytes, this.offset, this.offset + this.length,
+                b, o, o + l
+            ) < 0;
         }
 
         public boolean is(char[] chars) {
@@ -194,34 +212,39 @@ public sealed interface Token permits
             return TokenType.STRING;
         }
 
-        private static int mismatch(char[] c1, char[] c2, int length) {
-            for (int i = 0; i < length; i++) {
-                if (c1[i] != c2[i]) {
-                    return length;
-                }
-            }
-            return -1;
+        Field in(byte[] cache, int i) {
+            return new Field(cache, i, length, hash);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof Field(char[] otherChars, int otherLength) &&
-                   length == otherLength &&
-                   mismatch(chars, otherChars, length) < 0;
-        }
-
-        @Override
-        public int hashCode() {
-            int hc = Integer.hashCode(length);
-            for (int i = 0; i < length; i++) {
-                hc += 31 * chars[i];
+        private static int hc(byte[] c, int o, int l) {
+            int hc = Integer.hashCode(l);
+            for (int i = 0; i < l; i++) {
+                hc += 31 * c[o + i];
             }
             return hc;
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            return o instanceof Field(byte[] otherChars, int otherOffset, int otherLength, _) &&
+                   length == otherLength &&
+                   Arrays.mismatch(
+                       bytes, offset, offset + length,
+                       otherChars, otherOffset, otherOffset + otherLength
+                   ) < 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return hc(bytes, offset, length);
+        }
+
+        @Override
         public java.lang.String toString() {
-            return getClass().getSimpleName() + "[" + new java.lang.String(chars, 0, length) + "]";
+            return getClass().getSimpleName() + "[" + new java.lang.String(bytes, offset, length) + "]";
         }
 
     }

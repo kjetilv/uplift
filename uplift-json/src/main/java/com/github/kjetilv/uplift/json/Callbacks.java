@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.function.Function;
-
 public interface Callbacks {
 
     default Callbacks objectStarted() {
@@ -48,7 +46,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Function<char[], Token.Field> tokenTrie() {
+    default TokenResolver tokenResolver() {
         return null;
     }
 

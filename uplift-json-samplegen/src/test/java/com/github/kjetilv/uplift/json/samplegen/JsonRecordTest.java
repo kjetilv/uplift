@@ -20,11 +20,14 @@ public class JsonRecordTest {
 
     @Test
     void parseShortUser() {
-        String json = """
+        String json =
+            //language=json
+            """
             {
               "tags": {
-                "foo": {
-                  "h1": "v1"
+                "foos": {
+                  "foo1": "bar",
+                  "foo2": "zot"
                 }
               }
             }
@@ -34,9 +37,10 @@ public class JsonRecordTest {
 
 //        assertThat(readUser.tags()).containsEntry("good", "evil");
 //        assertThat(readUser.tags()).containsEntry("1", 2L);
-        assertThat(readUser.tags().get("foo"))
+        assertThat(readUser.tags().get("foos"))
             .asInstanceOf(MAP)
-            .containsEntry("h1", "v1");
+            .containsEntry("foo1", "bar")
+            .containsEntry("foo2", "zot");
     }
 
     @Test

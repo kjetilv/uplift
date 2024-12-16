@@ -1,32 +1,33 @@
 package com.github.kjetilv.uplift.json;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public sealed interface Trie {
+public record Trie(int skip, Token.Field field, Map<Byte, Trie> level) {
 
-    static Trie leaf(Token.Field field) {
-        return new Leaf(field);
+    public static Trie node(int skip, Token.Field leaf, Map<Byte, Trie> tries) {
+        return new Trie(skip, leaf, tries);
     }
 
-    static Trie node(int skip, Token.Field field, Map<Character, Trie> characterTrieMap) {
-        return new Node(skip, field, characterTrieMap);
-    }
-
-    record Leaf(Token.Field field) implements Trie {
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + field + "]";
-        }
-    }
-
-    record Node(int skip, Token.Field field, Map<Character, Trie> level) implements Trie {
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" +
-                   skip + "> " +
-                   (field == null ? "" : field + " ") +
-                   level +
-                   "]";
-        }
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + Stream.of(
+                Optional.of(skip)
+                    .filter(s -> s > 0)
+                    .map(s -> s + ">"),
+                Optional.ofNullable(field)
+                    .map(f -> "'" + f.value() + "'"),
+                Optional.ofNullable(level)
+                    .filter(l -> !l.isEmpty())
+                    .map(l ->
+                        l.entrySet()
+                            .stream()
+                            .map(entry ->
+                                "'" + entry.getKey() + "':" + entry.getValue())
+                            .collect(Collectors.joining("/")))
+            ).flatMap(Optional::stream)
+            .collect(Collectors.joining(" ")) + "]";
     }
 }

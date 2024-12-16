@@ -1,11 +1,9 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.NullCallbacks;
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenTrie;
+import com.github.kjetilv.uplift.json.*;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.*;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
@@ -93,7 +91,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
     }
 
     @Override
-    public Function<char[], Token.Field> tokenTrie() {
+    public TokenResolver tokenResolver() {
         return tokenTrie;
     }
 

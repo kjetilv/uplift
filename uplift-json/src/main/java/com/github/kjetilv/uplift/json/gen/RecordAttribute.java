@@ -59,6 +59,10 @@ record RecordAttribute(
                ")";
     }
 
+    boolean isGenerated() {
+        return variant() == RecordAttribute.Variant.GENERATED_LIST || variant() == RecordAttribute.Variant.GENERATED;
+    }
+
     String writeCall(TypeElement te) {
         Optional<String> listType = listType(element, roots, enums);
         boolean isEnum = isType(element, enums) || isListType(element, enums);

@@ -12,7 +12,7 @@ public record Entities(
     List<URI> urls
 ) {
 
-    @JsonRecord
+    @JsonRecord(root = false)
     public record UserMention(
         List<Long> indices,
         String name,

@@ -1,18 +1,23 @@
 package com.github.kjetilv.uplift.json;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.SequencedMap;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @SuppressWarnings("unused")
 public interface Json {
 
     default SequencedMap<?, ?> jsonMap(InputStream source) {
         return asMap(source, read(source));
+    }
+
+    default SequencedMap<?, ?> jsonMap(byte[] source) {
+        return asMap(source, read(new String(source, UTF_8)));
     }
 
     default SequencedMap<?, ?> jsonMap(char[] source) {
@@ -35,8 +40,12 @@ public interface Json {
         return read(new String(bytes));
     }
 
+    default Object read(byte[] bytes) {
+        return read(new String(bytes, UTF_8));
+    }
+
     default byte[] writeBytes(Object object) {
-        return write(object).getBytes(StandardCharsets.UTF_8);
+        return write(object).getBytes(UTF_8);
     }
 
     default Object read(Reader reader) {
@@ -51,7 +60,7 @@ public interface Json {
     default Object read(String string) {
         try (
             InputStream in = new ByteArrayInputStream(
-                Objects.requireNonNull(string, "string").getBytes(StandardCharsets.UTF_8))
+                Objects.requireNonNull(string, "string").getBytes(UTF_8))
         ) {
             return read(in);
         } catch (Exception e) {
@@ -62,7 +71,7 @@ public interface Json {
     default String write(Object object) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             write(object, baos);
-            return baos.toString(StandardCharsets.UTF_8);
+            return baos.toString(UTF_8);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + object, e);
         }

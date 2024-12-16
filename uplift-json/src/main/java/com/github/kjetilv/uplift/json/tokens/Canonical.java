@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.tokens;
 
 final class Canonical {
 
-    static char[] chars(int c) {
+    static byte[] bytes(int c) {
         return switch (c) {
             case ':' -> COLON;
             case ',' -> COMMA;
@@ -10,22 +10,22 @@ final class Canonical {
             case '[' -> LBRAC;
             case '}' -> RCURL;
             case ']' -> RBRAC;
-            default -> new char[] {(char) c};
+            default -> new byte[] {(byte) c};
         };
     }
 
     private Canonical() {
     }
 
-    private static final char[] COLON = {':'};
+    private static final byte[] COLON = {':'};
 
-    private static final char[] COMMA = {','};
+    private static final byte[] COMMA = {','};
 
-    private static final char[] LCURL = {'{'};
+    private static final byte[] LCURL = {'{'};
 
-    private static final char[] LBRAC = {'['};
+    private static final byte[] LBRAC = {'['};
 
-    private static final char[] RCURL = {'}'};
+    private static final byte[] RCURL = {'}'};
 
-    private static final char[] RBRAC = {']'};
+    private static final byte[] RBRAC = {']'};
 }

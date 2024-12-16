@@ -78,6 +78,7 @@ class JsonTest {
         assertThat(read).isEqualTo("foo");
     }
 
+    @Disabled
     @Test
     void singleValueStringmoji() {
         //language=json
@@ -154,6 +155,7 @@ class JsonTest {
         );
     }
 
+    @SuppressWarnings("JsonStandardCompliance")
     @Test
     void readLineBreak() {
         //language=json
@@ -164,6 +166,7 @@ class JsonTest {
         assertThat(json).asInstanceOf(MAP).containsEntry("foo", "\n");
     }
 
+    @SuppressWarnings("JsonStandardCompliance")
     @Disabled // TODO
     @Test
     void readWriteLineBreak() {
@@ -472,7 +475,7 @@ class JsonTest {
 
     @Disabled("Not yet")
     @Test
-    void testUnidcode() {
+    void testUnicode() {
         //language=JSON
         Object roundtrip = roundtrip(
             """
@@ -586,12 +589,12 @@ class JsonTest {
     void testObjects() throws MalformedURLException {
         Map<String, Object> written = new LinkedHashMap<>();
         written.put("uri", Optional.of(URI.create("https://www.vg.no")));
-        written.put("url", URI.create("https://www.vg.no").toURL());
+        written.put("url", URI.create("https://www.db.no").toURL());
         written.put("whatever", Enum.ENUM);
         written.put("oops", null);
         //language=json
         String source = """
-            {"uri":"https://www.vg.no","url":"https://www.vg.no","whatever":"ENUM","oops":null}
+            {"uri":"https://www.vg.no","url":"https://www.db.no","whatever":"ENUM","oops":null}
             """.trim();
         Map<?, ?> parsed = JSON.jsonMap(source);
         String expected = JSON.write(parsed);

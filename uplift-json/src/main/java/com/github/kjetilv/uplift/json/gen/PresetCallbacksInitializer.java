@@ -15,18 +15,21 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings({"SameParameterValue", "unused"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
 
-    private final Map<Token.Field, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
+    private Map<Token.Field, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
 
-    private final Map<Token.Field, BiConsumer<B, String>> strings = new LinkedHashMap<>();
+    private Map<Token.Field, BiConsumer<B, String>> strings = new LinkedHashMap<>();
 
-    private final Map<Token.Field, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
+    private Map<Token.Field, BiConsumer<B, Boolean>> booleans = new LinkedHashMap<>();
 
-    private final Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> objects = new LinkedHashMap<>();
+    private Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> objects = new LinkedHashMap<>();
 
     private final List<PresetCallbacksInitializer<?, ?>> subs = new ArrayList<>();
 
@@ -38,61 +41,63 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public Stream<Token.Field> fields() {
         return Stream.concat(
-            Stream.of(numbers, strings, booleans, objects)
-                .map(Map::keySet).flatMap(Set::stream),
-            subs.stream()
-                .flatMap(PresetCallbacksInitializer::fields)
-        ).sorted(Comparator.comparing(Token.Field::value))
-            .distinct();
+                Stream.of(numbers, strings, booleans, objects)
+                    .map(Map::keySet)
+                    .flatMap(Set::stream),
+                subs.stream()
+                    .flatMap(PresetCallbacksInitializer::fields)
+            )
+            .distinct()
+            .sorted(Comparator.comparing(Token.Field::value));
     }
 
     public void onObject(String name, BiFunction<Callbacks, B, Callbacks> nested) {
-        objects.put(new Token.Field(chars(name)), nested);
+        objects.put(new Token.Field(bytes(name)), nested);
     }
 
     public void onString(String name, BiConsumer<B, String> set) {
-        strings.put(new Token.Field(chars(name)), set);
+        strings.put(new Token.Field(bytes(name)), set);
     }
 
     public void onCharacter(String name, BiConsumer<B, Character> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, string) ->
                 build(builder, set, toChar(string))
         );
     }
 
     public void onBoolean(String name, BiConsumer<B, Boolean> set) {
-        booleans.put(new Token.Field(chars(name)), set);
+        booleans.put(new Token.Field(bytes(name)), set);
     }
 
     public void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (B builder, Double d) ->
                 build(builder, set, d.floatValue())
         );
     }
 
     public void onDouble(String name, BiConsumer<B, Double> set) {
-        numbers.put(new Token.Field(chars(name)), set);
+        numbers.put(new Token.Field(bytes(name)), set);
     }
 
     public void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (B builder, Long l) ->
                 build(builder, set, l.intValue())
         );
     }
 
     public void onLong(String name, BiConsumer<B, Long> set) {
-        numbers.put(new Token.Field(chars(name)), set);
+        numbers.put(new Token.Field(bytes(name)), set);
     }
 
     public void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (B builder, Long value) ->
                 build(builder, set, BigInteger.valueOf(value))
         );
@@ -100,7 +105,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onUUID(String name, BiConsumer<B, UUID> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, UUID.fromString(str))
         );
@@ -108,7 +113,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onURI(String name, BiConsumer<B, URI> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, URI.create(str))
         );
@@ -116,7 +121,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onURL(String name, BiConsumer<B, URL> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) -> {
                 try {
                     build(builder, set, URI.create(str).toURL());
@@ -129,7 +134,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onDuration(String name, BiConsumer<B, Duration> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, Duration.parse(str))
         );
@@ -137,7 +142,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onLocalDateTime(String name, BiConsumer<B, LocalDateTime> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, LocalDateTime.parse(str))
         );
@@ -145,7 +150,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onLocalDate(String name, BiConsumer<B, LocalDate> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, LocalDate.parse(str))
         );
@@ -153,7 +158,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onOffsetDateTime(String name, BiConsumer<B, OffsetDateTime> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, OffsetDateTime.parse(str))
         );
@@ -161,7 +166,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onUuid(String name, BiConsumer<B, Uuid> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 build(builder, set, Uuid.from(str))
         );
@@ -169,7 +174,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onInstant(String name, BiConsumer<B, Instant> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, num) ->
                 build(builder, set, Instant.ofEpochMilli(num.longValue()))
         );
@@ -177,12 +182,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onBigDecimal(String name, BiConsumer<B, BigDecimal> set) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, string) ->
                 build(builder, set, new BigDecimal(string))
         );
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, number) ->
                 build(builder, set, BigDecimal.valueOf(number.doubleValue()))
         );
@@ -190,7 +195,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (B builder, Long l) ->
                 build(builder, set, l.shortValue())
         );
@@ -198,7 +203,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (B builder, Long l) ->
                 build(builder, set, l.byteValue())
         );
@@ -210,7 +215,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         BiConsumer<B, E> setter
     ) {
         strings.put(
-            new Token.Field(chars(name)),
+            new Token.Field(bytes(name)),
             (builder, str) ->
                 setter.accept(builder, enumType.apply(str))
         );
@@ -236,8 +241,38 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         return tokenTrie;
     }
 
-    public void buildTokens() {
-        tokenTrie = new TokenTrie(fields().toList());
+    public void buildTokens(TokenTrie tokenTrie) {
+        if (tokenTrie == null) {
+            List<Token.Field> tokenFields = fields().toList();
+            this.tokenTrie = new TokenTrie(tokenFields);
+        } else {
+            this.tokenTrie = tokenTrie;
+        }
+        numbers = replace(numbers, this.tokenTrie);
+        strings = replace(strings, this.tokenTrie);
+        objects = replace(objects, this.tokenTrie);
+        booleans = replace(booleans, this.tokenTrie);
+        for (PresetCallbacksInitializer<?, ?> sub : subs) {
+            sub.buildTokens(this.tokenTrie);
+        }
+    }
+
+    private <V> Map<Token.Field, V> replace(
+        Map<Token.Field, V> map,
+        TokenTrie tokenTrie
+    ) {
+        return map.keySet()
+            .stream()
+            .map(token ->
+                canonical(tokenTrie, token))
+            .collect(Collectors.toMap(
+                Function.identity(),
+                map::get,
+                (v1, v2) -> {
+                    throw new IllegalStateException("No conbime: " + v1 + " / " + v2);
+                },
+                IdentityHashMap::new
+            ));
     }
 
     private <V, S extends V> void build(B builder, BiConsumer<B, V> consumer, S s) {
@@ -251,8 +286,17 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         }
     }
 
-    private static char[] chars(String name) {
-        return name.toCharArray();
+    private static Token.Field canonical(TokenTrie tokenTrie, Token.Field token) {
+        Token.Field resolve = tokenTrie.get(token);
+        if (resolve == null) {
+            throw new RuntimeException(
+                "Failed to resolve token " + token + " in " + tokenTrie);
+        }
+        return resolve;
+    }
+
+    private static byte[] bytes(String name) {
+        return name.getBytes(UTF_8);
     }
 
     private static Character toChar(String string) {

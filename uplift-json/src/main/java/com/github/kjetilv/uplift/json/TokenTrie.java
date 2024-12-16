@@ -1,152 +1,141 @@
 package com.github.kjetilv.uplift.json;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.json.Trie.node;
-
-public class TokenTrie implements Function<char[], Token.Field> {
+public class TokenTrie implements TokenResolver {
 
     private final Trie root;
+
+    private final int size;
 
     public TokenTrie(Token.Field... fields) {
         this(List.of(fields));
     }
 
     public TokenTrie(Collection<Token.Field> fields) {
-        root = trie(fields, 0).toNode();
+        List<Token.Field> packed = Fields.pack(fields);
+        this.size = packed.size();
+        this.root = buildTrie(packed, 0);
+    }
+
+    public Token.Field get(Token.Field token) {
+        return get(token.bytes(), token.offset(), token.length());
+    }
+
+    public Token.Field get(String token) {
+        byte[] bytes = token.getBytes(StandardCharsets.UTF_8);
+        return get(bytes, 0, bytes.length);
     }
 
     @Override
-    public Token.Field apply(char[] chars) {
-        return get(chars);
-    }
-
-    public Token.Field get(char[] chars) {
+    public Token.Field get(byte[] bytes, int offset, int length) {
         Trie trie = this.root;
         while (true) {
-            switch (trie) {
-                case null -> {
-                    return new Token.Field(chars);
+            if (trie instanceof Trie(
+                int skip,
+                Token.Field field,
+                Map<Byte, Trie> level
+            )) {
+                if (length == skip) {
+                    return field;
                 }
-                case Trie.Leaf(Token.Field field) -> {
-                    return field.is(chars)
-                        ? field
-                        : new Token.Field(chars);
+                if (length <= skip) {
+                    return null;
                 }
-                case Trie.Node(int skip, Token.Field field, Map<Character, Trie> level) -> {
-                    if (chars.length == skip) {
-                        return field;
-                    }
-                    if (chars.length <= skip) {
-                        return new Token.Field(chars);
-                    }
-                    trie = level.get(chars[skip]);
-                }
+                byte c = bytes[offset + skip];
+                trie = level.get(c);
+            } else {
+                return null;
             }
         }
     }
 
-    private static Level trie(Collection<Token.Field> fields, int index) {
-
-        Map<Character, List<Token.Field>> groups = fields.stream()
-            .filter(field -> field.chars().length > index)
-            .collect(Collectors.groupingBy(field ->
-                field.chars()[index]));
-
-        List<Entry<Token.Field>> leafFields = entries(groups)
-            .filter(entry ->
-                entry.value().size() == 1)
-            .map(entry -> entry.map(List::getFirst))
-            .toList();
-
-        List<Entry<Trie>> leafTries = leafFields
-            .stream()
-            .map(entry ->
-                entry.map(Trie::leaf))
-            .toList();
-
-        List<Entry<Level>> nextLevels = entries(groups)
-            .filter(isNode(leafFields))
-            .filter(entry ->
-                entry.value().size() > 1)
-            .map(entry ->
-                entry.map((_, prefixed) -> trie(
-                    prefixed,
-                    index + shortestPrefix(index, prefixed)
-                )))
-            .toList();
-
+    private static Trie buildTrie(Collection<Token.Field> fields, int index) {
         Token.Field leaf = fields.stream()
-            .filter(f -> f.chars().length == index)
-            .findFirst().orElse(null);
+            .filter(f -> f.length() == index)
+            .findFirst()
+            .orElse(null);
 
-        return new Level(index, leaf, leafTries, nextLevels);
+        if (leaf != null && fields.size() == 1) {
+            return Trie.node(leaf.length(), leaf, Collections.emptyMap());
+        }
+
+        Map<Byte, List<Token.Field>> groups = fields.stream()
+            .filter(f -> f.bytes().length > index)
+            .collect(Collectors.groupingBy(field ->
+                field.bytes()[field.offset() + index]));
+
+        List<Entry<Trie>> nextLevels = entries(groups)
+            .map(entry ->
+                entry.map((_, prefixed) -> {
+                    int nextIndex = longestCommonPrefix(prefixed);
+                    return buildTrie(prefixed, nextIndex);
+                }))
+            .toList();
+
+        return Trie.node(
+            index,
+            leaf,
+            nextLevels.stream()
+                .collect(Collectors.toMap(
+                    Entry::key,
+                    Entry::value,
+                    (trie1, trie2) -> {
+                        throw new IllegalStateException("No combine: " + trie1 + " and " + trie2);
+                    },
+                    LinkedHashMap::new
+                ))
+        );
     }
 
-    private static Predicate<Entry<List<Token.Field>>> isNode(List<Entry<Token.Field>> leafFields) {
-        Collection<Character> leafChars = leafFields
-            .stream()
-            .map(Entry::key)
-            .collect(Collectors.toSet());
-        return entry ->
-            !leafChars.contains(entry.key);
-    }
-
-    private static <T> Stream<Entry<T>> entries(Map<Character, T> groups) {
+    private static <T> Stream<Entry<T>> entries(Map<Byte, T> groups) {
         return groups.entrySet()
             .stream()
             .map(Entry::of);
     }
 
-    private static int shortestPrefix(
-        int startingIndex,
-        List<Token.Field> prefixed
+    private static int longestCommonPrefix(
+        List<Token.Field> fields
     ) {
-        int shortestLength = prefixed.stream()
-            .min(Comparator.comparingInt(f -> f.chars().length))
-            .map(Token.Field::chars).orElseThrow().length;
-
-        List<char[]> charses = prefixed.stream()
-            .map(Token.Field::chars)
-            .toList();
-
-        for (int i = startingIndex; i < shortestLength; i++) {
-            if (!sameCharAt(i, charses)) {
-                return i - startingIndex;
+        if (fields.size() == 1) {
+            return fields.getFirst().length();
+        }
+        int shortest = fields.stream()
+            .min(Comparator.comparing(Token.Field::length))
+            .map(Token.Field::length)
+            .orElseThrow();
+        for (int i = 0; i < shortest; i++) {
+            if (!sameCharAt(i, fields)) {
+                return i;
             }
         }
-        return shortestLength;
+        return shortest;
     }
 
-    private static boolean sameCharAt(int fi, List<char[]> charses) {
-        return charses.stream().mapToInt(chars -> chars[fi]).distinct().count() == 1;
+    private static boolean sameCharAt(int index, List<Token.Field> fields) {
+        return fields.stream()
+                   .map(field ->
+                       field.charAt(index))
+                   .distinct()
+                   .count() == 1;
     }
 
-    private static <T> Map<Character, T> mapEntries(Stream<Entry<T>> entries) {
-        return entries.collect(Collectors.toMap(Entry::key, Entry::value));
-    }
+    private record Entry<T>(byte key, T value) {
 
-    private record Entry<T>(char key, T value) {
-
-        static <T> Entry<T> of(Map.Entry<Character, T> entry) {
+        static <T> Entry<T> of(Map.Entry<Byte, T> entry) {
             return of(entry.getKey(), entry.getValue());
         }
 
-        static <T> Entry<T> of(Character key, T value) {
+        static <T> Entry<T> of(byte key, T value) {
             return new Entry<>(key, value);
         }
 
-        <R> Entry<R> map(BiFunction<Character, T, R> mapper) {
+        <R> Entry<R> map(BiFunction<Byte, T, R> mapper) {
             return Entry.of(key, mapper.apply(key, value));
-        }
-
-        <R> Entry<R> map(Function<T, R> mapper) {
-            return Entry.of(key, mapper.apply(value));
         }
 
         @Override
@@ -155,22 +144,8 @@ public class TokenTrie implements Function<char[], Token.Field> {
         }
     }
 
-    private record Level(int skip, Token.Field field, List<Entry<Trie>> leaves, List<Entry<Level>> levels) {
-
-        Trie toNode() {
-            return node(
-                skip,
-                field,
-                mapEntries(nextLevel())
-            );
-        }
-
-        private Stream<Entry<Trie>> nextLevel() {
-            return Stream.concat(
-                leaves.stream(),
-                levels.stream()
-                    .map(entry -> entry.map(Level::toNode))
-            );
-        }
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + size + "]";
     }
 }

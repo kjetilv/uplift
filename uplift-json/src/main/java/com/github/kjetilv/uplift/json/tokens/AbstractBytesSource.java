@@ -8,14 +8,16 @@ import static java.lang.Character.isDigit;
 
 public abstract class AbstractBytesSource implements Source, Source.Loan {
 
-    private char next1;
+    private byte next1;
 
-    private char next2;
+    private byte next2;
 
     @SuppressWarnings("StringBufferField")
-    private char[] currentLexeme = new char[1024];
+    private byte[] currentLexeme = new byte[1024];
 
-    private int currentLexemeIndex;
+    private int currentLexemeOffset;
+
+    private int currentLexemeLength;
 
     private final IntSupplier nextChar;
 
@@ -35,10 +37,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                         return;
                     }
                     case 0 -> fail("Unterminated field");
-                    case '\n' -> fail("Line break in field name: " + new String(lexeme()));
-                    default -> {
-                        added(next1);
-                    }
+                    case '\n' -> fail("Line break in field name: " + new String(lexemeCopy()));
+                    default -> added(next1);
                 }
             } finally {
                 next1 = next2;
@@ -53,7 +53,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         reset();
         boolean quo = false;
         while (true) {
-            char c = peek();
+            byte c = peek();
             switch (c) {
                 case '"' -> {
                     if (quo) {
@@ -71,21 +71,21 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                     } else {
                         advance();
                         quo = true;
-                    }
-                }   // -----------------------------
-                case 0, // ------------/^^^^^\------
-                     1, 2, // ---------|o   o|------
-                     3, 4, 5, // -------\_._/-------
-                     6, 7, 8, 9, // ----- \=--------
-                     10, 11, 12, 13, // ---\_-------
-                     14, 15, 16, 17, 18, // -\------
-                     19, 20, 21, 22, 23, 24, // ----
-                     25, 26, 27, 28, 29, 30, 31 -> {
+                    } // -----|   q|------------\__./=-
+                } // =---------\_./--------------/-----
+                case 0, // -----/-=----/^^^^^\--|------
+                     1, 2, // ---------| q 'p|--|------
+                     3, 4, 5, // -------\_._/---\------
+                     6, 7, 8, 9, // ----- \=-------/^^^
+                     10, 11, 12, 13, // ---\_-----|q` p
+                     14, 15, 16, 17, 18, // -\----\_._/
+                     19, 20, 21, 22, 23, 24, // ---/---
+                     25, 26, 27, 28, 29, 30, 31 -> { //
                     if (quo) {
                         chomp();
                         quo = false;
                     } else {
-                        fail("Unespaced control char: " + (int) c);
+                        fail("Unescaped control char: " + (int) c);
                     }
                 }
                 default -> {
@@ -111,22 +111,22 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
-    public char[] lexeme() {
-        if (currentLexemeIndex == 1) {
-            return Canonical.chars(currentLexeme[currentLexemeIndex - 1]);
+    public byte[] lexemeCopy() {
+        if (currentLexemeLength == 1) {
+            return Canonical.bytes(currentLexeme[currentLexemeOffset + currentLexemeLength - 1]);
         }
-        char[] sub = new char[currentLexemeIndex];
-        System.arraycopy(currentLexeme, 0, sub, 0, currentLexemeIndex);
+        byte[] sub = new byte[currentLexemeLength];
+        System.arraycopy(currentLexeme, currentLexemeOffset, sub, 0, currentLexemeLength);
         return sub;
     }
 
     @Override
-    public Loan loanLexeme() {
+    public Loan lexemeLoan() {
         return this;
     }
 
     @Override
-    public char chomp() {
+    public byte chomp() {
         try {
             return added(next1);
         } finally {
@@ -135,7 +135,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
-    public void skip5(char c0, char c1, char c2, char c3) {
+    public void skip5(byte c0, byte c1, byte c2, byte c3) {
         assert next1 == c0 : next1 + "!=" + c0;
         assert next2 == c1 : next2 + "!=" + c1;
         int next3 = this.nextChar.getAsInt();
@@ -147,7 +147,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
-    public void skip4(char c0, char c1, char c2) {
+    public void skip4(byte c0, byte c1, byte c2) {
         assert next1 == c0 : next1 + "!=" + c0;
         assert next2 == c1 : next2 + "!=" + c1;
         int next3 = this.nextChar.getAsInt();
@@ -156,17 +156,10 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         next2 = nextChar();
     }
 
-    private char peek() {
-        return next1;
-    }
-
-    private char peekNext() {
-        return next2;
-    }
-
     @Override
     public void reset() {
-        currentLexemeIndex = 0;
+        currentLexemeOffset = 0;
+        currentLexemeLength = 0;
     }
 
     @Override
@@ -183,7 +176,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
-    public char[] loaned() {
+    public byte[] loaned() {
         return currentLexeme;
     }
 
@@ -194,10 +187,18 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public int length() {
-        return currentLexemeIndex;
+        return currentLexemeLength;
     }
 
-    private boolean digital(char peek) {
+    private byte peek() {
+        return next1;
+    }
+
+    private byte peekNext() {
+        return next2;
+    }
+
+    private boolean digital(byte peek) {
         return peek == '.' || isDigit(peek);
     }
 
@@ -206,30 +207,30 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         next2 = nextChar();
     }
 
-    private char added(char chomped) {
+    private byte added(byte chomped) {
         try {
-            currentLexeme[currentLexemeIndex] = chomped;
+            currentLexeme[currentLexemeOffset + currentLexemeLength] = chomped;
         } catch (ArrayIndexOutOfBoundsException ignore) {
             expand();
-            currentLexeme[currentLexemeIndex] = chomped;
+            currentLexeme[currentLexemeOffset + currentLexemeLength] = chomped;
         } finally {
-            currentLexemeIndex++;
+            currentLexemeLength++;
         }
         return chomped;
     }
 
     private void expand() {
-        char[] biggerLexeme = new char[currentLexemeIndex * 2];
-        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, currentLexemeIndex);
+        byte[] biggerLexeme = new byte[currentLexemeLength * 2];
+        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, currentLexemeLength);
         currentLexeme = biggerLexeme;
     }
 
-    private char nextChar() {
-        return (char) this.nextChar.getAsInt();
+    private byte nextChar() {
+        return (byte) this.nextChar.getAsInt();
     }
 
     private void fail(String msg) {
-        throw new ReadException(msg, "`" + new String(lexeme()) + "`");
+        throw new ReadException(msg, "`" + new String(lexemeCopy()) + "`");
     }
 
     private static final int LN = 10;
@@ -252,8 +253,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public String toString() {
-        int tail = Math.min(LN, currentLexemeIndex);
-        int printOffset = currentLexemeIndex - tail;
+        int tail = Math.min(LN, currentLexemeLength);
+        int printOffset = currentLexemeLength - tail;
         return getClass().getSimpleName() + "[" + nextChar + " " +
                "<" + new String(currentLexeme, printOffset, tail) + ">" +
                "<" + print(next1) + print(next2) + ">]";

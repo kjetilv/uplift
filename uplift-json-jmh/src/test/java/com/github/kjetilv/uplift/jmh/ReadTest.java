@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.jmh;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.JsonReader;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenTrie;
 import com.github.kjetilv.uplift.json.ffm.MemorySegmentJsonReader;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +28,11 @@ public class ReadTest {
 
         assertThat(read1).isEqualTo(read2);
 
+        TokenTrie tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
+        Token.Field resolve1 = tokenTrie.get("retweeters_count");
+        Token.Field resolve2 = tokenTrie.get("retweeters_count");
+        assertThat(resolve1).isNotNull().isSameAs(resolve2);
+//
     }
 
     private static final URL RESOURCE = Objects.requireNonNull(
@@ -53,6 +60,7 @@ public class ReadTest {
             throw new RuntimeException(e);
         }
         lineSegment = LineSegments.of(data);
+        System.out.println(Tweet_Callbacks.PRESETS);
         bReader = TweetRW.INSTANCE.bytesReader();
         reader = new MemorySegmentJsonReader<>(TweetRW.INSTANCE.callbacks());
     }

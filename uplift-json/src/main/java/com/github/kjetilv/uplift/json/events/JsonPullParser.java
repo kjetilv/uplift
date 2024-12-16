@@ -49,21 +49,21 @@ public final class JsonPullParser {
 
     @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private Callbacks processObject(Callbacks callbacks) {
-        Callbacks c = callbacks.objectStarted();
-        boolean canonical = callbacks.canonical();
+        Callbacks objectCallbacks = callbacks.objectStarted();
+        boolean canonical = objectCallbacks.canonical();
         Token next = tokens.nextField(canonical);
         while (true) {
             switch (next) {
                 case Token.Field fieldToken -> {
-                    Callbacks field = c.field(fieldToken);
+                    Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
                     tokens.skipNext(COLON);
                     Token valueToken = tokens.next();
-                    c = processValue(valueToken, field);
-                    next = commaOr(END_OBJECT);
+                    objectCallbacks = processValue(valueToken, fieldCallbacks);
+                    next = commaOr(END_OBJECT, canonical);
                 }
                 default -> {
                     return next == END_OBJECT
-                        ? c.objectEnded()
+                        ? objectCallbacks.objectEnded()
                         : fail(next, STRING, TokenType.END_OBJECT);
                 }
             }
@@ -75,15 +75,15 @@ public final class JsonPullParser {
         Token next = tokens.next();
         while (next != Token.END_ARRAY) {
             c = processValue(next, c);
-            next = commaOr(Token.END_ARRAY);
+            next = commaOr(Token.END_ARRAY, false);
         }
         return c.arrayEnded();
     }
 
-    private Token commaOr(Token closing) {
+    private Token commaOr(Token closing, boolean canonical) {
         Token token = tokens.next();
         if (token == Token.COMMA) {
-            Token nextToken = tokens.next(closing == END_OBJECT);
+            Token nextToken = tokens.next(closing == END_OBJECT, canonical);
             return nextToken == closing
                 ? fail(nextToken, closing.tokenType())
                 : nextToken;

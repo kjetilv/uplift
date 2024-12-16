@@ -22,11 +22,13 @@ import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.gen.Gen.*;
 
-@SupportedAnnotationTypes({
-    "com.github.kjetilv.uplift.json.JsonRecord",
-    "com.github.kjetilv.uplift.json.Field",
-    "com.github.kjetilv.uplift.json.Singular"
-})
+@SupportedAnnotationTypes(
+    {
+        "com.github.kjetilv.uplift.json.JsonRecord",
+        "com.github.kjetilv.uplift.json.Field",
+        "com.github.kjetilv.uplift.json.Singular"
+    }
+)
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
 
@@ -47,15 +49,19 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void write(Collection<? extends Element> types, Collection<? extends Element> enums) {
+    private void write(
+        Collection<? extends Element> types,
+        Collection<? extends Element> enums
+    ) {
         for (Element el : types) {
             try {
-                TypeElement typeEl = typeEl(el);
-                PackageElement packageEl = packageEl(typeEl);
-                writeBuilder(packageEl, typeEl, builderFile(typeEl), types, enums);
-                writeCallbacks(packageEl, typeEl, callbackFile(typeEl), types, enums);
-                writeWriter(packageEl, typeEl, writerFile(typeEl), types, enums);
-                rootElement(typeEl).ifPresent(rootEl ->
+                TypeElement typeElement = typeEl(el);
+                Optional<TypeElement> rootElement = rootElement(typeElement);
+                PackageElement packageEl = packageEl(typeElement);
+                writeBuilder(packageEl, typeElement, builderFile(typeElement), types, enums);
+                writeCallbacks(packageEl, typeElement, callbackFile(typeElement), types, enums, rootElement.isPresent());
+                writeWriter(packageEl, typeElement, writerFile(typeElement), types, enums);
+                rootElement.ifPresent(rootEl ->
                     writeRW(packageEl, rootEl, factoryFile(packageEl, rootEl))
                 );
             } catch (Exception e) {

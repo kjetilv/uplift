@@ -61,6 +61,15 @@ class LambdaPayloadTest {
 //        assertThat(payload.pathParam("*/{path}.m4a", "path")).hasValue("QT59MOx-O_yKtqj1GXOQwpg");
     }
 
+    @Test
+    void canParseVer2a() {
+        LambdaPayload payload = LambdaPayload.parse(VER_2_A);
+        assertThat(payload.headers()).containsExactlyInAnyOrderEntriesOf(Map.of(
+            "header1", "value1",
+            "header2", "value2"
+        ));
+    }
+
     public static final String SAMPLE = """
         {
           "resource": "/audio/{track}",
@@ -142,6 +151,7 @@ class LambdaPayloadTest {
         """;
 
     private static final String VER_2 =
+        //language=json
         """
             {
               "version": "2.0",
@@ -214,7 +224,19 @@ class LambdaPayloadTest {
             }
             """;
 
+    private static final String VER_2_A =
+        //language=json
+        """
+            {
+              "headers": {
+                "header1": "value1",
+                "header2": "value2"
+              }
+            }
+            """;
+
     private static final String VER_1 =
+        //language=json
         """
                 {
                   "version": "1.0",

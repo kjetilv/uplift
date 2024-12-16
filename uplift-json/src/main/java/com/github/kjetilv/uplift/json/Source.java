@@ -2,13 +2,13 @@ package com.github.kjetilv.uplift.json;
 
 public interface Source {
 
-    void skip4(char c0, char c1, char c2);
+    void skip4(byte c0, byte c1, byte c2);
 
-    void skip5(char c0, char c1, char c2, char c3);
+    void skip5(byte c0, byte c1, byte c2, byte c3);
 
-    char[] lexeme();
+    byte[] lexemeCopy();
 
-    Loan loanLexeme();
+    Loan lexemeLoan();
 
     void spoolField();
 
@@ -16,7 +16,7 @@ public interface Source {
 
     void spoolNumber();
 
-    char chomp();
+    byte chomp();
 
     void reset();
 
@@ -28,7 +28,9 @@ public interface Source {
             return new String(loaned(), offset(), length());
         }
 
-        char[] loaned();
+        byte[] loaned();
+
+        int offset();
 
         int offset();
 
