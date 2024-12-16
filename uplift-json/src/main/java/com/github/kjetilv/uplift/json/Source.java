@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.function.BiFunction;
-
 public interface Source {
 
     void skip4(char c0, char c1, char c2);
