@@ -60,7 +60,9 @@ public final class Tokens {
             case '}' -> END_OBJECT;
             case '[' -> BEGIN_ARRAY;
             case ']' -> END_ARRAY;
-            case '"' -> fieldName ? fieldToken() : stringToken();
+            case '"' -> fieldName
+                ? fieldToken()
+                : stringToken();
             case 'f' -> skipThen(
                 'a',
                 'l',
@@ -105,6 +107,8 @@ public final class Tokens {
         source.spoolField();
         char[] chars = source.lexeme();
         return tokenResolver.apply(chars);
+//        Source.Loan chars = source.loanLexeme();
+//        return tokenResolver.apply(chars.loaned());
     }
 
     private Token skipThen(char r, char u, char e, Token token) {

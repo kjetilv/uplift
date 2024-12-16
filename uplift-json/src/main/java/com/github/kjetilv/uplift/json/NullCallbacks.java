@@ -9,11 +9,6 @@ public class NullCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks field(Token.Field token) {
-        return this;
-    }
-
-    @Override
     public Callbacks objectStarted() {
         return new NullCallbacks(this);
     }

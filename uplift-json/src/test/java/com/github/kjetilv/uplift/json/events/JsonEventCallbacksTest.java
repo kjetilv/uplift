@@ -20,7 +20,7 @@ public class JsonEventCallbacksTest {
                 {
                   "els": [1, 2, "a", "b"],
                   "foo": ["tip", true, [ 3, 4 ], []],
-                  "bar": [{"zit": "quz"}, 4]
+                  "bar": [{"zit": "quz", "1": "2"}, 4]
                 }
                 """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
@@ -44,6 +44,7 @@ public class JsonEventCallbacksTest {
               field:bar arrayStarted
                 objectStarted
                   field:zit string:quz
+                  field:1 string:2
                 objectEnded
               number:4
               arrayEnded

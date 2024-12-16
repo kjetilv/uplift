@@ -75,7 +75,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         if (closed.get()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(fetch.apply(request)
+        return Optional.of(fetch.apply(request)
             .thenApply(response ->
                 invocationId(response)
                     .map(id ->

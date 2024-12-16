@@ -29,14 +29,21 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     public void spoolField() {
         reset();
         while (true) {
-            switch (peek()) {
-                case '"' -> {
-                    advance();
-                    return;
+            try {
+                switch (next1) {
+                    case '"' -> {
+                        return;
+                    }
+                    case 0 -> fail("Unterminated field");
+                    case '\n' -> fail("Line break in field name: " + new String(lexeme()));
+                    default -> {
+                        added(next1);
+                    }
                 }
-                case 0 -> fail("Unterminated field");
-                case '\n' -> fail("Line break in field name: " + new String(lexeme()));
-                default -> chomp();
+            } finally {
+                next1 = next2;
+                next2 = nextChar();
+
             }
         }
     }

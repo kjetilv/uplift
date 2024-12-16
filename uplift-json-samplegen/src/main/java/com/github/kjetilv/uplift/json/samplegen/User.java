@@ -20,6 +20,7 @@ public record User(
     @Singular("alias")
     List<String> aliases,
     List<Integer> misc,
+    Map<String, Object> tags,
     BigDecimal balance
 ) {
 

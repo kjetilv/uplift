@@ -9,7 +9,7 @@ public interface Callbacks {
     }
 
     default Callbacks field(Token.Field token) {
-        throw new IllegalStateException(this + " cannot accept field " + token);
+        return this;
     }
 
     default Callbacks objectEnded() {

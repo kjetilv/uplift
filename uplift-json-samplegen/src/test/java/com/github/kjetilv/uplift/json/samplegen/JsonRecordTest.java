@@ -6,9 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,7 +59,12 @@ public class JsonRecordTest {
                   "aliases": ["MrX", "Foo"],
                   "misc": [50, 60, 70],
                   "maxAge": 127,
-                  "balance": "123.23"
+                  "balance": "123.23",
+                  "tags": {
+                    "good": "evil",
+                    "1": 2,
+                    "foo": true
+                  }
                 }
                 """.formatted(uuid);
         User readUser = STRING_READER.read(json);
@@ -89,6 +97,15 @@ public class JsonRecordTest {
                 60,
                 70
             ),
+            Stream.of(
+                    Map.entry("good", "evil"),
+                    Map.entry("1", 2L),
+                    Map.entry("foo", true)
+                )
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey, Map.Entry::getValue, (o, o2) -> o,
+                    LinkedHashMap::new
+                )),
             new BigDecimal("123.23")
         );
         User genUser = Users.INSTANCE.stringReader().read(json);

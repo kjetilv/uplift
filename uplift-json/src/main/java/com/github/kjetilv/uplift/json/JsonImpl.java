@@ -42,8 +42,8 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(Source source, Callbacks callbacks) {
-        Function<char[], Token.Field> tokenResolver = Optional.ofNullable(callbacks.tokenTrie())
-            .orElseGet(() -> Token.Field::new);
+        Function<char[], Token.Field> tokenResolver =
+            Optional.ofNullable(callbacks.tokenTrie()).orElse(ALLOCATOR);
         Tokens tokens = new Tokens(source, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
         if (callbacks.multi()) {
@@ -84,10 +84,24 @@ final class JsonImpl implements Json {
         JsonWriter.write(new StreamSink(baos), object);
     }
 
+    public static final Function<char[], Token.Field> ALLOCATOR = new Allocator();
+
     private static Object process(Source source) {
         AtomicReference<Object> reference = new AtomicReference<>();
         INSTANCE.parse(source, new ValueCallbacks(reference::set));
         return reference.get();
     }
 
+    private static class Allocator implements Function<char[], Token.Field> {
+
+        @Override
+        public Token.Field apply(char[] chars) {
+            return new Token.Field(chars);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[}";
+        }
+    }
 }
