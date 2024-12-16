@@ -25,10 +25,12 @@ public interface Source {
     interface Loan {
 
         default String string() {
-            return new String(loaned(), 0, length());
+            return new String(loaned(), offset(), length());
         }
 
         char[] loaned();
+
+        int offset();
 
         int length();
     }

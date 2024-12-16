@@ -126,7 +126,7 @@ public final class Tokens {
         source.spoolNumber();
         Source.Loan loan = source.loanLexeme();
         try {
-            BigDecimal dec = new BigDecimal(loan.loaned(), 0, loan.length());
+            BigDecimal dec = new BigDecimal(loan.loaned(), loan.offset(), loan.length());
             Number number = dec.scale() == 0 ? dec.longValue() : dec;
             return new Token.Number(number);
         } catch (Exception e) {

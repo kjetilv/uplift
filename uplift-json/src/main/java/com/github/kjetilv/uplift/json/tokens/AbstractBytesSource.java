@@ -188,6 +188,11 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     }
 
     @Override
+    public int offset() {
+        return 0;
+    }
+
+    @Override
     public int length() {
         return currentLexemeIndex;
     }
