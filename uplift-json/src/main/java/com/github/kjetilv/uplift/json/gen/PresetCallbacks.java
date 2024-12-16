@@ -106,6 +106,11 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         return this;
     }
 
+    @Override
+    public boolean canonical() {
+        return true;
+    }
+
     private <V, S extends V> void build(BiConsumer<B, V> consumer, S s) {
         try {
             consumer.accept(builder, s);

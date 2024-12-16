@@ -26,20 +26,20 @@ public final class Tokens {
     }
 
     public Token next() {
-        return scanToken(false);
+        return scanToken(false, false);
     }
 
     public Token next(boolean name) {
-        return scanToken(name);
+        return scanToken(name, false);
     }
 
-    public Token nextCanonical() {
-        return scanToken(true);
+    public Token nextField(boolean canonical) {
+        return scanToken(true, canonical);
     }
 
     public void skipNext(Token expected) {
         while (true) {
-            Token token = scanToken(false);
+            Token token = scanToken(false, false);
             if (token == expected) {
                 return;
             }
@@ -47,7 +47,7 @@ public final class Tokens {
         }
     }
 
-    private Token scanToken(boolean fieldName) {
+    private Token scanToken(boolean fieldName, boolean canonical) {
         if (source.done()) {
             return fail("Unexpected end of stream");
         }
@@ -61,7 +61,7 @@ public final class Tokens {
             case '[' -> BEGIN_ARRAY;
             case ']' -> END_ARRAY;
             case '"' -> fieldName
-                ? fieldToken()
+                ? fieldToken(canonical)
                 : stringToken();
             case 'f' -> skipThen(
                 'a',
@@ -103,13 +103,12 @@ public final class Tokens {
         return new Token.String(source.lexeme());
     }
 
-    private Field fieldToken() {
+    private Field fieldToken(boolean canonical) {
         source.spoolField();
         char[] chars = source.lexeme();
-//        return new Token.Field(chars);
-        return tokenResolver.apply(chars);
-//        Source.Loan chars = source.loanLexeme();
-//        return tokenResolver.apply(chars.loaned());
+        return canonical
+            ? tokenResolver.apply(chars)
+            : new Token.Field(chars);
     }
 
     private Token skipThen(char r, char u, char e, Token token) {

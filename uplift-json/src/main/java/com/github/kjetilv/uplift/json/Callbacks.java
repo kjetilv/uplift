@@ -51,4 +51,8 @@ public interface Callbacks {
     default Function<char[], Token.Field> tokenTrie() {
         return null;
     }
+
+    default boolean canonical() {
+        return false;
+    }
 }

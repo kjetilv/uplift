@@ -50,7 +50,7 @@ public final class JsonPullParser {
     @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks c = callbacks.objectStarted();
-        Token next = tokens.nextCanonical();
+        Token next = tokens.nextField(callbacks.canonical());
         while (true) {
             switch (next) {
                 case Token.Field fieldToken -> {
