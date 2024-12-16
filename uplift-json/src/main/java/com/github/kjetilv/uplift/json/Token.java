@@ -185,6 +185,10 @@ public sealed interface Token permits
             return new java.lang.String(chars, 0, length);
         }
 
+        public boolean is(char[] chars) {
+            return Arrays.mismatch(this.chars, chars) < 0;
+        }
+
         @Override
         public TokenType tokenType() {
             return TokenType.STRING;

@@ -50,13 +50,13 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
 
     @Override
     public Callbacks objectStarted() {
-        return currentField == null
-            ? this
-            : Optional.ofNullable(objects.get(currentField))
-                .map(fun ->
-                    fun.apply(this, builder))
-                .orElseGet(() ->
-                    new NullCallbacks(this));
+        if (currentField == null) {
+            return this;
+        }
+        BiFunction<Callbacks, B, Callbacks> fun = objects.get(currentField);
+        return fun == null
+            ? new NullCallbacks(this)
+            : fun.apply(this, builder);
     }
 
     @Override

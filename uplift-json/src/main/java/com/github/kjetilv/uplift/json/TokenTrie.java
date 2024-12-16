@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -37,7 +34,9 @@ public class TokenTrie implements Function<char[], Token.Field> {
                     return new Token.Field(chars);
                 }
                 case Trie.Leaf(Token.Field field) -> {
-                    return field;
+                    return field.is(chars)
+                        ? field
+                        : new Token.Field(chars);
                 }
                 case Trie.Node(int skip, Token.Field field, Map<Character, Trie> level) -> {
                     if (chars.length == skip) {

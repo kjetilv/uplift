@@ -14,8 +14,30 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 
 public class JsonRecordTest {
+
+    @Test
+    void parseShortUser() {
+        String json = """
+            {
+              "tags": {
+                "foo": {
+                  "h1": "v1"
+                }
+              }
+            }
+            """;
+        User readUser = STRING_READER.read(json);
+        System.out.println(readUser);
+
+//        assertThat(readUser.tags()).containsEntry("good", "evil");
+//        assertThat(readUser.tags()).containsEntry("1", 2L);
+        assertThat(readUser.tags().get("foo"))
+            .asInstanceOf(MAP)
+            .containsEntry("h1", "v1");
+    }
 
     @Test
     void parseUser() {
@@ -103,7 +125,7 @@ public class JsonRecordTest {
                     Map.entry("foo", true)
                 )
                 .collect(Collectors.toMap(
-                    Map.Entry::getKey, Map.Entry::getValue, (o, o2) -> o,
+                    Map.Entry::getKey, Map.Entry::getValue, (o, _) -> o,
                     LinkedHashMap::new
                 )),
             new BigDecimal("123.23")

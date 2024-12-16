@@ -33,7 +33,7 @@ public final class Tokens {
         return scanToken(name);
     }
 
-    public Token nextName() {
+    public Token nextCanonical() {
         return scanToken(true);
     }
 
@@ -106,6 +106,7 @@ public final class Tokens {
     private Field fieldToken() {
         source.spoolField();
         char[] chars = source.lexeme();
+//        return new Token.Field(chars);
         return tokenResolver.apply(chars);
 //        Source.Loan chars = source.loanLexeme();
 //        return tokenResolver.apply(chars.loaned());

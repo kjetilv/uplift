@@ -295,6 +295,6 @@ class LambdaPayloadTest {
                   "stageVariables": null,
                   "body": "Hello from Lambda!",
                   "isBase64Encoded": false
-                }        
+                }
             """;
 }
