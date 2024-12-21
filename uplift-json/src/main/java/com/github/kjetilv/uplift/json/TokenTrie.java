@@ -35,11 +35,7 @@ public class TokenTrie implements TokenResolver {
     public Token.Field get(byte[] bytes, int offset, int length) {
         Trie trie = this.root;
         while (true) {
-            if (trie instanceof Trie(
-                int skip,
-                Token.Field field,
-                Map<Byte, Trie> level
-            )) {
+            if (trie instanceof Trie(int skip, Token.Field field, Map<Byte, Trie> level)) {
                 if (length == skip) {
                     return field;
                 }

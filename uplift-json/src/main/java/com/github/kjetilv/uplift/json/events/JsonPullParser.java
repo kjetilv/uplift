@@ -28,11 +28,11 @@ public final class JsonPullParser {
 
     private Callbacks processValue(Token token, Callbacks callbacks) {
         return switch (token) {
-            case Token.BeginObject() -> processObject(callbacks);
-            case Token.BeginArray() -> processArray(callbacks);
-            case Token.Null() -> callbacks.nuul();
-            case Token.True() -> callbacks.bool(true);
-            case Token.False() -> callbacks.bool(false);
+            case Token.BeginObject _ -> processObject(callbacks);
+            case Token.BeginArray _ -> processArray(callbacks);
+            case Token.Null _ -> callbacks.nuul();
+            case Token.True _ -> callbacks.bool(true);
+            case Token.False _ -> callbacks.bool(false);
             case Token.String string -> callbacks.string(string);
             case Token.Number number -> callbacks.number(number);
             default -> fail(
@@ -47,25 +47,21 @@ public final class JsonPullParser {
         };
     }
 
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks objectCallbacks = callbacks.objectStarted();
         boolean canonical = objectCallbacks.canonical();
         Token next = tokens.nextField(canonical);
         while (true) {
-            switch (next) {
-                case Token.Field fieldToken -> {
-                    Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
-                    tokens.skipNext(COLON);
-                    Token valueToken = tokens.next();
-                    objectCallbacks = processValue(valueToken, fieldCallbacks);
-                    next = commaOr(END_OBJECT, canonical);
-                }
-                default -> {
-                    return next == END_OBJECT
-                        ? objectCallbacks.objectEnded()
-                        : fail(next, STRING, TokenType.END_OBJECT);
-                }
+            if (next instanceof Token.Field fieldToken) {
+                Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
+                tokens.skipNext(COLON);
+                Token valueToken = tokens.next();
+                objectCallbacks = processValue(valueToken, fieldCallbacks);
+                next = commaOr(END_OBJECT, canonical);
+            } else {
+                return next == END_OBJECT
+                    ? objectCallbacks.objectEnded()
+                    : fail(next, STRING, TokenType.END_OBJECT);
             }
         }
     }

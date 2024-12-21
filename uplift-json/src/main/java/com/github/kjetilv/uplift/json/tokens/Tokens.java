@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.json.TokenResolver;
 
 import java.lang.Number;
 import java.lang.String;
-import java.math.BigDecimal;
 
 import static com.github.kjetilv.uplift.json.Token.*;
 
@@ -29,12 +28,12 @@ public final class Tokens {
         return scanToken(false, false);
     }
 
-    public Token next(boolean name) {
-        return scanToken(name, false);
+    public Token next(boolean fieldName) {
+        return scanToken(fieldName, false);
     }
 
-    public Token next(boolean name, boolean canonical) {
-        return scanToken(name, canonical);
+    public Token next(boolean fieldName, boolean canonical) {
+        return scanToken(fieldName, canonical);
     }
 
     public Token nextField(boolean canonical) {
@@ -86,18 +85,8 @@ public final class Tokens {
                 (byte) 'l',
                 NULL
             );
-            case '0',
-                 '1',
-                 '2',
-                 '3',
-                 '4',
-                 '5',
-                 '6',
-                 '7',
-                 '8',
-                 '9',
-                 '.',
-                 '-' -> numberToken();
+            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' ->
+                numberToken();
             default -> fail(c);
         };
     }
@@ -134,17 +123,7 @@ public final class Tokens {
         source.spoolNumber();
         Source.Loan loan = source.lexemeLoan();
         try {
-            //            int length = loan.length();
-//            char[] chars = new char[length];
-//            for (int i = 0; i < length; i++) {
-//                chars[i] = (char) bytes[i];
-//            }
-            BigDecimal dec = new BigDecimal(new String(
-                loan.loaned(),
-                loan.offset(),
-                loan.length()
-            ));
-            Number number = dec.scale() == 0 ? dec.longValue() : dec;
+            Number number = Numbers.parseNumber(loan.loaned(), loan.offset(), loan.length());
             return new Token.Number(number);
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse: `" + loan.string() + "`", e);
@@ -156,7 +135,7 @@ public final class Tokens {
     }
 
     private <T> T fail(byte c) {
-        throw new ReadException("Unrecognized character", "`" + (char)c + "`");
+        throw new ReadException("Unrecognized character", "`" + (char) c + "`");
     }
 
     @Override

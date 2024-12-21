@@ -19,8 +19,12 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ReadBenchmark {
 
@@ -28,7 +32,8 @@ public class ReadBenchmark {
         System.out.println("OK");
 
         Instant initTime = Instant.now();
-        System.out.println(TweetRW.INSTANCE.callbacks()  + " in " + Duration.between(initTime, Instant.now()).toMillis());
+        System.out.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
+            .toMillis());
 
         LongAdder longAdder = new LongAdder();
         for (int i = 0; i < X / 5; i++) {
@@ -43,16 +48,20 @@ public class ReadBenchmark {
         System.gc();
         Instant jacksonNow = Instant.now();
         for (int i = 0; i < X; i++) {
-            Tweet tweet = objectMapper.readValue(data, Tweet.class);
-            longAdder.add(tweet.entities().user_mentions().size());
+            for (byte[] data : datas) {
+                Tweet tweet = objectMapper.readValue(data, Tweet.class);
+                longAdder.add(1);
+            }
         }
         Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
 
         Instant upliftNow = Instant.now();
         for (int i = 0; i < X; i++) {
-            Tweet read = bReader.read(data);
-            longAdder.add(read.entities().user_mentions().size());
+            for (byte[] data : datas) {
+                Tweet read = bReader.read(data);
+                longAdder.add(1);
+            }
         }
         Duration upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Uplift:" + longAdder + ": " + upliftTime);
@@ -85,7 +94,12 @@ public class ReadBenchmark {
     private static final URL RESOURCE = Objects.requireNonNull(
         Thread.currentThread().getContextClassLoader().getResource("48.json"), "resource");
 
+    private static final URL RESOURCE_L = Objects.requireNonNull(
+        Thread.currentThread().getContextClassLoader().getResource("48.jsonl"), "resource");
+
     private static final byte[] data;
+
+    private static final byte[][] datas;
 
     private static final LineSegment lineSegment;
 
@@ -93,7 +107,7 @@ public class ReadBenchmark {
 
     private static final JsonReader<byte[], Tweet> bReader;
 
-    private static final int X = 1_000_000;
+    private static final int X = 50_000;
 
     static {
         try (
@@ -103,6 +117,21 @@ public class ReadBenchmark {
                 inputStream.transferTo(out);
             }
             data = out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+        ) {
+            try (InputStream inputStream = RESOURCE_L.openStream()) {
+                inputStream.transferTo(out);
+            }
+            List<String> stream = Arrays.stream(new String(out.toByteArray(), UTF_8)
+                .split("\n"))
+                .toList();
+            datas = stream.stream()
+                .map(line -> line.getBytes(UTF_8))
+                .toArray(byte[][]::new);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

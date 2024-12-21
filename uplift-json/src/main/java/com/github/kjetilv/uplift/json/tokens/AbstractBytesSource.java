@@ -15,7 +15,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @SuppressWarnings("StringBufferField")
     private byte[] currentLexeme = new byte[1024];
 
-    private int currentLexemeLength;
+    private int index;
 
     private final IntSupplier nextChar;
 
@@ -36,12 +36,11 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                     }
                     case 0 -> fail("Unterminated field");
                     case '\n' -> fail("Line break in field name: " + new String(lexemeCopy()));
-                    default -> added(next1);
+                    default -> add(next1);
                 }
             } finally {
                 next1 = next2;
                 next2 = nextChar();
-
             }
         }
     }
@@ -69,11 +68,11 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                     } else {
                         advance();
                         quo = true;
-                    } // -----|   q|------------\__./=-
-                } // =---------\_./--------------/-----
-                case 0, // -----/-=----/^^^^^\--|------
-                     1, 2, // ---------| q 'p|--|------
-                     3, 4, 5, // -------\_._/---\------
+                    }
+                }
+                case 0, // ------------/^^^^^\---\_._/-s
+                     1, 2, // ---------| q 'p|----/----
+                     3, 4, 5, // -------\_._/--=-|-----
                      6, 7, 8, 9, // ----- \=-------/^^^
                      10, 11, 12, 13, // ---\_-----|q` p
                      14, 15, 16, 17, 18, // -\----\_._/
@@ -110,11 +109,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public byte[] lexemeCopy() {
-        if (currentLexemeLength == 1) {
-            return Canonical.bytes(currentLexeme[currentLexemeLength - 1]);
-        }
-        byte[] sub = new byte[currentLexemeLength];
-        System.arraycopy(currentLexeme, 0, sub, 0, currentLexemeLength);
+        byte[] sub = new byte[index];
+        System.arraycopy(currentLexeme, 0, sub, 0, index);
         return sub;
     }
 
@@ -126,7 +122,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @Override
     public byte chomp() {
         try {
-            return added(next1);
+            add(next1);
+            return next1;
         } finally {
             advance();
         }
@@ -156,7 +153,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public void reset() {
-        currentLexemeLength = 0;
+        index = 0;
     }
 
     @Override
@@ -184,7 +181,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public int length() {
-        return currentLexemeLength;
+        return index;
     }
 
     private byte peek() {
@@ -204,21 +201,20 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         next2 = nextChar();
     }
 
-    private byte added(byte chomped) {
+    private void add(byte chomped) {
         try {
-            currentLexeme[currentLexemeLength] = chomped;
+            currentLexeme[index] = chomped;
         } catch (ArrayIndexOutOfBoundsException ignore) {
             expand();
-            currentLexeme[currentLexemeLength] = chomped;
+            currentLexeme[index] = chomped;
         } finally {
-            currentLexemeLength++;
+            index++;
         }
-        return chomped;
     }
 
     private void expand() {
-        byte[] biggerLexeme = new byte[currentLexemeLength * 2];
-        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, currentLexemeLength);
+        byte[] biggerLexeme = new byte[index * 2];
+        System.arraycopy(currentLexeme, 0, biggerLexeme, 0, index);
         currentLexeme = biggerLexeme;
     }
 
@@ -250,8 +246,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public String toString() {
-        int tail = Math.min(LN, currentLexemeLength);
-        int printOffset = currentLexemeLength - tail;
+        int tail = Math.min(LN, index);
+        int printOffset = index - tail;
         return getClass().getSimpleName() + "[" + nextChar + " " +
                "<" + new String(currentLexeme, printOffset, tail) + ">" +
                "<" + print(next1) + print(next2) + ">]";
