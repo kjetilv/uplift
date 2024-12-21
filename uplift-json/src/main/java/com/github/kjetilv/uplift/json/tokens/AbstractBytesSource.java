@@ -15,8 +15,6 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @SuppressWarnings("StringBufferField")
     private byte[] currentLexeme = new byte[1024];
 
-    private int currentLexemeOffset;
-
     private int currentLexemeLength;
 
     private final IntSupplier nextChar;
@@ -113,10 +111,10 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @Override
     public byte[] lexemeCopy() {
         if (currentLexemeLength == 1) {
-            return Canonical.bytes(currentLexeme[currentLexemeOffset + currentLexemeLength - 1]);
+            return Canonical.bytes(currentLexeme[currentLexemeLength - 1]);
         }
         byte[] sub = new byte[currentLexemeLength];
-        System.arraycopy(currentLexeme, currentLexemeOffset, sub, 0, currentLexemeLength);
+        System.arraycopy(currentLexeme, 0, sub, 0, currentLexemeLength);
         return sub;
     }
 
@@ -158,7 +156,6 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public void reset() {
-        currentLexemeOffset = 0;
         currentLexemeLength = 0;
     }
 
@@ -209,10 +206,10 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     private byte added(byte chomped) {
         try {
-            currentLexeme[currentLexemeOffset + currentLexemeLength] = chomped;
+            currentLexeme[currentLexemeLength] = chomped;
         } catch (ArrayIndexOutOfBoundsException ignore) {
             expand();
-            currentLexeme[currentLexemeOffset + currentLexemeLength] = chomped;
+            currentLexeme[currentLexemeLength] = chomped;
         } finally {
             currentLexemeLength++;
         }
