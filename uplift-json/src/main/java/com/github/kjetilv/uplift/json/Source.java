@@ -32,8 +32,6 @@ public interface Source {
 
         int offset();
 
-        int offset();
-
         int length();
     }
 }

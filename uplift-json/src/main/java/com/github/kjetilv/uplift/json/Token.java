@@ -203,8 +203,8 @@ public sealed interface Token permits
             ) < 0;
         }
 
-        public boolean is(char[] chars) {
-            return Arrays.mismatch(this.chars, chars) < 0;
+        public boolean is(byte[] bytes) {
+            return Arrays.mismatch(this.bytes, bytes) < 0;
         }
 
         @Override
