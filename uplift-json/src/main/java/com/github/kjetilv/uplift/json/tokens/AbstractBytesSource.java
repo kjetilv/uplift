@@ -29,15 +29,14 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     public void spoolField() {
         reset();
         while (true) {
+            if (next1 >> 5 == 0) {
+                fail("Unescaped control char: " + (char) next1);
+            }
             try {
-                switch (next1) {
-                    case '"' -> {
-                        return;
-                    }
-                    case 0 -> fail("Unterminated field");
-                    case '\n' -> fail("Line break in field name: " + new String(lexemeCopy()));
-                    default -> add(next1);
+                if (next1 == '"') {
+                    return;
                 }
+                add(next1);
             } finally {
                 next1 = next2;
                 next2 = nextChar();
@@ -51,6 +50,15 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         boolean quo = false;
         while (true) {
             byte c = peek();
+            if (c >> 5 == 0) {
+                if (quo) {
+                    chomp();
+                    quo = false;
+                } else {
+                    fail("Unescaped control char: " + (int) c);
+                }
+                continue;
+            }
             switch (c) {
                 case '"' -> {
                     if (quo) {
@@ -68,21 +76,6 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                     } else {
                         advance();
                         quo = true;
-                    }
-                }
-                case 0, // ------------/^^^^^\---\_._/-s
-                     1, 2, // ---------| q 'p|----/----
-                     3, 4, 5, // -------\_._/--=-|-----
-                     6, 7, 8, 9, // ----- \=-------/^^^
-                     10, 11, 12, 13, // ---\_-----|q` p
-                     14, 15, 16, 17, 18, // -\----\_._/
-                     19, 20, 21, 22, 23, 24, // ---/---
-                     25, 26, 27, 28, 29, 30, 31 -> { //
-                    if (quo) {
-                        chomp();
-                        quo = false;
-                    } else {
-                        fail("Unescaped control char: " + (int) c);
                     }
                 }
                 default -> {

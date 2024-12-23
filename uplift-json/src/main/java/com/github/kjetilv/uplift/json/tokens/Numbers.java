@@ -5,13 +5,13 @@ import java.math.RoundingMode;
 
 final class Numbers {
 
-    private Numbers() {
-    }
-
     static Number parseNumber(byte[] bytes, int offset, int length) {
         long value = 0;
         int dotIndex = -1;
         boolean negate = bytes[offset] == '-';
+        if (negate && length == 1) {
+            throw new NumberFormatException("Not a number: " + new String(bytes, offset, length));
+        }
         int digits = negate ? length - 1 : length;
         int signOffset = negate ? 1 : 0;
         for (int i = 0; i < digits; i++) {
@@ -19,11 +19,22 @@ final class Numbers {
             if (b == '.') {
                 dotIndex = i;
             } else {
-                value = value * 10 + (b - '0');
+                int digit = b - '0';
+                if (digit < 0 || digit > 9) {
+                    throw new NumberFormatException("Invalid digit: " + digit);
+                }
+                value = value * 10 + digit;
             }
         }
         if (dotIndex == -1) {
             return negate ? -value : value;
+        } else {
+            if (length == 1) {
+                throw new NumberFormatException("Not a number: " + new String(bytes, offset, length));
+            }
+            if (negate && length == 2) {
+                throw new NumberFormatException("Not a number: " + new String(bytes, offset, length));
+            }
         }
         int decimals = digits - dotIndex - 1;
         long dim = (long) Math.pow(10, decimals);
@@ -33,5 +44,8 @@ final class Numbers {
             RoundingMode.UNNECESSARY
         );
         return negate ? decimal.negate() : decimal;
+    }
+
+    private Numbers() {
     }
 }

@@ -36,13 +36,13 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         Consumer<T> onDone,
         TokenTrie tokenTrie
     ) {
-        this.builder = Objects.requireNonNull(builder, "builder");
+        this.builder = builder;
         this.parent = parent;
-        this.numbers = Objects.requireNonNull(numbers, "numbers");
-        this.strings = Objects.requireNonNull(strings, "strings");
-        this.booleans = Objects.requireNonNull(booleans, "booleans");
-        this.objects = Objects.requireNonNull(objects, "objects");
-        this.onDone = Objects.requireNonNull(onDone, "onDone");
+        this.numbers = numbers;
+        this.strings = strings;
+        this.booleans = booleans;
+        this.objects = objects;
+        this.onDone = onDone;
         this.tokenTrie = tokenTrie;
     }
 
