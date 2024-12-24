@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
 import org.junit.jupiter.api.Test;
 

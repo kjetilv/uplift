@@ -1,14 +1,13 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.events.JsonPullParser;
+import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
+import com.github.kjetilv.uplift.json.bytes.CharSequenceBytesSource;
+import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
+import com.github.kjetilv.uplift.json.bytes.ReaderBytesSource;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
-import com.github.kjetilv.uplift.json.tokens.CharSequenceSource;
-import com.github.kjetilv.uplift.json.tokens.CharsSource;
-import com.github.kjetilv.uplift.json.tokens.InputStreamSource;
-import com.github.kjetilv.uplift.json.tokens.Tokens;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -21,29 +20,29 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream inputStream) {
-        return process(new InputStreamSource(inputStream));
+        return process(new InputStreamBytesSource(inputStream));
     }
 
     @Override
     public Callbacks parse(String source, Callbacks callbacks) {
-        return parse(new CharSequenceSource(source), callbacks);
+        return parse(new CharSequenceBytesSource(source), callbacks);
     }
 
     @Override
     public Callbacks parse(InputStream source, Callbacks callbacks) {
-        return parse(new InputStreamSource(source), callbacks);
+        return parse(new InputStreamBytesSource(source), callbacks);
     }
 
     @Override
     public Callbacks parse(Reader source, Callbacks callbacks) {
-        return parse(new CharsSource(source), callbacks);
+        return parse(new ReaderBytesSource(source), callbacks);
     }
 
     @Override
-    public Callbacks parse(Source source, Callbacks callbacks) {
+    public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
         TokenResolver tokenResolver =
             Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
-        Tokens tokens = new Tokens(source, tokenResolver);
+        Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
         if (callbacks.multi()) {
             Callbacks walker = callbacks;
@@ -60,7 +59,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(String string) {
-        return process(new CharSequenceSource(string));
+        return process(new CharSequenceBytesSource(string));
     }
 
     @Override
@@ -85,9 +84,9 @@ final class JsonImpl implements Json {
 
     public static final TokenResolver ALLOCATOR = new Allocator();
 
-    private static Object process(Source source) {
+    private static Object process(BytesSource bytesSource) {
         AtomicReference<Object> reference = new AtomicReference<>();
-        INSTANCE.parse(source, new ValueCallbacks(reference::set));
+        INSTANCE.parse(bytesSource, new ValueCallbacks(reference::set));
         return reference.get();
     }
 

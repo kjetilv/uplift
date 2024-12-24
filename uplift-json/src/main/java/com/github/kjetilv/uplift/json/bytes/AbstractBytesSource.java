@@ -1,12 +1,13 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.uplift.json.Source;
+import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.util.function.IntSupplier;
 
 import static java.lang.Character.isDigit;
 
-public abstract class AbstractBytesSource implements Source, Source.Loan {
+public abstract class AbstractBytesSource implements BytesSource, BytesSource.Loan {
 
     private byte next1;
 
@@ -49,10 +50,10 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         reset();
         boolean quo = false;
         while (true) {
-            byte c = peek();
+            byte c = next1;
             if (c >> 5 == 0) {
                 if (quo) {
-                    chomp();
+                    save();
                     quo = false;
                 } else {
                     fail("Unescaped control char: " + (int) c);
@@ -62,7 +63,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
             switch (c) {
                 case '"' -> {
                     if (quo) {
-                        chomp();
+                        save();
                         quo = false;
                     } else {
                         advance();
@@ -71,7 +72,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                 }
                 case '\\' -> {
                     if (quo) {
-                        chomp();
+                        save();
                         quo = false;
                     } else {
                         advance();
@@ -80,7 +81,7 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
                 }
                 default -> {
                     quo = false;
-                    chomp();
+                    save();
                 }
             }
         }
@@ -88,15 +89,15 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
 
     @Override
     public void spoolNumber() {
-        while (digital(peek())) {
-            chomp();
+        while (digital(next1)) {
+            save();
         }
         // Look for a fractional part.
-        if (peek() == '.' && isDigit(peekNext())) {
+        if (next1 == '.' && isDigit(next2)) {
             // Consume the "."
             do {
-                chomp();
-            } while (isDigit(peek()));
+                save();
+            } while (isDigit(next1));
         }
     }
 
@@ -110,16 +111,6 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
     @Override
     public Loan lexemeLoan() {
         return this;
-    }
-
-    @Override
-    public byte chomp() {
-        try {
-            add(next1);
-            return next1;
-        } finally {
-            advance();
-        }
     }
 
     @Override
@@ -177,21 +168,28 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         return index;
     }
 
-    private byte peek() {
-        return next1;
+    @Override
+    public byte chomp() {
+        try {
+            add(next1);
+            return next1;
+        } finally {
+            advance();
+        }
     }
 
-    private byte peekNext() {
-        return next2;
-    }
-
-    private boolean digital(byte peek) {
-        return peek == '.' || isDigit(peek);
+    private void save() {
+        add(next1);
+        advance();
     }
 
     private void advance() {
         next1 = next2;
         next2 = nextChar();
+    }
+
+    private byte nextChar() {
+        return (byte) this.nextChar.getAsInt();
     }
 
     private void add(byte chomped) {
@@ -211,8 +209,8 @@ public abstract class AbstractBytesSource implements Source, Source.Loan {
         currentLexeme = biggerLexeme;
     }
 
-    private byte nextChar() {
-        return (byte) this.nextChar.getAsInt();
+    private boolean digital(byte peek) {
+        return peek == '.' || isDigit(peek);
     }
 
     private void fail(String msg) {

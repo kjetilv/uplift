@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json;
 
-public interface Source {
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+public interface BytesSource {
 
     void skip4(byte c0, byte c1, byte c2);
 
@@ -25,7 +27,7 @@ public interface Source {
     interface Loan {
 
         default String string() {
-            return new String(loaned(), offset(), length());
+            return new String(loaned(), offset(), length(), UTF_8);
         }
 
         byte[] loaned();

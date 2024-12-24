@@ -4,8 +4,8 @@ import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.io.BytesSupplier;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.AbstractJsonReader;
-import com.github.kjetilv.uplift.json.tokens.IntsSource;
-import com.github.kjetilv.uplift.json.Source;
+import com.github.kjetilv.uplift.json.bytes.IntsBytesSource;
+import com.github.kjetilv.uplift.json.BytesSource;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,7 +18,7 @@ public final class MemorySegmentJsonReader<T extends Record>
     }
 
     @Override
-    protected Source input(LineSegment lineSegment) {
-        return new IntsSource(new BytesSupplier(lineSegment.longSupplier()));
+    protected BytesSource input(LineSegment lineSegment) {
+        return new IntsBytesSource(new BytesSupplier(lineSegment.longSupplier()));
     }
 }

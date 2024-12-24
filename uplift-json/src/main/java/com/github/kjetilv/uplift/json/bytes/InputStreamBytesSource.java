@@ -1,12 +1,12 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 
-public final class InputStreamSource extends AbstractBytesSource {
+public final class InputStreamBytesSource extends AbstractBytesSource {
 
-    public InputStreamSource(InputStream stream) {
+    public InputStreamBytesSource(InputStream stream) {
         super(new Ints(Objects.requireNonNull(stream, "stream")));
     }
 

@@ -87,7 +87,7 @@ public interface Json {
 
     Callbacks parse(Reader source, Callbacks callbacks);
 
-    Callbacks parse(Source source, Callbacks callbacks);
+    Callbacks parse(BytesSource bytesSource, Callbacks callbacks);
 
     Json INSTANCE = new JsonImpl();
 

@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.json.events;
 
 import com.github.kjetilv.uplift.json.AbstractJsonReader;
+import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.tokens.InputStreamSource;
-import com.github.kjetilv.uplift.json.Source;
+import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
@@ -16,7 +16,7 @@ public final class InputStreamJsonReader<T extends Record> extends AbstractJsonR
     }
 
     @Override
-    protected Source input(InputStream source) {
-        return new InputStreamSource(source);
+    protected BytesSource input(InputStream source) {
+        return new InputStreamBytesSource(source);
     }
 }

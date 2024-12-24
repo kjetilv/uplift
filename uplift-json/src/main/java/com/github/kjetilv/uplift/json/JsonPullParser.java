@@ -1,10 +1,4 @@
-package com.github.kjetilv.uplift.json.events;
-
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.ParseException;
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenType;
-import com.github.kjetilv.uplift.json.tokens.Tokens;
+package com.github.kjetilv.uplift.json;
 
 import static com.github.kjetilv.uplift.json.Token.COLON;
 import static com.github.kjetilv.uplift.json.Token.END_OBJECT;

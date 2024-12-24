@@ -1,12 +1,12 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.IntSupplier;
 
-public final class CharSequenceSource extends AbstractBytesSource {
+public final class CharSequenceBytesSource extends AbstractBytesSource {
 
-    public CharSequenceSource(CharSequence sequence) {
+    public CharSequenceBytesSource(CharSequence sequence) {
         super(new CharSeq(Objects.requireNonNull(sequence, "sequence")));
     }
 

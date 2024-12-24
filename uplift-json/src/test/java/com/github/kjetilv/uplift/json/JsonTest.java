@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.tokens.ReadException;
+import com.github.kjetilv.uplift.json.io.ReadException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -25,11 +25,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 class JsonTest {
 
     static void failedParse(
-        String source,
+        String bytesSource,
         Consumer<? super ParseException> failer
     ) {
         try {
-            fail("Unexpected success: " + JSON.read(source));
+            fail("Unexpected success: " + JSON.read(bytesSource));
         } catch (ParseException e) {
             failer.accept(e);
         } catch (Exception e) {
@@ -42,11 +42,11 @@ class JsonTest {
     }
 
     static void assertFailedParse(
-        String source,
+        String bytesSource,
         Consumer<? super AssertionError> failer
     ) {
         try {
-            fail("Unexpected success: " + JSON.read(source));
+            fail("Unexpected success: " + JSON.read(bytesSource));
         } catch (AssertionError e) {
             failer.accept(e);
         } catch (Exception e) {
@@ -159,10 +159,10 @@ class JsonTest {
     @Test
     void readLineBreak() {
         //language=json
-        String source = """
+        String bytesSource = """
             { "foo":  "\\x"}
             """.replace('x', '\n');
-        Object json = JSON.read(source);
+        Object json = JSON.read(bytesSource);
         assertThat(json).asInstanceOf(MAP).containsEntry("foo", "\n");
     }
 
@@ -338,7 +338,7 @@ class JsonTest {
                   "bar": [true, 5, [3] false]
                 }
                 """,
-            e -> {
+            _ -> {
             }
         );
     }
@@ -571,7 +571,7 @@ class JsonTest {
                        "userAgent": "aws-internal/3 aws-sdk-java/1.12.358 Linux/5.4.225-139.416.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.352-b10 java/1.8.0_352 vendor/Oracle_Corporation cfg/retry-mode/standard",
                        "accountId": "732946774009",
                        "caller": "732946774009",
-                       "sourceIp": "test-invoke-source-ip",
+                       "sourceIp": "test-invoke-bytesSource-ip",
                        "accessKey": "ASIA2VJYIG74WUKMZ2K3",
                        "user": "732946774009"
                      },
@@ -593,12 +593,12 @@ class JsonTest {
         written.put("whatever", Enum.ENUM);
         written.put("oops", null);
         //language=json
-        String source = """
+        String bytesSource = """
             {"uri":"https://www.vg.no","url":"https://www.db.no","whatever":"ENUM","oops":null}
             """.trim();
-        Map<?, ?> parsed = JSON.jsonMap(source);
+        Map<?, ?> parsed = JSON.jsonMap(bytesSource);
         String expected = JSON.write(parsed);
-        assertThat(expected).isEqualTo(source);
+        assertThat(expected).isEqualTo(bytesSource);
         String actual = JSON.write(written);
         assertThat(actual).isEqualTo(expected);
     }
@@ -616,12 +616,12 @@ class JsonTest {
     public static final Json JSON = Json.INSTANCE;
 
     private static void failedRead(
-        String source,
+        String bytesSource,
         Consumer<? super ReadException> failer
     ) {
         try {
             fail("Unexpected success: " + JSON.read(
-                source
+                bytesSource
             ));
         } catch (ReadException e) {
             failer.accept(e);
@@ -640,11 +640,11 @@ class JsonTest {
 
     private static Object roundtrip(
         //language=json
-        String source
+        String bytesSource
     ) {
-        Object json = JSON.read(source);
+        Object json = JSON.read(bytesSource);
         String source2 = JSON.write(json);
-        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = bytesSource.getBytes(StandardCharsets.UTF_8);
         Object json2 =
             JSON.read(new ByteArrayInputStream(bytes));
         assertEquals(json, JSON.read(source2));

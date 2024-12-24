@@ -1,10 +1,10 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
 import java.util.Objects;
 
-public final class BytesSource extends AbstractBytesSource {
+public final class ByteArrayBytesSource extends AbstractBytesSource {
 
-    public BytesSource(byte[] bytes) {
+    public ByteArrayBytesSource(byte[] bytes) {
         super(new IntSupplier(Objects.requireNonNull(bytes, "bytes")));
     }
 

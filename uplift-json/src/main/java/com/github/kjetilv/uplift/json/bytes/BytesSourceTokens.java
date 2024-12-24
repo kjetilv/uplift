@@ -1,61 +1,43 @@
-package com.github.kjetilv.uplift.json.tokens;
+package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.uplift.json.Source;
+import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.Tokens;
+import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.lang.Number;
 import java.lang.String;
 
 import static com.github.kjetilv.uplift.json.Token.*;
 
-public final class Tokens {
+public final class BytesSourceTokens implements Tokens {
 
-    private final Source source;
+    private final BytesSource bytesSource;
 
     private final TokenResolver tokenResolver;
 
-    public Tokens(Source source, TokenResolver tokenResolver) {
-        this.source = source;
+    public BytesSourceTokens(BytesSource bytesSource, TokenResolver tokenResolver) {
+        this.bytesSource = bytesSource;
         this.tokenResolver = tokenResolver;
     }
 
+    @Override
     public boolean done() {
-        return source.done();
+        return bytesSource.done();
     }
 
-    public Token next() {
-        return scanToken(false, false);
-    }
-
-    public Token next(boolean fieldName) {
-        return scanToken(fieldName, false);
-    }
-
+    @Override
     public Token next(boolean fieldName, boolean canonical) {
         return scanToken(fieldName, canonical);
     }
 
-    public Token nextField(boolean canonical) {
-        return scanToken(true, canonical);
-    }
-
-    public void skipNext(Token expected) {
-        while (true) {
-            Token token = scanToken(false, false);
-            if (token == expected) {
-                return;
-            }
-            fail("Unexpected token " + token + ", expected " + expected);
-        }
-    }
-
     private Token scanToken(boolean fieldName, boolean canonical) {
-        if (source.done()) {
-            return fail("Unexpected end of stream");
+        if (bytesSource.done()) {
+            throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexemeLoan().string() + "`");
         }
-        source.reset();
-        byte c = source.chomp();
+        bytesSource.reset();
+        byte c = bytesSource.chomp();
         return switch (c) {
             case ':' -> COLON;
             case ',' -> COMMA;
@@ -85,43 +67,43 @@ public final class Tokens {
                 (byte) 'l',
                 NULL
             );
-            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' ->
-                numberToken();
-            default -> fail(c);
+            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
+            default ->
+                throw new ReadException("Unrecognized character", "`" + (char) c + "`");
         };
     }
 
     private Token.String stringToken() {
-        source.spoolString();
-        return new Token.String(source.lexemeCopy());
+        bytesSource.spoolString();
+        return new Token.String(bytesSource.lexemeCopy());
     }
 
     private Field fieldToken(boolean canonical) {
-        source.spoolField();
+        bytesSource.spoolField();
         if (canonical) {
-            Source.Loan loan = source.lexemeLoan();
+            BytesSource.Loan loan = bytesSource.lexemeLoan();
             Field found = tokenResolver.get(loan.loaned(), loan.offset(), loan.length());
             if (found != null) {
                 return found;
             }
         }
-        return new Field(source.lexemeCopy());
+        return new Field(bytesSource.lexemeCopy());
     }
 
     private Token skipThen(byte r, byte u, byte e, Token token) {
-        source.skip4(r, u, e);
+        bytesSource.skip4(r, u, e);
         return token;
     }
 
     @SuppressWarnings("SameParameterValue")
     private Token skipThen(byte a, byte l, byte s, byte e, Token token) {
-        source.skip5(a, l, s, e);
+        bytesSource.skip5(a, l, s, e);
         return token;
     }
 
     private Token numberToken() {
-        source.spoolNumber();
-        Source.Loan loan = source.lexemeLoan();
+        bytesSource.spoolNumber();
+        BytesSource.Loan loan = bytesSource.lexemeLoan();
         try {
             Number number = Numbers.parseNumber(loan.loaned(), loan.offset(), loan.length());
             return new Token.Number(number);
@@ -130,16 +112,8 @@ public final class Tokens {
         }
     }
 
-    private <T> T fail(String msg) {
-        throw new ReadException(msg, "`" + new String(source.lexemeCopy()) + "`");
-    }
-
-    private <T> T fail(byte c) {
-        throw new ReadException("Unrecognized character", "`" + (char) c + "`");
-    }
-
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + new String(source.lexemeCopy()) + "]";
+        return getClass().getSimpleName() + "[" + new String(bytesSource.lexemeCopy()) + "]";
     }
 }

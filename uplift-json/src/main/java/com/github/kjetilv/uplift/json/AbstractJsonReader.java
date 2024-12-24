@@ -25,5 +25,5 @@ public abstract class AbstractJsonReader<S, T extends Record> implements JsonRea
         Json.INSTANCE.parse(input(source), callbacksInitializer.apply(setter));
     }
 
-    protected abstract Source input(S source);
+    protected abstract BytesSource input(S source);
 }
