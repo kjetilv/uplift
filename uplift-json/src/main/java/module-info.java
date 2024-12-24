@@ -4,6 +4,7 @@ module uplift.uplift.json.main {
     requires uplift.uplift.uuid.main;
     requires java.desktop;
     requires org.graalvm.nativeimage;
+    requires flopp.flopp.kernel.main;
 
     exports com.github.kjetilv.uplift.json;
     exports com.github.kjetilv.uplift.json.gen;

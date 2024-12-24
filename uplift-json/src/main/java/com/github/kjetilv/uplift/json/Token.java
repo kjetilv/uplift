@@ -160,16 +160,6 @@ public sealed interface Token permits
         }
 
         @Override
-        public boolean equals(Object o) {
-            return o instanceof String(byte[] otherBytes) && Arrays.equals(bytes, otherBytes);
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(bytes);
-        }
-
-        @Override
         public java.lang.String toString() {
             return getClass().getSimpleName() + "[" + new java.lang.String(bytes) + "]";
         }
@@ -189,8 +179,8 @@ public sealed interface Token permits
             return new java.lang.String(bytes, offset, length);
         }
 
-        public int charAt(int index) {
-            return bytes[offset + index];
+        public boolean differsAt(Field other, int index) {
+            return bytes[offset + index] != other.bytes[other.offset + index];
         }
 
         public boolean is(byte[] b, int o, int l) {

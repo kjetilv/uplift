@@ -113,11 +113,13 @@ public class TokenTrie implements TokenResolver {
     }
 
     private static boolean sameCharAt(int index, List<Token.Field> fields) {
-        return fields.stream()
-                   .map(field ->
-                       field.charAt(index))
-                   .distinct()
-                   .count() == 1;
+        Token.Field init = fields.getFirst();
+        for (int i = 1; i < fields.size(); i++) {
+            if (fields.get(i).differsAt(init, index)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private record Entry<T>(byte key, T value) {
