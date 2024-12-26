@@ -4,6 +4,7 @@ import com.github.kjetilv.flopp.kernel.PartitionStreamer;
 import com.github.kjetilv.flopp.kernel.Partitioned;
 import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
+import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
@@ -21,7 +22,7 @@ public class FastParseTest {
 
     @Test
     void parse() throws URISyntaxException, MalformedURLException {
-        MemorySegmentJsonReader<Foo> foo = new MemorySegmentJsonReader<>(FooRW.INSTANCE.callbacks());
+        LineSegmentJsonReader<Foo> foo = new LineSegmentJsonReader<>(FooRW.INSTANCE.callbacks());
         Class<Foo> fooClass = Foo.class;
         System.out.println(fooClass);
         long sum;
@@ -40,13 +41,13 @@ public class FastParseTest {
 
     private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
 
-    private static Function<PartitionStreamer, Supplier<Long>> supplier(MemorySegmentJsonReader<Foo> foo) {
+    private static Function<PartitionStreamer, Supplier<Long>> supplier(LineSegmentJsonReader<Foo> foo) {
         return streamer ->
             () ->
                 sum(streamer, foo);
     }
 
-    private static long sum(PartitionStreamer streamer, MemorySegmentJsonReader<Foo> foo) {
+    private static long sum(PartitionStreamer streamer, LineSegmentJsonReader<Foo> foo) {
         return streamer.lines()
             .map(foo::read)
             .mapToLong(Foo::foo)

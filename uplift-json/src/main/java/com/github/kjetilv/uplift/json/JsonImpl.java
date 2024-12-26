@@ -1,9 +1,8 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
-import com.github.kjetilv.uplift.json.bytes.CharSequenceBytesSource;
-import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
-import com.github.kjetilv.uplift.json.bytes.ReaderBytesSource;
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
+import com.github.kjetilv.uplift.json.bytes.*;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
@@ -93,8 +92,8 @@ final class JsonImpl implements Json {
     private static class Allocator implements TokenResolver {
 
         @Override
-        public Token.Field get(byte[] chars, int offset, int length) {
-            return new Token.Field(chars, offset, length);
+        public Token.Field get(LineSegment lineSegment) {
+            return new Token.Field(lineSegment);
         }
 
         @Override

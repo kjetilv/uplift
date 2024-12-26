@@ -24,6 +24,7 @@ public record Tweet(
     User user,
     boolean favorited
 ) {
+
     @JsonRecord(root = false)
     public record Entities(
         List<Hashtag> hashtags,

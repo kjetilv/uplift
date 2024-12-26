@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json;
 
-import java.nio.charset.StandardCharsets;
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
+
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -17,23 +19,23 @@ public class TokenTrie implements TokenResolver {
     }
 
     public TokenTrie(Collection<Token.Field> fields) {
-        List<Token.Field> packed = Fields.pack(fields);
-        this.size = packed.size();
-        this.root = buildTrie(packed, 0);
+        List<Token.Field> copy = List.copyOf(fields);
+        this.size = copy.size();
+        this.root = buildTrie(copy, 0);
     }
 
     public Token.Field get(Token.Field token) {
-        return get(token.bytes(), token.offset(), token.length());
+        return get(token.lineSegment());
     }
 
     public Token.Field get(String token) {
-        byte[] bytes = token.getBytes(StandardCharsets.UTF_8);
-        return get(bytes, 0, bytes.length);
+        return get(LineSegments.of(token));
     }
 
     @Override
-    public Token.Field get(byte[] bytes, int offset, int length) {
+    public Token.Field get(LineSegment lineSegment) {
         Trie trie = this.root;
+        long length = lineSegment.length();
         while (true) {
             if (trie instanceof Trie(int skip, Token.Field field, Map<Byte, Trie> level)) {
                 if (length == skip) {
@@ -42,7 +44,7 @@ public class TokenTrie implements TokenResolver {
                 if (length <= skip) {
                     return null;
                 }
-                byte c = bytes[offset + skip];
+                byte c = lineSegment.byteAt(skip);
                 trie = level.get(c);
             } else {
                 return null;
@@ -61,9 +63,9 @@ public class TokenTrie implements TokenResolver {
         }
 
         Map<Byte, List<Token.Field>> groups = fields.stream()
-            .filter(f -> f.bytes().length > index)
+            .filter(f -> f.length() > index)
             .collect(Collectors.groupingBy(field ->
-                field.bytes()[field.offset() + index]));
+                field.lineSegment().byteAt(index)));
 
         List<Entry<Trie>> nextLevels = entries(groups)
             .map(entry ->

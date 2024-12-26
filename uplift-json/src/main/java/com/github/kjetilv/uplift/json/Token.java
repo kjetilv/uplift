@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Arrays;
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
 
 public sealed interface Token permits
     Token.BeginObject,
@@ -148,10 +149,10 @@ public sealed interface Token permits
         }
     }
 
-    record String(byte[] bytes) implements Token {
+    record String(LineSegment lineSegment) implements Token {
 
         public java.lang.String value() {
-            return new java.lang.String(bytes);
+            return lineSegment().asString();
         }
 
         @Override
@@ -161,40 +162,26 @@ public sealed interface Token permits
 
         @Override
         public java.lang.String toString() {
-            return getClass().getSimpleName() + "[" + new java.lang.String(bytes) + "]";
+            return getClass().getSimpleName() + "[" + value() + "]";
         }
     }
 
-    record Field(byte[] bytes, int offset, int length, int hash) implements Token {
+    record Field(LineSegment lineSegment, int length, int hash) implements Token {
 
-        public Field(byte[] chars, int offset, int length) {
-            this(chars, offset, length, hc(chars, offset, length));
-        }
-
-        public Field(byte[] chars) {
-            this(chars, 0, chars.length, hc(chars, 0, chars.length));
+        public Field(LineSegment lineSegment) {
+            this(
+                lineSegment,
+                Math.toIntExact(lineSegment.endIndex() - lineSegment.startIndex()),
+                LineSegments.hashCode(lineSegment)
+            );
         }
 
         public java.lang.String value() {
-            return new java.lang.String(bytes, offset, length);
+            return lineSegment.asString();
         }
 
         public boolean differsAt(Field other, int index) {
-            return bytes[offset + index] != other.bytes[other.offset + index];
-        }
-
-        public boolean is(byte[] b, int o, int l) {
-            if (this.length != l) {
-                return false;
-            }
-            return Arrays.mismatch(
-                this.bytes, this.offset, this.offset + this.length,
-                b, o, o + l
-            ) < 0;
-        }
-
-        public boolean is(byte[] bytes) {
-            return Arrays.mismatch(this.bytes, bytes) < 0;
+            return lineSegment.byteAt(index) != other.lineSegment().byteAt(index);
         }
 
         @Override
@@ -202,16 +189,8 @@ public sealed interface Token permits
             return TokenType.STRING;
         }
 
-        Field in(byte[] cache, int i) {
-            return new Field(cache, i, length, hash);
-        }
-
-        private static int hc(byte[] c, int o, int l) {
-            int hc = Integer.hashCode(l);
-            for (int i = 0; i < l; i++) {
-                hc += 31 * c[o + i];
-            }
-            return hc;
+        public int length() {
+            return length;
         }
 
         @Override
@@ -219,22 +198,19 @@ public sealed interface Token permits
             if (o == this) {
                 return true;
             }
-            return o instanceof Field(byte[] otherChars, int otherOffset, int otherLength, _) &&
+            return o instanceof Field(LineSegment otherSegment, int otherLength, _) &&
                    length == otherLength &&
-                   Arrays.mismatch(
-                       bytes, offset, offset + length,
-                       otherChars, otherOffset, otherOffset + otherLength
-                   ) < 0;
+                   lineSegment.matches(otherSegment);
         }
 
         @Override
         public int hashCode() {
-            return hc(bytes, offset, length);
+            return hash;
         }
 
         @Override
         public java.lang.String toString() {
-            return getClass().getSimpleName() + "[" + new java.lang.String(bytes, offset, length) + "]";
+            return getClass().getSimpleName() + "[" + lineSegment.asString() + "]";
         }
 
     }

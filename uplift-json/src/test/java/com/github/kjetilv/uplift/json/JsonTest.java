@@ -522,7 +522,7 @@ class JsonTest {
                   "foofoofoofoofoofoofoofoofoofoofoofoofoofoofoo": null,
                   "bar": false,
                   "zot": true,
-                  "ans": 42
+                  "ans":   42
                   }, null
                 ]
                 }

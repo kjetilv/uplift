@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.ffm;
 
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import com.github.kjetilv.uplift.json.samplegen.User;
 import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MemorySegmentJsonReaderTest {
+public class LineSegmentJsonReaderTest {
 
     @Test
     void testMemorySegmentJsonReader() {
@@ -60,9 +61,9 @@ public class MemorySegmentJsonReaderTest {
                 """.formatted(uuid);
 
         Function<Consumer<User>, Callbacks> callbacks = Users.INSTANCE.callbacks();
-        MemorySegmentJsonReader<User> reader = new MemorySegmentJsonReader<>(callbacks);
+        LineSegmentJsonReader<User> reader = new LineSegmentJsonReader<>(callbacks);
 
-    User user = reader.read(LineSegments.of(json, StandardCharsets.UTF_8));
+        User user = reader.read(LineSegments.of(json, StandardCharsets.UTF_8));
         System.out.println(user);
 
         String written = Users.INSTANCE.stringWriter().write(user);

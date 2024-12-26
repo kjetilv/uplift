@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
+import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenTrie;
@@ -17,8 +18,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings({"SameParameterValue", "unused"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
@@ -52,52 +51,52 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     }
 
     public void onObject(String name, BiFunction<Callbacks, B, Callbacks> nested) {
-        objects.put(new Token.Field(bytes(name)), nested);
+        objects.put(new Token.Field(LineSegments.of(name)), nested);
     }
 
     public void onString(String name, BiConsumer<B, String> set) {
-        strings.put(new Token.Field(bytes(name)), set);
+        strings.put(new Token.Field(LineSegments.of(name)), set);
     }
 
     public void onCharacter(String name, BiConsumer<B, Character> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, string) ->
                 build(builder, set, toChar(string))
         );
     }
 
     public void onBoolean(String name, BiConsumer<B, Boolean> set) {
-        booleans.put(new Token.Field(bytes(name)), set);
+        booleans.put(new Token.Field(LineSegments.of(name)), set);
     }
 
     public void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (B builder, Double d) ->
                 build(builder, set, d.floatValue())
         );
     }
 
     public void onDouble(String name, BiConsumer<B, Double> set) {
-        numbers.put(new Token.Field(bytes(name)), set);
+        numbers.put(new Token.Field(LineSegments.of(name)), set);
     }
 
     public void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (B builder, Long l) ->
                 build(builder, set, l.intValue())
         );
     }
 
     public void onLong(String name, BiConsumer<B, Long> set) {
-        numbers.put(new Token.Field(bytes(name)), set);
+        numbers.put(new Token.Field(LineSegments.of(name)), set);
     }
 
     public void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (B builder, Long value) ->
                 build(builder, set, BigInteger.valueOf(value))
         );
@@ -105,7 +104,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onUUID(String name, BiConsumer<B, UUID> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, UUID.fromString(str))
         );
@@ -113,7 +112,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onURI(String name, BiConsumer<B, URI> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, URI.create(str))
         );
@@ -121,7 +120,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onURL(String name, BiConsumer<B, URL> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) -> {
                 try {
                     build(builder, set, URI.create(str).toURL());
@@ -134,7 +133,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onDuration(String name, BiConsumer<B, Duration> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, Duration.parse(str))
         );
@@ -142,7 +141,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onLocalDateTime(String name, BiConsumer<B, LocalDateTime> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, LocalDateTime.parse(str))
         );
@@ -150,7 +149,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onLocalDate(String name, BiConsumer<B, LocalDate> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, LocalDate.parse(str))
         );
@@ -158,7 +157,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onOffsetDateTime(String name, BiConsumer<B, OffsetDateTime> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, OffsetDateTime.parse(str))
         );
@@ -166,7 +165,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onUuid(String name, BiConsumer<B, Uuid> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 build(builder, set, Uuid.from(str))
         );
@@ -174,7 +173,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onInstant(String name, BiConsumer<B, Instant> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, num) ->
                 build(builder, set, Instant.ofEpochMilli(num.longValue()))
         );
@@ -182,12 +181,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onBigDecimal(String name, BiConsumer<B, BigDecimal> set) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, string) ->
                 build(builder, set, new BigDecimal(string))
         );
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, number) ->
                 build(builder, set, BigDecimal.valueOf(number.doubleValue()))
         );
@@ -195,7 +194,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (B builder, Long l) ->
                 build(builder, set, l.shortValue())
         );
@@ -203,7 +202,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     public void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (B builder, Long l) ->
                 build(builder, set, l.byteValue())
         );
@@ -215,7 +214,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         BiConsumer<B, E> setter
     ) {
         strings.put(
-            new Token.Field(bytes(name)),
+            new Token.Field(LineSegments.of(name)),
             (builder, str) ->
                 setter.accept(builder, enumType.apply(str))
         );
@@ -293,10 +292,6 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
                 "Failed to resolve token " + token + " in " + tokenTrie);
         }
         return resolve;
-    }
-
-    private static byte[] bytes(String name) {
-        return name.getBytes(UTF_8);
     }
 
     private static Character toChar(String string) {

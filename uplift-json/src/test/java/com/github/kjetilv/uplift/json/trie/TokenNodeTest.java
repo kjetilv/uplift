@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.trie;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenTrie;
 import org.junit.jupiter.api.Test;
@@ -44,25 +46,25 @@ class TokenNodeTest {
             goozotzix
         );
 
-        assertThat(q).isEqualTo(ct.get(c("q"), 0, 1));
-        assertThat(foo).isEqualTo(ct.get(c("foo"), 0, 3));
-        assertThat(qoz).isEqualTo(ct.get(c("qoz"), 0, 3));
-        assertThat(bar).isEqualTo(ct.get(c("bar"), 0, 3));
-        assertThat(baz).isEqualTo(ct.get(c("baz"), 0, 3));
-        assertThat(biz).isEqualTo(ct.get(c("biz"), 0, 3));
-        assertThat(bizz).isEqualTo(ct.get(c("bizz"), 0, 4));
-        assertThat(goobarzot).isEqualTo(ct.get(c("goobarzot"), 0, 9));
-        assertThat(goobarzip).isEqualTo(ct.get(c("goobarzip"), 0, 9));
-        assertThat(goozotzot).isEqualTo(ct.get(c("goozotzot"), 0, 9));
-        assertThat(goozotzip).isEqualTo(ct.get(c("goozotzip"), 0, 9));
-        assertThat(goozotzix).isEqualTo(ct.get(c("goozotzix"), 0, 9));
+        assertThat(q).isEqualTo(ct.get(c("q")));
+        assertThat(foo).isEqualTo(ct.get(c("foo")));
+        assertThat(qoz).isEqualTo(ct.get(c("qoz")));
+        assertThat(bar).isEqualTo(ct.get(c("bar")));
+        assertThat(baz).isEqualTo(ct.get(c("baz")));
+        assertThat(biz).isEqualTo(ct.get(c("biz")));
+        assertThat(bizz).isEqualTo(ct.get(c("bizz")));
+        assertThat(goobarzot).isEqualTo(ct.get(c("goobarzot")));
+        assertThat(goobarzip).isEqualTo(ct.get(c("goobarzip")));
+        assertThat(goozotzot).isEqualTo(ct.get(c("goozotzot")));
+        assertThat(goozotzip).isEqualTo(ct.get(c("goozotzip")));
+        assertThat(goozotzix).isEqualTo(ct.get(c("goozotzix")));
     }
 
     private static Token.Field tok(String qoz) {
         return new Token.Field(c(qoz));
     }
 
-    private static byte[] c(String s) {
-        return s.getBytes(UTF_8);
+    private static LineSegment c(String s) {
+        return LineSegments.of(s.getBytes(UTF_8));
     }
 }

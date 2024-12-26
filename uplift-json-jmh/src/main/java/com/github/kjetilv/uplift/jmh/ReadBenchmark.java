@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.JsonReader;
-import com.github.kjetilv.uplift.json.ffm.MemorySegmentJsonReader;
-import org.openjdk.jmh.annotations.Benchmark;
+import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.openjdk.jmh.annotations.Fork;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +36,7 @@ public class ReadBenchmark {
 
         LongAdder longAdder = new LongAdder();
         for (int i = 0; i < X / 5; i++) {
-            Tweet upliftTweet = bReader.read(data);
+            Tweet upliftTweet = reader.read(lineSegment);
             Tweet jacksonTweet = objectMapper.readValue(data, Tweet.class);
 //            if (upliftTweet.equals(jacksonTweet)) {
 //                 throw new IllegalStateException("Not the same!");
@@ -59,7 +58,7 @@ public class ReadBenchmark {
         Instant upliftNow = Instant.now();
         for (int i = 0; i < X; i++) {
             for (byte[] data : datas) {
-                Tweet read = bReader.read(data);
+                Tweet read = reader.read(lineSegment);
                 longAdder.add(1);
             }
         }
@@ -75,13 +74,13 @@ public class ReadBenchmark {
 
     @Fork(value = 2, warmups = 2)
 //    @Threads(8)
-    @Benchmark
+//    @Benchmark
     public Tweet readTweetUplift() {
         return reader.read(lineSegment);
     }
 
     @Fork(value = 2, warmups = 2)
-    @Benchmark
+//    @Benchmark
     public Tweet readTweetJakcson() throws IOException {
         return objectMapper.readValue(data, Tweet.class);
     }
@@ -137,7 +136,7 @@ public class ReadBenchmark {
         }
         lineSegment = LineSegments.of(data);
         bReader = TweetRW.INSTANCE.bytesReader();
-        reader = new MemorySegmentJsonReader<>(TweetRW.INSTANCE.callbacks());
+        reader = TweetRW.INSTANCE.lineSegmentReader();
     }
 
     private static String perc(Duration par, Duration total) {

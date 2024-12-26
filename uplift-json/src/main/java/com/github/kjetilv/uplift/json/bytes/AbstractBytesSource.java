@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json.bytes;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
@@ -7,7 +9,7 @@ import java.util.function.IntSupplier;
 
 import static java.lang.Character.isDigit;
 
-public abstract class AbstractBytesSource implements BytesSource, BytesSource.Loan {
+public abstract class AbstractBytesSource implements BytesSource {
 
     private byte next1;
 
@@ -102,18 +104,6 @@ public abstract class AbstractBytesSource implements BytesSource, BytesSource.Lo
     }
 
     @Override
-    public byte[] lexemeCopy() {
-        byte[] sub = new byte[index];
-        System.arraycopy(currentLexeme, 0, sub, 0, index);
-        return sub;
-    }
-
-    @Override
-    public Loan lexemeLoan() {
-        return this;
-    }
-
-    @Override
     public void skip5(byte c0, byte c1, byte c2, byte c3) {
         assert next1 == c0 : next1 + "!=" + c0;
         assert next2 == c1 : next2 + "!=" + c1;
@@ -154,21 +144,6 @@ public abstract class AbstractBytesSource implements BytesSource, BytesSource.Lo
     }
 
     @Override
-    public byte[] loaned() {
-        return currentLexeme;
-    }
-
-    @Override
-    public int offset() {
-        return 0;
-    }
-
-    @Override
-    public int length() {
-        return index;
-    }
-
-    @Override
     public byte chomp() {
         try {
             add(next1);
@@ -176,6 +151,11 @@ public abstract class AbstractBytesSource implements BytesSource, BytesSource.Lo
         } finally {
             advance();
         }
+    }
+
+    @Override
+    public LineSegment lexeme() {
+        return LineSegments.of(currentLexeme, 0, index);
     }
 
     private void save() {
@@ -214,7 +194,7 @@ public abstract class AbstractBytesSource implements BytesSource, BytesSource.Lo
     }
 
     private void fail(String msg) {
-        throw new ReadException(msg, "`" + new String(lexemeCopy()) + "`");
+        throw new ReadException(msg, "`" + lexeme().asString() + "`");
     }
 
     private static final int LN = 10;

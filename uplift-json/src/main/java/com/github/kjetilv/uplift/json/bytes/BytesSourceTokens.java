@@ -6,8 +6,8 @@ import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.Tokens;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
-import java.lang.Number;
 import java.lang.String;
+import java.math.BigDecimal;
 
 import static com.github.kjetilv.uplift.json.Token.*;
 
@@ -34,7 +34,7 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token scanToken(boolean fieldName, boolean canonical) {
         if (bytesSource.done()) {
-            throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexemeLoan().string() + "`");
+            throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
         }
         bytesSource.reset();
         byte c = bytesSource.chomp();
@@ -68,26 +68,24 @@ public final class BytesSourceTokens implements Tokens {
                 NULL
             );
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
-            default ->
-                throw new ReadException("Unrecognized character", "`" + (char) c + "`");
+            default -> throw new ReadException("Unrecognized character", "`" + (char) c + "`");
         };
     }
 
     private Token.String stringToken() {
         bytesSource.spoolString();
-        return new Token.String(bytesSource.lexemeCopy());
+        return new Token.String(bytesSource.lexeme());
     }
 
     private Field fieldToken(boolean canonical) {
         bytesSource.spoolField();
         if (canonical) {
-            BytesSource.Loan loan = bytesSource.lexemeLoan();
-            Field found = tokenResolver.get(loan.loaned(), loan.offset(), loan.length());
+            Field found = tokenResolver.get(bytesSource.lexeme());
             if (found != null) {
                 return found;
             }
         }
-        return new Field(bytesSource.lexemeCopy());
+        return new Field(bytesSource.lexeme());
     }
 
     private Token skipThen(byte r, byte u, byte e, Token token) {
@@ -103,17 +101,19 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token numberToken() {
         bytesSource.spoolNumber();
-        BytesSource.Loan loan = bytesSource.lexemeLoan();
+        String string = bytesSource.lexeme().asString();
         try {
-            Number number = Numbers.parseNumber(loan.loaned(), loan.offset(), loan.length());
-            return new Token.Number(number);
+            BigDecimal number = new BigDecimal(string.trim());
+            return new Token.Number(number.scale() == 0
+                ? number.longValue()
+                : number);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse: `" + loan.string() + "`", e);
+            throw new IllegalArgumentException("Failed to parse: `" + string + "`", e);
         }
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + new String(bytesSource.lexemeCopy()) + "]";
+        return getClass().getSimpleName() + "[" + bytesSource.lexeme().asString() + "]";
     }
 }

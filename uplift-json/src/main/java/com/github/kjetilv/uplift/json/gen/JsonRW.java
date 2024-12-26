@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.ObjectWriter;
@@ -17,6 +18,10 @@ public interface JsonRW<T extends Record> {
 
     default JsonReader<String, T> stringReader() {
         return new StringJsonReader<>(callbacks());
+    }
+
+    default JsonReader<LineSegment, T> lineSegmentReader() {
+        return new LineSegmentJsonReader<>(callbacks());
     }
 
     default JsonReader<byte[], T> bytesReader() {
