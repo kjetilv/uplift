@@ -8,10 +8,11 @@ import com.github.kjetilv.uplift.json.io.ReadException;
 import java.lang.foreign.MemorySegment;
 
 import static java.lang.Character.isDigit;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
-    private long pos = -1;
+    private long pos;
 
     private byte current;
 
@@ -21,127 +22,127 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private long endIndex;
 
+    private final long limit;
+
     public LineSegmentBytesSource(LineSegment data) {
+        this(data, false);
+    }
+
+    public LineSegmentBytesSource(LineSegment data, boolean aligned) {
         this.data = data;
-        advance();
+        this.limit = data.length();
+    }
+
+    @Override
+    public byte chomp() {
+        long index = pos;
+        byte b;
+        while (index < limit && (b = data.byteAt(index)) != 0) {
+            index++;
+            if (!Character.isWhitespace(b)) {
+                pos = index;
+                return current = b;
+            }
+        }
+        return 0;
     }
 
     @Override
     public void spoolField() {
         startIndex = pos;
-        while (true) {
-            try {
-                if (current >> 5 == 0) {
-                    fail("Unescaped control char: " + (char) current);
-                }
-                if (current == '"') {
-                    endIndex = pos;
-                    return;
-                }
-            } finally {
-                advance();
+        long index = pos;
+        byte b;
+        while ((b = data.byteAt(index)) != '"') {
+            if (b >> 5 == 0) {
+                fail("Unescaped control char: " + (char) current);
             }
+            index++;
         }
+        pos = index + 1;
+        endIndex = index;
     }
 
     @Override
     public void spoolString() {
-        startIndex = pos ;
+        startIndex = pos;
+        long index = pos;
         boolean quo = false;
         while (true) {
-            try {
-                byte c = current;
-                if (c >> 5 == 0) {
+            byte b = data.byteAt(index);
+            if (b >> 5 == 0) {
+                if (quo) {
+                    quo = false;
+                } else {
+                    fail("Unescaped control char: " + (int) b);
+                }
+                continue;
+            }
+            switch (b) {
+                case '"' -> {
                     if (quo) {
                         quo = false;
                     } else {
-                        fail("Unescaped control char: " + (int) c);
+                        pos = index + 1;
+                        endIndex = index;
+                        return;
                     }
-                    continue;
                 }
-                switch (c) {
-                    case '"' -> {
-                        if (quo) {
-                            quo = false;
-                        } else {
-                            endIndex = pos;
-                            return;
-                        }
-                    }
-                    case '\\' ->
-                        quo = !quo;
-                    default ->
-                        quo = false;
-                }
-            } finally {
-                advance();
+                case '\\' -> quo = !quo;
+                default -> quo = false;
             }
+            index++;
         }
     }
 
     @Override
     public void spoolNumber() {
         startIndex = pos - 1;
-        while (digital(current)) {
-            advance();
+        long index = pos;
+        byte b;
+        while (isDigit(b = data.byteAt(index))) {
+            index++;
         }
-        // Look for a fractional part.
-        if (current == '.' && isDigit(advance())) {
-            // Consume the "."
-            do {
-                advance();
-            } while (isDigit(current));
+        if (b == '.') {
+            while (isDigit(b = data.byteAt(pos))) {
+                index++;
+            }
         }
-        endIndex = pos;
+        pos = index;
+        endIndex = index;
     }
 
     @Override
     public void skip5(byte c0, byte c1, byte c2, byte c3) {
-        assert current == c0;
-        int value = data.unalignedShortAt(pos + 1);
-        assert value == c1 + (c2 << 8) : Bits.hxD(value) + " !=" + Bits.hxD(c1 + (c2 << 8));
-        byte byteValue = data.byteAt(pos + 3);
-        assert byteValue == c3;
-        advance(4);
+        int value = data.unalignedIntAt(pos);
+        assert value == c0 + (c1 << 8) + (c2 << 16) + (c3 << 24)
+            : Bits.hxD(value) + " !=" + Bits.hxD(c0 + (c1 << 8) + (c2 << 16) + (c3 << 24));
+        pos += 4;
     }
 
     @Override
     public void skip4(byte c0, byte c1, byte c2) {
-        assert current == c0;
-        int shortValue = data.unalignedShortAt(pos + 1);
-        assert shortValue == c1 + (c2 << 8) : Bits.hxD(shortValue) + " != " + Bits.hxD(c1 + (c2 << 8));
-        advance(3);
+        int shortValue = data.unalignedIntAt(pos) & 0xFFFFFF;
+        assert shortValue == c0 + (c1 << 8) + (c2 << 16)
+            : Bits.hxD(shortValue) + " != " + Bits.hxD(c0 + (c1 << 8) + (c2 << 16));
+        pos += 3;
     }
 
     @Override
     public boolean done() {
-        while (true) {
-            if (current == 0) {
-                return true;
-            }
-            if (!Character.isWhitespace(current)) {
+        long index = pos;
+        byte b;
+        while (index < limit && (b = data.byteAt(index)) != 0) {
+            index++;
+            if (!Character.isWhitespace(b)) {
                 return false;
             }
-            advance();
         }
-    }
-
-    @Override
-    public byte chomp() {
-        try {
-            return current;
-        } finally {
-            advance();
-        }
+        return true;
     }
 
     @Override
     public LineSegment lexeme() {
         return this;
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override
@@ -159,18 +160,18 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         return data.memorySegment();
     }
 
-    private byte advance() {
-        pos++;
-        return current = data.byteAt(pos);
-    }
-
-    private byte advance(int steps) {
-        pos += steps;
-        return current = data.byteAt(pos);
-    }
-
-    private boolean digital(byte peek) {
-        return peek == '.' || isDigit(peek);
+    private void advance() {
+        while (true) {
+            pos++;
+            byte b = data.byteAt(pos);
+            if (b == 0) {
+                return;
+            }
+            if (!Character.isWhitespace(b)) {
+                current = b;
+                return;
+            }
+        }
     }
 
     private void fail(String msg) {
@@ -199,6 +200,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public String toString() {
         return getClass().getSimpleName() + "[" + data + " " +
                "<" + asString() + ">" +
-               "<" + print(current) + print(data.byteAt(pos + 1)) + ">]";
+               "<" + print(current) + Bits.toString(data.unalignedIntAt(pos - 2), 4, UTF_8) + ">]";
     }
 }

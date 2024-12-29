@@ -30,7 +30,7 @@ public abstract class AbstractBytesSource implements BytesSource {
 
     @Override
     public void spoolField() {
-        reset();
+        index = 0;
         while (true) {
             if (next1 >> 5 == 0) {
                 fail("Unescaped control char: " + (char) next1);
@@ -49,7 +49,7 @@ public abstract class AbstractBytesSource implements BytesSource {
 
     @Override
     public void spoolString() {
-        reset();
+        index = 0;
         boolean quo = false;
         while (true) {
             byte c = next1;
@@ -91,6 +91,7 @@ public abstract class AbstractBytesSource implements BytesSource {
 
     @Override
     public void spoolNumber() {
+        index++; // First digit is already in buffer
         while (digital(next1)) {
             save();
         }
@@ -126,30 +127,37 @@ public abstract class AbstractBytesSource implements BytesSource {
     }
 
     @Override
-    public void reset() {
-        index = 0;
-    }
-
-    @Override
     public boolean done() {
         while (true) {
-            if (next1 == 0) {
-                return true;
+            switch (next1) {
+                case 0 -> {
+                    return true;
+                }
+                case ' ', '\n', '\t', '\r', '\f' -> advance();
+                default -> {
+                    return false;
+                }
             }
-            if (!Character.isWhitespace(next1)) {
-                return false;
-            }
-            advance();
         }
     }
 
     @Override
     public byte chomp() {
-        try {
-            add(next1);
-            return next1;
-        } finally {
-            advance();
+        index = 0;
+        while (true) {
+            switch (next1) {
+                case 0 -> {
+                    return 0;
+                }
+                case ' ', '\n', '\t', '\r', '\f' -> advance();
+                default -> {
+                    add(next1);
+                    byte returned = next1;
+                    advance();
+                    index = 0;
+                    return returned;
+                }
+            }
         }
     }
 

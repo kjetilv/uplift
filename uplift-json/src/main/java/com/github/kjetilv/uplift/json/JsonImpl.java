@@ -57,6 +57,21 @@ final class JsonImpl implements Json {
     }
 
     @Override
+    public Object read(Reader reader) {
+        return process(new ReaderBytesSource(reader));
+    }
+
+    @Override
+    public Object read(byte[] bytes) {
+        return process(new ByteArrayBytesSource(bytes));
+    }
+
+    @Override
+    public Object read(char[] bytes) {
+        return read(new String(bytes));
+    }
+
+    @Override
     public Object read(String string) {
         return process(new CharSequenceBytesSource(string));
     }

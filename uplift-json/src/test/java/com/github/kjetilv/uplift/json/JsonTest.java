@@ -214,6 +214,7 @@ class JsonTest {
         );
     }
 
+    @SuppressWarnings("JsonStandardCompliance")
     @Test
     void negationsOnlyPrepended() {
         failedParse(
@@ -227,9 +228,12 @@ class JsonTest {
         );
     }
 
+    @SuppressWarnings("JsonStandardCompliance")
     @Test
     void malformednumbers1() {
-        assertThatThrownBy(() -> JSON.read("""
+        assertThatThrownBy(() -> JSON.read(
+            //language=JSON
+            """
             {
               "bar": .-
             }
@@ -254,7 +258,9 @@ class JsonTest {
     @Test
     void malformednumbers3() {
         try {
-            fail("Should not scan: " + JSON.read("""
+            fail("Should not scan: " + JSON.read(
+                //language=json
+                """
                 {
                   "bar": 0-.
                 }
@@ -515,8 +521,8 @@ class JsonTest {
 
     @Test
     void testNills() {
-        //language=JSON
         Object roundtrip = roundtrip(
+            //language=JSON
             """
                 { "bar": [{
                   "foofoofoofoofoofoofoofoofoofoofoofoofoofoofoo": null,

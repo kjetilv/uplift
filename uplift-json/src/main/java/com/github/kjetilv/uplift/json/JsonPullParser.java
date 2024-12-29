@@ -29,7 +29,7 @@ public final class JsonPullParser {
             case Token.False _ -> callbacks.bool(false);
             case Token.String string -> callbacks.string(string);
             case Token.Number number -> callbacks.number(number);
-            default -> fail(
+            default -> failParse(
                 token,
                 BEGIN_OBJECT,
                 BEGIN_ARRAY,
@@ -55,7 +55,7 @@ public final class JsonPullParser {
             } else {
                 return next == END_OBJECT
                     ? objectCallbacks.objectEnded()
-                    : fail(next, STRING, TokenType.END_OBJECT);
+                    : failParse(next, STRING, TokenType.END_OBJECT);
             }
         }
     }
@@ -75,15 +75,15 @@ public final class JsonPullParser {
         if (token == Token.COMMA) {
             Token nextToken = tokens.next(closing == END_OBJECT, canonical);
             return nextToken == closing
-                ? fail(nextToken, closing.tokenType())
+                ? failParse(nextToken, closing.tokenType())
                 : nextToken;
         }
         return token == closing
             ? token
-            : fail(token, COMMA, closing.tokenType());
+            : failParse(token, COMMA, closing.tokenType());
     }
 
-    private <T> T fail(Token actual, TokenType... expected) {
+    private <T> T failParse(Token actual, TokenType... expected) {
         throw new ParseException(this, actual, expected);
     }
 }

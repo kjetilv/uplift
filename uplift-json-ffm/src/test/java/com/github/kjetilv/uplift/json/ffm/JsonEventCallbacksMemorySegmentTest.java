@@ -18,13 +18,15 @@ public class JsonEventCallbacksMemorySegmentTest {
 
     @Test
     void arr() {
-        String source = """
-            {
-              "els": [1, 2, "a", "b"],
-              "foo": ["tip", true, [ 3, 4 ], []],
-              "bar": [{"zit": "quz"}, 4]
-            }
-            """;
+        String source =
+            //language=json
+            """
+                {
+                  "els": [1, 2, "a", "b"],
+                  "foo": ["tip", true, [ 3, 4 ], []],
+                  "bar": [{"zit": "quz"}, 4]
+                }
+                """;
 
         Callbacks myCallbacks = Json.INSTANCE.parse(
             new IntsBytesSource(new BytesSupplier(LineSegments.of(source).longSupplier())), callbacks()
@@ -60,7 +62,9 @@ public class JsonEventCallbacksMemorySegmentTest {
 
     @Test
     void obj() {
-        String json = """
+        String json =
+            //language=json
+            """
             {
               "foo": "bar",
               "zot": 5,
@@ -85,7 +89,9 @@ public class JsonEventCallbacksMemorySegmentTest {
 
     @Test
     void parse() {
-        String json = """
+        String json =
+            //language=json
+            """
             {
               "foo": "bar",
               "zot": 5,
@@ -112,7 +118,9 @@ public class JsonEventCallbacksMemorySegmentTest {
     @Test
     void parseMap() {
         MyCallbacks callbacks = (MyCallbacks) callbacks();
-        String json = """
+        String json =
+            //language=json
+            """
             {
               "foo": "bar",
               "zot": 5,

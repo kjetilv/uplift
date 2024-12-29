@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
+import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
@@ -33,10 +34,6 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token scanToken(boolean fieldName, boolean canonical) {
-        if (bytesSource.done()) {
-            throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
-        }
-        bytesSource.reset();
         byte c = bytesSource.chomp();
         return switch (c) {
             case ':' -> COLON;
@@ -68,7 +65,10 @@ public final class BytesSourceTokens implements Tokens {
                 NULL
             );
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
-            default -> throw new ReadException("Unrecognized character", "`" + (char) c + "`");
+            case 0 ->
+                throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
+            default ->
+                throw new ReadException("Unrecognized character", "`" + (char) c + "`");
         };
     }
 
@@ -80,7 +80,8 @@ public final class BytesSourceTokens implements Tokens {
     private Field fieldToken(boolean canonical) {
         bytesSource.spoolField();
         if (canonical) {
-            Field found = tokenResolver.get(bytesSource.lexeme());
+            LineSegment lexeme = bytesSource.lexeme();
+            Field found = tokenResolver.get(lexeme);
             if (found != null) {
                 return found;
             }
@@ -101,14 +102,14 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token numberToken() {
         bytesSource.spoolNumber();
-        String string = bytesSource.lexeme().asString();
+        LineSegment lexeme = bytesSource.lexeme();
         try {
-            BigDecimal number = new BigDecimal(string.trim());
+            BigDecimal number = new BigDecimal(lexeme.asString().trim());
             return new Token.Number(number.scale() == 0
                 ? number.longValue()
                 : number);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse: `" + string + "`", e);
+            throw new IllegalArgumentException("Failed to parse: `" + lexeme.asString() + "`", e);
         }
     }
 
