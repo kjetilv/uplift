@@ -234,12 +234,14 @@ class JsonTest {
         assertThatThrownBy(() -> JSON.read(
             //language=JSON
             """
-            {
-              "bar": .-
-            }
-            """)).
-            satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: `.`")
+                {
+                  "bar": .-
+                }
+                """)).
+            satisfies(e -> {
+                    assertThat(e.toString()).contains("Failed to set `bar`");
+                    assertThat(e.getCause().toString()).contains("Failed to parse: `.`");
+                }
             );
     }
 
@@ -250,8 +252,10 @@ class JsonTest {
               "bar": -
             }
             """))
-            .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: `-`")
+            .satisfies(e -> {
+                    assertThat(e.toString()).contains("Failed to set `bar`");
+                    assertThat(e.getCause().toString()).contains("Failed to parse: `-`");
+                }
             );
     }
 
@@ -261,12 +265,13 @@ class JsonTest {
             fail("Should not scan: " + JSON.read(
                 //language=json
                 """
-                {
-                  "bar": 0-.
-                }
-                """));
+                    {
+                      "bar": 0-.
+                    }
+                    """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: `-.`");
+            assertThat(e.getMessage()).contains("Failed to set `bar`");
+            assertThat(e.getCause().getMessage()).contains("Failed to parse: `-.`");
         }
     }
 
@@ -278,8 +283,10 @@ class JsonTest {
                   "bar": -.
                 }
                 """))
-            .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: `-.`"));
+            .satisfies(e -> {
+                assertThat(e.toString()).contains("Failed to set `bar`");
+                assertThat(e.getCause().toString()).contains("Failed to parse: `-.`");
+            });
     }
 
     @Test
@@ -290,8 +297,10 @@ class JsonTest {
                   "bar": .-
                 }
                 """))
-            .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to parse: `.`"));
+            .satisfies(e -> {
+                assertThat(e.toString()).contains("Failed to set `bar`");
+                assertThat(e.getCause().toString()).contains("Failed to parse: `.`");
+            });
     }
 
     @Test
@@ -303,7 +312,8 @@ class JsonTest {
                 }
                 """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: `-`");
+            assertThat(e.getMessage()).contains("Failed to set `bar`");
+            assertThat(e.getCause().getMessage()).contains("Failed to parse: `-`");
         }
     }
 

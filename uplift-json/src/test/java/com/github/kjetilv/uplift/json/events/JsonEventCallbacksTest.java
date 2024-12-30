@@ -156,9 +156,12 @@ public class JsonEventCallbacksTest {
 
     @Test
     void objCommaFail() {
-        failOn("""
-            { "foo": "bar", }
-            """);
+        failSetOn(
+            "foo",
+            """
+                { "foo": "bar", }
+                """
+        );
     }
 
     @Test
@@ -223,25 +226,31 @@ public class JsonEventCallbacksTest {
                 }
                 """)).isNull()
         ).satisfies(e ->
-            assertThat(e.toString()).contains("ReadException"));
+            assertThat(e.toString()).contains("Failed to set `zot`"));
     }
 
     @Test
     void objFail4() {
-        failOn("""
-            {
-            "foo": "bar", "zot":
-            }
-            """);
+        failSetOn(
+            "zot",
+            """
+                {
+                "foo": "bar", "zot":
+                }
+                """
+        );
     }
 
     @Test
     void objFail5() {
-        failOn("""
-            {
-            "foo": "bar", "zot": ,
-            }
-            """);
+        failSetOn(
+            "zot",
+            """
+                {
+                "foo": "bar", "zot": ,
+                }
+                """
+        );
     }
 
     @Test
@@ -318,6 +327,14 @@ public class JsonEventCallbacksTest {
         ).describedAs("Should not parse %s", source)
             .satisfies(e ->
                 assertThat(e.toString()).contains("ParseException"));
+    }
+
+    private static void failSetOn(String field, String source) {
+        assertThatThrownBy(() ->
+            assertThat(parse(source)).isNull()
+        ).describedAs("Should not parse %s", source)
+            .satisfies(e ->
+                assertThat(e.toString()).contains("Failed to set `" + field));
     }
 
     private static MyCallbacks parse(String source) {

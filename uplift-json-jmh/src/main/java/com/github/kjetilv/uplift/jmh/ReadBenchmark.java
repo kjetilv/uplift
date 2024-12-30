@@ -1,12 +1,15 @@
 package com.github.kjetilv.uplift.jmh;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
+import com.github.kjetilv.flopp.kernel.Partitioned;
+import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
+import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
 import com.github.kjetilv.uplift.json.JsonReader;
-import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.openjdk.jmh.annotations.Fork;
 
 import java.io.ByteArrayOutputStream;
@@ -15,6 +18,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -36,7 +43,8 @@ public class ReadBenchmark {
 
         LongAdder longAdder = new LongAdder();
         for (int i = 0; i < X / 5; i++) {
-            Tweet upliftTweet = reader.read(lineSegment);
+            Tweet upliftTweet = bReader.read(data);
+//            Tweet upliftTweet = reader.read(lineSegment);
             Tweet jacksonTweet = objectMapper.readValue(data, Tweet.class);
 //            if (upliftTweet.equals(jacksonTweet)) {
 //                 throw new IllegalStateException("Not the same!");
@@ -47,9 +55,15 @@ public class ReadBenchmark {
         System.gc();
         Instant jacksonNow = Instant.now();
         for (int i = 0; i < X; i++) {
-            for (byte[] data : datas) {
-                Tweet tweet = objectMapper.readValue(data, Tweet.class);
-                longAdder.add(1);
+            try (Stream<String> lines = Files.lines(PATH_L)) {
+                lines.forEach(line -> {
+                    try {
+                        Tweet tweet = objectMapper.readValue(line, Tweet.class);
+                        longAdder.add(tweet == null ? 0 : 1);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         }
         Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
@@ -57,9 +71,17 @@ public class ReadBenchmark {
 
         Instant upliftNow = Instant.now();
         for (int i = 0; i < X; i++) {
-            for (byte[] data : datas) {
-                Tweet read = reader.read(lineSegment);
-                longAdder.add(1);
+            try (
+                Partitioned<Path> partitioned =
+                    PartitionedPaths.partitioned(PATH_L, Partitioning.single())
+            ) {
+                partitioned.streamers()
+                    .forEach(streamer ->
+                        streamer.lines()
+                            .forEach(line -> {
+                                Tweet tweet = reader.read(line);
+                                longAdder.add(tweet == null ? 0 : 1);
+                            }));
             }
         }
         Duration upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
@@ -96,6 +118,8 @@ public class ReadBenchmark {
     private static final URL RESOURCE_L = Objects.requireNonNull(
         Thread.currentThread().getContextClassLoader().getResource("48.jsonl"), "resource");
 
+    private static final Path PATH_L = Paths.get(RESOURCE_L.getPath());
+
     private static final byte[] data;
 
     private static final byte[][] datas;
@@ -126,7 +150,7 @@ public class ReadBenchmark {
                 inputStream.transferTo(out);
             }
             List<String> stream = Arrays.stream(new String(out.toByteArray(), UTF_8)
-                .split("\n"))
+                    .split("\n"))
                 .toList();
             datas = stream.stream()
                 .map(line -> line.getBytes(UTF_8))

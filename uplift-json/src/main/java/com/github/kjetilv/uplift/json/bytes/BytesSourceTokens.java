@@ -42,45 +42,19 @@ public final class BytesSourceTokens implements Tokens {
             case '}' -> END_OBJECT;
             case '[' -> BEGIN_ARRAY;
             case ']' -> END_ARRAY;
-            case '"' -> fieldName
-                ? fieldToken(canonical)
-                : stringToken();
-            case 'f' -> skipThen(
-                (byte) 'a',
-                (byte) 'l',
-                (byte) 's',
-                (byte) 'e',
-                FALSE
-            );
-            case 't' -> skipThen(
-                (byte) 'r',
-                (byte) 'u',
-                (byte) 'e',
-                TRUE
-            );
-            case 'n' -> skipThen(
-                (byte) 'u',
-                (byte) 'l',
-                (byte) 'l',
-                NULL
-            );
+            case '"' -> fieldName ? fieldToken(canonical) : stringToken();
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
-            case 0 ->
-                throw new ReadException("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
-            default ->
-                throw new ReadException("Unrecognized character", "`" + (char) c + "`");
+            case 'f' -> falseToken();
+            case 't' -> trueToken();
+            case 'n' -> nullToken();
+            case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
+            default -> fail("Unrecognized character", "`" + (char) c + "`");
         };
     }
 
-    private Token.String stringToken() {
-        bytesSource.spoolString();
-        return new Token.String(bytesSource.lexeme());
-    }
-
     private Field fieldToken(boolean canonical) {
-        bytesSource.spoolField();
+        LineSegment lexeme = bytesSource.spoolField();
         if (canonical) {
-            LineSegment lexeme = bytesSource.lexeme();
             Field found = tokenResolver.get(lexeme);
             if (found != null) {
                 return found;
@@ -89,28 +63,48 @@ public final class BytesSourceTokens implements Tokens {
         return new Field(bytesSource.lexeme());
     }
 
-    private Token skipThen(byte r, byte u, byte e, Token token) {
-        bytesSource.skip4(r, u, e);
-        return token;
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private Token skipThen(byte a, byte l, byte s, byte e, Token token) {
-        bytesSource.skip5(a, l, s, e);
-        return token;
+    private Token.String stringToken() {
+        return new Token.String(bytesSource.spoolString());
     }
 
     private Token numberToken() {
-        bytesSource.spoolNumber();
-        LineSegment lexeme = bytesSource.lexeme();
+        LineSegment lexeme = bytesSource.spoolNumber();
+        String numberString = lexeme.asString();
         try {
-            BigDecimal number = new BigDecimal(lexeme.asString().trim());
+            BigDecimal number = new BigDecimal(numberString.trim());
             return new Token.Number(number.scale() == 0
                 ? number.longValue()
                 : number);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse: `" + lexeme.asString() + "`", e);
+            throw new IllegalArgumentException("Failed to parse: `" + numberString + "`", e);
         }
+    }
+
+    private Token falseToken() {
+        return skipThen('a', 'l', 's', 'e', FALSE);
+    }
+
+    private Token trueToken() {
+        return skipThen('r', 'u', 'e', TRUE);
+    }
+
+    private Token nullToken() {
+        return skipThen('u', 'l', 'l', NULL);
+    }
+
+    private Token skipThen(char c0, char c1, char c2, Token token) {
+        bytesSource.skip4((byte) c0, (byte) c1, (byte) c2);
+        return token;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Token skipThen(char c0, char c1, char c2, char c3, Token token) {
+        bytesSource.skip5((byte) c0, (byte) c1, (byte) c2, (byte) c3);
+        return token;
+    }
+
+    private static Token fail(String msg, String details) {
+        throw new ReadException(msg, details);
     }
 
     @Override

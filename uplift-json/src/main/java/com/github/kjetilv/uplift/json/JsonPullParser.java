@@ -47,11 +47,15 @@ public final class JsonPullParser {
         Token next = tokens.nextField(canonical);
         while (true) {
             if (next instanceof Token.Field fieldToken) {
-                Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
-                tokens.skipNext(COLON);
-                Token valueToken = tokens.next();
-                objectCallbacks = processValue(valueToken, fieldCallbacks);
-                next = commaOr(END_OBJECT, canonical);
+                try {
+                    Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
+                    tokens.skipNext(COLON);
+                    Token valueToken = tokens.next();
+                    objectCallbacks = processValue(valueToken, fieldCallbacks);
+                    next = commaOr(END_OBJECT, canonical);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to set `" + fieldToken.value() + "`", e);
+                }
             } else {
                 return next == END_OBJECT
                     ? objectCallbacks.objectEnded()

@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.LineSegments;
+import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.flopp.kernel.util.Bits;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
@@ -18,19 +20,23 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private final LineSegment data;
 
+    private final LineSegment workarea = LineSegments.of(MemorySegments.ofLength(4096), 4096);
+
+    private final long startOffset;
+
     private long startIndex;
 
     private long endIndex;
 
     private final long limit;
 
-    public LineSegmentBytesSource(LineSegment data) {
-        this(data, false);
-    }
+    private final MemorySegment memorySegment;
 
-    public LineSegmentBytesSource(LineSegment data, boolean aligned) {
+    public LineSegmentBytesSource(LineSegment data) {
         this.data = data;
+        this.startOffset = data.startIndex();
         this.limit = data.length();
+        this.memorySegment = data.memorySegment();
     }
 
     @Override
@@ -48,7 +54,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     }
 
     @Override
-    public void spoolField() {
+    public LineSegment spoolField() {
         startIndex = pos;
         long index = pos;
         byte b;
@@ -60,10 +66,11 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         }
         pos = index + 1;
         endIndex = index;
+        return data;
     }
 
     @Override
-    public void spoolString() {
+    public LineSegment spoolString() {
         startIndex = pos;
         long index = pos;
         boolean quo = false;
@@ -84,7 +91,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
                     } else {
                         pos = index + 1;
                         endIndex = index;
-                        return;
+                        return this;
                     }
                 }
                 case '\\' -> quo = !quo;
@@ -95,7 +102,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     }
 
     @Override
-    public void spoolNumber() {
+    public LineSegment spoolNumber() {
         startIndex = pos - 1;
         long index = pos;
         byte b;
@@ -109,21 +116,22 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         }
         pos = index;
         endIndex = index;
+        return this;
     }
 
     @Override
     public void skip5(byte c0, byte c1, byte c2, byte c3) {
         int value = data.unalignedIntAt(pos);
-        assert value == c0 + (c1 << 8) + (c2 << 16) + (c3 << 24)
-            : Bits.hxD(value) + " !=" + Bits.hxD(c0 + (c1 << 8) + (c2 << 16) + (c3 << 24));
+        int found = c0 + (c1 << 8) + (c2 << 16) + (c3 << 24);
+        assert value == found : Bits.hxD(value) + " !=" + Bits.hxD(found);
         pos += 4;
     }
 
     @Override
     public void skip4(byte c0, byte c1, byte c2) {
-        int shortValue = data.unalignedIntAt(pos) & 0xFFFFFF;
-        assert shortValue == c0 + (c1 << 8) + (c2 << 16)
-            : Bits.hxD(shortValue) + " != " + Bits.hxD(c0 + (c1 << 8) + (c2 << 16));
+        int value = data.unalignedIntAt(pos) & 0xFFFFFF;
+        int found = c0 + (c1 << 8) + (c2 << 16);
+        assert value == found : Bits.hxD(value) + " != " + Bits.hxD(found);
         pos += 3;
     }
 
@@ -147,31 +155,17 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     @Override
     public long startIndex() {
-        return startIndex;
+        return startOffset + startIndex;
     }
 
     @Override
     public long endIndex() {
-        return endIndex;
+        return startOffset + endIndex;
     }
 
     @Override
     public MemorySegment memorySegment() {
-        return data.memorySegment();
-    }
-
-    private void advance() {
-        while (true) {
-            pos++;
-            byte b = data.byteAt(pos);
-            if (b == 0) {
-                return;
-            }
-            if (!Character.isWhitespace(b)) {
-                current = b;
-                return;
-            }
-        }
+        return memorySegment;
     }
 
     private void fail(String msg) {

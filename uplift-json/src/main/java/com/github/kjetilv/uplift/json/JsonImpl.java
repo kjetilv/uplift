@@ -96,7 +96,7 @@ final class JsonImpl implements Json {
         JsonWriter.write(new StreamSink(baos), object);
     }
 
-    public static final TokenResolver ALLOCATOR = new Allocator();
+    private static final TokenResolver ALLOCATOR = new Allocator();
 
     private static Object process(BytesSource bytesSource) {
         AtomicReference<Object> reference = new AtomicReference<>();

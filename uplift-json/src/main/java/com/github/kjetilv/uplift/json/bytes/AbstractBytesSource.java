@@ -29,7 +29,7 @@ public abstract class AbstractBytesSource implements BytesSource {
     }
 
     @Override
-    public void spoolField() {
+    public LineSegment spoolField() {
         index = 0;
         while (true) {
             if (next1 >> 5 == 0) {
@@ -37,7 +37,7 @@ public abstract class AbstractBytesSource implements BytesSource {
             }
             try {
                 if (next1 == '"') {
-                    return;
+                    return lexeme();
                 }
                 add(next1);
             } finally {
@@ -48,7 +48,7 @@ public abstract class AbstractBytesSource implements BytesSource {
     }
 
     @Override
-    public void spoolString() {
+    public LineSegment spoolString() {
         index = 0;
         boolean quo = false;
         while (true) {
@@ -69,7 +69,7 @@ public abstract class AbstractBytesSource implements BytesSource {
                         quo = false;
                     } else {
                         advance();
-                        return;
+                        return lexeme();
                     }
                 }
                 case '\\' -> {
@@ -90,7 +90,7 @@ public abstract class AbstractBytesSource implements BytesSource {
     }
 
     @Override
-    public void spoolNumber() {
+    public LineSegment spoolNumber() {
         index++; // First digit is already in buffer
         while (digital(next1)) {
             save();
@@ -102,6 +102,7 @@ public abstract class AbstractBytesSource implements BytesSource {
                 save();
             } while (isDigit(next1));
         }
+        return lexeme();
     }
 
     @Override

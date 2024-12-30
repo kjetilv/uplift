@@ -114,7 +114,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         strings.put(
             new Token.Field(LineSegments.of(name)),
             (builder, str) ->
-                build(builder, set, URI.create(str))
+                build(builder, set, uri(str))
         );
     }
 
@@ -123,7 +123,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
             new Token.Field(LineSegments.of(name)),
             (builder, str) -> {
                 try {
-                    build(builder, set, URI.create(str).toURL());
+                    build(builder, set, uri(str).toURL());
                 } catch (Exception e) {
                     throw new IllegalArgumentException("Not a URL: " + str, e);
                 }
@@ -302,6 +302,13 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
             return string.charAt(0);
         }
         throw new IllegalStateException("Not a char: `" + string + "`'");
+    }
+
+    private static URI uri(String str) {
+        if (str.indexOf('\\') == -1) {
+            return URI.create(str);
+        }
+        return URI.create(str.replaceAll("\\\\", ""));
     }
 
     @Override
