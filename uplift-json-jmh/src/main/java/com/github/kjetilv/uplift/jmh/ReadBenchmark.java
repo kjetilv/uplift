@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -36,6 +35,8 @@ public class ReadBenchmark {
 
     public static void main(String[] args) throws IOException {
         System.out.println("OK");
+
+        List<String> lines = Files.readAllLines(PATH_L, UTF_8);
 
         Instant initTime = Instant.now();
         System.out.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
@@ -54,16 +55,15 @@ public class ReadBenchmark {
 
         System.gc();
         Instant jacksonNow = Instant.now();
+
         for (int i = 0; i < X; i++) {
-            try (Stream<String> lines = Files.lines(PATH_L)) {
-                lines.forEach(line -> {
-                    try {
-                        Tweet tweet = objectMapper.readValue(line, Tweet.class);
-                        longAdder.add(tweet == null ? 0 : 1);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            for (String line : lines) {
+                try {
+                    Tweet tweet = objectMapper.readValue(line, Tweet.class);
+                    longAdder.add(tweet == null ? 0 : 1);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
@@ -72,8 +72,7 @@ public class ReadBenchmark {
         Instant upliftNow = Instant.now();
         for (int i = 0; i < X; i++) {
             try (
-                Partitioned<Path> partitioned =
-                    PartitionedPaths.partitioned(PATH_L, Partitioning.single())
+                Partitioned<Path> partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())
             ) {
                 partitioned.streamers()
                     .forEach(streamer ->

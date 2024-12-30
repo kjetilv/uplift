@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.bytes.*;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;

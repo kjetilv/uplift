@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
-import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.flopp.kernel.util.Bits;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
@@ -19,8 +17,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     private byte current;
 
     private final LineSegment data;
-
-    private final LineSegment workarea = LineSegments.of(MemorySegments.ofLength(4096), 4096);
 
     private final long startOffset;
 
@@ -110,7 +106,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
             index++;
         }
         if (b == '.') {
-            while (isDigit(b = data.byteAt(pos))) {
+            while (isDigit(data.byteAt(pos))) {
                 index++;
             }
         }
