@@ -31,11 +31,9 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private final MemorySegment memorySegment;
 
-    private final LongSupplier longSupplier;
+    private final LongSupplier nextLong;
 
     private long currentLong;
-
-    private long currentLongPos;
 
     private long currentLongLimit;
 
@@ -44,9 +42,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         this.startOffset = data.startIndex();
         this.limit = data.length();
         this.memorySegment = data.memorySegment();
-
-        this.longSupplier = data.longSupplier(false);
-        this.currentLongLimit = 0;
+        this.nextLong = data.longSupplier();
     }
 
     @Override
@@ -177,7 +173,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private byte bite(long index) {
         if (index >= currentLongLimit) {
-            currentLong = longSupplier.getAsLong();
+            currentLong = nextLong.getAsLong();
             currentLongLimit += MemorySegments.ALIGNMENT;
         }
         long pos = index % MemorySegments.ALIGNMENT;
