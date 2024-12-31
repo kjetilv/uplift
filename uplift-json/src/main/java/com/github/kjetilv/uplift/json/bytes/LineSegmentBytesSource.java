@@ -1,11 +1,13 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.flopp.kernel.util.Bits;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.lang.foreign.MemorySegment;
+import java.util.function.LongSupplier;
 
 import static java.lang.Character.isDigit;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
@@ -29,11 +31,22 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private final MemorySegment memorySegment;
 
+    private final LongSupplier longSupplier;
+
+    private long currentLong;
+
+    private long currentLongPos;
+
+    private long currentLongLimit;
+
     public LineSegmentBytesSource(LineSegment data) {
         this.data = data;
         this.startOffset = data.startIndex();
         this.limit = data.length();
         this.memorySegment = data.memorySegment();
+
+        this.longSupplier = data.longSupplier(false);
+        this.currentLongLimit = 0;
     }
 
     @Override
@@ -48,10 +61,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
             }
         }
         return 0;
-    }
-
-    private byte bite(long index) {
-        return data.byteAt(index);
     }
 
     @Override
@@ -164,6 +173,15 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public byte byteAt(long i) {
         return memorySegment.get(JAVA_BYTE, startOffset + startIndex + i);
+    }
+
+    private byte bite(long index) {
+        if (index >= currentLongLimit) {
+            currentLong = longSupplier.getAsLong();
+            currentLongLimit += MemorySegments.ALIGNMENT;
+        }
+        long pos = index % MemorySegments.ALIGNMENT;
+        return Bits.getByte(currentLong, pos);
     }
 
     private void fail(String msg) {
