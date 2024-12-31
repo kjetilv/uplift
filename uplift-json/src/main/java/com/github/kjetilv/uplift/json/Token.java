@@ -12,6 +12,7 @@ public sealed interface Token permits
     Token.EndObject,
     Token.False,
     Token.Field,
+    Token.SkipField,
     Token.Null,
     Token.Number,
     Token.String,
@@ -23,29 +24,25 @@ public sealed interface Token permits
 
     TokenType tokenType();
 
-    Token BEGIN_OBJECT = new BeginObject();
+    Token BEGIN_OBJECT = new BeginObject(TokenType.BEGIN_OBJECT);
 
-    Token END_OBJECT = new EndObject();
+    Token END_OBJECT = new EndObject(TokenType.END_OBJECT);
 
-    Token BEGIN_ARRAY = new BeginArray();
+    Token BEGIN_ARRAY = new BeginArray(TokenType.BEGIN_ARRAY);
 
-    Token END_ARRAY = new EndArray();
+    Token END_ARRAY = new EndArray(TokenType.END_ARRAY);
 
-    Token COLON = new Colon();
+    Token COLON = new Colon(TokenType.COLON);
 
-    Token COMMA = new Comma();
+    Token COMMA = new Comma(TokenType.COLON);
 
-    Token TRUE = new True();
+    Token TRUE = new True(TokenType.BOOL);
 
-    Token FALSE = new False();
+    Token FALSE = new False(TokenType.BOOL);
 
-    Token NULL = new Null();
+    Token NULL = new Null(TokenType.NULL);
 
-    record BeginObject() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.BEGIN_OBJECT;
-        }
+    record BeginObject(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -53,11 +50,7 @@ public sealed interface Token permits
         }
     }
 
-    record EndObject() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.END_OBJECT;
-        }
+    record EndObject(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -65,11 +58,7 @@ public sealed interface Token permits
         }
     }
 
-    record BeginArray() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.BEGIN_ARRAY;
-        }
+    record BeginArray(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -77,11 +66,7 @@ public sealed interface Token permits
         }
     }
 
-    record EndArray() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.END_ARRAY;
-        }
+    record EndArray(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -89,11 +74,7 @@ public sealed interface Token permits
         }
     }
 
-    record Colon() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.COLON;
-        }
+    record Colon(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -101,11 +82,7 @@ public sealed interface Token permits
         }
     }
 
-    record Comma() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.COMMA;
-        }
+    record Comma(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -113,11 +90,7 @@ public sealed interface Token permits
         }
     }
 
-    record True() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.BOOL;
-        }
+    record True(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -125,11 +98,7 @@ public sealed interface Token permits
         }
     }
 
-    record False() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.BOOL;
-        }
+    record False(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -137,11 +106,7 @@ public sealed interface Token permits
         }
     }
 
-    record Null() implements Token {
-        @Override
-        public TokenType tokenType() {
-            return TokenType.NULL;
-        }
+    record Null(TokenType tokenType) implements Token {
 
         @Override
         public java.lang.String toString() {
@@ -163,6 +128,14 @@ public sealed interface Token permits
         @Override
         public java.lang.String toString() {
             return getClass().getSimpleName() + "[" + value() + "]";
+        }
+    }
+
+    record SkipField() implements Token {
+
+        @Override
+        public TokenType tokenType() {
+            return TokenType.STRING;
         }
     }
 
