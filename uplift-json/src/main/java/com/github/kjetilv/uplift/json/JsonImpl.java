@@ -7,12 +7,11 @@ import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 final class JsonImpl implements Json {
 
@@ -23,17 +22,12 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(String source, Callbacks callbacks) {
-        return parse(new CharSequenceBytesSource(source), callbacks);
+        return parse(new ByteArrayBytesSource(source.getBytes(UTF_8)), callbacks);
     }
 
     @Override
     public Callbacks parse(InputStream source, Callbacks callbacks) {
         return parse(new InputStreamBytesSource(source), callbacks);
-    }
-
-    @Override
-    public Callbacks parse(Reader source, Callbacks callbacks) {
-        return parse(new ReaderBytesSource(source), callbacks);
     }
 
     @Override
@@ -56,11 +50,6 @@ final class JsonImpl implements Json {
     }
 
     @Override
-    public Object read(Reader reader) {
-        return process(new ReaderBytesSource(reader));
-    }
-
-    @Override
     public Object read(byte[] bytes) {
         return process(new ByteArrayBytesSource(bytes));
     }
@@ -72,7 +61,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(String string) {
-        return process(new CharSequenceBytesSource(string));
+        return process(new ByteArrayBytesSource(string.getBytes(UTF_8)));
     }
 
     @Override

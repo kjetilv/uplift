@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.SequencedMap;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -48,15 +47,6 @@ public interface Json {
         return write(object).getBytes(UTF_8);
     }
 
-    default Object read(Reader reader) {
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            return read(bufferedReader.lines()
-                .collect(Collectors.joining("\n")));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to read " + reader, e);
-        }
-    }
-
     default Object read(String string) {
         try (
             InputStream in = new ByteArrayInputStream(
@@ -84,8 +74,6 @@ public interface Json {
     Callbacks parse(String source, Callbacks callbacks);
 
     Callbacks parse(InputStream source, Callbacks callbacks);
-
-    Callbacks parse(Reader source, Callbacks callbacks);
 
     Callbacks parse(BytesSource bytesSource, Callbacks callbacks);
 

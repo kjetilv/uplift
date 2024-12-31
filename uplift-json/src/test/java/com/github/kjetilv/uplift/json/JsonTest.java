@@ -78,7 +78,6 @@ class JsonTest {
         assertThat(read).isEqualTo("foo");
     }
 
-    @Disabled
     @Test
     void singleValueStringmoji() {
         //language=json

@@ -21,7 +21,7 @@ public final class InputStreamBytesSource extends AbstractBytesSource {
         @Override
         public int getAsInt() {
             try {
-                return Math.max(0, stream.read());
+                return stream.read();
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + stream, e);
             }

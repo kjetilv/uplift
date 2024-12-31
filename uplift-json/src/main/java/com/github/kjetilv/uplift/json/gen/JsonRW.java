@@ -9,7 +9,6 @@ import com.github.kjetilv.uplift.json.JsonWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -30,10 +29,6 @@ public interface JsonRW<T extends Record> {
 
     default JsonReader<InputStream, T> streamReader() {
         return new InputStreamJsonReader<>(callbacks());
-    }
-
-    default JsonReader<Reader, T> readerReader() {
-        return new ReaderJsonReader<>(callbacks());
     }
 
     default JsonWriter<String, T, StringBuilder> stringWriter() {
