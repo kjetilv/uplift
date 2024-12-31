@@ -259,6 +259,7 @@ class JsonTest {
             );
     }
 
+    @SuppressWarnings("JsonStandardCompliance")
     @Test
     void malformednumbers3() {
         try {

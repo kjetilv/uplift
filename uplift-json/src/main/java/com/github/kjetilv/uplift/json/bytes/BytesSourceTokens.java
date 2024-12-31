@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
+import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
@@ -69,14 +70,14 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token numberToken() {
         LineSegment lexeme = bytesSource.spoolNumber();
-        String numberString = lexeme.asString();
+        MemorySegments.Chars cs = lexeme.asChars(NUM_BUFFER);
         try {
-            BigDecimal number = new BigDecimal(numberString.trim());
+            BigDecimal number = new BigDecimal(cs.chars(), cs.offset(), cs.length());
             return new Token.Number(number.scale() == 0
                 ? number.longValue()
                 : number);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse: `" + numberString + "`", e);
+            throw new IllegalArgumentException("Failed to parse: `" + cs + "`", e);
         }
     }
 
@@ -102,6 +103,8 @@ public final class BytesSourceTokens implements Tokens {
         bytesSource.skip5((byte) c0, (byte) c1, (byte) c2, (byte) c3);
         return token;
     }
+
+    private static final char[] NUM_BUFFER = new char[128];
 
     private static Token fail(String msg, String details) {
         throw new ReadException(msg, details);

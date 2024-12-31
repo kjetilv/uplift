@@ -70,10 +70,10 @@ public class ReadBenchmark {
         System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
 
         Instant upliftNow = Instant.now();
-        for (int i = 0; i < X; i++) {
-            try (
-                Partitioned<Path> partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())
-            ) {
+        try (
+            Partitioned<Path> partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())
+        ) {
+            for (int i = 0; i < X; i++) {
                 partitioned.streamers()
                     .forEach(streamer ->
                         streamer.lines()
