@@ -8,6 +8,7 @@ import com.github.kjetilv.uplift.json.io.ReadException;
 import java.lang.foreign.MemorySegment;
 
 import static java.lang.Character.isDigit;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class LineSegmentBytesSource implements BytesSource, LineSegment {
@@ -162,6 +163,11 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public MemorySegment memorySegment() {
         return memorySegment;
+    }
+
+    @Override
+    public byte byteAt(long i) {
+        return memorySegment.get(JAVA_BYTE, startOffset + startIndex + i);
     }
 
     private void fail(String msg) {

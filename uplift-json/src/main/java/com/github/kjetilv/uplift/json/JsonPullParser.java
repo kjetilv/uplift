@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import static com.github.kjetilv.uplift.json.Token.COLON;
-import static com.github.kjetilv.uplift.json.Token.END_OBJECT;
 import static com.github.kjetilv.uplift.json.TokenType.*;
 
 public final class JsonPullParser {
@@ -41,27 +39,56 @@ public final class JsonPullParser {
         };
     }
 
+    private void skipValue(Token token) {
+        switch (token) {
+            case Token.BeginObject _ -> skipStructure(Token. BEGIN_OBJECT, Token.END_OBJECT);
+            case Token.BeginArray _ -> skipStructure(Token.BEGIN_ARRAY, Token.END_ARRAY);
+            default -> {
+            }
+        }
+    }
+
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks objectCallbacks = callbacks.objectStarted();
         boolean canonical = objectCallbacks.canonical();
         Token next = tokens.nextField(canonical);
         while (true) {
-            if (next instanceof Token.Field fieldToken) {
-                try {
-                    Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
-                    tokens.skipNext(COLON);
-                    Token valueToken = tokens.next();
-                    objectCallbacks = processValue(valueToken, fieldCallbacks);
-                    next = commaOr(END_OBJECT, canonical);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to set `" + fieldToken.value() + "`", e);
+            switch (next) {
+                case Token.SkipField _ -> {
+                    tokens.skipNext(Token.COLON);
+                    skipValue(tokens.next());
+                    next = commaOr(Token.END_OBJECT, canonical);
                 }
-            } else {
-                return next == END_OBJECT
-                    ? objectCallbacks.objectEnded()
-                    : failParse(next, STRING, TokenType.END_OBJECT);
+                case Token.Field fieldToken -> {
+                    try {
+                        Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
+                        tokens.skipNext(Token.COLON);
+                        Token valueToken = tokens.next();
+                        objectCallbacks = processValue(valueToken, fieldCallbacks);
+                        next = commaOr(Token.END_OBJECT, canonical);
+                    } catch (Exception e) {
+                        throw new IllegalStateException("Failed to set `" + fieldToken.value() + "`", e);
+                    }
+                }
+                case null, default -> {
+                    return next == Token.END_OBJECT
+                        ? objectCallbacks.objectEnded()
+                        : failParse(next, STRING, TokenType.END_OBJECT);
+                }
             }
         }
+    }
+
+    private void skipStructure(Token openingToken, Token closingToken) {
+        int toClose = 0;
+        do {
+            Token next = tokens.next();
+            if (next == closingToken) {
+                toClose--;
+            } else if (next == openingToken) {
+                toClose++;
+            }
+        } while (toClose >= 0);
     }
 
     private Callbacks processArray(Callbacks callbacks) {
@@ -77,7 +104,7 @@ public final class JsonPullParser {
     private Token commaOr(Token closing, boolean canonical) {
         Token token = tokens.next();
         if (token == Token.COMMA) {
-            Token nextToken = tokens.next(closing == END_OBJECT, canonical);
+            Token nextToken = tokens.next(closing == Token.END_OBJECT, canonical);
             return nextToken == closing
                 ? failParse(nextToken, closing.tokenType())
                 : nextToken;

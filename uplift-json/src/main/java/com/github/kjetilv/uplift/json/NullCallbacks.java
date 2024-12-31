@@ -9,11 +9,6 @@ public class NullCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks objectStarted() {
-        return new NullCallbacks(this);
-    }
-
-    @Override
     public Callbacks objectEnded() {
         return parent;
     }

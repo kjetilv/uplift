@@ -53,13 +53,11 @@ public final class BytesSourceTokens implements Tokens {
         };
     }
 
-    private Field fieldToken(boolean canonical) {
+    private Token fieldToken(boolean canonical) {
         LineSegment lexeme = bytesSource.spoolField();
         if (canonical) {
-            Field found = tokenResolver.get(lexeme);
-            if (found != null) {
-                return found;
-            }
+            Field resolved = tokenResolver.get(lexeme);
+            return resolved == null ? SKIP_FIELD : resolved;
         }
         return new Field(bytesSource.lexeme());
     }
