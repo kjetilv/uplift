@@ -73,14 +73,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         boolean quo = false;
         while (true) {
             byte b = data.byteAt(index);
-            if (b >> 5 == 0) {
-                if (quo) {
-                    quo = false;
-                } else {
-                    fail("Unescaped control char: " + (int) b);
-                }
-                continue;
-            }
             switch (b) {
                 case '"' -> {
                     if (quo) {
