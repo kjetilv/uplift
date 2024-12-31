@@ -40,7 +40,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public byte chomp() {
         long index = pos;
         byte b;
-        while (index < limit && (b = data.byteAt(index)) != 0) {
+        while (index < limit && (b = bite(index)) != 0) {
             index++;
             if (!Character.isWhitespace(b)) {
                 pos = index;
@@ -50,12 +50,16 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         return 0;
     }
 
+    private byte bite(long index) {
+        return data.byteAt(index);
+    }
+
     @Override
     public LineSegment spoolField() {
         startIndex = pos;
         long index = pos;
         byte b;
-        while ((b = data.byteAt(index)) != '"') {
+        while ((b = bite(index)) != '"') {
             if (b >> 5 == 0) {
                 fail("Unescaped control char: " + (char) current);
             }
@@ -72,7 +76,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         long index = pos;
         boolean quo = false;
         while (true) {
-            byte b = data.byteAt(index);
+            byte b = bite(index);
             switch (b) {
                 case '"' -> {
                     if (quo) {
@@ -95,11 +99,11 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         startIndex = pos - 1;
         long index = pos;
         byte b;
-        while (isDigit(b = data.byteAt(index))) {
+        while (isDigit(b = bite(index))) {
             index++;
         }
         if (b == '.') {
-            while (isDigit(data.byteAt(pos))) {
+            while (isDigit(bite(pos))) {
                 index++;
             }
         }
@@ -128,7 +132,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public boolean done() {
         long index = pos;
         byte b;
-        while (index < limit && (b = data.byteAt(index)) != 0) {
+        while (index < limit && (b = bite(index)) != 0) {
             index++;
             if (!Character.isWhitespace(b)) {
                 return false;

@@ -35,11 +35,11 @@ final class Uuids {
         bytes[Uuid.DIGEST_LENGTH] = '=';
         bytes[Uuid.DIGEST_LENGTH + 1] = '=';
         for (int i = 0; i < Uuid.DIGEST_LENGTH; i++) {
-            byte c = digestChars[i];
-            bytes[i] = switch (c) {
+            byte b = digestChars[i];
+            bytes[i] = switch (b) {
                 case '-' -> '/';
                 case '_' -> '+';
-                default -> c;
+                default -> b;
             };
         }
         byte[] decode = DECODER.decode(bytes);

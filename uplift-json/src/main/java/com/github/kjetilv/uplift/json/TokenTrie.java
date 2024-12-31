@@ -44,8 +44,8 @@ public class TokenTrie implements TokenResolver {
                 if (length <= skip) {
                     return null;
                 }
-                byte c = lineSegment.byteAt(skip);
-                trie = level.get(c);
+                byte b = lineSegment.byteAt(skip);
+                trie = level.get(b);
             } else {
                 return null;
             }

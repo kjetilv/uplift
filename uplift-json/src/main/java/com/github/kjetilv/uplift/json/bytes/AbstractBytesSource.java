@@ -52,17 +52,17 @@ public abstract class AbstractBytesSource implements BytesSource {
         index = 0;
         boolean quo = false;
         while (true) {
-            byte c = next1;
-            if (c >> 5 == 0) {
+            byte b = next1;
+            if (b >> 5 == 0) {
                 if (quo) {
                     save();
                     quo = false;
                 } else {
-                    fail("Unescaped control char: " + (int) c);
+                    fail("Unescaped control char: " + (int) b);
                 }
                 continue;
             }
-            switch (c) {
+            switch (b) {
                 case '"' -> {
                     if (quo) {
                         save();
