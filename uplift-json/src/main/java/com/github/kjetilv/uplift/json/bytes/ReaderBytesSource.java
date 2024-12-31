@@ -10,13 +10,7 @@ public final class ReaderBytesSource extends AbstractBytesSource {
         super(new Chars(Objects.requireNonNull(reader, "reader")));
     }
 
-    private static final class Chars implements IntSupplier {
-
-        private final Reader reader;
-
-        private Chars(Reader reader) {
-            this.reader = reader;
-        }
+    private record Chars(Reader reader) implements IntSupplier {
 
         @Override
         public int getAsInt() {
