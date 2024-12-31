@@ -22,6 +22,10 @@ public sealed interface Token permits
         return tokenType() == tokenType;
     }
 
+    default boolean isValue() {
+        return tokenType().isValue();
+    }
+
     TokenType tokenType();
 
     Token BEGIN_OBJECT = new BeginObject(TokenType.BEGIN_OBJECT);

@@ -39,43 +39,41 @@ public final class JsonPullParser {
         };
     }
 
-    private void skipValue(Token token) {
-        switch (token) {
-            case Token.BeginObject _ -> skipStructure(Token. BEGIN_OBJECT, Token.END_OBJECT);
-            case Token.BeginArray _ -> skipStructure(Token.BEGIN_ARRAY, Token.END_ARRAY);
-            default -> {
-            }
-        }
-    }
-
     private Callbacks processObject(Callbacks callbacks) {
         Callbacks objectCallbacks = callbacks.objectStarted();
         boolean canonical = objectCallbacks.canonical();
         Token next = tokens.nextField(canonical);
-        while (true) {
-            switch (next) {
-                case Token.SkipField _ -> {
-                    tokens.skipNext(Token.COLON);
-                    skipValue(tokens.next());
-                    next = commaOr(Token.END_OBJECT, canonical);
-                }
-                case Token.Field fieldToken -> {
-                    try {
-                        Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
-                        tokens.skipNext(Token.COLON);
-                        Token valueToken = tokens.next();
-                        objectCallbacks = processValue(valueToken, fieldCallbacks);
-                        next = commaOr(Token.END_OBJECT, canonical);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Failed to set `" + fieldToken.value() + "`", e);
-                    }
-                }
-                case null, default -> {
-                    return next == Token.END_OBJECT
-                        ? objectCallbacks.objectEnded()
-                        : failParse(next, STRING, TokenType.END_OBJECT);
-                }
+        do {
+            if (next == Token.END_OBJECT) {
+                return objectCallbacks.objectEnded();
             }
+            if (next == Token.SKIP_FIELD) {
+                tokens.skipNext(Token.COLON);
+                skipValue(tokens.next());
+                next = commaOr(Token.END_OBJECT, canonical);
+            } else if (next instanceof Token.Field fieldToken) {
+                try {
+                    Callbacks fieldCallbacks = objectCallbacks.field(fieldToken);
+                    tokens.skipNext(Token.COLON);
+                    Token valueToken = tokens.next();
+                    objectCallbacks = processValue(valueToken, fieldCallbacks);
+                    next = commaOr(Token.END_OBJECT, canonical);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to set `" + fieldToken.value() + "`", e);
+                }
+            } else {
+                failParse(next, STRING, TokenType.END_OBJECT);
+            }
+        } while (true);
+    }
+
+    private void skipValue(Token token) {
+        if (token == Token.BEGIN_OBJECT) {
+            skipStructure(Token.BEGIN_OBJECT, Token.END_OBJECT);
+        } else if (token == Token.BEGIN_ARRAY) {
+            skipStructure(Token.BEGIN_ARRAY, Token.END_ARRAY);
+        } else if (!token.isValue()) {
+            failParse(token, BEGIN_OBJECT, BEGIN_ARRAY, BOOL, NULL, NUMBER, STRING);
         }
     }
 

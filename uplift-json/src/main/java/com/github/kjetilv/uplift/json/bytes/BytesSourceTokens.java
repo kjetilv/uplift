@@ -68,7 +68,10 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token numberToken() {
         LineSegment lexeme = bytesSource.spoolNumber();
-        MemorySegments.Chars cs = lexeme.asChars(NUM_BUFFER);
+        MemorySegments.Chars cs = lexeme.asChars(NUM_BUFFER.get()).trim();
+        if (cs == MemorySegments.Chars.NULL) {
+            throw new IllegalArgumentException("Empty numeric value");
+        }
         try {
             BigDecimal number = new BigDecimal(cs.chars(), cs.offset(), cs.length());
             return new Token.Number(number.scale() == 0
@@ -102,7 +105,8 @@ public final class BytesSourceTokens implements Tokens {
         return token;
     }
 
-    private static final char[] NUM_BUFFER = new char[128];
+    private static final ThreadLocal<char[]> NUM_BUFFER =
+        ThreadLocal.withInitial(() -> new char[128]);
 
     private static Token fail(String msg, String details) {
         throw new ReadException(msg, details);
