@@ -8,10 +8,7 @@ import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.Tokens;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
-import java.lang.String;
 import java.math.BigDecimal;
-
-import static com.github.kjetilv.uplift.json.Token.*;
 
 public final class BytesSourceTokens implements Tokens {
 
@@ -39,12 +36,12 @@ public final class BytesSourceTokens implements Tokens {
     private Token scanToken(boolean fieldName, boolean canonical) {
         int b = bytesSource.chomp();
         return switch (b) {
-            case ':' -> COLON;
-            case ',' -> COMMA;
-            case '{' -> BEGIN_OBJECT;
-            case '}' -> END_OBJECT;
-            case '[' -> BEGIN_ARRAY;
-            case ']' -> END_ARRAY;
+            case ':' -> Token.COLON;
+            case ',' -> Token.COMMA;
+            case '{' -> Token.BEGIN_OBJECT;
+            case '}' -> Token.END_OBJECT;
+            case '[' -> Token.BEGIN_ARRAY;
+            case ']' -> Token.END_ARRAY;
             case '"' -> fieldName ? fieldToken(canonical) : stringToken();
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
             case 'f' -> falseToken();
@@ -58,10 +55,10 @@ public final class BytesSourceTokens implements Tokens {
     private Token fieldToken(boolean canonical) {
         LineSegment lexeme = bytesSource.spoolField();
         if (canonical) {
-            Field resolved = tokenResolver.get(lexeme);
-            return resolved == null ? SKIP_FIELD : resolved;
+            Token.Field resolved = tokenResolver.get(lexeme);
+            return resolved == null ? Token.SKIP_FIELD : resolved;
         }
-        return new Field(bytesSource.lexeme());
+        return new Token.Field(bytesSource.lexeme());
     }
 
     private Token.String stringToken() {
@@ -85,15 +82,15 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token falseToken() {
-        return skipThen('a', 'l', 's', 'e', FALSE);
+        return skipThen('a', 'l', 's', 'e', Token.FALSE);
     }
 
     private Token trueToken() {
-        return skipThen('r', 'u', 'e', TRUE);
+        return skipThen('r', 'u', 'e', Token.TRUE);
     }
 
     private Token nullToken() {
-        return skipThen('u', 'l', 'l', NULL);
+        return skipThen('u', 'l', 'l', Token.NULL);
     }
 
     private Token skipThen(char c0, char c1, char c2, Token token) {
