@@ -49,7 +49,7 @@ public class ReadTest {
 
     @Test
     void readFile() {
-        try (Partitioned<Path> partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())) {
+        try (Partitioned partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())) {
             partitioned.streamers()
                 .forEach(streamer ->
                     streamer.lines()

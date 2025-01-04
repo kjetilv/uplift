@@ -19,6 +19,8 @@ public final class BytesSourceTokens implements Tokens {
 
     private final TokenResolver tokenResolver;
 
+    private final char[] buffer = new char[1024];
+
     public BytesSourceTokens(BytesSource bytesSource, TokenResolver tokenResolver) {
         this.bytesSource = bytesSource;
         this.tokenResolver = tokenResolver;
@@ -35,7 +37,7 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token scanToken(boolean fieldName, boolean canonical) {
-        byte b = bytesSource.chomp();
+        int b = bytesSource.chomp();
         return switch (b) {
             case ':' -> COLON;
             case ',' -> COMMA;
@@ -68,7 +70,7 @@ public final class BytesSourceTokens implements Tokens {
 
     private Token numberToken() {
         LineSegment lexeme = bytesSource.spoolNumber();
-        MemorySegments.Chars cs = lexeme.asChars(NUM_BUFFER.get()).trim();
+        MemorySegments.Chars cs = lexeme.asChars(buffer).trim();
         if (cs == MemorySegments.Chars.NULL) {
             throw new IllegalArgumentException("Empty numeric value");
         }
@@ -104,9 +106,6 @@ public final class BytesSourceTokens implements Tokens {
         bytesSource.skip5((byte) c0, (byte) c1, (byte) c2, (byte) c3);
         return token;
     }
-
-    private static final ThreadLocal<char[]> NUM_BUFFER =
-        ThreadLocal.withInitial(() -> new char[128]);
 
     private static Token fail(String msg, String details) {
         throw new ReadException(msg, details);

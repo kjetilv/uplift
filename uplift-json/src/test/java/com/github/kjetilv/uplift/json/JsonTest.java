@@ -92,6 +92,21 @@ class JsonTest {
     }
 
     @Test
+    void singleValueField() {
+        Object read = JSON.read("""
+            {
+              "foo": 234.234, 
+              "bar": -54.32
+            }
+            """);
+        assertThat(read).asInstanceOf(MAP)
+            .containsExactly(
+                Map.entry("foo", new BigDecimal("234.234")),
+                Map.entry("bar", new BigDecimal("-54.32"))
+            );
+    }
+
+    @Test
     void numberValue() {
         Object read = JSON.read("""
             { "foo": 0.42 }

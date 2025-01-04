@@ -17,7 +17,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private long pos;
 
-    private byte current;
+    private int currentByte;
 
     private final LineSegment data;
 
@@ -46,16 +46,17 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     }
 
     @Override
-    public byte chomp() {
+    public int chomp() {
         long index = pos;
-        byte b;
-        while (index < limit && (b = bite(index)) != 0) {
+        int b;
+        while (index < limit && (b = biteAt(index)) != 0) {
             index++;
-            if (!Character.isWhitespace(b)) {
+            if (!Character.isWhitespace((byte) b)) {
                 pos = index;
-                return current = b;
+                return currentByte = b;
             }
         }
+
         return 0;
     }
 
@@ -63,16 +64,16 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public LineSegment spoolField() {
         startIndex = pos;
         long index = pos;
-        byte b;
-        while ((b = bite(index)) != '"') {
+        long b;
+        while ((b = biteAt(index)) != '"') {
             if (b >> 5 == 0) {
-                fail("Unescaped control char: " + (char) current);
+                return fail("Unescaped control char: " + (char) currentByte);
             }
             index++;
         }
         pos = index + 1;
         endIndex = index;
-        return data;
+        return this;
     }
 
     @Override
@@ -81,7 +82,10 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         long index = pos;
         boolean quo = false;
         while (true) {
-            byte b = bite(index);
+            int b = biteAt(index);
+            if (b >> 5 == 0 && !quo) {
+                return fail("Unescaped control char: " + (char) currentByte);
+            }
             switch (b) {
                 case '"' -> {
                     if (quo) {
@@ -103,12 +107,13 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public LineSegment spoolNumber() {
         startIndex = pos - 1;
         long index = pos;
-        byte b;
-        while (isDigit(b = bite(index))) {
+        int b;
+        while (isDigit(b = biteAt(index))) {
             index++;
         }
         if (b == '.') {
-            while (isDigit(bite(pos))) {
+            index++;
+            while (isDigit(biteAt(index))) {
                 index++;
             }
         }
@@ -136,8 +141,8 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public boolean done() {
         long index = pos;
-        byte b;
-        while (index < limit && (b = bite(index)) != 0) {
+        int b;
+        while (index < limit && (b = biteAt(index)) != 0) {
             index++;
             if (!Character.isWhitespace(b)) {
                 return false;
@@ -171,8 +176,8 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         return memorySegment.get(JAVA_BYTE, startOffset + startIndex + i);
     }
 
-    private byte bite(long index) {
-        if (index >= currentLongLimit) {
+    private int biteAt(long index) {
+        while (index >= currentLongLimit) {
             currentLong = nextLong.getAsLong();
             currentLongLimit += MemorySegments.ALIGNMENT;
         }
@@ -180,7 +185,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         return Bits.getByte(currentLong, pos);
     }
 
-    private void fail(String msg) {
+    private <T> T fail(String msg) {
         throw new ReadException(msg, "`" + lexeme().asString() + "`");
     }
 
@@ -206,6 +211,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     public String toString() {
         return getClass().getSimpleName() + "[" + data + " " +
                "<" + asString() + ">" +
-               "<" + print(current) + Bits.toString(data.unalignedIntAt(pos - 2), 4, UTF_8) + ">]";
+               "<" + print(currentByte) + Bits.toString(data.unalignedIntAt(pos - 2), 4, UTF_8) + ">]";
     }
 }

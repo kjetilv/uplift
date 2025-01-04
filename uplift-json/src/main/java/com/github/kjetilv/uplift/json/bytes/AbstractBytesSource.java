@@ -143,7 +143,7 @@ public abstract class AbstractBytesSource implements BytesSource {
     }
 
     @Override
-    public byte chomp() {
+    public int chomp() {
         index = 0;
         while (true) {
             switch (next1) {

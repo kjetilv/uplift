@@ -16,7 +16,7 @@ public final class MapCallbacks implements Callbacks {
 
     private final Map<String, Object> map;
 
-    private Token.Field currentField;
+    private String currentField;
 
     public MapCallbacks(Callbacks parent, Consumer<Map<String, Object>> onDone) {
         this.parent = parent;
@@ -31,7 +31,7 @@ public final class MapCallbacks implements Callbacks {
 
     @Override
     public Callbacks field(Token.Field token) {
-        this.currentField = token;
+        this.currentField = token.value();
         return this;
     }
 
@@ -72,7 +72,7 @@ public final class MapCallbacks implements Callbacks {
     }
 
     private Callbacks set(Object value) {
-        this.map.put(currentField.value(), value);
+        this.map.put(currentField, value);
         return this;
     }
 }

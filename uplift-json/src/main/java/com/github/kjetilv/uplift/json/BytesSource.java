@@ -4,7 +4,7 @@ import com.github.kjetilv.flopp.kernel.LineSegment;
 
 public interface BytesSource {
 
-    byte chomp();
+    int chomp();
 
     LineSegment lexeme();
 
