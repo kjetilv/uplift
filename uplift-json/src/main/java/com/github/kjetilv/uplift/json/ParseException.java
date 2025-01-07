@@ -11,7 +11,7 @@ public final class ParseException extends RuntimeException {
     private final TokenType[] expected;
 
     public ParseException(Object source, Token token, TokenType... expected) {
-        super(source + ": Invalid token " + token + ", expected one of " + tokens(expected));
+        super(source + ": Invalid token `" + token + "`, expected " + tokens(expected));
         this.token = token;
         this.expected = expected;
     }
@@ -25,6 +25,9 @@ public final class ParseException extends RuntimeException {
     }
 
     private static String tokens(TokenType... expected) {
+        if (expected.length == 1) {
+            return expected[0].toString();
+        }
         return Arrays.stream(expected)
             .map(Enum::name)
             .collect(Collectors.joining(", "));

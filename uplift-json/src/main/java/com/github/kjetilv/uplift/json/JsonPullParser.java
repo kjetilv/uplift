@@ -107,15 +107,20 @@ public final class JsonPullParser {
         if (token == Token.COMMA) {
             Token nextToken = tokens.next(closing == Token.END_OBJECT, canonical);
             return nextToken == closing
-                ? failParse(nextToken, closing.tokenType())
+                ? failParse(nextToken, TokenType.valueTokens())
                 : nextToken;
         }
         return token == closing
             ? token
-            : failParse(token, COMMA, closing.tokenType());
+            : failParse(token, COMMA);
     }
 
     private <T> T failParse(Token actual, TokenType... expected) {
         throw new ParseException(this, actual, expected);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + tokens + ']';
     }
 }

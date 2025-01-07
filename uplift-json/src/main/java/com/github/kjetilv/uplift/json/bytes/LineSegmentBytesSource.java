@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.flopp.kernel.util.Bits;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
@@ -9,33 +8,34 @@ import com.github.kjetilv.uplift.json.io.ReadException;
 import java.lang.foreign.MemorySegment;
 import java.util.function.LongSupplier;
 
+import static com.github.kjetilv.flopp.kernel.MemorySegments.ALIGNMENT;
 import static java.lang.Character.isDigit;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
-    private long pos;
-
-    private int currentByte;
-
     private final LineSegment data;
-
-    private final long startOffset;
-
-    private long startIndex;
-
-    private long endIndex;
-
-    private final long limit;
 
     private final MemorySegment memorySegment;
 
+    private final long startOffset;
+
+    private final long limit;
+
     private final LongSupplier nextLong;
+
+    private int currentByte;
 
     private long currentLong;
 
     private long currentLongLimit;
+
+    private long pos;
+
+    private long startIndex;
+
+    private long endIndex;
 
     public LineSegmentBytesSource(LineSegment data) {
         this.data = data;
@@ -63,17 +63,28 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public LineSegment spoolField() {
         startIndex = pos;
-        long index = pos;
-        long b;
-        while ((b = biteAt(index)) != '"') {
-            if (b >> 5 == 0) {
-                return fail("Unescaped control char: " + (char) currentByte);
-            }
-            index++;
+
+        long offset = startIndex % ALIGNMENT;
+        endIndex = startIndex - offset + ALIGNMENT;
+
+        if (offset > 0) {
+            currentLong = Bits.clearLow(currentLong, (int) offset);
+        } else {
+            advance();
         }
-        pos = index + 1;
-        endIndex = index;
-        return this;
+
+        int nextQ = Q.next(currentLong);
+        while (true) {
+            if (nextQ == ALIGNMENT) {
+                advance();
+                endIndex += ALIGNMENT;
+                nextQ = Q.next(currentLong);
+            } else {
+                endIndex -= (ALIGNMENT - nextQ);
+                pos = endIndex + 1;
+                return this;
+            }
+        }
     }
 
     @Override
@@ -176,17 +187,21 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         return memorySegment.get(JAVA_BYTE, startOffset + startIndex + i);
     }
 
-    private int biteAt(long index) {
-        while (index >= currentLongLimit) {
-            currentLong = nextLong.getAsLong();
-            currentLongLimit += MemorySegments.ALIGNMENT;
-        }
-        long pos = index % MemorySegments.ALIGNMENT;
-        return Bits.getByte(currentLong, pos);
+    private void advance() {
+        currentLong = nextLong.getAsLong();
+        currentLongLimit += ALIGNMENT;
     }
 
     private <T> T fail(String msg) {
         throw new ReadException(msg, "`" + lexeme().asString() + "`");
+    }
+
+    private int biteAt(long index) {
+        while (index >= currentLongLimit) {
+            currentLong = nextLong.getAsLong();
+            currentLongLimit += ALIGNMENT;
+        }
+        return Bits.getByte(currentLong, index % ALIGNMENT);
     }
 
     private static final int LN = 10;
@@ -196,6 +211,8 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     private static final int CR = 13;
 
     private static final int BS = 8;
+
+    private static Bits.Finder Q = Bits.finder('"', true);
 
     private static String print(int c) {
         return switch (c) {

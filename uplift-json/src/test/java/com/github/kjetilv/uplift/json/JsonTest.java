@@ -285,8 +285,7 @@ class JsonTest {
                     }
                     """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to set `bar`");
-            assertThat(e.getCause().getMessage()).contains("Failed to parse: `-.`");
+            assertThat(e.getMessage()).contains("Failed to parse: `-.`");
         }
     }
 
@@ -327,8 +326,7 @@ class JsonTest {
                 }
                 """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to set `bar`");
-            assertThat(e.getCause().getMessage()).contains("Failed to parse: `-`");
+            assertThat(e.getMessage()).contains("Failed to parse: `-`");
         }
     }
 

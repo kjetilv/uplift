@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
+import java.util.Arrays;
+
 public enum TokenType {
 
     BEGIN_ARRAY(true),
@@ -25,5 +27,9 @@ public enum TokenType {
 
     public boolean isValue() {
         return value;
+    }
+
+    public static TokenType[] valueTokens() {
+        return Arrays.stream(values()).filter(t -> t.value).toArray(TokenType[]::new);
     }
 }

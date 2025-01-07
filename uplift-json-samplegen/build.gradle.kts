@@ -1,6 +1,7 @@
 dependencies {
     implementation(project(":uplift-uuid"))
     implementation(project(":uplift-json"))
+    implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")
     annotationProcessor(project(":uplift-json"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")

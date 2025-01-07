@@ -157,10 +157,9 @@ public class JsonEventCallbacksTest {
     @Test
     void objCommaFail() {
         failSetOn(
-            "foo",
             """
                 { "foo": "bar", }
-                """
+                """, "Invalid token `}`"
         );
     }
 
@@ -232,24 +231,24 @@ public class JsonEventCallbacksTest {
     @Test
     void objFail4() {
         failSetOn(
-            "zot",
             """
                 {
                 "foo": "bar", "zot":
                 }
-                """
+                """,
+            "Failed to set `zot`"
         );
     }
 
     @Test
     void objFail5() {
         failSetOn(
-            "zot",
             """
                 {
                 "foo": "bar", "zot": ,
                 }
-                """
+                """,
+            "Failed to set `zot`"
         );
     }
 
@@ -329,12 +328,12 @@ public class JsonEventCallbacksTest {
                 assertThat(e.toString()).contains("ParseException"));
     }
 
-    private static void failSetOn(String field, String source) {
+    private static void failSetOn(String source, String msg) {
         assertThatThrownBy(() ->
             assertThat(parse(source)).isNull()
         ).describedAs("Should not parse %s", source)
             .satisfies(e ->
-                assertThat(e.toString()).contains("Failed to set `" + field));
+                assertThat(e.toString()).contains(msg));
     }
 
     private static MyCallbacks parse(String source) {

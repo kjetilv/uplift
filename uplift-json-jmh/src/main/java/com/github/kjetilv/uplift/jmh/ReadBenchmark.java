@@ -57,14 +57,16 @@ public class ReadBenchmark {
                             }));
             }
         }
-//            Tweet upliftTweet = reader.read(lineSegment);
-//            Tweet jacksonTweet = objectMapper.readValue(data, Tweet.class);
-//            if (upliftTweet.equals(jacksonTweet)) {
-//                 throw new IllegalStateException("Not the same!");
-//            }
+
+        Tweet upliftTweet = reader.read(lineSegment);
+        Tweet jacksonTweet = objectMapper.readValue(data, Tweet.class);
+        if (upliftTweet.equals(jacksonTweet)) {
+            throw new IllegalStateException("Not the same!");
+        }
+
         System.out.println("Warmed up");
         System.gc();
-  /*
+
         Instant jacksonNow = Instant.now();
 
         for (int i = 0; i < X; i++) {
@@ -72,14 +74,13 @@ public class ReadBenchmark {
                 try {
                     Tweet tweet = objectMapper.readValue(line, Tweet.class);
                     longAdder.add(tweet == null ? 0 : 1);
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
         }
         Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
-*/
 
         Instant upliftNow = Instant.now();
         try (
@@ -99,10 +100,10 @@ public class ReadBenchmark {
         System.out.println("Uplift:" + longAdder + ": " + upliftTime);
         System.gc();
 
-//        String perc = perc(jacksonTime, upliftTime);
-//        System.out.println("Jackson spent " + perc + "% of the time uplift did");
-//        String perc2 = perc(upliftTime, upliftTime.plus(jacksonTime));
-//        System.out.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
+        String perc = perc(jacksonTime, upliftTime);
+        System.out.println("Jackson spent " + perc + "% of the time uplift did");
+        String perc2 = perc(upliftTime, upliftTime.plus(jacksonTime));
+        System.out.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
     }
 
     @Fork(value = 2, warmups = 2)
