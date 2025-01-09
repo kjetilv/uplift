@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.ffm;
+package com.github.kjetilv.uplift.json.test;
 
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;

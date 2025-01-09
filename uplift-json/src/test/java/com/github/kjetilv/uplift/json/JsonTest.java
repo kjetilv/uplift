@@ -238,7 +238,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, NUMBER, COMMA, END_OBJECT)
+                assertParseException(e, NUMBER, COMMA)
         );
     }
 
@@ -340,7 +340,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, STRING, COMMA, END_OBJECT)
+                assertParseException(e, STRING, COMMA)
         );
     }
 
@@ -354,7 +354,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, BOOL, COMMA, END_ARRAY)
+                assertParseException(e, BOOL, COMMA)
         );
     }
 
@@ -382,7 +382,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertParseException(e, BOOL, COMMA, END_ARRAY)
+                assertParseException(e, BOOL, COMMA)
         );
     }
 

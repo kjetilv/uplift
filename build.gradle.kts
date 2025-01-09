@@ -37,6 +37,18 @@ subprojects {
         withType<Test> {
             useJUnitPlatform()
         }
+
+        withType<JavaCompile>().all {
+            options.compilerArgs.addAll(listOf("--enable-preview", "--add-modules", "jdk.incubator.vector"))
+        }
+
+        withType<Test>().all {
+            jvmArgs("--enable-preview", "--add-modules", "jdk.incubator.vector")
+        }
+
+        withType<JavaExec>().configureEach {
+            jvmArgs("--enable-preview", "--add-modules", "jdk.incubator.vector")
+        }
     }
 
     if (project.name in listOf(

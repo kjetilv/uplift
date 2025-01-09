@@ -6,7 +6,6 @@ plugins {
 dependencies {
     implementation(project(":uplift-json"))
     implementation(project(":uplift-uuid"))
-    implementation(project(":uplift-json-ffm"))
     annotationProcessor(project(":uplift-json"))
 
     implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")

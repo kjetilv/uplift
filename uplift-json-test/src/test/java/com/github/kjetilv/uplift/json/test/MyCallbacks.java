@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.ffm;
+package com.github.kjetilv.uplift.json.test;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;

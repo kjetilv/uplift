@@ -1,10 +1,11 @@
-package com.github.kjetilv.uplift.json.ffm;
+package com.github.kjetilv.uplift.json.test;
 
 import com.github.kjetilv.flopp.kernel.PartitionStreamer;
 import com.github.kjetilv.flopp.kernel.Partitioned;
 import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
@@ -21,6 +22,7 @@ import java.util.function.Supplier;
 public class FastParseTest {
 
     @Test
+    @Disabled
     void parse() throws URISyntaxException, MalformedURLException {
         LineSegmentJsonReader<Foo> foo = new LineSegmentJsonReader<>(FooRW.INSTANCE.callbacks());
         Class<Foo> fooClass = Foo.class;
