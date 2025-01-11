@@ -8,7 +8,9 @@ import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.files.Partitioneds;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
 import com.github.kjetilv.uplift.json.JsonReader;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Threads;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -107,8 +109,8 @@ public class ReadBenchmark {
     }
 
     @Fork(value = 2, warmups = 2)
-//    @Threads(8)
-//    @Benchmark
+    @Threads(8)
+    @Benchmark
     public Tweet readTweetUplift() {
         return reader.read(lineSegment);
     }

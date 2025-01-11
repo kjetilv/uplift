@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.json;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -73,9 +76,15 @@ public interface Json {
 
     Callbacks parse(String source, Callbacks callbacks);
 
+    Callbacks parseMulti(String source, Callbacks callbacks);
+
     Callbacks parse(InputStream source, Callbacks callbacks);
 
+    Callbacks parseMulti(InputStream source, Callbacks callbacks);
+
     Callbacks parse(BytesSource bytesSource, Callbacks callbacks);
+
+    Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks);
 
     Json INSTANCE = new JsonImpl();
 

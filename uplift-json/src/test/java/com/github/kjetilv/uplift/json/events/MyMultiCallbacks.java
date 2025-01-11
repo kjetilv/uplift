@@ -72,8 +72,8 @@ final class MyMultiCallbacks implements Callbacks {
     }
 
     @Override
-    public MyMultiCallbacks string(Token.String string) {
-        return add("string:" + string.value());
+    public MyMultiCallbacks string(Token.Str str) {
+        return add("str:" + str.value());
     }
 
     @Override

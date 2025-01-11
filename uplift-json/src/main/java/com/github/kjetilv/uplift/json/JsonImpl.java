@@ -1,13 +1,17 @@
 package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.uplift.json.bytes.*;
+import com.github.kjetilv.uplift.json.bytes.ByteArrayBytesSource;
+import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
+import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,8 +30,18 @@ final class JsonImpl implements Json {
     }
 
     @Override
+    public Callbacks parseMulti(String source, Callbacks callbacks) {
+        return parseMulti(new ByteArrayBytesSource(source.getBytes(UTF_8)), callbacks);
+    }
+
+    @Override
     public Callbacks parse(InputStream source, Callbacks callbacks) {
         return parse(new InputStreamBytesSource(source), callbacks);
+    }
+
+    @Override
+    public Callbacks parseMulti(InputStream source, Callbacks callbacks) {
+        return parseMulti(new InputStreamBytesSource(source), callbacks);
     }
 
     @Override
@@ -36,17 +50,23 @@ final class JsonImpl implements Json {
             Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
-        if (callbacks.multi()) {
-            Callbacks walker = callbacks;
-            while (true) {
-                walker = parser.pull(walker);
-                if (parser.done()) {
-                    return walker;
-                }
-                walker = walker.line();
-            }
-        }
         return parser.pull(callbacks);
+    }
+
+    @Override
+    public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
+        TokenResolver tokenResolver =
+            Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
+        Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
+        JsonPullParser parser = new JsonPullParser(tokens);
+        Callbacks walker = callbacks;
+        while (true) {
+            walker = parser.pull(walker);
+            if (parser.done()) {
+                return walker;
+            }
+            walker = walker.line();
+        }
     }
 
     @Override

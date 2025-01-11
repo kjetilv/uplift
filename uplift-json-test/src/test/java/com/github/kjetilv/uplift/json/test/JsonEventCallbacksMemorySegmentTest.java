@@ -34,11 +34,11 @@ public class JsonEventCallbacksMemorySegmentTest {
               field:els arrayStarted
                 number:1
                 number:2
-                string:a
-                string:b
+                str:a
+                str:b
               arrayEnded
               field:foo arrayStarted
-                string:tip
+                str:tip
                 truth:true
                 arrayStarted
                   number:3
@@ -49,7 +49,7 @@ public class JsonEventCallbacksMemorySegmentTest {
               arrayEnded
               field:bar arrayStarted
                 objectStarted
-                  field:zit string:quz
+                  field:zit str:quz
                 objectEnded
               number:4
               arrayEnded
@@ -75,7 +75,7 @@ public class JsonEventCallbacksMemorySegmentTest {
         MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(bytesSource, callbacks());
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
-              field:foo string:bar
+              field:foo str:bar
               field:zot number:5
               field:obj2 objectStarted
                 field:oops truth:true
@@ -103,7 +103,7 @@ public class JsonEventCallbacksMemorySegmentTest {
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
-                  field:foo string:bar
+                  field:foo str:bar
                   field:zot number:5
                   field:obj2 objectStarted
                     field:oops truth:true

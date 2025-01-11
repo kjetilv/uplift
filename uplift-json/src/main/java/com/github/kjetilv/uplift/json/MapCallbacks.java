@@ -36,8 +36,8 @@ public final class MapCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks string(Token.String string) {
-        return set(string.value());
+    public Callbacks string(Token.Str str) {
+        return set(str.value());
     }
 
     @Override

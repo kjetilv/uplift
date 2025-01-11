@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.json.gen;
 import com.github.kjetilv.uplift.json.*;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.*;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
@@ -70,7 +69,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
     }
 
     @Override
-    public Callbacks string(Token.String token) {
+    public Callbacks string(Token.Str token) {
         if (currentField == null) {
             return fail();
         }

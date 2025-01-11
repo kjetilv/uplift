@@ -18,7 +18,7 @@ public interface Callbacks {
         return this;
     }
 
-    default Callbacks string(Token.String string) {
+    default Callbacks string(Token.Str str) {
         return this;
     }
 

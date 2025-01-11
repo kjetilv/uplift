@@ -35,8 +35,8 @@ public final class ListCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks string(Token.String string) {
-        list.add(string.value());
+    public Callbacks string(Token.Str str) {
+        list.add(str.value());
         return this;
     }
 

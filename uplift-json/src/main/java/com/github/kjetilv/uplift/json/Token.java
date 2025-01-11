@@ -15,7 +15,7 @@ public sealed interface Token permits
     Token.SkipField,
     Token.Null,
     Token.Number,
-    Token.String,
+    Token.Str,
     Token.True {
 
     default boolean is(TokenType tokenType) {
@@ -120,7 +120,7 @@ public sealed interface Token permits
         }
     }
 
-    record String(LineSegment lineSegment) implements Token {
+    record Str(LineSegment lineSegment) implements Token {
 
         public java.lang.String value() {
             return lineSegment().asString();

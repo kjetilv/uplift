@@ -56,8 +56,8 @@ final class MyCallbacks implements Callbacks {
     }
 
     @Override
-    public MyCallbacks string(Token.String string) {
-        return add("string:" + string.value());
+    public MyCallbacks string(Token.Str str) {
+        return add("str:" + str.value());
     }
 
     @Override

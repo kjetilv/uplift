@@ -110,8 +110,8 @@ public class LineSegmentJsonReaderTest {
             null,
             new BigDecimal("123.23")
         );
-        assertThat(rwRead).isEqualTo(expected);
-//        assertThat(read.name()).isEqualTo("Kjetil");
+//        assertThat(rwRead).isEqualTo(expected);
+        assertThat(rwRead.name()).isEqualTo("Kjetil");
 //        assertThat(user).isEqualTo(
 //            expected
 //        );

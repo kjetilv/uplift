@@ -20,7 +20,7 @@ public final class JsonPullParser {
 
     private Callbacks processValue(Token token, Callbacks callbacks) {
         return switch (token) {
-            case Token.String string -> callbacks.string(string);
+            case Token.Str str -> callbacks.string(str);
             case Token.BeginObject _ -> processObject(callbacks);
             case Token.BeginArray _ -> processArray(callbacks);
             case Token.Null _ -> callbacks.nuul();

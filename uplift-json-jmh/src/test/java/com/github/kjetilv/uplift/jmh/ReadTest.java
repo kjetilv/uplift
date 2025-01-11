@@ -13,6 +13,9 @@ import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenTrie;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.junit.jupiter.api.Test;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Threads;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,6 +28,14 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReadTest {
+
+    @Fork(value = 2, warmups = 2)
+    @Threads(8)
+    @Benchmark
+    public Tweet readTweetUplift() {
+        JsonReader<LineSegment, Tweet> reader1 = TweetRW.INSTANCE.lineSegmentReader();
+        return reader1.read(LineSegments.of(data));
+    }
 
     @Test
     void read() throws IOException {

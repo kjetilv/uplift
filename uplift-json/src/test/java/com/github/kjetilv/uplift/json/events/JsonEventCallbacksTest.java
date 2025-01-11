@@ -28,11 +28,11 @@ public class JsonEventCallbacksTest {
               field:els arrayStarted
                 number:1
                 number:2
-                string:a
-                string:b
+                str:a
+                str:b
               arrayEnded
               field:foo arrayStarted
-                string:tip
+                str:tip
                 truth:true
                 arrayStarted
                   number:3
@@ -43,8 +43,8 @@ public class JsonEventCallbacksTest {
               arrayEnded
               field:bar arrayStarted
                 objectStarted
-                  field:zit string:quz
-                  field:1 string:2
+                  field:zit str:quz
+                  field:1 str:2
                 objectEnded
               number:4
               arrayEnded
@@ -64,7 +64,7 @@ public class JsonEventCallbacksTest {
             arrayStarted
               number:1
               number:2
-              string:a
+              str:a
             arrayEnded
             """)
         );
@@ -267,7 +267,7 @@ public class JsonEventCallbacksTest {
                 """);
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
-              field:foo string:bar
+              field:foo str:bar
               field:zot number:5
               field:obj2 objectStarted
                 field:oops truth:true
@@ -293,7 +293,7 @@ public class JsonEventCallbacksTest {
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
-                  field:foo string:bar
+                  field:foo str:bar
                   field:zot number:5
                   field:obj2 objectStarted
                     field:oops truth:true

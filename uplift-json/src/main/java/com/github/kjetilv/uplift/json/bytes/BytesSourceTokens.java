@@ -61,8 +61,8 @@ public final class BytesSourceTokens implements Tokens {
         return new Token.Field(bytesSource.lexeme());
     }
 
-    private Token.String stringToken() {
-        return new Token.String(bytesSource.spoolString());
+    private Token.Str stringToken() {
+        return new Token.Str(bytesSource.spoolString());
     }
 
     private Token numberToken() {

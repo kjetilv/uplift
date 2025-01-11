@@ -1,6 +1,6 @@
 # Hello, web!
 
-This is a simple HTTP function will that reply with a friendly hello as a JSON string. It is intended to demonstrate usage of [uplift](../../).
+This is a simple HTTP function will that reply with a friendly hello as a JSON str. It is intended to demonstrate usage of [uplift](../../).
 
 ## One-time setup
 

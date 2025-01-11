@@ -26,8 +26,8 @@ public final class ValueCallbacks implements Callbacks {
     }
 
     @Override
-    public Callbacks string(Token.String string) {
-        onDone.accept(string.value());
+    public Callbacks string(Token.Str str) {
+        onDone.accept(str.value());
         return this;
     }
 
