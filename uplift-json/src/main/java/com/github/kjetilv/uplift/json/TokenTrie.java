@@ -3,10 +3,12 @@ package com.github.kjetilv.uplift.json;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TokenTrie implements TokenResolver {
 
@@ -34,10 +36,10 @@ public class TokenTrie implements TokenResolver {
 
     @Override
     public Token.Field get(LineSegment lineSegment) {
-        Trie trie = this.root;
         long length = lineSegment.length();
-        while (true) {
-            if (trie instanceof Trie(int skip, Token.Field field, Map<Byte, Trie> level)) {
+        Trie walker = this.root;
+        do {
+            if (walker instanceof Trie(int skip, Token.Field field, _)) {
                 if (length == skip) {
                     return field;
                 }
@@ -45,11 +47,11 @@ public class TokenTrie implements TokenResolver {
                     return null;
                 }
                 byte b = lineSegment.byteAt(skip);
-                trie = level.get(b);
+                walker = walker.descend(b);
             } else {
                 return null;
             }
-        }
+        } while (true);
     }
 
     private static Trie buildTrie(Collection<Token.Field> fields, int index) {
@@ -59,41 +61,31 @@ public class TokenTrie implements TokenResolver {
             .orElse(null);
 
         if (leaf != null && fields.size() == 1) {
-            return Trie.node(leaf.length(), leaf, Collections.emptyMap());
+            return Trie.node(leaf.length(), leaf, null);
         }
+        Map<Byte, Trie> level = nextLevel(fields, index);
+        return Trie.node(index, leaf, IntMap.from(level));
+    }
 
-        Map<Byte, List<Token.Field>> groups = fields.stream()
+    private static Map<Byte, Trie> nextLevel(Collection<Token.Field> fields, int index) {
+        List<Entry<Trie>> nextLevels = fields.stream()
             .filter(f -> f.length() > index)
             .collect(Collectors.groupingBy(field ->
-                field.lineSegment().byteAt(index)));
-
-        List<Entry<Trie>> nextLevels = entries(groups)
+                field.lineSegment().byteAt(index))).entrySet()
+            .stream()
+            .map(Entry::of)
             .map(entry ->
                 entry.map((_, prefixed) -> {
                     int nextIndex = longestCommonPrefix(prefixed);
                     return buildTrie(prefixed, nextIndex);
                 }))
             .toList();
-
-        return Trie.node(
-            index,
-            leaf,
-            nextLevels.stream()
-                .collect(Collectors.toMap(
-                    Entry::key,
-                    Entry::value,
-                    (trie1, trie2) -> {
-                        throw new IllegalStateException("No combine: " + trie1 + " and " + trie2);
-                    },
-                    LinkedHashMap::new
-                ))
-        );
+        return level(nextLevels);
     }
 
-    private static <T> Stream<Entry<T>> entries(Map<Byte, T> groups) {
-        return groups.entrySet()
-            .stream()
-            .map(Entry::of);
+    private static Map<Byte, Trie> level(List<Entry<Trie>> nextLevels) {
+        return nextLevels.stream()
+            .collect(Collectors.toMap(Entry::key, Entry::value));
     }
 
     private static int longestCommonPrefix(

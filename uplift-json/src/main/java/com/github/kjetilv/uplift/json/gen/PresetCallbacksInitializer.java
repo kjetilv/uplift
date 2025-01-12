@@ -241,12 +241,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     }
 
     public void buildTokens(TokenTrie tokenTrie) {
-        if (tokenTrie == null) {
-            List<Token.Field> tokenFields = fields().toList();
-            this.tokenTrie = new TokenTrie(tokenFields);
-        } else {
-            this.tokenTrie = tokenTrie;
-        }
+        this.tokenTrie = tokenTrie != null ? tokenTrie : newTokenTrie();
         numbers = replace(numbers, this.tokenTrie);
         strings = replace(strings, this.tokenTrie);
         objects = replace(objects, this.tokenTrie);
@@ -254,6 +249,10 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         for (PresetCallbacksInitializer<?, ?> sub : subs) {
             sub.buildTokens(this.tokenTrie);
         }
+    }
+
+    private TokenTrie newTokenTrie() {
+        return new TokenTrie(fields().toList());
     }
 
     private <V> Map<Token.Field, V> replace(

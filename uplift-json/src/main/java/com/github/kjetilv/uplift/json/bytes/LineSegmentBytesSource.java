@@ -25,6 +25,8 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     private final LongSupplier nextLong;
 
+    private final Bits.Finder quotesFinder = Bits.finder('"', true);
+
     private int currentByte;
 
     private long currentLong;
@@ -73,12 +75,12 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
             advance();
         }
 
-        int nextQ = Q.next(currentLong);
+        int nextQ = quotesFinder.next(currentLong);
         while (true) {
             if (nextQ == ALIGNMENT) {
                 advance();
                 endIndex += ALIGNMENT;
-                nextQ = Q.next(currentLong);
+                nextQ = quotesFinder.next(currentLong);
             } else {
                 endIndex -= (ALIGNMENT - nextQ);
                 pos = endIndex + 1;
@@ -211,8 +213,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     private static final int CR = 13;
 
     private static final int BS = 8;
-
-    private static Bits.Finder Q = Bits.finder('"', true);
 
     private static String print(int c) {
         return switch (c) {

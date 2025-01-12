@@ -29,8 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReadTest {
 
-    @Fork(value = 2, warmups = 2)
-    @Threads(8)
+//    @Fork(value = 2, warmups = 2)
+//    @Threads(8)
     @Benchmark
     public Tweet readTweetUplift() {
         JsonReader<LineSegment, Tweet> reader1 = TweetRW.INSTANCE.lineSegmentReader();
