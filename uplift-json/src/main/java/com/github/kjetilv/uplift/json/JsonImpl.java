@@ -46,8 +46,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
-        TokenResolver tokenResolver =
-            Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
+        TokenResolver tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
         return parser.pull(callbacks);
@@ -55,8 +54,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
-        TokenResolver tokenResolver =
-            Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
+        TokenResolver tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
         JsonPullParser parser = new JsonPullParser(tokens);
         Callbacks walker = callbacks;
@@ -105,6 +103,11 @@ final class JsonImpl implements Json {
     }
 
     private static final TokenResolver ALLOCATOR = new Allocator();
+
+    private static TokenResolver resolve(Callbacks callbacks) {
+        return Optional.ofNullable(callbacks.tokenResolver())
+            .orElse(ALLOCATOR);
+    }
 
     private static Object process(BytesSource bytesSource) {
         AtomicReference<Object> reference = new AtomicReference<>();

@@ -53,8 +53,8 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token fieldToken(boolean canonical) {
-        LineSegment lexeme = bytesSource.spoolField();
         if (canonical) {
+            LineSegment lexeme = bytesSource.spoolField();
             Token.Field resolved = tokenResolver.get(lexeme);
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
