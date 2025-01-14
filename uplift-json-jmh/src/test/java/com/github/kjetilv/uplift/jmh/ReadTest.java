@@ -14,8 +14,6 @@ import com.github.kjetilv.uplift.json.TokenTrie;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Threads;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

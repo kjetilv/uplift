@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.util.Bits;
+import com.github.kjetilv.flopp.kernel.Bits;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
