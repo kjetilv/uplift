@@ -4,6 +4,7 @@ import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
 import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
+import com.github.kjetilv.uplift.json.bytes.LineSegmentBytesSource;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
@@ -42,6 +43,18 @@ final class JsonImpl implements Json {
     @Override
     public Callbacks parseMulti(InputStream source, Callbacks callbacks) {
         return parseMulti(new InputStreamBytesSource(source), callbacks);
+    }
+
+    @Override
+    public Callbacks parse(LineSegment lineSegment, Callbacks callbacks) {
+        BytesSource bytesSource = new LineSegmentBytesSource(lineSegment);
+        return parse(bytesSource, callbacks);
+    }
+
+    @Override
+    public Callbacks parseMulti(LineSegment lineSegment, Callbacks callbacks) {
+        BytesSource bytesSource = new LineSegmentBytesSource(lineSegment);
+        return parseMulti(bytesSource, callbacks);
     }
 
     @Override
@@ -105,8 +118,7 @@ final class JsonImpl implements Json {
     private static final TokenResolver ALLOCATOR = new Allocator();
 
     private static TokenResolver resolve(Callbacks callbacks) {
-        return Optional.ofNullable(callbacks.tokenResolver())
-            .orElse(ALLOCATOR);
+        return Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
     }
 
     private static Object process(BytesSource bytesSource) {

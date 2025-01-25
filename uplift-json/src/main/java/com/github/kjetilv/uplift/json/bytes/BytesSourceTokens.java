@@ -14,13 +14,13 @@ public final class BytesSourceTokens implements Tokens {
 
     private final BytesSource bytesSource;
 
-    private final TokenResolver tokenResolver;
+    private final TokenResolver knownTokens;
 
     private final char[] buffer = new char[1024];
 
-    public BytesSourceTokens(BytesSource bytesSource, TokenResolver tokenResolver) {
+    public BytesSourceTokens(BytesSource bytesSource, TokenResolver knownTokens) {
         this.bytesSource = bytesSource;
-        this.tokenResolver = tokenResolver;
+        this.knownTokens = knownTokens;
     }
 
     @Override
@@ -34,8 +34,7 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token scanToken(boolean fieldName, boolean canonical) {
-        int b = bytesSource.chomp();
-        return switch (b) {
+        return switch (bytesSource.chomp()) {
             case ':' -> Token.COLON;
             case ',' -> Token.COMMA;
             case '{' -> Token.BEGIN_OBJECT;
@@ -44,18 +43,18 @@ public final class BytesSourceTokens implements Tokens {
             case ']' -> Token.END_ARRAY;
             case '"' -> fieldName ? fieldToken(canonical) : stringToken();
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
-            case 'f' -> falseToken();
-            case 't' -> trueToken();
-            case 'n' -> nullToken();
+            case 'f' -> alse();
+            case 't' -> rue();
+            case 'n' -> ull();
             case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
-            default -> fail("Unrecognized character", "`" + (char) b + "`");
+            case int x -> fail("Unrecognized character", "`" + (char) x + "`");
         };
     }
 
     private Token fieldToken(boolean canonical) {
         LineSegment lexeme = bytesSource.spoolField();
         if (canonical) {
-            Token.Field resolved = tokenResolver.get(lexeme);
+            Token.Field resolved = knownTokens.get(lexeme);
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
         return new Token.Field(bytesSource.lexeme());
@@ -81,28 +80,32 @@ public final class BytesSourceTokens implements Tokens {
         }
     }
 
-    private Token falseToken() {
-        return skipThen('a', 'l', 's', 'e', Token.FALSE);
+    private Token.False alse() {
+        bytesSource.skip5(A, L, S, E);
+        return Token.FALSE;
     }
 
-    private Token trueToken() {
-        return skipThen('r', 'u', 'e', Token.TRUE);
+    private Token.True rue() {
+        bytesSource.skip4(R, U, E);
+        return Token.TRUE;
     }
 
-    private Token nullToken() {
-        return skipThen('u', 'l', 'l', Token.NULL);
+    private Token.Null ull() {
+        bytesSource.skip4(U, L, L);
+        return Token.NULL;
     }
 
-    private Token skipThen(char c0, char c1, char c2, Token token) {
-        bytesSource.skip4((byte) c0, (byte) c1, (byte) c2);
-        return token;
-    }
+    private static final byte A = (byte) 'a';
 
-    @SuppressWarnings("SameParameterValue")
-    private Token skipThen(char c0, char c1, char c2, char c3, Token token) {
-        bytesSource.skip5((byte) c0, (byte) c1, (byte) c2, (byte) c3);
-        return token;
-    }
+    private static final byte E = (byte) 'e';
+
+    private static final byte L = (byte) 'l';
+
+    private static final byte R = (byte) 'r';
+
+    private static final byte S = (byte) 's';
+
+    private static final byte U = (byte) 'u';
 
     private static Token fail(String msg, String details) {
         throw new ReadException(msg, details);

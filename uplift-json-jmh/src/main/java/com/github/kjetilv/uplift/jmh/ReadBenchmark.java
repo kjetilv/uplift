@@ -51,12 +51,14 @@ public class ReadBenchmark {
         ) {
             for (int i = 0; i < X / 4; i++) {
                 partitioned.streamers()
-                    .forEach(streamer ->
+                    .forEach(streamer -> {
+                        JsonReader<LineSegment, Tweet> reader = TweetRW.INSTANCE.lineSegmentReader();
                         streamer.lines()
                             .forEach(line -> {
                                 Tweet tweet = reader.read(line);
                                 longAdder.add(tweet == null ? 0 : 1);
-                            }));
+                            });
+                    });
             }
         }
 

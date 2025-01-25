@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
@@ -9,39 +10,39 @@ import java.util.stream.IntStream;
 interface IntMap<T> extends IntFunction<T> {
 
     @SuppressWarnings("unchecked")
-    static <T> IntMap<T> from(Map<Byte, T> map) {
+    static <T> IntMap<T> from(Map<? extends Number, T> map) {
         int size = map.size();
         if (size == 0) {
-            return new None<>();
+            return (IntMap<T>) None.NONE;
         }
         if (size == 1) {
-            return new Single<>(map.keySet().iterator().next(), map.values().iterator().next());
+            return new One<>(singleKey(map), map.values().iterator().next());
         }
-        List<Map.Entry<Byte, T>> list = map.entrySet()
-            .stream().sorted(Map.Entry.comparingByKey())
+        List<? extends Map.Entry<? extends Number, T>> list = map.entrySet()
+            .stream()
+            .sorted(Comparator.comparing(IntMap::intKey))
             .toList();
 
-        int[] keys = list.stream().mapToInt(entry -> entry.getKey().intValue()).toArray();
-        Object[] values = list.stream().map(Map.Entry::getValue).toArray();
+        int[] keys = list
+            .stream()
+            .mapToInt(IntMap::intKey)
+            .toArray();
+        Object[] values = list.stream()
+            .map(Map.Entry::getValue).toArray();
 
         if (size == 2) {
-            return new Two<>(keys[0], (T)values[0], keys[1], (T)values[1]);
+            return new Two<>(keys[0], (T) values[0], keys[1], (T) values[1]);
         }
 
         return new Sparse<>(keys, values);
     }
 
-    record Single<T>(int key, T value) implements IntMap<T> {
+    private static <T> int intKey(Map.Entry<? extends Number, T> e) {
+        return e.getKey().intValue();
+    }
 
-        @Override
-        public T apply(int i) {
-            return i == key ? value : null;
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + key + "=" + value + "]";
-        }
+    private static <T> int singleKey(Map<? extends Number, T> map) {
+        return map.keySet().iterator().next().intValue();
     }
 
     record Sparse<T>(int[] keys, Object[] values) implements IntMap<T> {
@@ -61,7 +62,6 @@ interface IntMap<T> extends IntFunction<T> {
                        .collect(Collectors.joining(" ")) +
                    "]";
         }
-
     }
 
     record None<T>() implements IntMap<T> {
@@ -71,9 +71,24 @@ interface IntMap<T> extends IntFunction<T> {
             return null;
         }
 
+        private static final None<?> NONE = new None<>();
+
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[]";
+        }
+    }
+
+    record One<T>(int key, T value) implements IntMap<T> {
+
+        @Override
+        public T apply(int i) {
+            return i == key ? value : null;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" + key + "=" + value + "]";
         }
     }
 
@@ -81,7 +96,9 @@ interface IntMap<T> extends IntFunction<T> {
 
         @Override
         public T apply(int value) {
-            return value == key1 ? value1 : value == key2 ? value2 : null;
+            return value == key1 ? value1
+                : value == key2 ? value2
+                    : null;
         }
 
         @Override

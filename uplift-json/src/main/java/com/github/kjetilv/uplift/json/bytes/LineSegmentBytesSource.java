@@ -1,15 +1,13 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.Bits;
+import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.uplift.json.BytesSource;
-import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.lang.foreign.MemorySegment;
 import java.util.function.LongSupplier;
 
 import static com.github.kjetilv.flopp.kernel.MemorySegments.ALIGNMENT;
-import static java.lang.Character.isDigit;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -26,6 +24,8 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     private final LongSupplier nextLong;
 
     private final Bits.Finder quotesFinder = Bits.finder('"', true);
+
+    private final Bits.Finder revSolFinder = Bits.finder('\\', true);
 
     private int currentByte;
 
@@ -49,16 +49,19 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     @Override
     public int chomp() {
-        long index = pos;
-        int b;
-        while (index < limit && (b = biteAt(index)) != 0) {
-            index++;
-            if (!Character.isWhitespace((byte) b)) {
-                pos = index;
-                return currentByte = b;
+        while (pos < limit) {
+            try {
+                switch (biteAt(pos)) {
+                    case ' ', '\n', '\t', '\r', '\f' -> {
+                    }
+                    case int bite -> {
+                        return currentByte = bite;
+                    }
+                }
+            } finally {
+                pos++;
             }
         }
-
         return 0;
     }
 
@@ -92,46 +95,58 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public LineSegment spoolString() {
         startIndex = pos;
-        long index = pos;
-        boolean quo = false;
+        long offset = startIndex % ALIGNMENT;
+        endIndex = startIndex - offset + ALIGNMENT;
+        long lastQuote = -1L;
+        boolean quoted = false;
+
+        if (offset > 0) {
+            currentLong = Bits.clearLow(currentLong, (int) offset);
+        } else {
+            advance();
+        }
+        int nextQ = quotesFinder.next(currentLong);
+        int nextR = revSolFinder.next(currentLong);
         while (true) {
-            int b = biteAt(index);
-            if (b >> 5 == 0 && !quo) {
-                return fail("Unescaped control char: " + (char) currentByte);
+            if (nextQ == nextR) { // No escape or quote in sight
+                advance();
+                endIndex += ALIGNMENT;
+                nextQ = quotesFinder.next(currentLong);
+                nextR = revSolFinder.next(currentLong);
+                continue;
             }
-            switch (b) {
-                case '"' -> {
-                    if (quo) {
-                        quo = false;
-                    } else {
-                        pos = index + 1;
-                        endIndex = index;
-                        return this;
-                    }
-                }
-                case '\\' -> quo = !quo;
-                default -> quo = false;
+            if (nextR < nextQ) { // Next is escape
+                lastQuote = endIndex + nextR;
+                quoted = true;
+                nextR = revSolFinder.next();
+                continue;
             }
-            index++;
+            // Next is quote
+            long position = endIndex + nextQ;
+            if (quoted && lastQuote == position - 1) { // Escaped quote
+                lastQuote = -1;
+                nextQ = quotesFinder.next();
+                continue;
+            }
+            endIndex -= (ALIGNMENT - nextQ);
+            pos = endIndex + 1;
+            return this;
         }
     }
 
     @Override
     public LineSegment spoolNumber() {
         startIndex = pos - 1;
-        long index = pos;
         int b;
-        while (isDigit(b = biteAt(index))) {
-            index++;
+        while (isDigit(b = biteAt(pos))) {
+            pos++;
         }
         if (b == '.') {
-            index++;
-            while (isDigit(biteAt(index))) {
-                index++;
-            }
+            do {
+                pos++;
+            } while (isDigit(biteAt(pos)));
         }
-        pos = index;
-        endIndex = index;
+        endIndex = pos;
         return this;
     }
 
@@ -194,10 +209,6 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         currentLongLimit += ALIGNMENT;
     }
 
-    private <T> T fail(String msg) {
-        throw new ReadException(msg, "`" + lexeme().asString() + "`");
-    }
-
     private int biteAt(long index) {
         while (index >= currentLongLimit) {
             currentLong = nextLong.getAsLong();
@@ -213,6 +224,10 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     private static final int CR = 13;
 
     private static final int BS = 8;
+
+    private static boolean isDigit(int b) {
+        return '0' <= b && b <= '9';
+    }
 
     private static String print(int c) {
         return switch (c) {

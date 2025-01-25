@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.json;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 
+@SuppressWarnings("ALL")
 public sealed interface Token permits
     Token.BeginObject,
     Token.BeginArray,
@@ -28,25 +29,25 @@ public sealed interface Token permits
 
     TokenType tokenType();
 
-    Token BEGIN_OBJECT = new BeginObject(TokenType.BEGIN_OBJECT);
+    Token.BeginObject BEGIN_OBJECT = new BeginObject(TokenType.BEGIN_OBJECT);
 
-    Token END_OBJECT = new EndObject(TokenType.END_OBJECT);
+    Token.EndObject END_OBJECT = new EndObject(TokenType.END_OBJECT);
 
-    Token BEGIN_ARRAY = new BeginArray(TokenType.BEGIN_ARRAY);
+    Token.BeginArray BEGIN_ARRAY = new BeginArray(TokenType.BEGIN_ARRAY);
 
-    Token END_ARRAY = new EndArray(TokenType.END_ARRAY);
+    Token.EndArray END_ARRAY = new EndArray(TokenType.END_ARRAY);
 
-    Token COLON = new Colon(TokenType.COLON);
+    Token.Colon COLON = new Colon(TokenType.COLON);
 
-    Token COMMA = new Comma(TokenType.COLON);
+    Token.Comma COMMA = new Comma(TokenType.COLON);
 
-    Token TRUE = new True(TokenType.BOOL);
+    Token.True TRUE = new True(TokenType.BOOL);
 
-    Token FALSE = new False(TokenType.BOOL);
+    Token.False FALSE = new False(TokenType.BOOL);
 
-    Token NULL = new Null(TokenType.NULL);
+    Token.Null NULL = new Null(TokenType.NULL);
 
-    Token SKIP_FIELD = new SkipField(TokenType.STRING);
+    Token.SkipField SKIP_FIELD = new SkipField(TokenType.STRING);
 
     record BeginObject(TokenType tokenType) implements Token {
 
