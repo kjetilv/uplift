@@ -52,7 +52,7 @@ public sealed interface Token permits
     record BeginObject(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "{";
         }
     }
@@ -60,7 +60,7 @@ public sealed interface Token permits
     record EndObject(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "}";
         }
     }
@@ -68,7 +68,7 @@ public sealed interface Token permits
     record BeginArray(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "[";
         }
     }
@@ -76,7 +76,7 @@ public sealed interface Token permits
     record EndArray(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "]";
         }
     }
@@ -84,7 +84,7 @@ public sealed interface Token permits
     record Colon(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return ":";
         }
     }
@@ -92,7 +92,7 @@ public sealed interface Token permits
     record Comma(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return ",";
         }
     }
@@ -100,7 +100,7 @@ public sealed interface Token permits
     record True(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "true";
         }
     }
@@ -108,7 +108,7 @@ public sealed interface Token permits
     record False(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "false";
         }
     }
@@ -116,14 +116,14 @@ public sealed interface Token permits
     record Null(TokenType tokenType) implements Token {
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return "null";
         }
     }
 
     record Str(LineSegment lineSegment) implements Token {
 
-        public java.lang.String value() {
+        public String value() {
             return lineSegment().asString();
         }
 
@@ -133,7 +133,7 @@ public sealed interface Token permits
         }
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return getClass().getSimpleName() + "[" + value() + "]";
         }
     }
@@ -151,7 +151,7 @@ public sealed interface Token permits
             );
         }
 
-        public java.lang.String value() {
+        public String value() {
             return lineSegment.asString();
         }
 
@@ -184,10 +184,9 @@ public sealed interface Token permits
         }
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return getClass().getSimpleName() + "[" + lineSegment.asString() + "]";
         }
-
     }
 
     record Number(java.lang.Number number) implements Token {
@@ -197,9 +196,8 @@ public sealed interface Token permits
         }
 
         @Override
-        public java.lang.String toString() {
+        public String toString() {
             return getClass().getSimpleName() + "[" + number + "/" + number.getClass() + "]";
         }
-
     }
 }
