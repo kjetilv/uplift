@@ -26,14 +26,6 @@ public class TokenTrie implements TokenResolver {
         this.root = buildTrie(copy, 0);
     }
 
-    public Token.Field get(Token.Field token) {
-        return get(token.lineSegment());
-    }
-
-    public Token.Field get(String token) {
-        return get(LineSegments.of(token));
-    }
-
     @Override
     public Token.Field get(LineSegment lineSegment, long offset, long length) {
         Trie walker = this.root;
