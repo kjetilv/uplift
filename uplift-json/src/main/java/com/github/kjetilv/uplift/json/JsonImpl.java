@@ -61,19 +61,17 @@ final class JsonImpl implements Json {
     public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
         TokenResolver tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
-        JsonPullParser parser = new JsonPullParser(tokens);
-        return parser.pull(callbacks);
+        return JSON_PULL_PARSER.pull(tokens, callbacks);
     }
 
     @Override
     public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
         TokenResolver tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
-        JsonPullParser parser = new JsonPullParser(tokens);
         Callbacks walker = callbacks;
         while (true) {
-            walker = parser.pull(walker);
-            if (parser.done()) {
+            walker = JSON_PULL_PARSER.pull(tokens, walker);
+            if (tokens.done()) {
                 return walker;
             }
             walker = walker.line();
@@ -115,6 +113,8 @@ final class JsonImpl implements Json {
         JsonWriter.write(new StreamSink(baos), object);
     }
 
+    private static final PullParser JSON_PULL_PARSER = new DefaultPullParser();
+
     private static final TokenResolver ALLOCATOR = new Allocator();
 
     private static TokenResolver resolve(Callbacks callbacks) {
@@ -130,8 +130,8 @@ final class JsonImpl implements Json {
     private static class Allocator implements TokenResolver {
 
         @Override
-        public Token.Field get(LineSegment lineSegment) {
-            return new Token.Field(lineSegment);
+        public Token.Field get(LineSegment segment, long offset, long length) {
+            return new Token.Field(segment);
         }
 
         @Override

@@ -35,8 +35,7 @@ public class TokenTrie implements TokenResolver {
     }
 
     @Override
-    public Token.Field get(LineSegment lineSegment) {
-        long length = lineSegment.length();
+    public Token.Field get(LineSegment lineSegment, long offset, long length) {
         Trie walker = this.root;
         do {
             if (walker instanceof Trie(int skip, Token.Field field, _)) {
@@ -46,8 +45,8 @@ public class TokenTrie implements TokenResolver {
                 if (length <= skip) {
                     return null;
                 }
-                byte b = lineSegment.byteAt(skip);
-                walker = walker.descend(b);
+                byte b = lineSegment.byteAt(offset + skip);
+                walker = walker.apply(b);
             } else {
                 return null;
             }

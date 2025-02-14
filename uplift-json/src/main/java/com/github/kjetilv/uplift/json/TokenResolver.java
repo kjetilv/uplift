@@ -5,5 +5,9 @@ import com.github.kjetilv.flopp.kernel.LineSegment;
 @FunctionalInterface
 public interface TokenResolver {
 
-    Token.Field get(LineSegment segment);
+    default Token.Field get(LineSegment segment) {
+        return get(segment, 0, segment.length());
+    }
+
+    Token.Field get(LineSegment segment, long offset, long length);
 }

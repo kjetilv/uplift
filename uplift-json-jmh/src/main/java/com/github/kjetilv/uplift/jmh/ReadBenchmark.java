@@ -31,7 +31,8 @@ import java.util.concurrent.atomic.LongAdder;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class ReadBenchmark {
+public class
+ReadBenchmark {
 
     public static void main(String[] args) throws IOException {
         System.out.println("OK");

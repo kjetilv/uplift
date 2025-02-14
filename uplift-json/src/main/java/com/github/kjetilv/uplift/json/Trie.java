@@ -1,19 +1,25 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record Trie(int skip, Token.Field field, IntFunction<Trie> level) {
+public record Trie(int skip, Token.Field field, IntFunction<Trie> level) implements IntFunction<Trie> {
+
+    public Trie(int skip, Token.Field field, IntFunction<Trie> level) {
+        this.skip = skip;
+        this.field = field;
+        this.level = level == null ? _ -> null : level;
+    }
 
     public static Trie node(int skip, Token.Field leaf, IntFunction<Trie> tries) {
         return new Trie(skip, leaf, tries);
     }
 
-    public Trie descend(byte b) {
-        return level == null ? null : level.apply(b);
+    @Override
+    public Trie apply(int value) {
+        return level().apply(value);
     }
 
     @Override
@@ -25,8 +31,7 @@ public record Trie(int skip, Token.Field field, IntFunction<Trie> level) {
                            .map(s -> s + ">"),
                        Optional.ofNullable(field)
                            .map(f -> "'" + f.value() + "'"),
-                       Optional.ofNullable(level)
-                           .map(Objects::toString)
+                       Optional.of(level.toString())
                    )
                    .flatMap(Optional::stream)
                    .collect(Collectors.joining(" ")) +

@@ -2,27 +2,18 @@ package com.github.kjetilv.uplift.json;
 
 import static com.github.kjetilv.uplift.json.TokenType.*;
 
-public final class JsonPullParser {
+final class DefaultPullParser implements PullParser {
 
-    private final Tokens tokens;
-
-    public JsonPullParser(Tokens tokens) {
-        this.tokens = tokens;
+    @Override
+    public Callbacks pull(Tokens tokens, Callbacks callbacks) {
+        return processValue(tokens, tokens.next(), callbacks);
     }
 
-    public Callbacks pull(Callbacks callbacks) {
-        return processValue(tokens.next(), callbacks);
-    }
-
-    public boolean done() {
-        return this.tokens.done();
-    }
-
-    private Callbacks processValue(Token token, Callbacks callbacks) {
+    private Callbacks processValue(Tokens tokens, Token token, Callbacks callbacks) {
         return switch (token) {
             case Token.Str str -> callbacks.string(str);
-            case Token.BeginObject _ -> processObject(callbacks);
-            case Token.BeginArray _ -> processArray(callbacks);
+            case Token.BeginObject _ -> processObject(tokens, callbacks);
+            case Token.BeginArray _ -> processArray(tokens, callbacks);
             case Token.Null _ -> callbacks.nuul();
             case Token.True _ -> callbacks.bool(true);
             case Token.False _ -> callbacks.bool(false);
@@ -39,58 +30,57 @@ public final class JsonPullParser {
         };
     }
 
-    private Callbacks processObject(Callbacks callbacks) {
+    private Callbacks processObject(Tokens tokens, Callbacks callbacks) {
         Callbacks cb = callbacks.objectStarted();
         boolean canonical = cb.canonical();
         Token next = tokens.nextField(canonical);
         do {
             if (next instanceof Token.Field fieldToken) {
-                cb = processField(fieldToken, cb);
+                cb = processField(tokens, fieldToken, cb);
             } else if (next == Token.SKIP_FIELD) {
-                skip();
+                skip(tokens);
             } else {
                 return next == Token.END_OBJECT
                     ? cb.objectEnded()
                     : failParse(next, STRING, TokenType.END_OBJECT);
             }
-            next = commaOr(Token.END_OBJECT, canonical);
+            next = commaOr(tokens, Token.END_OBJECT, canonical);
         } while (true);
     }
 
-    private Callbacks processArray(Callbacks callbacks) {
+    private Callbacks processArray(Tokens tokens, Callbacks callbacks) {
         Callbacks c = callbacks.arrayStarted();
         Token next = tokens.next();
         while (next != Token.END_ARRAY) {
-            c = processValue(next, c);
-            next = commaOr(Token.END_ARRAY, false);
+            c = processValue(tokens, next, c);
+            next = commaOr(tokens, Token.END_ARRAY, false);
         }
         return c.arrayEnded();
     }
 
-    private Callbacks processField(Token.Field field, Callbacks callbacks) {
+    private Callbacks processField(Tokens tokens, Token.Field field, Callbacks callbacks) {
         try {
             Callbacks fieldCallbacks = callbacks.field(field);
             tokens.skipNext(Token.COLON);
             Token valueToken = tokens.next();
-            return processValue(valueToken, fieldCallbacks);
+            return processValue(tokens, valueToken, fieldCallbacks);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set `" + field.value() + "`", e);
         }
     }
 
-    private void skip() {
-        tokens.skipNext(Token.COLON);
-        Token token = tokens.next();
+    private void skip(Tokens tokens) {
+        Token token = tokens.skipNext(Token.COLON).next();
         if (token == Token.BEGIN_OBJECT) {
-            skipStructure(Token.BEGIN_OBJECT, Token.END_OBJECT);
+            skipStructure(tokens, Token.BEGIN_OBJECT, Token.END_OBJECT);
         } else if (token == Token.BEGIN_ARRAY) {
-            skipStructure(Token.BEGIN_ARRAY, Token.END_ARRAY);
+            skipStructure(tokens, Token.BEGIN_ARRAY, Token.END_ARRAY);
         } else if (!token.isValue()) {
             failParse(token, BEGIN_OBJECT, BEGIN_ARRAY, BOOL, NULL, NUMBER, STRING);
         }
     }
 
-    private void skipStructure(Token opening, Token closing) {
+    private void skipStructure(Tokens tokens, Token opening, Token closing) {
         int levels = 0;
         do {
             Token next = tokens.next();
@@ -102,7 +92,7 @@ public final class JsonPullParser {
         } while (levels >= 0);
     }
 
-    private Token commaOr(Token closing, boolean canonical) {
+    private Token commaOr(Tokens tokens, Token closing, boolean canonical) {
         Token token = tokens.next();
         if (token == Token.COMMA) {
             Token nextToken = tokens.next(closing == Token.END_OBJECT, canonical);
@@ -121,6 +111,6 @@ public final class JsonPullParser {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + tokens + ']';
+        return getClass().getSimpleName() + "[]";
     }
 }

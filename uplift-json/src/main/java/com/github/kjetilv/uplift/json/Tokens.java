@@ -16,10 +16,10 @@ public interface Tokens {
         return next(true, canonical);
     }
 
-    default void skipNext(Token expected) {
+    default Tokens skipNext(Token expected) {
         Token token = next();
         if (token == expected) {
-            return;
+            return this;
         }
         throw new ReadException("Unexpected token " + token + ", expected " + expected);
     }
