@@ -10,7 +10,7 @@ import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenTrie;
+import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -49,7 +49,7 @@ public class ReadTest {
 //        assertThat(read2).isEqualTo(read3);
 //        assertThat(read1).isEqualTo(read3);
 
-        TokenTrie tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
+        TokenResolver tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
         Token.Field resolve1 = tokenTrie.get("retweeters_count");
         Token.Field resolve2 = tokenTrie.get("retweeters_count");
         assertThat(resolve1).isNotNull().isSameAs(resolve2);

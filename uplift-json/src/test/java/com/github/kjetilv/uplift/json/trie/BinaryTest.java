@@ -1,10 +1,15 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.trie;
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BinaryTest {
+
+    @Test
+    void search1() {
+        assertAllFound(new int[] {1});
+    }
 
     @Test
     void search2() {
@@ -28,13 +33,25 @@ class BinaryTest {
 
     @Test
     void search10() {
-        assertAllFound(new int[] {1, 3, 5, 6, 10, 17, 42, 1234, 2345, 4567});
+        assertAllFound(IS);
     }
 
+    private static final int[] IS = new int[] {1, 3, 5, 6, 10, 17, 42, 1234, 2345, 4567};
+
+    private static final int[] NIS =
+        new int[] {2, 4, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 21, 234234, 13123};
+
     private static void assertAllFound(int[] is) {
-        for (int i = 0; i < is.length; i++) {
-            assertFound(is, is[i]);
+        for (int j : is) {
+            assertFound(is, j);
         }
+        for (int j : NIS) {
+            assertNotFound(j);
+        }
+    }
+
+    private static void assertNotFound(int j) {
+        assertThat(Binary.search(IS, j)).isNegative();
     }
 
     private static void assertFound(int[] is, int toFind) {
@@ -45,12 +62,7 @@ class BinaryTest {
             }
         }
         assertThat(expectedIndex).isNotNegative();
-        int search;
-        try {
-            search = Binary.search(is, toFind);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to lookup " + toFind, e);
-        }
+        int search = Binary.search(is, toFind);
         assertThat(search).isEqualTo(expectedIndex);
     }
 

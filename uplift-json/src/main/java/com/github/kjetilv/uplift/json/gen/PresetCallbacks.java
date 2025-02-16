@@ -13,7 +13,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
 
     private final Consumer<T> onDone;
 
-    private final TokenTrie tokenTrie;
+    private final TokenResolver tokenResolver;
 
     private final Map<Token.Field, BiConsumer<B, ? extends Number>> numbers;
 
@@ -33,7 +33,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         Map<Token.Field, BiConsumer<B, Boolean>> booleans,
         Map<Token.Field, BiFunction<Callbacks, B, Callbacks>> objects,
         Consumer<T> onDone,
-        TokenTrie tokenTrie
+        TokenResolver tokenResolver
     ) {
         this.builder = builder;
         this.parent = parent;
@@ -42,7 +42,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         this.booleans = booleans;
         this.objects = objects;
         this.onDone = onDone;
-        this.tokenTrie = tokenTrie;
+        this.tokenResolver = tokenResolver;
     }
 
     @Override
@@ -91,7 +91,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
 
     @Override
     public TokenResolver tokenResolver() {
-        return tokenTrie;
+        return tokenResolver;
     }
 
     @Override

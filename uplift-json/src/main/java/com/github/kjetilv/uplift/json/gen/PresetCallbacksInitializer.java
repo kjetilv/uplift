@@ -3,7 +3,8 @@ package com.github.kjetilv.uplift.json.gen;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenTrie;
+import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.trie.TokenTrie;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
@@ -32,7 +33,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     private final List<PresetCallbacksInitializer<?, ?>> subs = new ArrayList<>();
 
-    private TokenTrie tokenTrie;
+    private TokenResolver tokenTrie;
 
     public void sub(PresetCallbacksInitializer<?, ?> sub) {
         subs.add(sub);
@@ -236,12 +237,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         return objects;
     }
 
-    public TokenTrie getTokenTrie() {
+    public TokenResolver getTokenTrie() {
         return tokenTrie;
     }
 
-    public void buildTokens(TokenTrie tokenTrie) {
-        this.tokenTrie = tokenTrie != null ? tokenTrie : newTokenTrie();
+    public void buildTokens(TokenResolver tokenResolver) {
+        this.tokenTrie = tokenResolver != null ? tokenResolver : newTokenTrie();
         numbers = replace(numbers, this.tokenTrie);
         strings = replace(strings, this.tokenTrie);
         objects = replace(objects, this.tokenTrie);
@@ -257,12 +258,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     private <V> Map<Token.Field, V> replace(
         Map<Token.Field, V> map,
-        TokenTrie tokenTrie
+        TokenResolver tokenResolver
     ) {
         return map.keySet()
             .stream()
             .map(token ->
-                canonical(tokenTrie, token))
+                canonical(tokenResolver, token))
             .collect(Collectors.toMap(
                 Function.identity(),
                 map::get,
@@ -284,11 +285,11 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         }
     }
 
-    private static Token.Field canonical(TokenTrie tokenTrie, Token.Field token) {
-        Token.Field resolve = tokenTrie.get(token);
+    private static Token.Field canonical(TokenResolver tokenResolver, Token.Field token) {
+        Token.Field resolve = tokenResolver.get(token);
         if (resolve == null) {
             throw new RuntimeException(
-                "Failed to resolve token " + token + " in " + tokenTrie);
+                "Failed to resolve token " + token + " in " + tokenResolver);
         }
         return resolve;
     }

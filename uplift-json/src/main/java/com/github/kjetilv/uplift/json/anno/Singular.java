@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.anno;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

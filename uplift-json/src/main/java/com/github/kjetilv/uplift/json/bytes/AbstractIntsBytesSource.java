@@ -9,7 +9,7 @@ import java.util.function.IntSupplier;
 
 import static java.lang.Character.isDigit;
 
-public abstract class AbstractBytesSource implements BytesSource {
+public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private byte next1;
 
@@ -22,7 +22,7 @@ public abstract class AbstractBytesSource implements BytesSource {
 
     private final IntSupplier nextChar;
 
-    public AbstractBytesSource(IntSupplier nextChar) {
+    public AbstractIntsBytesSource(IntSupplier nextChar) {
         this.nextChar = nextChar;
         this.next1 = nextChar();
         this.next2 = next1 > 0 ? nextChar() : 0;

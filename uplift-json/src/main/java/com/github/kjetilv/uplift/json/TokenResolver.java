@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.json;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 
+import java.util.function.LongToIntFunction;
+
 @FunctionalInterface
 public interface TokenResolver {
 
@@ -18,5 +20,13 @@ public interface TokenResolver {
         return get(segment, 0, segment.length());
     }
 
-    Token.Field get(LineSegment segment, long offset, long length);
+    default Token.Field get(
+        LineSegment segment,
+        long offset,
+        long length
+    ) {
+        return get(segment::byteAt, offset, length);
+    }
+
+    Token.Field get(LongToIntFunction get, long offset, long length);
 }

@@ -4,9 +4,9 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 
-public final class InputStreamBytesSource extends AbstractBytesSource {
+public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 
-    public InputStreamBytesSource(InputStream stream) {
+    public InputStreamIntsBytesSource(InputStream stream) {
         super(new Ints(Objects.requireNonNull(stream, "stream")));
     }
 

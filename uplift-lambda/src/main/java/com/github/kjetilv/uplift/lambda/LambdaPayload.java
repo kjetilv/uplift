@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.JsonRecord;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.util.Maps;
 

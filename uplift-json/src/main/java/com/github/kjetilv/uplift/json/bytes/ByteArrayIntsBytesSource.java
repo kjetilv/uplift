@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import java.util.Objects;
 
-public final class ByteArrayBytesSource extends AbstractBytesSource {
+public final class ByteArrayIntsBytesSource extends AbstractIntsBytesSource {
 
-    public ByteArrayBytesSource(byte[] bytes) {
+    public ByteArrayIntsBytesSource(byte[] bytes) {
         super(new IntSupplier(Objects.requireNonNull(bytes, "bytes")));
     }
 

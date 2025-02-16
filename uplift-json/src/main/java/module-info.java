@@ -8,4 +8,5 @@ module uplift.uplift.json.main {
 
     exports com.github.kjetilv.uplift.json;
     exports com.github.kjetilv.uplift.json.gen;
+    exports com.github.kjetilv.uplift.json.anno;
 }

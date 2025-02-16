@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.JsonRecord;
-import com.github.kjetilv.uplift.json.Singular;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
 
 import java.math.BigDecimal;
 import java.time.Instant;

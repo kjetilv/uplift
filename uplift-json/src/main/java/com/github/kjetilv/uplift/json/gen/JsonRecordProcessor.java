@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -24,9 +24,9 @@ import static com.github.kjetilv.uplift.json.gen.Gen.*;
 
 @SupportedAnnotationTypes(
     {
-        "com.github.kjetilv.uplift.json.JsonRecord",
-        "com.github.kjetilv.uplift.json.Field",
-        "com.github.kjetilv.uplift.json.Singular"
+        "com.github.kjetilv.uplift.json.anno.JsonRecord",
+        "com.github.kjetilv.uplift.json.anno.Field",
+        "com.github.kjetilv.uplift.json.anno.Singular"
     }
 )
 @SupportedSourceVersion(SourceVersion.RELEASE_21)

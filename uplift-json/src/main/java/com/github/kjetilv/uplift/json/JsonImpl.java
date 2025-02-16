@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.uplift.json.bytes.ByteArrayBytesSource;
+import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
-import com.github.kjetilv.uplift.json.bytes.InputStreamBytesSource;
+import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.LineSegmentBytesSource;
 import com.github.kjetilv.uplift.json.events.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongToIntFunction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -22,27 +23,27 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(InputStream inputStream) {
-        return process(new InputStreamBytesSource(inputStream));
+        return process(new InputStreamIntsBytesSource(inputStream));
     }
 
     @Override
     public Callbacks parse(String source, Callbacks callbacks) {
-        return parse(new ByteArrayBytesSource(source.getBytes(UTF_8)), callbacks);
+        return parse(new ByteArrayIntsBytesSource(source.getBytes(UTF_8)), callbacks);
     }
 
     @Override
     public Callbacks parseMulti(String source, Callbacks callbacks) {
-        return parseMulti(new ByteArrayBytesSource(source.getBytes(UTF_8)), callbacks);
+        return parseMulti(new ByteArrayIntsBytesSource(source.getBytes(UTF_8)), callbacks);
     }
 
     @Override
     public Callbacks parse(InputStream source, Callbacks callbacks) {
-        return parse(new InputStreamBytesSource(source), callbacks);
+        return parse(new InputStreamIntsBytesSource(source), callbacks);
     }
 
     @Override
     public Callbacks parseMulti(InputStream source, Callbacks callbacks) {
-        return parseMulti(new InputStreamBytesSource(source), callbacks);
+        return parseMulti(new InputStreamIntsBytesSource(source), callbacks);
     }
 
     @Override
@@ -80,7 +81,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(byte[] bytes) {
-        return process(new ByteArrayBytesSource(bytes));
+        return process(new ByteArrayIntsBytesSource(bytes));
     }
 
     @Override
@@ -90,7 +91,7 @@ final class JsonImpl implements Json {
 
     @Override
     public Object read(String string) {
-        return process(new ByteArrayBytesSource(string.getBytes(UTF_8)));
+        return process(new ByteArrayIntsBytesSource(string.getBytes(UTF_8)));
     }
 
     @Override
@@ -137,6 +138,11 @@ final class JsonImpl implements Json {
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[}";
+        }
+
+        @Override
+        public Token.Field get(LongToIntFunction get, long offset, long length) {
+            throw new UnsupportedOperationException();
         }
     }
 }

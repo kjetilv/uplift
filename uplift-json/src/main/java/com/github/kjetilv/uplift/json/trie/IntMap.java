@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.trie;
 
 import java.util.Comparator;
 import java.util.List;

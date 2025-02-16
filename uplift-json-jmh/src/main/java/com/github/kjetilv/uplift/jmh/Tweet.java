@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.jmh;
 
-import com.github.kjetilv.uplift.json.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import java.net.URI;
 import java.util.List;

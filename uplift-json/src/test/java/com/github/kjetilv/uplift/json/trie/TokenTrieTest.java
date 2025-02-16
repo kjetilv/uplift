@@ -3,13 +3,12 @@ package com.github.kjetilv.uplift.json.trie;
 import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenTrie;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TokenNodeTest {
+class TokenTrieTest {
 
     @Test
     public void test() {
@@ -61,7 +60,8 @@ class TokenNodeTest {
     }
 
     private static Token.Field tok(String qoz) {
-        return new Token.Field(c(qoz));
+        String pre = "foo: \"";
+        return new Token.Field(c(pre + qoz + "\"").slice(pre.length(), pre.length() + qoz.length()));
     }
 
     private static LineSegment c(String s) {

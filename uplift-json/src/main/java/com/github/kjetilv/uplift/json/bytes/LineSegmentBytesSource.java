@@ -67,18 +67,10 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     @Override
     public LineSegment spoolField() {
-        startIndex = pos;
-
-        long offset = startIndex % ALIGNMENT;
-        endIndex = startIndex - offset + ALIGNMENT;
-
-        if (offset > 0) {
-            currentLong = Bits.clearLow(currentLong, (int) offset);
-        } else {
-            advance();
-        }
+        alignStartEnd();
 
         int nextQ = quotesFinder.next(currentLong);
+
         while (true) {
             if (nextQ == ALIGNMENT) {
                 advance();
@@ -94,19 +86,14 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
 
     @Override
     public LineSegment spoolString() {
-        startIndex = pos;
-        long offset = startIndex % ALIGNMENT;
-        endIndex = startIndex - offset + ALIGNMENT;
+        alignStartEnd();
+
         long lastQuote = -1L;
         boolean quoted = false;
 
-        if (offset > 0) {
-            currentLong = Bits.clearLow(currentLong, (int) offset);
-        } else {
-            advance();
-        }
         int nextQ = quotesFinder.next(currentLong);
         int nextR = revSolFinder.next(currentLong);
+
         while (true) {
             if (nextQ == nextR) { // No escape or quote in sight
                 advance();
@@ -134,6 +121,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
         }
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public LineSegment spoolNumber() {
         startIndex = pos - 1;
@@ -142,9 +130,7 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
             pos++;
         }
         if (b == '.') {
-            do {
-                pos++;
-            } while (isDigit(biteAt(pos)));
+            while (isDigit(biteAt(pos++)));
         }
         endIndex = pos;
         return this;
@@ -202,6 +188,17 @@ public final class LineSegmentBytesSource implements BytesSource, LineSegment {
     @Override
     public byte byteAt(long i) {
         return memorySegment.get(JAVA_BYTE, startOffset + startIndex + i);
+    }
+
+    private void alignStartEnd() {
+        startIndex = pos;
+        long offset = startIndex % ALIGNMENT;
+        endIndex = startIndex - offset + ALIGNMENT;
+        if (offset > 0) {
+            currentLong = Bits.clearLow(currentLong, (int) offset);
+        } else {
+            advance();
+        }
     }
 
     private void advance() {

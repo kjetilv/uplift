@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.json.events;
 import com.github.kjetilv.uplift.json.AbstractJsonReader;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.bytes.ByteArrayBytesSource;
+import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,6 +16,6 @@ public final class BytesJsonReader<T extends Record> extends AbstractJsonReader<
 
     @Override
     protected BytesSource input(byte[] source) {
-        return new ByteArrayBytesSource(source);
+        return new ByteArrayIntsBytesSource(source);
     }
 }

@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.*;
+import com.github.kjetilv.uplift.json.anno.Field;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
 
 import javax.annotation.processing.Generated;
 import javax.lang.model.element.*;
