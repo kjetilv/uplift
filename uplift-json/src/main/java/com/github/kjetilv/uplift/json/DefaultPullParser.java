@@ -30,40 +30,48 @@ final class DefaultPullParser implements PullParser {
         };
     }
 
-    private Callbacks processObject(Tokens tokens, Callbacks callbacks) {
-        Callbacks cb = callbacks.objectStarted();
-        boolean canonical = cb.canonical();
+    private Callbacks processObject(Tokens tokens, Callbacks initial) {
+        Callbacks callbacks = initial.objectStarted();
+        boolean canonical = callbacks.canonical();
         Token next = tokens.nextField(canonical);
         do {
             if (next instanceof Token.Field fieldToken) {
-                cb = processField(tokens, fieldToken, cb);
+                callbacks = processField(
+                    tokens,
+                    fieldToken,
+                    callbacks
+                );
             } else if (next == Token.SKIP_FIELD) {
                 skip(tokens);
             } else {
                 return next == Token.END_OBJECT
-                    ? cb.objectEnded()
-                    : failParse(next, STRING, TokenType.END_OBJECT);
+                    ? callbacks.objectEnded()
+                    : failParse(
+                        next,
+                        STRING,
+                        TokenType.END_OBJECT
+                    );
             }
             next = commaOr(tokens, Token.END_OBJECT, canonical);
         } while (true);
     }
 
-    private Callbacks processArray(Tokens tokens, Callbacks callbacks) {
-        Callbacks c = callbacks.arrayStarted();
+    private Callbacks processArray(Tokens tokens, Callbacks initial) {
+        Callbacks callbacks = initial.arrayStarted();
         Token next = tokens.next();
         while (next != Token.END_ARRAY) {
-            c = processValue(tokens, next, c);
+            callbacks = processValue(tokens, next, callbacks);
             next = commaOr(tokens, Token.END_ARRAY, false);
         }
-        return c.arrayEnded();
+        return callbacks.arrayEnded();
     }
 
-    private Callbacks processField(Tokens tokens, Token.Field field, Callbacks callbacks) {
+    private Callbacks processField(Tokens tokens, Token.Field field, Callbacks initial) {
         try {
-            Callbacks fieldCallbacks = callbacks.field(field);
+            Callbacks callbacks = initial.field(field);
             tokens.skipNext(Token.COLON);
             Token valueToken = tokens.next();
-            return processValue(tokens, valueToken, fieldCallbacks);
+            return processValue(tokens, valueToken, callbacks);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set `" + field.value() + "`", e);
         }

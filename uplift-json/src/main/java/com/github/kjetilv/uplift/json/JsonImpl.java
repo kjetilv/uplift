@@ -136,13 +136,13 @@ final class JsonImpl implements Json {
         }
 
         @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[}";
+        public Token.Field get(LongToIntFunction get, long offset, long length) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public Token.Field get(LongToIntFunction get, long offset, long length) {
-            throw new UnsupportedOperationException();
+        public String toString() {
+            return getClass().getSimpleName() + "[}";
         }
     }
 }
