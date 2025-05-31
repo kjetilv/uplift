@@ -4,6 +4,7 @@ import com.github.kjetilv.flopp.kernel.PartitionStreamer;
 import com.github.kjetilv.flopp.kernel.Partitioned;
 import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
+import com.github.kjetilv.flopp.kernel.partitions.Partitionings;
 import com.github.kjetilv.uplift.json.events.LineSegmentJsonReader;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ public class FastParseTest {
         Class<Foo> fooClass = Foo.class;
         System.out.println(fooClass);
         long sum;
-        try (Partitioned partitioned = PartitionedPaths.partitioned(path(), Partitioning.create(4))) {
+        try (Partitioned partitioned = PartitionedPaths.partitioned(path(), new Partitionings(1).create(4))) {
             sum = partitioned.streamers()
                 .map(supplier(foo))
                 .map(supplier ->

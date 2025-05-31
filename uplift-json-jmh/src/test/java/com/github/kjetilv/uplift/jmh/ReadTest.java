@@ -8,6 +8,7 @@ import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.flopp.kernel.Partitioned;
 import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
+import com.github.kjetilv.flopp.kernel.partitions.Partitionings;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
@@ -58,7 +59,7 @@ public class ReadTest {
 
     @Test
     void readFile() {
-        try (Partitioned partitioned = PartitionedPaths.partitioned(PATH_L, Partitioning.single())) {
+        try (Partitioned partitioned = PartitionedPaths.partitioned(PATH_L, new Partitionings(1).single())) {
             partitioned.streamers()
                 .forEach(streamer ->
                     streamer.lines()

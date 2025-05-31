@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.flopp.kernel.*;
 import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
 import com.github.kjetilv.flopp.kernel.files.Partitioneds;
-import com.github.kjetilv.flopp.kernel.partitions.Partitioning;
+import com.github.kjetilv.flopp.kernel.partitions.Partitionings;
 import com.github.kjetilv.uplift.json.JsonReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -47,7 +47,7 @@ public class ReadBenchmark {
 
         LongAdder longAdder = new LongAdder();
         try (
-            Partitioned partitioned = Partitioneds.create(Partitioning.single(), shape, segmentSource)
+            Partitioned partitioned = Partitioneds.create(new Partitionings(1).single(), shape, segmentSource)
         ) {
             for (int i = 0; i < X / 4; i++) {
                 partitioned.streamers()
@@ -88,7 +88,7 @@ public class ReadBenchmark {
 
         Instant upliftNow = Instant.now();
         try (
-            Partitioned partitioned = Partitioneds.create(Partitioning.single(), shape, segmentSource)
+            Partitioned partitioned = Partitioneds.create(new Partitionings(1).single(), shape, segmentSource)
         ) {
             for (int i = 0; i < X; i++) {
                 partitioned.streamers()
