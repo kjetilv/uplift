@@ -29,7 +29,7 @@ public class FastParseTest {
         Class<Foo> fooClass = Foo.class;
         System.out.println(fooClass);
         long sum;
-        try (Partitioned partitioned = PartitionedPaths.partitioned(path(), new Partitionings(1).create(4))) {
+        try (Partitioned partitioned = PartitionedPaths.partitioned(path(), Partitionings.LONG.create(4))) {
             sum = partitioned.streamers()
                 .map(supplier(foo))
                 .map(supplier ->

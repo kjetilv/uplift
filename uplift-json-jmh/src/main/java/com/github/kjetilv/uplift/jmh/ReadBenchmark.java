@@ -88,7 +88,7 @@ public class ReadBenchmark {
 
         Instant upliftNow = Instant.now();
         try (
-            Partitioned partitioned = Partitioneds.create(new Partitionings(1).single(), shape, segmentSource)
+            Partitioned partitioned = Partitioneds.create( Partitionings.LONG.single(), shape, segmentSource)
         ) {
             for (int i = 0; i < X; i++) {
                 partitioned.streamers()
