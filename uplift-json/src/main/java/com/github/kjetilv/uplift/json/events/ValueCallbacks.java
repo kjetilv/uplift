@@ -7,13 +7,7 @@ import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;
 
-public final class ValueCallbacks implements Callbacks {
-
-    private final Consumer<Object> onDone;
-
-    public ValueCallbacks(Consumer<Object> onDone) {
-        this.onDone = onDone;
-    }
+public record ValueCallbacks(Consumer<Object> onDone) implements Callbacks {
 
     @Override
     public Callbacks objectStarted() {

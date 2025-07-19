@@ -47,7 +47,7 @@ public sealed interface Token permits
 
     Token.Null NULL = new Null(TokenType.NULL);
 
-    Token.SkipField SKIP_FIELD = new SkipField(TokenType.STRING);
+    Token.SkipField SKIP_FIELD = new SkipField();
 
     record BeginObject(TokenType tokenType) implements Token {
 
@@ -138,7 +138,12 @@ public sealed interface Token permits
         }
     }
 
-    record SkipField(TokenType tokenType) implements Token {
+    record SkipField() implements Token {
+
+        @Override
+        public TokenType tokenType() {
+            return null;
+        }
     }
 
     record Field(LineSegment lineSegment, int length, int hash) implements Token {

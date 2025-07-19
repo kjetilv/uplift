@@ -21,6 +21,7 @@ It is designed to speed up development of small-ish Java-based applications to A
 These can be used by lambdas you want to deploy, but they are not required:
 
 * [`uplift-kernel`](./uplift-kernel) contains various utilities
+* `uplift-hash`
 * `uplift-flogs` contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces.
   These will forward to the Java logging library. No other logging
   libraries needed,
