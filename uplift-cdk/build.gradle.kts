@@ -5,9 +5,9 @@ dependencies {
     implementation("software.amazon.awscdk:aws-cdk-lib:2.154.1")
     implementation("software.constructs:constructs:10.3.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.assertj:assertj-core:3.27.3")
 }
