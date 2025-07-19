@@ -8,9 +8,9 @@ plugins {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.154.1")
-    implementation("software.amazon.awssdk:cloudformation:2.27.11")
-    implementation("software.constructs:constructs:10.3.0")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.206.0")
+    implementation("software.amazon.awssdk:cloudformation:2.32.3")
+    implementation("software.constructs:constructs:10.4.2")
 }
 
 java {
