@@ -61,7 +61,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         LeafHasher<H> leafHasher,
         H kind
     ) {
-        this.canonicalKeys = new CanonicalKeysCatalog<>(requireNonNull(keyHandler, "keyHandler"));
+        this.canonicalKeys = new CanonicalKeysCataloguer<>(requireNonNull(keyHandler, "keyHandler"));
         this.canonicalValues = new CanonicalSubstructuresCataloguer<>(
             new RecursiveTreeHasher<>(
                 requireNonNull(newBuilder, "newBuilder"),

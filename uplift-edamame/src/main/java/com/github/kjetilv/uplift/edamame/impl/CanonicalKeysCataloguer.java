@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class CanonicalKeysCatalog<K> implements KeyHandler<K> {
+final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
 
     private final Map<Object, K> canonicalKeys = new ConcurrentHashMap<>();
 
@@ -14,7 +14,7 @@ final class CanonicalKeysCatalog<K> implements KeyHandler<K> {
 
     private final KeyHandler<K> keyHandler;
 
-    CanonicalKeysCatalog(KeyHandler<K> keyHandler) {
+    CanonicalKeysCataloguer(KeyHandler<K> keyHandler) {
         this.keyHandler = Objects.requireNonNull(keyHandler, "delegate");
     }
 
