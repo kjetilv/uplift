@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.transform;
-import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.transformValues;
+import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
+import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
 
 /**
  * Canonicalizes {@link HashedTree hashed trees}, progressively storing and resolving shared substructures

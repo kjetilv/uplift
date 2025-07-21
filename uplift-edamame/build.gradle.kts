@@ -1,4 +1,5 @@
 dependencies {
+    implementation(project(":uplift-kernel"))
     implementation(project(":uplift-hash"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")

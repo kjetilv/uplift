@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.hash.*;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.*;
+import static com.github.kjetilv.uplift.kernel.util.Collectioons.*;
 import static com.github.kjetilv.uplift.edamame.impl.HashedTree.*;
 import static java.util.Objects.requireNonNull;
 
@@ -111,8 +112,8 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             .collect(Collectors.toMap(
                 entry -> keyHandler.normalize(entry.getKey()),
                 entry -> hashedTree(entry.getValue()),
-                noMerge(),
-                sizedMap(value.size())
+                Maps.noMerge(),
+                Maps.sizedMap(value.size())
             )));
     }
 

@@ -27,7 +27,7 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
      * @param identifier Identifier
      * @param value      Map
      * @throws IllegalArgumentException If the identifier is already stored
-     * @throws IllegalStateException If this instance is {@link #complete() completed}
+     * @throws IllegalStateException    If this instance is {@link #complete() completed}
      */
     void put(I identifier, Map<?, ?> value);
 

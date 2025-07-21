@@ -62,13 +62,13 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         H kind
     ) {
         this.canonicalKeys = new CanonicalKeysCataloguer<>(requireNonNull(keyHandler, "keyHandler"));
-        this.canonicalValues = new CanonicalSubstructuresCataloguer<>(
-            new RecursiveTreeHasher<>(
-                requireNonNull(newBuilder, "newBuilder"),
-                canonicalKeys,
-                requireNonNull(leafHasher, "leafHasher"),
-                kind
-            ));
+        MapHasher<H> mapHasher = new RecursiveTreeHasher<>(
+            requireNonNull(newBuilder, "newBuilder"),
+            this.canonicalKeys,
+            requireNonNull(leafHasher, "leafHasher"),
+            kind
+        );
+        this.canonicalValues = new CanonicalSubstructuresCataloguer<>(mapHasher);
     }
 
     @Override
@@ -111,10 +111,10 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     @SuppressWarnings({"unused"})
-    private boolean put(I identifier, Map<?, ?> value, boolean failOnConflict) {
+    private boolean put(I identifier, Map<?, ?> value, boolean requireAbsent) {
         requireNonNull(identifier, "identifier");
         requireNonNull(value, "value");
-        if (rejected(identifier, failOnConflict)) {
+        if (rejected(identifier, requireAbsent)) {
             return false;
         }
         CanonicalValue<H> canonical = canonicalValues.canonicalMap(value);
@@ -137,13 +137,13 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         });
     }
 
-    private boolean rejected(I identifier, boolean failOnConflict) {
+    private boolean rejected(I identifier, boolean requireAbsent) {
         if (complete.get()) {
             throw new IllegalStateException(this + " is complete, cannot put " + identifier);
         }
         if (memoizedHashes.containsKey(identifier)) {
-            if (failOnConflict) {
-                throw new IllegalArgumentException("Identifier " + identifier + " was:" + get(identifier));
+            if (requireAbsent) {
+                throw new IllegalArgumentException("Identifier " + identifier + " was: " + get(identifier));
             }
             return true;
         }
