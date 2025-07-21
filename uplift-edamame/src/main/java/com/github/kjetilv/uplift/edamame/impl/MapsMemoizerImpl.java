@@ -89,20 +89,12 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public void put(I identifier, Map<?, ?> value) {
-        put(
-            requireNonNull(identifier, "identifier"),
-            requireNonNull(value, "value"),
-            true
-        );
+        put(identifier, value, true);
     }
 
     @Override
     public boolean putIfAbsent(I identifier, Map<?, ?> value) {
-        return put(
-            requireNonNull(identifier, "identifier"),
-            requireNonNull(value, "value"),
-            false
-        );
+        return put(identifier, value, false);
     }
 
     @Override
@@ -120,6 +112,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @SuppressWarnings({"unused"})
     private boolean put(I identifier, Map<?, ?> value, boolean failOnConflict) {
+        requireNonNull(identifier, "identifier");
+        requireNonNull(value, "value");
         if (rejected(identifier, failOnConflict)) {
             return false;
         }
