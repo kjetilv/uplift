@@ -82,6 +82,6 @@ public final class MapMemoizerFactory {
     }
 
     private static <H extends HashKind<H>> LeafHasher<H> defaultLeafHasher(H kind, PojoBytes leaf) {
-        return new DefaultLeafHasher<H>(hashBuilderSupplier(kind), leaf);
+        return new DefaultLeafHasher<>(hashBuilderSupplier(kind), leaf);
     }
 }

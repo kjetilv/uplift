@@ -22,11 +22,11 @@ import static java.util.Objects.requireNonNull;
  * Normalizes input trees and builds {@link HashedTree hashed trees}. Stateless and thread-safe.
  * <p>
  *
- * @param <S> Identifier type
+ * @param <K> Identifier type
  */
-record RecursiveTreeHasher<S, H extends HashKind<H>>(
+record RecursiveTreeHasher<K, H extends HashKind<H>>(
     Supplier<HashBuilder<Bytes, H>> newBuilder,
-    KeyHandler<S> keyHandler,
+    KeyHandler<K> keyHandler,
     LeafHasher<H> leafHasher,
     H kind
 ) {
@@ -35,11 +35,11 @@ record RecursiveTreeHasher<S, H extends HashKind<H>>(
      * @param newBuilder Hash builder, not null
      * @param keyHandler Key handler, not null
      * @param leafHasher Hasher, not null
-     * @see MapsMemoizers#create(KeyHandler)
+     * @see MapsMemoizers#create(KeyHandler, HashKind)
      */
     RecursiveTreeHasher(
         Supplier<HashBuilder<Bytes, H>> newBuilder,
-        KeyHandler<S> keyHandler,
+        KeyHandler<K> keyHandler,
         LeafHasher<H> leafHasher,
         H kind
     ) {
@@ -54,7 +54,7 @@ record RecursiveTreeHasher<S, H extends HashKind<H>>(
         return value == null
             ? new Null<>(kind.blank())
             : switch (value) {
-                case Map<?, ?> map -> nodeForMap((Map<S, Object>) map);
+                case Map<?, ?> map -> nodeForMap((Map<K, Object>) map);
                 case Iterable<?> iterable -> nodesForIterable(iterable);
                 default -> value.getClass().isArray()
                     ? nodesForIterable(iterable(value))
@@ -64,12 +64,12 @@ record RecursiveTreeHasher<S, H extends HashKind<H>>(
 
     private Nodes<H> nodesForIterable(Iterable<?> iterable) {
         List<? extends HashedTree<?, H>> hashedValues = transform(iterable, this::hashedTree);
-        return new Nodes<H>(listHash(hashedValues), hashedValues);
+        return new Nodes<>(listHash(hashedValues), hashedValues);
     }
 
-    private Node<S, H> nodeForMap(Map<S, Object> map) {
-        Map<S, HashedTree<?, H>> hashedMap = normalized(map);
-        return new Node<S, H>(mapHash(hashedMap), hashedMap);
+    private Node<K, H> nodeForMap(Map<K, Object> map) {
+        Map<K, HashedTree<?, H>> hashedMap = normalized(map);
+        return new Node<>(mapHash(hashedMap), hashedMap);
     }
 
     private Leaf<H> leafFor(Object value) {
@@ -86,11 +86,11 @@ record RecursiveTreeHasher<S, H extends HashKind<H>>(
         return hashHb.get();
     }
 
-    private Hash<H> mapHash(Map<S, ? extends HashedTree<?, H>> tree) {
+    private Hash<H> mapHash(Map<K, ? extends HashedTree<?, H>> tree) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb =
             hb.map((t) -> Bytes.from(t.bytes()));
-        HashBuilder<S, H> keyHb = hb.map(key -> Bytes.from(keyHandler.bytes(key)));
+        HashBuilder<K, H> keyHb = hb.map(key -> Bytes.from(keyHandler.bytes(key)));
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(tree.size());
         tree.forEach((key, value) -> {
             keyHb.hash(key);
@@ -103,7 +103,7 @@ record RecursiveTreeHasher<S, H extends HashKind<H>>(
         return leafHasher.hash(value);
     }
 
-    private Map<S, HashedTree<?, H>> normalized(Map<?, ?> value) {
+    private Map<K, HashedTree<?, H>> normalized(Map<?, ?> value) {
         return Collections.unmodifiableMap(value.entrySet()
             .stream()
             .filter(hasData())

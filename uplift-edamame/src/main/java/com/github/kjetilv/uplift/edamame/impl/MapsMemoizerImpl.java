@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
  * MD5 (128-bit) hashes are used. If an incoming value provokes a hash collision, it will be stored as-is and
  * separately from the canonical trees.  This should be rare.
  * <p>
- * Use {@link MapsMemoizers#create()} and siblings to create instances of this class.
+ * Use {@link MapsMemoizers#create(HashKind)} and siblings to create instances of this class.
  *
  * @param <I> Identifier type.  An identifier identifies exactly one of the cached maps
  * @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
@@ -61,7 +61,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
      * @param newBuilder Hash builder, not null
      * @param keyHandler Key handler, not null
      * @param leafHasher Hasher, not null
-     * @see MapsMemoizers#create(KeyHandler)
+     * @see MapsMemoizers#create(KeyHandler, HashKind)
      */
     MapsMemoizerImpl(
         Supplier<HashBuilder<Bytes, H>> newBuilder,
@@ -203,12 +203,12 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     @SuppressWarnings("unchecked")
-    private static <S, H extends HashKind<H>> Map<S, Object> unwrap(Node<?, H> node) {
-        return ((Node<S, H>) node).unwrap();
+    private static <K, H extends HashKind<H>> Map<K, Object> unwrap(Node<?, H> node) {
+        return ((Node<K, H>) node).unwrap();
     }
 
-    private static <S> Map<S, Object> unwrap(CanonicalValue.Node<?> valueNode) {
-        return ((CanonicalValue.Node<S>) valueNode).value();
+    private static <K> Map<K, Object> unwrap(CanonicalValue.Node<?> valueNode) {
+        return ((CanonicalValue.Node<K>) valueNode).value();
     }
 
     private static <T> T withLock(Lock lock, Supplier<T> action) {

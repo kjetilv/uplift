@@ -6,21 +6,21 @@ package com.github.kjetilv.uplift.edamame;
  * <p>
  * Maps will likely have {@link String} keys, or at least some key type which has a
  * {@link Object#toString() natural projection} onto strings – this is fancy for "implements toString". In this case,
- * use {@link MapsMemoizers#create() the default memoizer}.
+ * use {@link MapsMemoizers#create(com.github.kjetilv.uplift.hash.HashKind) the default memoizer}.
  * <p>
  * Rationale: You may be the type to avoid stringly typed code, using e.g. a single-value
  * {@link Record}, or an {@link Enum}. In such cases, {@link KeyHandler#normalize(Object) implement} this interface and
- * {@link MapsMemoizers#create(KeyHandler) plug it in} to produce instances of that key type.
+ * {@link MapsMemoizers#create(KeyHandler, com.github.kjetilv.uplift.hash.HashKind) plug it in} to produce instances of that key type.
  *
  * @param <K> Key type
- * @see MapsMemoizers#create(KeyHandler)
+ * @see MapsMemoizers#create(KeyHandler, com.github.kjetilv.uplift.hash.HashKind)
  */
 @FunctionalInterface
 public interface KeyHandler<K> {
 
     @SuppressWarnings("unchecked")
-    static <S> KeyHandler<S> defaultHandler() {
-        return key -> (S) key.toString();
+    static <K> KeyHandler<K> defaultHandler() {
+        return key -> (K) key.toString();
     }
 
     /**

@@ -31,15 +31,15 @@ sealed interface HashedTree<T, H extends HashKind<H>> {
      *
      * @param hash     Hash
      * @param valueMap Map
-     * @param <S>      Type of key in the map
+     * @param <K>      Type of key in the map
      */
-    record Node<S, H extends HashKind<H>>(
+    record Node<K, H extends HashKind<H>>(
         Hash<H> hash,
-        Map<S, ? extends HashedTree<?, H>> valueMap
-    ) implements HashedTree<Map<S, Object>, H> {
+        Map<K, ? extends HashedTree<?, H>> valueMap
+    ) implements HashedTree<Map<K, Object>, H> {
 
         @Override
-        public Map<S, Object> unwrap() {
+        public Map<K, Object> unwrap() {
             return CollectionUtils.transformValues(
                 valueMap,
                 HashedTree::unwrap

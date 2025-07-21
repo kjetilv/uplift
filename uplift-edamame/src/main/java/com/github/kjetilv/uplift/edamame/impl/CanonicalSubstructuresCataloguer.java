@@ -20,11 +20,11 @@ import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.transformVa
  * <p>
  * This class ought to be thread-safe, as it only appends to {@link ConcurrentMap concurrent maps}.
  *
- * @param <S>
+ * @param <K>
  */
-final class CanonicalSubstructuresCataloguer<S, H extends HashKind<H>> {
+final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>> {
 
-    private final Map<Hash<H>, Map<S, Object>> maps = new ConcurrentHashMap<>();
+    private final Map<Hash<H>, Map<K, Object>> maps = new ConcurrentHashMap<>();
 
     private final Map<Hash<H>, List<Object>> lists = new ConcurrentHashMap<>();
 
@@ -47,9 +47,9 @@ final class CanonicalSubstructuresCataloguer<S, H extends HashKind<H>> {
     public CanonicalValue toCanonical(HashedTree<?, H> hashedTree) {
         return switch (hashedTree) {
             case HashedTree.Node<?, ?>(Hash<?> hash, Map<?, ? extends HashedTree<?, ?>> valueMap) -> {
-                Map<S, CanonicalValue> canonicalTrees = recurseMap((Map<S, HashedTree<?, H>>) valueMap);
+                Map<K, CanonicalValue> canonicalTrees = recurseMap((Map<K, HashedTree<?, H>>) valueMap);
                 yield collision(canonicalTrees).orElseGet(() -> {
-                    Map<S, Object> map = mapValue(canonicalTrees);
+                    Map<K, Object> map = mapValue(canonicalTrees);
                     return resolve(
                         cataloguedMap((Hash<H>) hash, map),
                         map,
@@ -77,7 +77,7 @@ final class CanonicalSubstructuresCataloguer<S, H extends HashKind<H>> {
         };
     }
 
-    private Map<S, CanonicalValue> recurseMap(Map<S, HashedTree<?, H>> hashedTrees) {
+    private Map<K, CanonicalValue> recurseMap(Map<K, HashedTree<?, H>> hashedTrees) {
         return transformValues(hashedTrees, this::toCanonical);
     }
 
@@ -85,7 +85,7 @@ final class CanonicalSubstructuresCataloguer<S, H extends HashKind<H>> {
         return transform(values, this::toCanonical);
     }
 
-    private Map<S, Object> cataloguedMap(Hash<H> hash, Map<S, Object> computed) {
+    private Map<K, Object> cataloguedMap(Hash<H> hash, Map<K, Object> computed) {
         return maps.putIfAbsent(hash, computed);
     }
 
