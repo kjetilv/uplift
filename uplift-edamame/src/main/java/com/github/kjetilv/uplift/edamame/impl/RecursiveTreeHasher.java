@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.github.kjetilv.uplift.kernel.util.Collectioons.*;
 import static com.github.kjetilv.uplift.edamame.impl.HashedTree.*;
+import static com.github.kjetilv.uplift.kernel.util.Collectioons.isEmptyArray;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -108,7 +109,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     private Map<K, HashedTree<H>> normalized(Map<?, ?> value) {
         return Collections.unmodifiableMap(value.entrySet()
             .stream()
-            .filter(hasData())
+            .filter(empty().negate())
             .collect(Collectors.toMap(
                 entry -> keyHandler.normalize(entry.getKey()),
                 entry -> hashedTree(entry.getValue()),
@@ -117,15 +118,15 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             )));
     }
 
-    private static Predicate<Map.Entry<?, ?>> hasData() {
-        return entry -> !isEmpty(entry.getValue());
+    private static Predicate<Map.Entry<?, ?>> empty() {
+        return entry -> isEmpty(entry.getValue());
     }
 
     private static boolean isEmpty(Object value) {
         return value != null && switch (value) {
             case Map<?, ?> map -> map.isEmpty();
             case Iterable<?> iterable -> !iterable.iterator().hasNext();
-            case Object object -> object.getClass().isArray() && isEmpty(iterable(object));
+            case Object object -> isEmptyArray(object);
         };
     }
 }

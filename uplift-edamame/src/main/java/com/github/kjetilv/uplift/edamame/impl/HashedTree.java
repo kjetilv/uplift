@@ -24,7 +24,10 @@ sealed interface HashedTree<H extends HashKind<H>> {
      * @param map  Map
      * @param <K>  Type of key in the map
      */
-    record Node<K, H extends HashKind<H>>(Hash<H> hash, Map<K, ? extends HashedTree<H>> map) implements HashedTree<H> {
+    record Node<K, H extends HashKind<H>>(
+        Hash<H> hash,
+        Map<K, ? extends HashedTree<H>> map
+    ) implements HashedTree<H> {
     }
 
     /**
@@ -33,7 +36,10 @@ sealed interface HashedTree<H extends HashKind<H>> {
      * @param hash   Hash
      * @param values List
      */
-    record Nodes<H extends HashKind<H>>(Hash<H> hash, List<? extends HashedTree<H>> values) implements HashedTree<H> {
+    record Nodes<H extends HashKind<H>>(
+        Hash<H> hash,
+        List<? extends HashedTree<H>> values
+    ) implements HashedTree<H> {
     }
 
     /**
@@ -42,12 +48,17 @@ sealed interface HashedTree<H extends HashKind<H>> {
      * @param hash  Hash
      * @param value Leaf
      */
-    record Leaf<H extends HashKind<H>>(Hash<H> hash, Object value) implements HashedTree<H> {
+    record Leaf<H extends HashKind<H>>(
+        Hash<H> hash,
+        Object value
+    ) implements HashedTree<H> {
     }
 
     /**
      * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
      */
-    record Null<H extends HashKind<H>>(Hash<H> hash) implements HashedTree<H> {
+    record Null<H extends HashKind<H>>(
+        Hash<H> hash
+    ) implements HashedTree<H> {
     }
 }

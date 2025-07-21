@@ -24,6 +24,10 @@ public final class Collectioons {
             .toList();
     }
 
+    public static boolean isEmptyArray(Object array) {
+        return array.getClass().isArray() && Array.getLength(array) == 0;
+    }
+
     public static Iterable<?> iterable(Object array) {
         return () -> new Iterator<>() {
 
