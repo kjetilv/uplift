@@ -20,5 +20,12 @@ public interface PojoBytes {
      */
     PojoBytes TOSTRING = MapMemoizerFactory.TOSTRING;
 
+    /**
+     * @return If true, takes on the responsibility for all values
+     */
+    default boolean overrideDefaults() {
+        return false;
+    }
+
     byte[] bytes(Object pojo);
 }

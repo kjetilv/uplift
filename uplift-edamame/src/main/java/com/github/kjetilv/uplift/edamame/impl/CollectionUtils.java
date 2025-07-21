@@ -31,7 +31,11 @@ final class CollectionUtils {
             )));
     }
 
-    static <K, T, V, R> Map<K, R> transformValues(Map<T, V> map, Function<T, K> keyNormalizer, Function<V, R> transform) {
+    static <K, T, V, R> Map<K, R> transformValues(
+        Map<T, V> map,
+        Function<T, K> keyNormalizer,
+        Function<V, R> transform
+    ) {
         return Collections.unmodifiableMap(map.entrySet()
             .stream()
             .collect(Collectors.toMap(

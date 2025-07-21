@@ -3,10 +3,7 @@ package com.github.kjetilv.uplift.edamame.impl;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -22,7 +19,8 @@ import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.transformVa
  *
  * @param <K>
  */
-final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>> {
+final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
+    implements Canonicalizer<H> {
 
     private final Map<Hash<H>, Map<K, Object>> maps = new ConcurrentHashMap<>();
 
@@ -30,8 +28,15 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>> {
 
     private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
 
+    private final MapHasher<H> hasher;
+
+    public CanonicalSubstructuresCataloguer(MapHasher<H> hasher) {
+        this.hasher = Objects.requireNonNull(hasher, "hasher");
+    }
+
     /**
-     * Accepts a {@link HashedTree hashed tree} and returns the {@link CanonicalValue canonical value}.
+     * Accepts a nested, JSON-like {@link Map map} and returns its {@link CanonicalValue canonical value}.
+     * <p>
      * Traverses the {@link HashedTree hashed tree} and re-builds it.  New substructures found in incoming
      * structures are recorded under their respective {@link HashedTree#hash() hashes}.  If the hash is
      * recorded already, that occurrence is retrieved and used to replace the incoming one.
@@ -39,86 +44,63 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>> {
      * This method tries to show the recursive flow with a minimum of fuss, which is why it calls out
      * to a lot of one-liners, which would otherwise add up to a lot of clutter.
      *
-     * @param hashedTree Hashed tree
+     * @param value A map
      * @return A {@link CanonicalValue value} which may be either a {@link CanonicalValue.Collision collision},
      * or a holder for the canonical value
      */
+    @Override
+    public CanonicalValue<H> canonicalMap(Map<?, ?> value) {
+        HashedTree<H> hashedTree = hasher.hashedTree(value);
+        return canonicalTree(hashedTree);
+    }
+
     @SuppressWarnings("unchecked")
-    public CanonicalValue toCanonical(HashedTree<?, H> hashedTree) {
-        return switch (hashedTree) {
-            case HashedTree.Node<?, ?>(Hash<?> hash, Map<?, ? extends HashedTree<?, ?>> valueMap) -> {
-                Map<K, CanonicalValue> canonicalTrees = recurseMap((Map<K, HashedTree<?, H>>) valueMap);
-                yield collision(canonicalTrees).orElseGet(() -> {
-                    Map<K, Object> map = mapValue(canonicalTrees);
+    private CanonicalValue<H> canonicalTree(HashedTree<H> hashed) {
+        return switch (hashed) {
+            case HashedTree.Node<?, H>(Hash<H> hash, Map<?, ? extends HashedTree<?>> valueMap) -> {
+                Map<K, CanonicalValue<H>> tree = transformValues(
+                    (Map<K, HashedTree<H>>) valueMap,
+                    this::canonicalTree
+                );
+                yield collision(tree.values()).orElseGet(() -> {
+                    Map<K, Object> map = transformValues(tree, CanonicalValue::value);
                     return resolve(
-                        cataloguedMap((Hash<H>) hash, map),
+                        hash,
+                        maps.putIfAbsent(hash, map),
                         map,
-                        CanonicalValue.Node::new
+                        t -> new CanonicalValue.Node<>(hash, t)
                     );
                 });
             }
-            case HashedTree.Nodes<?>(Hash<?> hash, List<? extends HashedTree<?, ?>> values) -> {
-                List<CanonicalValue> canonicalValues = recurseList((List<? extends HashedTree<?, H>>) values);
+            case HashedTree.Nodes<H>(Hash<H> hash, List<? extends HashedTree<H>> values) -> {
+                List<CanonicalValue<H>> canonicalValues = transform(
+                    values,
+                    this::canonicalTree
+                );
                 yield collision(canonicalValues).orElseGet(() -> {
-                    List<Object> list = listValue(canonicalValues);
+                    List<Object> list = transform(canonicalValues, CanonicalValue::value);
                     return resolve(
-                        cataloguedList((Hash<H>) hash, list),
+                        hash,
+                        lists.putIfAbsent(hash, list),
                         list,
-                        CanonicalValue.Nodes::new
+                        t -> new CanonicalValue.Nodes<>(hash, t)
                     );
                 });
             }
-            case HashedTree.Leaf<?>(Hash<?> hash, Object value) -> resolve(
-                cataloguedLeaf((Hash<H>) hash, value),
+            case HashedTree.Leaf<H>(Hash<H> hash, Object value) -> resolve(
+                hash,
+                leaves.putIfAbsent(hash, value),
                 value,
-                CanonicalValue.Leaf::new
+                t -> new CanonicalValue.Leaf<>(hash, t)
             );
-            case HashedTree.Null<?> ignored -> CanonicalValue.NULL;
+            case HashedTree.Null<H>(Hash<H> hash) -> new CanonicalValue.Null<>(hash);
         };
     }
 
-    private Map<K, CanonicalValue> recurseMap(Map<K, HashedTree<?, H>> hashedTrees) {
-        return transformValues(hashedTrees, this::toCanonical);
-    }
-
-    private List<CanonicalValue> recurseList(List<? extends HashedTree<?, H>> values) {
-        return transform(values, this::toCanonical);
-    }
-
-    private Map<K, Object> cataloguedMap(Hash<H> hash, Map<K, Object> computed) {
-        return maps.putIfAbsent(hash, computed);
-    }
-
-    private List<Object> cataloguedList(Hash<H> hash, List<Object> computed) {
-        return lists.putIfAbsent(hash, computed);
-    }
-
-    private Object cataloguedLeaf(Hash<H> hash, Object value) {
-        return leaves.putIfAbsent(hash, value);
-    }
-
-    private static <T> CanonicalValue resolve(T existing, T value, Function<T, CanonicalValue> wrap) {
+    private <T> CanonicalValue<H> resolve(Hash<H> hash, T existing, T value, Function<T, CanonicalValue<H>> wrap) {
         return existing == null ? wrap.apply(value)
             : existing.equals(value) ? wrap.apply(existing)
-                : CanonicalValue.COLLISION;
-    }
-
-    private static List<Object> listValue(List<CanonicalValue> canonicalValues) {
-        return transform(canonicalValues, CanonicalValue::value);
-    }
-
-    private static <K> Map<K, Object> mapValue(Map<K, CanonicalValue> canonicalTrees) {
-        return transformValues(canonicalTrees, CanonicalValue::value);
-    }
-
-    /**
-     * Collision, of any
-     *
-     * @param map Map
-     * @return Any collision
-     */
-    private static Optional<CanonicalValue> collision(Map<?, CanonicalValue> map) {
-        return collision(map.values());
+                : new CanonicalValue.Collision<>(hash, value);
     }
 
     /**
@@ -127,7 +109,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>> {
      * @param values List
      * @return Any collision
      */
-    private static Optional<CanonicalValue> collision(Collection<CanonicalValue> values) {
+    private Optional<CanonicalValue<H>> collision(Collection<CanonicalValue<H>> values) {
         return values.stream()
             .filter(CanonicalValue::collision)
             .findFirst();

@@ -9,10 +9,8 @@ import java.util.Map;
 /**
  * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
  * {@link #hash() hash}.
- *
- * @param <T> Type of contents
  */
-sealed interface HashedTree<T, H extends HashKind<H>> {
+sealed interface HashedTree<H extends HashKind<H>> {
 
     /**
      * @return The hash of this part of the tree
@@ -20,31 +18,13 @@ sealed interface HashedTree<T, H extends HashKind<H>> {
     Hash<H> hash();
 
     /**
-     * Get the original structure back
-     *
-     * @return Original structure
-     */
-    T unwrap();
-
-    /**
      * A node in the tree
      *
-     * @param hash     Hash
-     * @param valueMap Map
-     * @param <K>      Type of key in the map
+     * @param hash Hash
+     * @param map  Map
+     * @param <K>  Type of key in the map
      */
-    record Node<K, H extends HashKind<H>>(
-        Hash<H> hash,
-        Map<K, ? extends HashedTree<?, H>> valueMap
-    ) implements HashedTree<Map<K, Object>, H> {
-
-        @Override
-        public Map<K, Object> unwrap() {
-            return CollectionUtils.transformValues(
-                valueMap,
-                HashedTree::unwrap
-            );
-        }
+    record Node<K, H extends HashKind<H>>(Hash<H> hash, Map<K, ? extends HashedTree<H>> map) implements HashedTree<H> {
     }
 
     /**
@@ -53,20 +33,7 @@ sealed interface HashedTree<T, H extends HashKind<H>> {
      * @param hash   Hash
      * @param values List
      */
-    record Nodes<H extends HashKind<H>>(
-        Hash<H> hash,
-        List<? extends HashedTree<?, H>> values
-    )
-        implements HashedTree<List<? extends HashedTree<?, H>>, H> {
-
-        @SuppressWarnings({"unchecked", "ClassEscapesDefinedScope"})
-        @Override
-        public List<? extends HashedTree<?, H>> unwrap() {
-            return (List<? extends HashedTree<?, H>>) CollectionUtils.transform(
-                values,
-                HashedTree::unwrap
-            );
-        }
+    record Nodes<H extends HashKind<H>>(Hash<H> hash, List<? extends HashedTree<H>> values) implements HashedTree<H> {
     }
 
     /**
@@ -75,24 +42,12 @@ sealed interface HashedTree<T, H extends HashKind<H>> {
      * @param hash  Hash
      * @param value Leaf
      */
-    record Leaf<H extends HashKind<H>>(Hash<H> hash, Object value)
-        implements HashedTree<Object, H> {
-
-        @Override
-        public Object unwrap() {
-            return value;
-        }
+    record Leaf<H extends HashKind<H>>(Hash<H> hash, Object value) implements HashedTree<H> {
     }
 
     /**
      * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
      */
-    record Null<H extends HashKind<H>>(Hash<H> hash)
-        implements HashedTree<Void, H> {
-
-        @Override
-        public Void unwrap() {
-            return null;
-        }
+    record Null<H extends HashKind<H>>(Hash<H> hash) implements HashedTree<H> {
     }
 }

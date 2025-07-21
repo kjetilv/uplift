@@ -18,7 +18,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-import static com.github.kjetilv.uplift.edamame.impl.HashedTree.Node;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -51,9 +50,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private Map<K, byte[]> canonicalBytes = new ConcurrentHashMap<>();
 
-    private RecursiveTreeHasher<K, H> recursiveTreeHasher;
-
-    private CanonicalSubstructuresCataloguer<K, H> canonicalSubstructuresCataloguer;
+    private Canonicalizer<H> canonicalizer;
 
     private final KeyHandler<K> keyHandler;
 
@@ -71,13 +68,14 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     ) {
         requireNonNull(keyHandler, "key handler");
         this.keyHandler = keyHandler;
-        this.recursiveTreeHasher = new RecursiveTreeHasher<>(
+        MapHasher<H> khRecursiveTreeHasher = new RecursiveTreeHasher<>(
             requireNonNull(newBuilder, "newBuilder"),
             this,
             requireNonNull(leafHasher, "leafHasher"),
             kind
         );
-        this.canonicalSubstructuresCataloguer = new CanonicalSubstructuresCataloguer<>();
+        this.canonicalizer = new CanonicalSubstructuresCataloguer<>(
+            khRecursiveTreeHasher);
     }
 
     @Override
@@ -119,8 +117,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         if (complete.compareAndSet(false, true)) {
             withWriteLock(() -> {
                 // Shed working data
-                this.recursiveTreeHasher = null;
-                this.canonicalSubstructuresCataloguer = null;
+                this.canonicalizer = null;
                 this.canonicalKeys = null;
                 this.canonicalBytes = null;
                 return this;
@@ -141,57 +138,40 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @SuppressWarnings({"unused"})
     private boolean put(I identifier, Map<?, ?> value, boolean failOnConflict) {
+        if (rejected(identifier, failOnConflict)) {
+            return false;
+        }
+        CanonicalValue<H> canonical = canonicalizer.canonicalMap(value);
+        return withWriteLock(() -> {
+            switch (canonical) {
+                case CanonicalValue.Node<?, H> valueNode -> {
+                    memoizedHashes.put(identifier, valueNode.hash());
+                    canonicalObjects.put(
+                        valueNode.hash(),
+                        (Map<K, Object>) valueNode.value()
+                    );
+                }
+                case CanonicalValue.Collision<H> collisionNode -> overflowObjects.put(
+                    identifier,
+                    (Map<K, Object>) value
+                );
+                case CanonicalValue<H> other -> throw new IllegalStateException("Unexpected canonical value: " + other);
+            }
+            return true;
+        });
+    }
+
+    private boolean rejected(I identifier, boolean failOnConflict) {
         if (complete.get()) {
             throw new IllegalStateException(this + " is complete, cannot put " + identifier);
         }
-        return switch (recursiveTreeHasher.hashedTree(value)) {
-            case Node<?, ?> hashedNode -> {
-                CanonicalValue canonical =
-                    canonicalSubstructuresCataloguer.toCanonical((HashedTree<?, H>) hashedNode);
-                yield withWriteLock(() -> {
-                    if (shouldPut(identifier, failOnConflict)) {
-                        switch (canonical) {
-                            case CanonicalValue.Node<?> valueNode -> {
-                                memoizedHashes.put(identifier, (Hash<H>) hashedNode.hash());
-                                canonicalObjects.put(
-                                    (Hash<H>) hashedNode.hash(),
-                                    unwrap(valueNode)
-                                );
-                            }
-                            case CanonicalValue.Collision __ -> overflowObjects.put(
-                                identifier,
-                                unwrap(hashedNode)
-                            );
-                            case CanonicalValue other -> throw new IllegalStateException(
-                                "Unexpected canonical value for node " + hashedNode + ": " + other
-                            );
-                        }
-                        return true;
-                    }
-                    return false;
-                });
+        if (memoizedHashes.containsKey(identifier)) {
+            if (failOnConflict) {
+                throw new IllegalArgumentException("Identifier " + identifier + " was:" + get(identifier));
             }
-            case HashedTree<?, H> other -> throw new IllegalArgumentException("Unexpected hashed tree " + other);
-        };
-    }
-
-    private boolean shouldPut(I identifier, boolean failOnConflict) {
-        if (!memoizedHashes.containsKey(identifier)) {
             return true;
         }
-        if (failOnConflict) {
-            throw new IllegalArgumentException("Identifier " + identifier + " was:" + get(identifier));
-        }
         return false;
-    }
-
-    private String doDescribe() {
-        int count = memoizedHashes.size();
-        int overflowsCount = overflowObjects.size();
-        return (count + overflowsCount) +
-               " items" +
-               (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +
-               (complete.get() ? "completed" : "working maps:" + canonicalObjects.size());
     }
 
     private <T> T withReadLock(Supplier<T> action) {
@@ -202,13 +182,13 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         return withLock(lock.writeLock(), action);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <K, H extends HashKind<H>> Map<K, Object> unwrap(Node<?, H> node) {
-        return ((Node<K, H>) node).unwrap();
-    }
-
-    private static <K> Map<K, Object> unwrap(CanonicalValue.Node<?> valueNode) {
-        return ((CanonicalValue.Node<K>) valueNode).value();
+    private String doDescribe() {
+        int count = memoizedHashes.size();
+        int overflowsCount = overflowObjects.size();
+        return (count + overflowsCount) +
+               " items" +
+               (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +
+               (complete.get() ? "completed" : "working maps:" + canonicalObjects.size());
     }
 
     private static <T> T withLock(Lock lock, Supplier<T> action) {

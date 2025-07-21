@@ -38,6 +38,10 @@ record DefaultLeafHasher<H extends HashKind<H>>(
     @Override
     public Hash<H> hash(Object leaf) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
+        if (pojoBytes.overrideDefaults()) {
+            byte[] bytes = pojoBytes.bytes(leaf);
+            return Hashes.hash(bytes);
+        }
         return hashAny(hb, leaf, pojoBytes).get();
     }
 
@@ -58,7 +62,10 @@ record DefaultLeafHasher<H extends HashKind<H>>(
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashNumber(HashBuilder<Bytes, H> hb, Number n) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashNumber(
+        HashBuilder<Bytes, H> hb,
+        Number n
+    ) {
         return switch (n) {
             case Long l -> T.LONG.tag(hb).hash(Bytes.from(Hashes.bytes(l)));
             case Integer i -> T.INT.tag(hb).hash(Bytes.from(Hashes.bytes(i)));
@@ -70,7 +77,10 @@ record DefaultLeafHasher<H extends HashKind<H>>(
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashTemporal(HashBuilder<Bytes, H> hb, TemporalAccessor t) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashTemporal(
+        HashBuilder<Bytes, H> hb,
+        TemporalAccessor t
+    ) {
         return switch (t) {
             case Instant i -> hashInstant(T.INSTANT.tag(hb), i);
             case ChronoLocalDate l -> hashNumber(T.LOCAL_DATE.tag(hb), l.toEpochDay());
@@ -88,36 +98,55 @@ record DefaultLeafHasher<H extends HashKind<H>>(
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashLeaf(HashBuilder<Bytes, H> hb, Object leaf, PojoBytes anyHash) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashLeaf(
+        HashBuilder<Bytes, H> hb,
+        Object leaf,
+        PojoBytes anyHash
+    ) {
         return hb
             .hash(Bytes.from(hb.getClass().getName().getBytes()))
             .hash(Bytes.from(anyHash.bytes(leaf)));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashString(HashBuilder<Bytes, H> hb, String string) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashString(
+        HashBuilder<Bytes, H> hb,
+        String string
+    ) {
         return hb.hash(Bytes.from(string.getBytes()));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashInstant(HashBuilder<Bytes, H> hb, Instant instant) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashInstant(
+        HashBuilder<Bytes, H> hb,
+        Instant instant
+    ) {
         hb.<Long>map(l -> Bytes.from(Hashes.bytes(l)))
             .hash(instant.getEpochSecond())
             .hash((long) instant.getNano());
         return hb;
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashUUID(HashBuilder<Bytes, H> hb, UUID uuid) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashUUID(
+        HashBuilder<Bytes, H> hb,
+        UUID uuid
+    ) {
         hb.<Long>map(l -> Bytes.from(Hashes.bytes(l)))
             .hash(uuid.getMostSignificantBits())
             .hash(uuid.getLeastSignificantBits());
         return hb;
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigDecimal(HashBuilder<Bytes, H> hb, BigDecimal bigDecimal) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigDecimal(
+        HashBuilder<Bytes, H> hb,
+        BigDecimal bigDecimal
+    ) {
         return hb.hash(Bytes.from(bigDecimal.unscaledValue().toByteArray()))
             .hash(Bytes.from(Hashes.bytes(bigDecimal.scale())));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigInteger(HashBuilder<Bytes, H> hashBuilder, BigInteger bigInteger) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigInteger(
+        HashBuilder<Bytes, H> hashBuilder,
+        BigInteger bigInteger
+    ) {
         return hashBuilder.hash(Bytes.from(bigInteger.toByteArray()));
     }
 

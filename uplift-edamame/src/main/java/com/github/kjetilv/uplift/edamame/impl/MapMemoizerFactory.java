@@ -46,7 +46,7 @@ public final class MapMemoizerFactory {
      * @param pojoBytes Pojo bytes
      * @return Map memoizer
      */
-    static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
         return create(null, pojoBytes, null, kind);
     }
 
@@ -58,7 +58,7 @@ public final class MapMemoizerFactory {
      * @param hasher  Leaf hasher, for testing purposes
      * @return Map memoizer
      */
-    static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
         KeyHandler<K> handler,
         PojoBytes pojoBytes,
         LeafHasher<H> hasher,
@@ -78,7 +78,7 @@ public final class MapMemoizerFactory {
     }
 
     private static <H extends HashKind<H>> Supplier<HashBuilder<Bytes, H>> hashBuilderSupplier(H kind) {
-        return () -> com.github.kjetilv.uplift.hash.Hashes.hashBuilder(kind);
+        return () -> Hashes.hashBuilder(kind);
     }
 
     private static <H extends HashKind<H>> LeafHasher<H> defaultLeafHasher(H kind, PojoBytes leaf) {

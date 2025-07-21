@@ -29,7 +29,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     KeyHandler<K> keyHandler,
     LeafHasher<H> leafHasher,
     H kind
-) {
+) implements MapHasher<H> {
 
     /**
      * @param newBuilder Hash builder, not null
@@ -50,7 +50,8 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     @SuppressWarnings("unchecked")
-    HashedTree<?, H> hashedTree(Object value) {
+    @Override
+    public HashedTree<H> hashedTree(Object value) {
         return value == null
             ? new Null<>(kind.blank())
             : switch (value) {
@@ -63,12 +64,12 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     private Nodes<H> nodesForIterable(Iterable<?> iterable) {
-        List<? extends HashedTree<?, H>> hashedValues = transform(iterable, this::hashedTree);
+        List<? extends HashedTree<H>> hashedValues = transform(iterable, this::hashedTree);
         return new Nodes<>(listHash(hashedValues), hashedValues);
     }
 
     private Node<K, H> nodeForMap(Map<K, Object> map) {
-        Map<K, HashedTree<?, H>> hashedMap = normalized(map);
+        Map<K, HashedTree<H>> hashedMap = normalized(map);
         return new Node<>(mapHash(hashedMap), hashedMap);
     }
 
@@ -76,7 +77,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return new Leaf<>(leafHash(value), value);
     }
 
-    private Hash<H> listHash(List<? extends HashedTree<?, H>> trees) {
+    private Hash<H> listHash(List<? extends HashedTree<H>> trees) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(hash -> Bytes.from(hash.bytes()));
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(trees.size());
@@ -86,7 +87,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return hashHb.get();
     }
 
-    private Hash<H> mapHash(Map<K, ? extends HashedTree<?, H>> tree) {
+    private Hash<H> mapHash(Map<K, ? extends HashedTree<H>> tree) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb =
             hb.map((t) -> Bytes.from(t.bytes()));
@@ -103,7 +104,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return leafHasher.hash(value);
     }
 
-    private Map<K, HashedTree<?, H>> normalized(Map<?, ?> value) {
+    private Map<K, HashedTree<H>> normalized(Map<?, ?> value) {
         return Collections.unmodifiableMap(value.entrySet()
             .stream()
             .filter(hasData())
