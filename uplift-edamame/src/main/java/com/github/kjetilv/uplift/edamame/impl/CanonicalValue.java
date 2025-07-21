@@ -13,13 +13,6 @@ import java.util.Objects;
  */
 sealed interface CanonicalValue<H extends HashKind<H>> {
 
-    default boolean collision() {
-        return false;
-    }
-
-    /**
-     * @return Canonical value
-     */
     Object value();
 
     Hash<H> hash();
@@ -55,10 +48,6 @@ sealed interface CanonicalValue<H extends HashKind<H>> {
             this.value = Objects.requireNonNull(value, "value");
         }
 
-        @Override
-        public boolean collision() {
-            return true;
-        }
     }
 
     record Null<H extends HashKind<H>>(Hash<H> hash) implements CanonicalValue<H> {

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 /**
  * Say you have a Java object.  How do you turn it into a byte array for hashing?  This interface knows how.
@@ -13,12 +13,12 @@ public interface PojoBytes {
     /**
      * Uses hashcode to derive four bytes. Used by default.
      */
-    PojoBytes HASHCODE = MapMemoizerFactory.HASHCODE;
+    PojoBytes HASHCODE = value -> Hashes.bytes(value.hashCode());
 
     /**
      * Uses {@link Object#toString()} to derive bytes from the string
      */
-    PojoBytes TOSTRING = MapMemoizerFactory.TOSTRING;
+    PojoBytes TOSTRING = value -> value.toString().getBytes();
 
     /**
      * @return If true, takes on the responsibility for all values

@@ -30,12 +30,13 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final MapHasher<H> hasher;
 
-    public CanonicalSubstructuresCataloguer(MapHasher<H> hasher) {
+    CanonicalSubstructuresCataloguer(MapHasher<H> hasher) {
         this.hasher = Objects.requireNonNull(hasher, "hasher");
     }
 
     /**
-     * Accepts a nested, JSON-like {@link Map map} and returns its {@link CanonicalValue canonical value}.
+     * Accepts a nested, JSON-like {@link Map map} and returns its {@link CanonicalValue canonical value}:
+     * All {@link Object#equals(Object) equals} values will be replaced by the same object reference.
      * <p>
      * Traverses the {@link HashedTree hashed tree} and re-builds it.  New substructures found in incoming
      * structures are recorded under their respective {@link HashedTree#hash() hashes}.  If the hash is
@@ -50,14 +51,13 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
      */
     @Override
     public CanonicalValue<H> canonicalMap(Map<?, ?> value) {
-        HashedTree<H> hashedTree = hasher.hashedTree(value);
-        return canonicalTree(hashedTree);
+        return canonicalTree(hasher.hashedTree(value));
     }
 
     @SuppressWarnings("unchecked")
     private CanonicalValue<H> canonicalTree(HashedTree<H> hashed) {
         return switch (hashed) {
-            case HashedTree.Node<?, H>(Hash<H> hash, Map<?, ? extends HashedTree<?>> valueMap) -> {
+            case HashedTree.Node<?, H>(Hash<H> hash, Map<?, ? extends HashedTree<H>> valueMap) -> {
                 Map<K, CanonicalValue<H>> tree = transformValues(
                     (Map<K, HashedTree<H>>) valueMap,
                     this::canonicalTree
@@ -103,15 +103,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 : new CanonicalValue.Collision<>(hash, value);
     }
 
-    /**
-     * Collision, of any
-     *
-     * @param values List
-     * @return Any collision
-     */
     private Optional<CanonicalValue<H>> collision(Collection<CanonicalValue<H>> values) {
-        return values.stream()
-            .filter(CanonicalValue::collision)
-            .findFirst();
+        return values.stream().filter(CanonicalValue.Collision.class::isInstance).findFirst();
     }
 }

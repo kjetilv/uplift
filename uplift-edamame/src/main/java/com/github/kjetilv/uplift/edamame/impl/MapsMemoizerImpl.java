@@ -11,7 +11,6 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -34,7 +33,7 @@ import static java.util.Objects.requireNonNull;
  */
 @SuppressWarnings("unchecked")
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>
-    implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, KeyHandler<K> {
+    implements MapsMemoizer<I, K>, MemoizedMaps<I, K> {
 
     private final Map<I, Hash<H>> memoizedHashes = new HashMap<>();
 
@@ -46,13 +45,9 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private Map<Object, K> canonicalKeys = new ConcurrentHashMap<>();
+    private KeyHandler<K> canonicalKeys;
 
-    private Map<K, byte[]> canonicalBytes = new ConcurrentHashMap<>();
-
-    private Canonicalizer<H> canonicalizer;
-
-    private final KeyHandler<K> keyHandler;
+    private Canonicalizer<H> canonicalValues;
 
     /**
      * @param newBuilder Hash builder, not null
@@ -66,16 +61,30 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         LeafHasher<H> leafHasher,
         H kind
     ) {
-        requireNonNull(keyHandler, "key handler");
-        this.keyHandler = keyHandler;
-        MapHasher<H> khRecursiveTreeHasher = new RecursiveTreeHasher<>(
-            requireNonNull(newBuilder, "newBuilder"),
-            this,
-            requireNonNull(leafHasher, "leafHasher"),
-            kind
-        );
-        this.canonicalizer = new CanonicalSubstructuresCataloguer<>(
-            khRecursiveTreeHasher);
+        this.canonicalKeys = new CanonicalKeysCatalog<>(requireNonNull(keyHandler, "keyHandler"));
+        this.canonicalValues = new CanonicalSubstructuresCataloguer<>(
+            new RecursiveTreeHasher<>(
+                requireNonNull(newBuilder, "newBuilder"),
+                canonicalKeys,
+                requireNonNull(leafHasher, "leafHasher"),
+                kind
+            ));
+    }
+
+    @Override
+    public int size() {
+        return memoizedHashes.size() + overflowObjects.size();
+    }
+
+    @Override
+    public Map<K, ?> get(I identifier) {
+        requireNonNull(identifier, "identifier");
+        return withReadLock(() -> {
+            Hash<H> hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
+            return hash != null ? canonicalObjects.get(hash)
+                : !overflowObjects.isEmpty() ? overflowObjects.get(identifier)
+                    : null;
+        });
     }
 
     @Override
@@ -97,43 +106,16 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     @Override
-    public int size() {
-        return memoizedHashes.size() + overflowObjects.size();
-    }
-
-    @Override
-    public Map<K, ?> get(I identifier) {
-        requireNonNull(identifier, "identifier");
-        return withReadLock(() -> {
-            Hash<H> hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
-            return hash != null ? canonicalObjects.get(hash)
-                : !overflowObjects.isEmpty() ? overflowObjects.get(identifier)
-                    : null;
-        });
-    }
-
-    @Override
     public MemoizedMaps<I, K> complete() {
         if (complete.compareAndSet(false, true)) {
             withWriteLock(() -> {
                 // Shed working data
-                this.canonicalizer = null;
+                this.canonicalValues = null;
                 this.canonicalKeys = null;
-                this.canonicalBytes = null;
                 return this;
             });
         }
         return this;
-    }
-
-    @Override
-    public K normalize(Object key) {
-        return canonicalKeys.computeIfAbsent(key, keyHandler::normalize);
-    }
-
-    @Override
-    public byte[] bytes(K key) {
-        return canonicalBytes.computeIfAbsent(key, keyHandler::bytes);
     }
 
     @SuppressWarnings({"unused"})
@@ -141,7 +123,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         if (rejected(identifier, failOnConflict)) {
             return false;
         }
-        CanonicalValue<H> canonical = canonicalizer.canonicalMap(value);
+        CanonicalValue<H> canonical = canonicalValues.canonicalMap(value);
         return withWriteLock(() -> {
             switch (canonical) {
                 case CanonicalValue.Node<?, H> valueNode -> {
