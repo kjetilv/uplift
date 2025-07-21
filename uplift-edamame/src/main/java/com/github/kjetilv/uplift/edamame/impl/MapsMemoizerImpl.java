@@ -4,6 +4,10 @@ import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.MapsMemoizer;
 import com.github.kjetilv.uplift.edamame.MapsMemoizers;
 import com.github.kjetilv.uplift.edamame.MemoizedMaps;
+import com.github.kjetilv.uplift.hash.Bytes;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,11 +34,12 @@ import static java.util.Objects.requireNonNull;
  * @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
  */
 @SuppressWarnings("unchecked")
-class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, KeyHandler<K> {
+class MapsMemoizerImpl<I, K, H extends HashKind<H>>
+    implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, KeyHandler<K> {
 
-    private final Map<I, Hash> memoizedHashes = new HashMap<>();
+    private final Map<I, Hash<H>> memoizedHashes = new HashMap<>();
 
-    private final Map<Hash, Map<K, Object>> canonicalObjects = new HashMap<>();
+    private final Map<Hash<H>, Map<K, Object>> canonicalObjects = new HashMap<>();
 
     private final Map<I, Map<K, Object>> overflowObjects = new HashMap<>();
 
@@ -46,9 +51,9 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
 
     private Map<K, byte[]> canonicalBytes = new ConcurrentHashMap<>();
 
-    private RecursiveTreeHasher<K> recursiveTreeHasher;
+    private RecursiveTreeHasher<K, H> recursiveTreeHasher;
 
-    private CanonicalSubstructuresCataloguer<K> canonicalSubstructuresCataloguer;
+    private CanonicalSubstructuresCataloguer<K, H> canonicalSubstructuresCataloguer;
 
     private final KeyHandler<K> keyHandler;
 
@@ -59,16 +64,18 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
      * @see MapsMemoizers#create(KeyHandler)
      */
     MapsMemoizerImpl(
-        Supplier<HashBuilder<byte[]>> newBuilder,
+        Supplier<HashBuilder<Bytes, H>> newBuilder,
         KeyHandler<K> keyHandler,
-        LeafHasher leafHasher
+        LeafHasher<H> leafHasher,
+        H kind
     ) {
         requireNonNull(keyHandler, "key handler");
         this.keyHandler = keyHandler;
         this.recursiveTreeHasher = new RecursiveTreeHasher<>(
             requireNonNull(newBuilder, "newBuilder"),
             this,
-            requireNonNull(leafHasher, "leafHasher")
+            requireNonNull(leafHasher, "leafHasher"),
+            kind
         );
         this.canonicalSubstructuresCataloguer = new CanonicalSubstructuresCataloguer<>();
     }
@@ -100,7 +107,7 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
     public Map<K, ?> get(I identifier) {
         requireNonNull(identifier, "identifier");
         return withReadLock(() -> {
-            Hash hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
+            Hash<H> hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
             return hash != null ? canonicalObjects.get(hash)
                 : !overflowObjects.isEmpty() ? overflowObjects.get(identifier)
                     : null;
@@ -138,16 +145,16 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
             throw new IllegalStateException(this + " is complete, cannot put " + identifier);
         }
         return switch (recursiveTreeHasher.hashedTree(value)) {
-            case Node<?> hashedNode -> {
+            case Node<?, ?> hashedNode -> {
                 CanonicalValue canonical =
-                    canonicalSubstructuresCataloguer.toCanonical(hashedNode);
+                    canonicalSubstructuresCataloguer.toCanonical((HashedTree<?, H>) hashedNode);
                 yield withWriteLock(() -> {
                     if (shouldPut(identifier, failOnConflict)) {
                         switch (canonical) {
                             case CanonicalValue.Node<?> valueNode -> {
-                                memoizedHashes.put(identifier, hashedNode.hash());
+                                memoizedHashes.put(identifier, (Hash<H>) hashedNode.hash());
                                 canonicalObjects.put(
-                                    hashedNode.hash(),
+                                    (Hash<H>) hashedNode.hash(),
                                     unwrap(valueNode)
                                 );
                             }
@@ -164,7 +171,7 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
                     return false;
                 });
             }
-            case HashedTree<?> other -> throw new IllegalArgumentException("Unexpected hashed tree " + other);
+            case HashedTree<?, H> other -> throw new IllegalArgumentException("Unexpected hashed tree " + other);
         };
     }
 
@@ -196,12 +203,12 @@ class MapsMemoizerImpl<I, K> implements MapsMemoizer<I, K>, MemoizedMaps<I, K>, 
     }
 
     @SuppressWarnings("unchecked")
-    private static <K> Map<K, Object> unwrap(Node<?> node) {
-        return ((Node<K>) node).unwrap();
+    private static <S, H extends HashKind<H>> Map<S, Object> unwrap(Node<?, H> node) {
+        return ((Node<S, H>) node).unwrap();
     }
 
-    private static <K> Map<K, Object> unwrap(CanonicalValue.Node<?> valueNode) {
-        return ((CanonicalValue.Node<K>) valueNode).value();
+    private static <S> Map<S, Object> unwrap(CanonicalValue.Node<?> valueNode) {
+        return ((CanonicalValue.Node<S>) valueNode).value();
     }
 
     private static <T> T withLock(Lock lock, Supplier<T> action) {

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
 
@@ -16,8 +17,8 @@ public final class MapsMemoizers {
      * @param <I> Type of id's
      * @return {@link MapsMemoizer} for String-keyed maps
      */
-    public static <I> MapsMemoizer<I, String> create() {
-        return create(null, null);
+    public static <I, H extends HashKind<H>> MapsMemoizer<I, String> create(H kind) {
+        return create(null, null, kind);
     }
 
     /**
@@ -33,16 +34,16 @@ public final class MapsMemoizers {
      * @param keyHandler Key handler
      * @return Map memoizer
      */
-    public static <I, K> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler) {
-        return MapMemoizerFactory.create(keyHandler);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, H kind) {
+        return MapMemoizerFactory.create(keyHandler, kind);
     }
 
-    public static <I, K> MapsMemoizer<I, K> create(PojoBytes pojoBytes) {
-        return create(null, pojoBytes);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
+        return create(null, pojoBytes, kind);
     }
 
-    public static <I, K> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, PojoBytes pojoBytes) {
-        return MapMemoizerFactory.create(keyHandler, pojoBytes);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, PojoBytes pojoBytes, H kind) {
+        return MapMemoizerFactory.create(keyHandler, pojoBytes, kind);
     }
 
     private MapsMemoizers() {

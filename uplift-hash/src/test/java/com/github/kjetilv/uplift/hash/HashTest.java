@@ -49,10 +49,10 @@ class HashTest {
         assertBackAndForth(HashKind.K256);
     }
 
-    private static <K extends HashKind<K>> void assertBackAndForth(K kind) {
-        Hash<K> random = kind.random();
+    private static <H extends HashKind<H>> void assertBackAndForth(H kind) {
+        Hash<H> random = kind.random();
         String digest = random.digest();
-        Hash<K> hash = Hashes.hash(digest);
+        Hash<H> hash = Hashes.hash(digest);
         assertEquals(random, hash, "Hashing the same digest twice should produce the same hash");
         assertEquals(digest, hash.digest(), "Hashing the same digest twice should produce the same hash");
     }

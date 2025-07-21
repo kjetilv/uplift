@@ -1,7 +1,7 @@
-module uplift.uplift.json.main {
+module uplift.json {
 
     requires java.compiler;
-    requires uplift.uplift.uuid.main;
+    requires uplift.uuid;
     requires java.desktop;
     requires org.graalvm.nativeimage;
     requires flopp.flopp.kernel.main;

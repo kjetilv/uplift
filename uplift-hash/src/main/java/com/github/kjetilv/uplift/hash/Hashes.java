@@ -59,29 +59,29 @@ public final class Hashes {
     }
 
     @SuppressWarnings("unchecked")
-    public static <K extends HashKind<K>> Hash<K> hash(byte[] bytes) {
+    public static <H extends HashKind<H>> Hash<H> hash(byte[] bytes) {
         requireNonNull(bytes, "bytes");
         if (bytes.length == K128.byteCount()) {
             long[] ls = toLongs(bytes, new long[K128.longCount()]);
-            return (Hash<K>) new H128(ls[0], ls[1]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (bytes.length == K256.byteCount()) {
             long[] ls = toLongs(bytes, new long[K256.longCount()]);
-            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
     }
 
     @SuppressWarnings("unchecked")
-    public static <K extends HashKind<K>> Hash<K> hash(String raw) {
+    public static <H extends HashKind<H>> Hash<H> hash(String raw) {
         int length = requireNonNull(raw, "raw").length();
         if (length == K128.digestLength()) {
             long[] ls = toLongs(raw, new long[K128.longCount()]);
-            return (Hash<K>) new H128(ls[0], ls[1]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (length == K256.digestLength()) {
             long[] ls = toLongs(raw, new long[K256.longCount()]);
-            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
     }
@@ -101,12 +101,19 @@ public final class Hashes {
                bs[3] & 0xFF;
     }
 
+    public static byte[] bytes(long l0, long l1) {
+        byte[] bytes = new byte[16];
+        longToBytes(l0, 0, bytes);
+        longToBytes(l1, 8, bytes);
+        return bytes;
+    }
+
     public static byte[] bytes(long l0, long l1, long l2, long l3) {
         byte[] bytes = new byte[32];
         longToBytes(l0, 0, bytes);
         longToBytes(l1, 8, bytes);
-        longToBytes(l1, 16, bytes);
-        longToBytes(l1, 24, bytes);
+        longToBytes(l2, 16, bytes);
+        longToBytes(l3, 24, bytes);
         return bytes;
     }
 
@@ -149,11 +156,11 @@ public final class Hashes {
         return bytes;
     }
 
-    public static <K extends HashKind<K>> HashBuilder<Bytes, K> hashBuilder(K kind) {
+    public static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBuilder(H kind) {
         return new DigestiveHashBuilder<>(new MessageByteDigest<>(kind), IDENTITY);
     }
 
-    public static <K extends HashKind<K>> HashBuilder<InputStream, K> inputStreamHashBuilder(K kind) {
+    public static <H extends HashKind<H>> HashBuilder<InputStream, H> inputStreamHashBuilder(H kind) {
         return new DigestiveHashBuilder<>(new MessageByteDigest<>(kind), Hashes.inputStream2Bytes());
     }
 

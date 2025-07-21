@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +20,15 @@ import static com.github.kjetilv.uplift.edamame.impl.CollectionUtils.transformVa
  * <p>
  * This class ought to be thread-safe, as it only appends to {@link ConcurrentMap concurrent maps}.
  *
- * @param <K>
+ * @param <S>
  */
-final class CanonicalSubstructuresCataloguer<K> {
+final class CanonicalSubstructuresCataloguer<S, H extends HashKind<H>> {
 
-    private final Map<Hash, Map<K, Object>> maps = new ConcurrentHashMap<>();
+    private final Map<Hash<H>, Map<S, Object>> maps = new ConcurrentHashMap<>();
 
-    private final Map<Hash, List<Object>> lists = new ConcurrentHashMap<>();
+    private final Map<Hash<H>, List<Object>> lists = new ConcurrentHashMap<>();
 
-    private final Map<Hash, Object> leaves = new ConcurrentHashMap<>();
+    private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
 
     /**
      * Accepts a {@link HashedTree hashed tree} and returns the {@link CanonicalValue canonical value}.
@@ -41,56 +44,56 @@ final class CanonicalSubstructuresCataloguer<K> {
      * or a holder for the canonical value
      */
     @SuppressWarnings("unchecked")
-    public CanonicalValue toCanonical(HashedTree<?> hashedTree) {
+    public CanonicalValue toCanonical(HashedTree<?, H> hashedTree) {
         return switch (hashedTree) {
-            case HashedTree.Node<?>(Hash hash, Map<?, ? extends HashedTree<?>> valueMap) -> {
-                Map<K, CanonicalValue> canonicalTrees = recurseMap((Map<K, HashedTree<?>>) valueMap);
+            case HashedTree.Node<?, ?>(Hash<?> hash, Map<?, ? extends HashedTree<?, ?>> valueMap) -> {
+                Map<S, CanonicalValue> canonicalTrees = recurseMap((Map<S, HashedTree<?, H>>) valueMap);
                 yield collision(canonicalTrees).orElseGet(() -> {
-                    Map<K, Object> map = mapValue(canonicalTrees);
+                    Map<S, Object> map = mapValue(canonicalTrees);
                     return resolve(
-                        cataloguedMap(hash, map),
+                        cataloguedMap((Hash<H>) hash, map),
                         map,
                         CanonicalValue.Node::new
                     );
                 });
             }
-            case HashedTree.Nodes(Hash hash, List<? extends HashedTree<?>> values) -> {
-                List<CanonicalValue> canonicalValues = recurseList(values);
+            case HashedTree.Nodes<?>(Hash<?> hash, List<? extends HashedTree<?, ?>> values) -> {
+                List<CanonicalValue> canonicalValues = recurseList((List<? extends HashedTree<?, H>>) values);
                 yield collision(canonicalValues).orElseGet(() -> {
                     List<Object> list = listValue(canonicalValues);
                     return resolve(
-                        cataloguedList(hash, list),
+                        cataloguedList((Hash<H>) hash, list),
                         list,
                         CanonicalValue.Nodes::new
                     );
                 });
             }
-            case HashedTree.Leaf(Hash hash, Object value) -> resolve(
-                cataloguedLeaf(hash, value),
+            case HashedTree.Leaf<?>(Hash<?> hash, Object value) -> resolve(
+                cataloguedLeaf((Hash<H>) hash, value),
                 value,
                 CanonicalValue.Leaf::new
             );
-            case HashedTree.Null ignored -> CanonicalValue.NULL;
+            case HashedTree.Null<?> ignored -> CanonicalValue.NULL;
         };
     }
 
-    private Map<K, CanonicalValue> recurseMap(Map<K, HashedTree<?>> hashedTrees) {
+    private Map<S, CanonicalValue> recurseMap(Map<S, HashedTree<?, H>> hashedTrees) {
         return transformValues(hashedTrees, this::toCanonical);
     }
 
-    private List<CanonicalValue> recurseList(List<? extends HashedTree<?>> values) {
+    private List<CanonicalValue> recurseList(List<? extends HashedTree<?, H>> values) {
         return transform(values, this::toCanonical);
     }
 
-    private Map<K, Object> cataloguedMap(Hash hash, Map<K, Object> computed) {
+    private Map<S, Object> cataloguedMap(Hash<H> hash, Map<S, Object> computed) {
         return maps.putIfAbsent(hash, computed);
     }
 
-    private List<Object> cataloguedList(Hash hash, List<Object> computed) {
+    private List<Object> cataloguedList(Hash<H> hash, List<Object> computed) {
         return lists.putIfAbsent(hash, computed);
     }
 
-    private Object cataloguedLeaf(Hash hash, Object value) {
+    private Object cataloguedLeaf(Hash<H> hash, Object value) {
         return leaves.putIfAbsent(hash, value);
     }
 

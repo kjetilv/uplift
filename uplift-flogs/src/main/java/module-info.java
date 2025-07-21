@@ -1,4 +1,4 @@
-module uplift.uplift.flogs.main {
+module uplift.flogs {
 
     exports org.apache.commons.logging;
     exports org.slf4j;

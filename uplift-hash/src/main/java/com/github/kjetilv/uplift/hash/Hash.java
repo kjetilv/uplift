@@ -18,7 +18,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     String RPAR = "⟩";
 
-    static <K extends HashKind<K>> String toShortHashString(List<Hash<K>> hashes) {
+    static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
         return hashes.stream()
             .map(Hash::toShortString)
             .collect(Collectors.joining("—"));

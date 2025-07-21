@@ -1,10 +1,10 @@
-module uplift.uplift.lambda.main {
+module uplift.lambda {
     requires java.compiler;
     requires java.net.http;
-    requires uplift.uplift.json.main;
-    requires uplift.uplift.flogs.main;
-    requires uplift.uplift.kernel.main;
-    requires uplift.uplift.uuid.main;
+    requires uplift.json;
+    requires uplift.flogs;
+    requires uplift.kernel;
+    requires uplift.uuid;
 
     exports com.github.kjetilv.uplift.lambda;
 }

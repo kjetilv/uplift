@@ -3,13 +3,13 @@ package com.github.kjetilv.uplift.hash;
 import java.security.MessageDigest;
 import java.util.Objects;
 
-final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
+final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
     private final MessageDigest messageDigest;
 
-    private final K kind;
+    private final H kind;
 
-    MessageByteDigest(K kind) {
+    MessageByteDigest(H kind) {
         this.kind = Objects.requireNonNull(kind, "kind");
         try {
             this.messageDigest = MessageDigest.getInstance(this.kind.algorithm());
@@ -19,7 +19,7 @@ final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
     }
 
     @Override
-    public K kind() {
+    public H kind() {
         return kind;
     }
 
@@ -29,7 +29,7 @@ final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
     }
 
     @Override
-    public Hash<K> get() {
+    public Hash<H> get() {
         return Hashes.hash(messageDigest.digest());
     }
 }

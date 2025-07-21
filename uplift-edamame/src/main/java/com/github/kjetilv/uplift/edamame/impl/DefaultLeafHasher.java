@@ -1,6 +1,11 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.hash.Bytes;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -19,25 +24,25 @@ import java.util.function.Supplier;
  *
  * @see T
  */
-final class DefaultLeafHasher implements LeafHasher {
+record DefaultLeafHasher<H extends HashKind<H>>(
+    Supplier<HashBuilder<Bytes, H>> newBuilder,
+    PojoBytes pojoBytes
+)
+    implements LeafHasher<H> {
 
-    private final Supplier<HashBuilder<byte[]>> newBuilder;
-
-    private final PojoBytes pojoBytes;
-
-    DefaultLeafHasher(Supplier<HashBuilder<byte[]>> newBuilder, PojoBytes pojoBytes) {
+    DefaultLeafHasher(Supplier<HashBuilder<Bytes, H>> newBuilder, PojoBytes pojoBytes) {
         this.newBuilder = Objects.requireNonNull(newBuilder, "newBuilder");
         this.pojoBytes = Objects.requireNonNull(pojoBytes, "pojoBytes");
     }
 
     @Override
-    public Hash hash(Object leaf) {
-        HashBuilder<byte[]> hb = newBuilder.get();
+    public Hash<H> hash(Object leaf) {
+        HashBuilder<Bytes, H> hb = newBuilder.get();
         return hashAny(hb, leaf, pojoBytes).get();
     }
 
-    private static HashBuilder<byte[]> hashAny(
-        HashBuilder<byte[]> hb,
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashAny(
+        HashBuilder<Bytes, H> hb,
         Object leaf,
         PojoBytes anyHash
     ) {
@@ -53,19 +58,19 @@ final class DefaultLeafHasher implements LeafHasher {
         };
     }
 
-    private static HashBuilder<byte[]> hashNumber(HashBuilder<byte[]> hb, Number n) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashNumber(HashBuilder<Bytes, H> hb, Number n) {
         return switch (n) {
-            case Long l -> T.LONG.tag(hb).hash(Hashes.bytes(l));
-            case Integer i -> T.INT.tag(hb).hash(Hashes.bytes(i));
-            case Double d -> T.DOUBLE.tag(hb).hash(Hashes.bytes(Double.doubleToRawLongBits(d)));
-            case Float f -> T.FLOAT.tag(hb).hash(Hashes.bytes(Float.floatToRawIntBits(f)));
-            case Short s -> T.SHORT.tag(hb).hash(Hashes.bytes(s));
-            case Byte b -> T.BYTE.tag(hb).hash(new byte[] { (byte) (int) b });
+            case Long l -> T.LONG.tag(hb).hash(Bytes.from(Hashes.bytes(l)));
+            case Integer i -> T.INT.tag(hb).hash(Bytes.from(Hashes.bytes(i)));
+            case Double d -> T.DOUBLE.tag(hb).hash(Bytes.from(Hashes.bytes(Double.doubleToRawLongBits(d))));
+            case Float f -> T.FLOAT.tag(hb).hash(Bytes.from(Hashes.bytes(Float.floatToRawIntBits(f))));
+            case Short s -> T.SHORT.tag(hb).hash(Bytes.from(Hashes.bytes(s)));
+            case Byte b -> T.BYTE.tag(hb).hash(Bytes.from(new byte[] {(byte) (int) b}));
             default -> hashString(T.OTHER_NUMERIC.tag(hb), n.toString());
         };
     }
 
-    private static HashBuilder<byte[]> hashTemporal(HashBuilder<byte[]> hb, TemporalAccessor t) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashTemporal(HashBuilder<Bytes, H> hb, TemporalAccessor t) {
         return switch (t) {
             case Instant i -> hashInstant(T.INSTANT.tag(hb), i);
             case ChronoLocalDate l -> hashNumber(T.LOCAL_DATE.tag(hb), l.toEpochDay());
@@ -83,37 +88,37 @@ final class DefaultLeafHasher implements LeafHasher {
         };
     }
 
-    private static HashBuilder<byte[]> hashLeaf(HashBuilder<byte[]> hb, Object leaf, PojoBytes anyHash) {
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashLeaf(HashBuilder<Bytes, H> hb, Object leaf, PojoBytes anyHash) {
         return hb
-            .hash(hb.getClass().getName().getBytes())
-            .hash(anyHash.bytes(leaf));
+            .hash(Bytes.from(hb.getClass().getName().getBytes()))
+            .hash(Bytes.from(anyHash.bytes(leaf)));
     }
 
-    private static HashBuilder<byte[]> hashString(HashBuilder<byte[]> hb, String string) {
-        return hb.hash(string.getBytes());
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashString(HashBuilder<Bytes, H> hb, String string) {
+        return hb.hash(Bytes.from(string.getBytes()));
     }
 
-    private static HashBuilder<byte[]> hashInstant(HashBuilder<byte[]> hb, Instant instant) {
-        hb.<Long>map(Hashes::bytes)
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashInstant(HashBuilder<Bytes, H> hb, Instant instant) {
+        hb.<Long>map(l -> Bytes.from(Hashes.bytes(l)))
             .hash(instant.getEpochSecond())
             .hash((long) instant.getNano());
         return hb;
     }
 
-    private static HashBuilder<byte[]> hashUUID(HashBuilder<byte[]> hb, UUID uuid) {
-        hb.<Long>map(Hashes::bytes)
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashUUID(HashBuilder<Bytes, H> hb, UUID uuid) {
+        hb.<Long>map(l -> Bytes.from(Hashes.bytes(l)))
             .hash(uuid.getMostSignificantBits())
             .hash(uuid.getLeastSignificantBits());
         return hb;
     }
 
-    private static HashBuilder<byte[]> hashBigDecimal(HashBuilder<byte[]> hb, BigDecimal bigDecimal) {
-        return hb.hash(bigDecimal.unscaledValue().toByteArray())
-            .hash(Hashes.bytes(bigDecimal.scale()));
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigDecimal(HashBuilder<Bytes, H> hb, BigDecimal bigDecimal) {
+        return hb.hash(Bytes.from(bigDecimal.unscaledValue().toByteArray()))
+            .hash(Bytes.from(Hashes.bytes(bigDecimal.scale())));
     }
 
-    private static HashBuilder<byte[]> hashBigInteger(HashBuilder<byte[]> hashBuilder, BigInteger bigInteger) {
-        return hashBuilder.hash(bigInteger.toByteArray());
+    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigInteger(HashBuilder<Bytes, H> hashBuilder, BigInteger bigInteger) {
+        return hashBuilder.hash(Bytes.from(bigInteger.toByteArray()));
     }
 
     private enum T {
@@ -145,9 +150,9 @@ final class DefaultLeafHasher implements LeafHasher {
         OTHER_TEMPORAL,
         UUID;
 
-        private final byte[] bytes = { (byte) ordinal() };
+        private final Bytes bytes = Bytes.from(new byte[] {(byte) ordinal()});
 
-        HashBuilder<byte[]> tag(HashBuilder<byte[]> hb) {
+        <H extends HashKind<H>> HashBuilder<Bytes, H> tag(HashBuilder<Bytes, H> hb) {
             return hb.hash(bytes);
         }
     }

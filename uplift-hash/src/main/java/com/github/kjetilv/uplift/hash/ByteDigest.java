@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.hash;
 
-interface ByteDigest<K extends HashKind<K>> {
+interface ByteDigest<H extends HashKind<H>> {
 
-    K kind();
+    H kind();
 
     void digest(Bytes bytes);
 
-    Hash<K> get();
+    Hash<H> get();
 }

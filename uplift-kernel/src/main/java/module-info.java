@@ -1,6 +1,6 @@
-module uplift.uplift.kernel.main {
-    requires uplift.uplift.flogs.main;
-    requires uplift.uplift.uuid.main;
+module uplift.kernel {
+    requires uplift.flogs;
+    requires uplift.uuid;
 
     exports com.github.kjetilv.uplift.kernel;
     exports com.github.kjetilv.uplift.kernel.aws;

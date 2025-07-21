@@ -1,9 +1,9 @@
-module uplift.uplift.flambda.main {
+module uplift.flambda {
     requires java.net.http;
     requires org.junit.jupiter.api;
-    requires uplift.uplift.asynchttp.main;
-    requires uplift.uplift.flogs.main;
-    requires uplift.uplift.kernel.main;
-    requires uplift.uplift.lambda.main;
-    requires uplift.uplift.uuid.main;
+    requires uplift.asynchttp;
+    requires uplift.flogs;
+    requires uplift.kernel;
+    requires uplift.lambda;
+    requires uplift.uuid;
 }

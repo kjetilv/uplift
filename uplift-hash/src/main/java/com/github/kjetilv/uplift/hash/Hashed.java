@@ -3,12 +3,12 @@ package com.github.kjetilv.uplift.hash;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface Hashed<K extends HashKind<K>> extends Supplier<Hash<K>> {
+public interface Hashed<H extends HashKind<H>> extends Supplier<Hash<H>> {
 
     @Override
-    default Hash<K> get() {
+    default Hash<H> get() {
         return hash();
     }
 
-    Hash<K> hash();
+    Hash<H> hash();
 }

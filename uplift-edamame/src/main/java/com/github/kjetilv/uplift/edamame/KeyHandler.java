@@ -19,8 +19,8 @@ package com.github.kjetilv.uplift.edamame;
 public interface KeyHandler<K> {
 
     @SuppressWarnings("unchecked")
-    static <K> KeyHandler<K> defaultHandler() {
-        return key -> (K) key.toString();
+    static <S> KeyHandler<S> defaultHandler() {
+        return key -> (S) key.toString();
     }
 
     /**

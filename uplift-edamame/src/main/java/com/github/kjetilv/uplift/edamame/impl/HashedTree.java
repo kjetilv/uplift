@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
+
 import java.util.List;
 import java.util.Map;
 
@@ -9,14 +12,12 @@ import java.util.Map;
  *
  * @param <T> Type of contents
  */
-sealed interface HashedTree<T> {
-
-    Null NULL = new Null();
+sealed interface HashedTree<T, H extends HashKind<H>> {
 
     /**
      * @return The hash of this part of the tree
      */
-    Hash hash();
+    Hash<H> hash();
 
     /**
      * Get the original structure back
@@ -30,13 +31,15 @@ sealed interface HashedTree<T> {
      *
      * @param hash     Hash
      * @param valueMap Map
-     * @param <K>      Type of key in the map
+     * @param <S>      Type of key in the map
      */
-    record Node<K>(Hash hash, Map<K, ? extends HashedTree<?>> valueMap)
-        implements HashedTree<Map<K, Object>> {
-        @Override
+    record Node<S, H extends HashKind<H>>(
+        Hash<H> hash,
+        Map<S, ? extends HashedTree<?, H>> valueMap
+    ) implements HashedTree<Map<S, Object>, H> {
 
-        public Map<K, Object> unwrap() {
+        @Override
+        public Map<S, Object> unwrap() {
             return CollectionUtils.transformValues(
                 valueMap,
                 HashedTree::unwrap
@@ -50,13 +53,16 @@ sealed interface HashedTree<T> {
      * @param hash   Hash
      * @param values List
      */
-    record Nodes(Hash hash, List<? extends HashedTree<?>> values)
-        implements HashedTree<List<? extends HashedTree<?>>> {
+    record Nodes<H extends HashKind<H>>(
+        Hash<H> hash,
+        List<? extends HashedTree<?, H>> values
+    )
+        implements HashedTree<List<? extends HashedTree<?, H>>, H> {
 
         @SuppressWarnings({"unchecked", "ClassEscapesDefinedScope"})
         @Override
-        public List<? extends HashedTree<?>> unwrap() {
-            return (List<? extends HashedTree<?>>) CollectionUtils.transform(
+        public List<? extends HashedTree<?, H>> unwrap() {
+            return (List<? extends HashedTree<?, H>>) CollectionUtils.transform(
                 values,
                 HashedTree::unwrap
             );
@@ -69,8 +75,8 @@ sealed interface HashedTree<T> {
      * @param hash  Hash
      * @param value Leaf
      */
-    record Leaf(Hash hash, Object value)
-        implements HashedTree<Object> {
+    record Leaf<H extends HashKind<H>>(Hash<H> hash, Object value)
+        implements HashedTree<Object, H> {
 
         @Override
         public Object unwrap() {
@@ -79,15 +85,10 @@ sealed interface HashedTree<T> {
     }
 
     /**
-     * Null value, which may occur in a list. Has the {@link Hash#NULL null} hash.
+     * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
      */
-    record Null()
-        implements HashedTree<Void> {
-
-        @Override
-        public Hash hash() {
-            return Hash.NULL;
-        }
+    record Null<H extends HashKind<H>>(Hash<H> hash)
+        implements HashedTree<Void, H> {
 
         @Override
         public Void unwrap() {

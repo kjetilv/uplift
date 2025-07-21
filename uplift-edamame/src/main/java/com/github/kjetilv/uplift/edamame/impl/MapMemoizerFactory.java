@@ -3,6 +3,10 @@ package com.github.kjetilv.uplift.edamame.impl;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.MapsMemoizer;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.hash.Bytes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 import java.util.function.Supplier;
 
@@ -18,8 +22,11 @@ public final class MapMemoizerFactory {
      * @param keyHandler Key handler, null means default behaviour
      * @return Map memoizer
      */
-    public static <I, K> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler) {
-        return create(keyHandler, null);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        KeyHandler<K> keyHandler,
+        H kind
+    ) {
+        return create(keyHandler, null, kind);
     }
 
     /**
@@ -27,42 +34,54 @@ public final class MapMemoizerFactory {
      * @param pojoBytes Pojo bytes
      * @return Map memoizer
      */
-    public static <I, K> MapsMemoizer<I, K> create(KeyHandler<K> handler, PojoBytes pojoBytes) {
-        return create(handler, pojoBytes, null);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        KeyHandler<K> handler,
+        PojoBytes pojoBytes,
+        H kind
+    ) {
+        return create(handler, pojoBytes, null, kind);
     }
 
     /**
      * @param pojoBytes Pojo bytes
      * @return Map memoizer
      */
-    static <I, K> MapsMemoizer<I, K> create(PojoBytes pojoBytes) {
-        return create(null, pojoBytes, null);
+    static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
+        return create(null, pojoBytes, null, kind);
     }
 
     /**
      * @param <I>     Id type
      * @param <K>     Key type
+     * @param <H>     Hash kind
      * @param handler Key handler, null means default behaviour
      * @param hasher  Leaf hasher, for testing purposes
      * @return Map memoizer
      */
-    static <I, K> MapsMemoizer<I, K> create(KeyHandler<K> handler, PojoBytes pojoBytes, LeafHasher hasher) {
+    static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        KeyHandler<K> handler,
+        PojoBytes pojoBytes,
+        LeafHasher<H> hasher,
+        H kind
+    ) {
         return new MapsMemoizerImpl<>(
-            HASH_BUILDER_SUPPLIER,
+            hashBuilderSupplier(kind),
             handler == null ? KeyHandler.defaultHandler() : handler,
             hasher == null
-                ? defaultLeafHasher(pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes)
-                : hasher
+                ? defaultLeafHasher(kind, pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes)
+                : hasher,
+            kind
         );
     }
 
     private MapMemoizerFactory() {
     }
 
-    private static final Supplier<HashBuilder<byte[]>> HASH_BUILDER_SUPPLIER =
-        () -> DigestiveHashBuilder.create(new ByteDigest());
+    private static <H extends HashKind<H>> Supplier<HashBuilder<Bytes, H>> hashBuilderSupplier(H kind) {
+        return () -> com.github.kjetilv.uplift.hash.Hashes.hashBuilder(kind);
+    }
 
-    private static LeafHasher defaultLeafHasher(PojoBytes leaf) {
-        return new DefaultLeafHasher(HASH_BUILDER_SUPPLIER, leaf);
+    private static <H extends HashKind<H>> LeafHasher<H> defaultLeafHasher(H kind, PojoBytes leaf) {
+        return new DefaultLeafHasher<H>(hashBuilderSupplier(kind), leaf);
     }
 }

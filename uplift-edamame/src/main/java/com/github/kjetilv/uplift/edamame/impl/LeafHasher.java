@@ -2,12 +2,15 @@ package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 /**
- * Strategy for hashing leaves.  {@link MapMemoizerFactory#create(KeyHandler, PojoBytes, LeafHasher) Overridable}
+ * Strategy for hashing leaves.  {@link MapMemoizerFactory#create(KeyHandler, PojoBytes, LeafHasher, HashKind) Overridable}
  * for testing purposes.
  */
-public interface LeafHasher {
+@FunctionalInterface
+public interface LeafHasher<H extends HashKind<H>> {
 
-    Hash hash(Object leaf);
+    Hash<H> hash(Object leaf);
 }

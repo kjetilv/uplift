@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.MapsMemoizer;
+import com.github.kjetilv.uplift.hash.HashKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -14,9 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MultiThreadedTest {
 
+    @SuppressWarnings("unchecked")
     @Test
     void test() {
-        MapsMemoizer<Object, CaKe> mapsMemoizer = create(key -> CaKe.get(key.toString()), null);
+        MapsMemoizer<Object, CaKe> mapsMemoizer = create(key -> CaKe.get(key.toString()), null, HashKind.K128);
         AtomicBoolean complete = new AtomicBoolean();
         CompletableFuture<Void> voider = CompletableFuture.runAsync(() -> {
             for (int i = 0; i < 10; i++) {

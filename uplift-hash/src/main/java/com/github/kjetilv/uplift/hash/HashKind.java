@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.hash;
 
 import java.util.UUID;
 
-public sealed interface HashKind<K extends HashKind<K>> {
+public sealed interface HashKind<H extends HashKind<H>> {
 
     K128 K128 = new K128();
 
@@ -24,9 +24,9 @@ public sealed interface HashKind<K extends HashKind<K>> {
 
     String digestPadding();
 
-    Hash<K> blank();
+    Hash<H> blank();
 
-    Hash<K> random();
+    Hash<H> random();
 
     record K128(
         String algorithm,

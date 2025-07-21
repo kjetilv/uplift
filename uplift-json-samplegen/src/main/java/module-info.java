@@ -1,5 +1,5 @@
-module uplift.uplift.json.samplegen.main {
+module uplift.json.samplegen {
 
     requires java.compiler;
-    requires uplift.uplift.json.main;
+    requires uplift.json;
 }

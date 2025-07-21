@@ -24,7 +24,7 @@ sealed interface CanonicalValue {
         return false;
     }
 
-    record Node<K>(Map<K, Object> value) implements CanonicalValue {
+    record Node<S>(Map<S, Object> value) implements CanonicalValue {
     }
 
     record Nodes(List<?> value) implements CanonicalValue {
