@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.PojoBytes;
-import com.github.kjetilv.uplift.hash.Bytes;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.hash.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,10 +34,6 @@ record DefaultLeafHasher<H extends HashKind<H>>(
     @Override
     public Hash<H> hash(Object leaf) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
-        if (pojoBytes.overrideDefaults()) {
-            byte[] bytes = pojoBytes.bytes(leaf);
-            return Hashes.hash(bytes);
-        }
         return hashAny(hb, leaf, pojoBytes).get();
     }
 

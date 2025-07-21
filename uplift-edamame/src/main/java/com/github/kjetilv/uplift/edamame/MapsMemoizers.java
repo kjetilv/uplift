@@ -43,7 +43,7 @@ public final class MapsMemoizers {
     }
 
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, PojoBytes pojoBytes, H kind) {
-        return MapMemoizerFactory.create(keyHandler, pojoBytes, kind);
+        return MapMemoizerFactory.create(keyHandler, kind, pojoBytes);
     }
 
     private MapsMemoizers() {

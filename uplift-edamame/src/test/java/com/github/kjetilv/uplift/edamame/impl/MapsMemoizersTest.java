@@ -43,7 +43,7 @@ class MapsMemoizersTest {
         Object bi = new BigInteger("424242");
         LeafHasher<HashKind.K128> leafHasher = collidingLeafHasher();
 
-        MapsMemoizer<Long, String> mapsMemoizer = create(null, null, leafHasher, HashKind.K128);
+        MapsMemoizer<Long, String> mapsMemoizer = create(null, leafHasher, HashKind.K128, null);
 
         mapsMemoizer.put(
             42L, Map.of(
@@ -141,7 +141,7 @@ class MapsMemoizersTest {
                     MapsMemoizersTest::md5HashBuilder,
                     PojoBytes.HASHCODE
                 ).hash(leaf);
-        MapsMemoizer<Long, String> cache = create(null, null, leafHasher, HashKind.K128);
+        MapsMemoizer<Long, String> cache = create(null, leafHasher, HashKind.K128, null);
 
         for (int i = 0; i < 10; i++) {
             cache.put((long) i, Map.of("foo", String.valueOf(i)));
@@ -282,7 +282,7 @@ class MapsMemoizersTest {
 
     @Test
     void shouldStringify() {
-        MapsMemoizer<Long, String> cache = create(Object::toString, null, HashKind.K128);
+        MapsMemoizer<Long, String> cache = create(Object::toString, HashKind.K128, null);
 
         cache.put(
             42L,
@@ -584,7 +584,7 @@ class MapsMemoizersTest {
     }
 
     private static MapsMemoizer<Long, String> mapsMemoizer() {
-        return create(null, null, HashKind.K128);
+        return create(null, HashKind.K128, null);
     }
 
     private static LeafHasher<HashKind.K128> collidingLeafHasher() {

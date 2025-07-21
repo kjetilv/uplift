@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 /**
- * Strategy for hashing leaves.  {@link MapMemoizerFactory#create(KeyHandler, PojoBytes, LeafHasher, HashKind) Overridable}
+ * Strategy for hashing leaves.  {@link MapMemoizerFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes) Overridable}
  * for testing purposes.
  */
 @FunctionalInterface

@@ -26,52 +26,53 @@ public final class MapMemoizerFactory {
         KeyHandler<K> keyHandler,
         H kind
     ) {
-        return create(keyHandler, null, kind);
+        return create(keyHandler, kind, null);
     }
 
     /**
-     * @param handler   Key handler, null means default behaviour
+     * @param keyHandler   Key handler, null means default behaviour
      * @param pojoBytes Pojo bytes
      * @return Map memoizer
      */
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> handler,
-        PojoBytes pojoBytes,
-        H kind
+        KeyHandler<K> keyHandler,
+        H kind,
+        PojoBytes pojoBytes
     ) {
-        return create(handler, pojoBytes, null, kind);
+        return create(keyHandler, null, kind, pojoBytes);
     }
 
     /**
      * @param pojoBytes Pojo bytes
      * @return Map memoizer
      */
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
-        return create(null, pojoBytes, null, kind);
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        H kind,
+        PojoBytes pojoBytes
+    ) {
+        return create(null, null, kind, pojoBytes);
     }
 
     /**
      * @param <I>     Id type
      * @param <K>     Key type
      * @param <H>     Hash kind
-     * @param handler Key handler, null means default behaviour
-     * @param hasher  Leaf hasher, for testing purposes
+     * @param keyHandler Key handler, null means default behaviour
+     * @param leafHasher  Leaf hasher, for testing purposes
      * @return Map memoizer
      */
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> handler,
-        PojoBytes pojoBytes,
-        LeafHasher<H> hasher,
-        H kind
+        KeyHandler<K> keyHandler,
+        LeafHasher<H> leafHasher,
+        H kind,
+        PojoBytes pojoBytes
     ) {
-        return new MapsMemoizerImpl<>(
-            hashBuilderSupplier(kind),
-            handler == null ? KeyHandler.defaultHandler() : handler,
-            hasher == null
-                ? defaultLeafHasher(kind, pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes)
-                : hasher,
-            kind
-        );
+        Supplier<HashBuilder<Bytes, H>> builderSupplier = hashBuilderSupplier(kind);
+        KeyHandler<K> kh = keyHandler != null ? keyHandler
+            : KeyHandler.defaultHandler();
+        LeafHasher<H> lh = leafHasher != null ? leafHasher
+            : leafHasher(kind, pojoBytes == null ? HASHCODE : pojoBytes);
+        return new MapsMemoizerImpl<>(builderSupplier, kh, lh, kind);
     }
 
     private MapMemoizerFactory() {
@@ -81,7 +82,12 @@ public final class MapMemoizerFactory {
         return () -> Hashes.hashBuilder(kind);
     }
 
-    private static <H extends HashKind<H>> LeafHasher<H> defaultLeafHasher(H kind, PojoBytes leaf) {
-        return new DefaultLeafHasher<>(hashBuilderSupplier(kind), leaf);
+    private static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
+        return pojoBytes.overrideDefaults()
+            ? leaf -> Hashes.hash(pojoBytes.bytes(leaf))
+            : new DefaultLeafHasher<>(
+                hashBuilderSupplier(kind),
+                pojoBytes
+            );
     }
 }

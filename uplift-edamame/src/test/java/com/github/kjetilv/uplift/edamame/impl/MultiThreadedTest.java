@@ -18,7 +18,7 @@ public class MultiThreadedTest {
     @SuppressWarnings("unchecked")
     @Test
     void test() {
-        MapsMemoizer<Object, CaKe> mapsMemoizer = create(key -> CaKe.get(key.toString()), null, HashKind.K128);
+        MapsMemoizer<Object, CaKe> mapsMemoizer = create(key -> CaKe.get(key.toString()), HashKind.K128, null);
         AtomicBoolean complete = new AtomicBoolean();
         CompletableFuture<Void> voider = CompletableFuture.runAsync(() -> {
             for (int i = 0; i < 10; i++) {
