@@ -1,4 +1,9 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.events;
+
+import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.JsonReader;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
