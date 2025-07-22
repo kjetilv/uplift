@@ -14,8 +14,6 @@ import java.util.stream.Stream;
 public interface HashBuilder<T, H extends HashKind<H>>
     extends Consumer<T>, Function<T, HashBuilder<T, H>>, Supplier<Hash<H>> {
 
-    H kind();
-
     @Override
     default void accept(T item) {
         hash(item);
@@ -38,6 +36,8 @@ public interface HashBuilder<T, H extends HashKind<H>>
         return this;
     }
 
+    H kind();
+
     HashBuilder<T, H> hash(T item);
 
     /**
@@ -47,6 +47,13 @@ public interface HashBuilder<T, H extends HashKind<H>>
      */
     @Override
     Hash<H> get();
+
+    /**
+     * @param toBytes Function from input type R to a stream of bytes
+     * @param <R>     Input type
+     * @return A hasher which accepts R inputs and adds them to the hash
+     */
+    <R> HashBuilder<R, H> also(Function<R, Stream<Bytes>> toBytes);
 
     /**
      * @param transform Transformer for R to T
