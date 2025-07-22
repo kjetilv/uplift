@@ -93,7 +93,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     }
 
     private Function<CanonicalValue.Collision<H>, CanonicalValue<H>> supplant(Supplier<Object> value) {
-        return collision -> new CanonicalValue.Collision<>(collision.hash(), collision);
+        return collision -> new CanonicalValue.Collision<>(collision.hash(), value.get());
     }
 
     @SuppressWarnings("RedundantTypeArguments") // Seems not
