@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
@@ -13,7 +13,7 @@ import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
  * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
  * {@link #hash() hash}.
  */
-sealed interface HashedTree<H extends HashKind<H>> {
+public sealed interface HashedTree<K, H extends HashKind<H>> {
 
     /**
      * @return The hash of this part of the tree
@@ -31,8 +31,8 @@ sealed interface HashedTree<H extends HashKind<H>> {
      */
     record Node<K, H extends HashKind<H>>(
         Hash<H> hash,
-        Map<K, ? extends HashedTree<H>> map
-    ) implements HashedTree<H> {
+        Map<K, HashedTree<K, H>> map
+    ) implements HashedTree<K, H> {
 
         @Override
         public Object hashed() {
@@ -46,10 +46,10 @@ sealed interface HashedTree<H extends HashKind<H>> {
      * @param hash   Hash
      * @param values List
      */
-    record Nodes<H extends HashKind<H>>(
+    record Nodes<K, H extends HashKind<H>>(
         Hash<H> hash,
-        List<? extends HashedTree<H>> values
-    ) implements HashedTree<H> {
+        List<HashedTree<K, H>> values
+    ) implements HashedTree<K, H> {
 
         @Override
         public Object hashed() {
@@ -63,10 +63,10 @@ sealed interface HashedTree<H extends HashKind<H>> {
      * @param hash  Hash
      * @param value Leaf
      */
-    record Leaf<H extends HashKind<H>>(
+    record Leaf<K, H extends HashKind<H>>(
         Hash<H> hash,
         Object value
-    ) implements HashedTree<H> {
+    ) implements HashedTree<K, H> {
 
         @Override
         public Object hashed() {
@@ -77,9 +77,9 @@ sealed interface HashedTree<H extends HashKind<H>> {
     /**
      * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
      */
-    record Null<H extends HashKind<H>>(
+    record Null<K, H extends HashKind<H>>(
         Hash<H> hash
-    ) implements HashedTree<H> {
+    ) implements HashedTree<K, H> {
 
         @Override
         public Object hashed() {

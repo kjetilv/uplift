@@ -1,7 +1,6 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame;
 
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 

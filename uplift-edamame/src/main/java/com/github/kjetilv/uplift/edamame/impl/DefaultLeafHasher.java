@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.*;
 
@@ -22,6 +23,11 @@ import java.util.function.Supplier;
  */
 record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes)
     implements LeafHasher<H> {
+
+    static <H extends HashKind<H>> DefaultLeafHasher<H> create(H kind, PojoBytes pojoBytes) {
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind).map(Bytes::from);
+        return new DefaultLeafHasher<>(supplier, pojoBytes);
+    }
 
     DefaultLeafHasher(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes) {
         this.newBuilder = Objects.requireNonNull(newBuilder, "newBuilder");
@@ -137,12 +143,6 @@ record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>>
         BigInteger bigInteger
     ) {
         return hashBuilder.hash(bigInteger.toByteArray());
-    }
-
-    static <H extends HashKind<H>> DefaultLeafHasher<H> create(H kind, PojoBytes pojoBytes) {
-        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind)
-            .map(Bytes::from);
-        return new DefaultLeafHasher<>(supplier, pojoBytes);
     }
 
     private enum T {

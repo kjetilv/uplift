@@ -1,9 +1,10 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 @FunctionalInterface
-interface MapHasher<H extends HashKind<H>> {
+interface MapHasher<K, H extends HashKind<H>> {
 
-    HashedTree<H> hashedTree(Object value);
+    HashedTree<K, H> hashedTree(Object value);
 }

@@ -1,6 +1,7 @@
 dependencies {
     implementation(project(":uplift-uuid"))
     implementation(project(":uplift-json"))
+    implementation(project(":uplift-hash"))
     implementation(project(":uplift-edamame"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.3")

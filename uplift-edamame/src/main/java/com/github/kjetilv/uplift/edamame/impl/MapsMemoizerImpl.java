@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.MapsMemoizer;
-import com.github.kjetilv.uplift.edamame.MapsMemoizers;
-import com.github.kjetilv.uplift.edamame.MemoizedMaps;
+import com.github.kjetilv.uplift.edamame.*;
 import com.github.kjetilv.uplift.hash.Bytes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
@@ -62,7 +59,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         H kind
     ) {
         this.canonicalKeys = new CanonicalKeysCataloguer<>(requireNonNull(keyHandler, "keyHandler"));
-        MapHasher<H> mapHasher = new RecursiveTreeHasher<>(
+        MapHasher<K, H> mapHasher = new RecursiveTreeHasher<>(
             requireNonNull(newBuilder, "newBuilder"),
             this.canonicalKeys,
             requireNonNull(leafHasher, "leafHasher"),

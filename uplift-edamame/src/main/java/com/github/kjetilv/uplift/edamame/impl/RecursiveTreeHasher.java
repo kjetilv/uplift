@@ -1,11 +1,10 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizers;
 import com.github.kjetilv.uplift.hash.*;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.util.Collections;
@@ -15,9 +14,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.github.kjetilv.uplift.edamame.HashedTree.*;
 import static com.github.kjetilv.uplift.kernel.util.Collectioons.*;
-import static com.github.kjetilv.uplift.edamame.impl.HashedTree.*;
-import static com.github.kjetilv.uplift.kernel.util.Collectioons.isEmptyArray;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -31,7 +29,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     KeyHandler<K> keyHandler,
     LeafHasher<H> leafHasher,
     H kind
-) implements MapHasher<H> {
+) implements MapHasher<K, H> {
 
     /**
      * @param newBuilder Hash builder, not null
@@ -52,21 +50,21 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     @Override
-    public HashedTree<H> hashedTree(Object value) {
+    public HashedTree<K, H> hashedTree(Object value) {
         return value == null
             ? new Null<>(kind.blank())
             : switch (value) {
                 case Map<?, ?> map -> {
-                    Map<K, HashedTree<H>> hashedMap = normalized(map);
+                    Map<K, HashedTree<K, H>> hashedMap = normalized(map);
                     yield new Node<>(mapHash(hashedMap), hashedMap);
                 }
                 case Iterable<?> iterable -> {
-                    List<? extends HashedTree<H>> hashedValues = transform(iterable, this::hashedTree);
+                    List<HashedTree<K, H>> hashedValues = transform(iterable, this::hashedTree);
                     yield new Nodes<>(listHash(hashedValues), hashedValues);
                 }
                 default -> {
                     if (value.getClass().isArray()) {
-                        List<? extends HashedTree<H>> hashedValues = transform(iterable(value), this::hashedTree);
+                        List<HashedTree<K, H>> hashedValues = transform(iterable(value), this::hashedTree);
                         yield new Nodes<>(listHash(hashedValues), hashedValues);
                     } else {
                         yield new Leaf<>(leafHash(value), value);
@@ -75,7 +73,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             };
     }
 
-    private Hash<H> mapHash(Map<K, ? extends HashedTree<H>> tree) {
+    private Hash<H> mapHash(Map<K, ? extends HashedTree<K, H>> tree) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb =
             hb.map((t) -> Bytes.from(t.bytes()));
@@ -88,7 +86,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return hb.get();
     }
 
-    private Hash<H> listHash(List<? extends HashedTree<H>> trees) {
+    private Hash<H> listHash(List<? extends HashedTree<K, H>> trees) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(hash -> Bytes.from(hash.bytes()));
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(trees.size());
@@ -102,7 +100,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return leafHasher.hash(value);
     }
 
-    private Map<K, HashedTree<H>> normalized(Map<?, ?> value) {
+    private Map<K, HashedTree<K, H>> normalized(Map<?, ?> value) {
         return Collections.unmodifiableMap(value.entrySet()
             .stream()
             .filter(empty().negate())

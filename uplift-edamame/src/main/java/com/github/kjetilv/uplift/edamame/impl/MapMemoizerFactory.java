@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizer;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.HashKind;
@@ -81,13 +82,13 @@ public final class MapMemoizerFactory {
         );
     }
 
-    private MapMemoizerFactory() {
-    }
-
-    private static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
+    public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
         return pojoBytes.overrideDefaults()
             ? leaf -> Hashes.hash(pojoBytes.bytes(leaf))
             : DefaultLeafHasher.create(kind, pojoBytes);
+    }
+
+    private MapMemoizerFactory() {
     }
 
 }

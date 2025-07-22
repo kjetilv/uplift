@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
@@ -29,24 +30,23 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
 
-    private final MapHasher<H> hasher;
+    private final MapHasher<K, H> hasher;
 
-    CanonicalSubstructuresCataloguer(MapHasher<H> hasher) {
+    CanonicalSubstructuresCataloguer(MapHasher<K, H> hasher) {
         this.hasher = Objects.requireNonNull(hasher, "hasher");
     }
 
     @Override
     public CanonicalValue<H> canonical(Object value) {
-        HashedTree<H> hashed = hasher.hashedTree(value);
+        HashedTree<K, H> hashed = hasher.hashedTree(value);
         return canonicalTree(hashed);
     }
 
-    @SuppressWarnings("unchecked")
-    private CanonicalValue<H> canonicalTree(HashedTree<H> hashed) {
+    private CanonicalValue<H> canonicalTree(HashedTree<K, H> hashed) {
         return switch (hashed) {
-            case HashedTree.Node<?, H>(Hash<H> hash, Map<?, ? extends HashedTree<H>> valueMap) -> {
+            case HashedTree.Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
                 Map<K, CanonicalValue<H>> tree = transformValues(
-                    (Map<K, HashedTree<H>>) valueMap,
+                    valueMap,
                     this::canonicalTree
                 );
                 yield collision(tree.values()).map(supplant(hashed::hashed))
@@ -60,7 +60,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                         );
                     });
             }
-            case HashedTree.Nodes<H>(Hash<H> hash, List<? extends HashedTree<H>> values) -> {
+            case HashedTree.Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
                 List<CanonicalValue<H>> canonicalValues = transform(
                     values,
                     this::canonicalTree
@@ -76,13 +76,13 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                         );
                     });
             }
-            case HashedTree.Leaf<H>(Hash<H> hash, Object value) -> resolve(
+            case HashedTree.Leaf<K, H>(Hash<H> hash, Object value) -> resolve(
                 hash,
                 leaves.putIfAbsent(hash, value),
                 value,
                 t -> new CanonicalValue.Leaf<>(hash, t)
             );
-            case HashedTree.Null<H>(Hash<H> hash) -> new CanonicalValue.Null<>(hash);
+            case HashedTree.Null<K, H>(Hash<H> hash) -> new CanonicalValue.Null<>(hash);
         };
     }
 
