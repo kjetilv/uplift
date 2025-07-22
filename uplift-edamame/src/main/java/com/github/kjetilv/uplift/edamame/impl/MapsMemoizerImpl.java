@@ -127,10 +127,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
                         (Map<K, Object>) valueNode.value()
                     );
                 }
-                case CanonicalValue.Collision<H> collisionNode -> overflowObjects.put(
-                    identifier,
-                    (Map<K, Object>) value
-                );
+                case CanonicalValue.Collision<H> collisionNode ->
+                    overflowObjects.put(identifier, (Map<K, Object>) value);
                 case CanonicalValue<H> other -> throw new IllegalStateException("Unexpected canonical value: " + other);
             }
             return true;

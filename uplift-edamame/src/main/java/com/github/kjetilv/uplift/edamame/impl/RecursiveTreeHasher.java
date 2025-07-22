@@ -51,42 +51,28 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         this.kind = requireNonNull(kind, "kind");
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public HashedTree<H> hashedTree(Object value) {
         return value == null
             ? new Null<>(kind.blank())
             : switch (value) {
-                case Map<?, ?> map -> nodeForMap((Map<K, Object>) map);
-                case Iterable<?> iterable -> nodesForIterable(iterable);
-                default -> value.getClass().isArray()
-                    ? nodesForIterable(iterable(value))
-                    : leafFor(value);
+                case Map<?, ?> map -> {
+                    Map<K, HashedTree<H>> hashedMap = normalized(map);
+                    yield new Node<>(mapHash(hashedMap), hashedMap);
+                }
+                case Iterable<?> iterable -> {
+                    List<? extends HashedTree<H>> hashedValues = transform(iterable, this::hashedTree);
+                    yield new Nodes<>(listHash(hashedValues), hashedValues);
+                }
+                default -> {
+                    if (value.getClass().isArray()) {
+                        List<? extends HashedTree<H>> hashedValues = transform(iterable(value), this::hashedTree);
+                        yield new Nodes<>(listHash(hashedValues), hashedValues);
+                    } else {
+                        yield new Leaf<>(leafHash(value), value);
+                    }
+                }
             };
-    }
-
-    private Nodes<H> nodesForIterable(Iterable<?> iterable) {
-        List<? extends HashedTree<H>> hashedValues = transform(iterable, this::hashedTree);
-        return new Nodes<>(listHash(hashedValues), hashedValues);
-    }
-
-    private Node<K, H> nodeForMap(Map<K, Object> map) {
-        Map<K, HashedTree<H>> hashedMap = normalized(map);
-        return new Node<>(mapHash(hashedMap), hashedMap);
-    }
-
-    private Leaf<H> leafFor(Object value) {
-        return new Leaf<>(leafHash(value), value);
-    }
-
-    private Hash<H> listHash(List<? extends HashedTree<H>> trees) {
-        HashBuilder<Bytes, H> hb = newBuilder.get();
-        HashBuilder<Hash<H>, H> hashHb = hb.map(hash -> Bytes.from(hash.bytes()));
-        hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(trees.size());
-        trees.stream()
-            .map(HashedTree::hash)
-            .forEach(hashHb);
-        return hashHb.get();
     }
 
     private Hash<H> mapHash(Map<K, ? extends HashedTree<H>> tree) {
@@ -100,6 +86,16 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             hashHb.apply(value.hash());
         });
         return hb.get();
+    }
+
+    private Hash<H> listHash(List<? extends HashedTree<H>> trees) {
+        HashBuilder<Bytes, H> hb = newBuilder.get();
+        HashBuilder<Hash<H>, H> hashHb = hb.map(hash -> Bytes.from(hash.bytes()));
+        hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(trees.size());
+        trees.stream()
+            .map(HashedTree::hash)
+            .forEach(hashHb);
+        return hashHb.get();
     }
 
     private Hash<H> leafHash(Object value) {

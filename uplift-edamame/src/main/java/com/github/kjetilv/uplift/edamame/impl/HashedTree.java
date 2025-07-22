@@ -2,9 +2,12 @@ package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
 
 /**
  * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
@@ -17,6 +20,8 @@ sealed interface HashedTree<H extends HashKind<H>> {
      */
     Hash<H> hash();
 
+    Object hashed();
+
     /**
      * A node in the tree
      *
@@ -28,6 +33,11 @@ sealed interface HashedTree<H extends HashKind<H>> {
         Hash<H> hash,
         Map<K, ? extends HashedTree<H>> map
     ) implements HashedTree<H> {
+
+        @Override
+        public Object hashed() {
+            return Maps.transformValues(map, HashedTree::hashed);
+        }
     }
 
     /**
@@ -40,6 +50,11 @@ sealed interface HashedTree<H extends HashKind<H>> {
         Hash<H> hash,
         List<? extends HashedTree<H>> values
     ) implements HashedTree<H> {
+
+        @Override
+        public Object hashed() {
+            return transform(values, HashedTree::hashed);
+        }
     }
 
     /**
@@ -52,6 +67,11 @@ sealed interface HashedTree<H extends HashKind<H>> {
         Hash<H> hash,
         Object value
     ) implements HashedTree<H> {
+
+        @Override
+        public Object hashed() {
+            return value;
+        }
     }
 
     /**
@@ -60,5 +80,10 @@ sealed interface HashedTree<H extends HashKind<H>> {
     record Null<H extends HashKind<H>>(
         Hash<H> hash
     ) implements HashedTree<H> {
+
+        @Override
+        public Object hashed() {
+            return null;
+        }
     }
 }

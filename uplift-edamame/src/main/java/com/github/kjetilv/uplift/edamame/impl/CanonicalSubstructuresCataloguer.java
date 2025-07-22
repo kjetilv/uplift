@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
@@ -36,7 +37,8 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     @Override
     public CanonicalValue<H> canonical(Object value) {
-        return canonicalTree(hasher.hashedTree(value));
+        HashedTree<H> hashed = hasher.hashedTree(value);
+        return canonicalTree(hashed);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,30 +49,32 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                     (Map<K, HashedTree<H>>) valueMap,
                     this::canonicalTree
                 );
-                yield collision(tree.values()).orElseGet(() -> {
-                    Map<K, Object> map = transformValues(tree, CanonicalValue::value);
-                    return resolve(
-                        hash,
-                        maps.putIfAbsent(hash, map),
-                        map,
-                        t -> new CanonicalValue.Node<>(hash, t)
-                    );
-                });
+                yield collision(tree.values()).map(supplant(hashed::hashed))
+                    .orElseGet(() -> {
+                        Map<K, Object> map = transformValues(tree, CanonicalValue::value);
+                        return resolve(
+                            hash,
+                            maps.putIfAbsent(hash, map),
+                            map,
+                            t -> new CanonicalValue.Node<>(hash, t)
+                        );
+                    });
             }
             case HashedTree.Nodes<H>(Hash<H> hash, List<? extends HashedTree<H>> values) -> {
                 List<CanonicalValue<H>> canonicalValues = transform(
                     values,
                     this::canonicalTree
                 );
-                yield collision(canonicalValues).orElseGet(() -> {
-                    List<Object> list = transform(canonicalValues, CanonicalValue::value);
-                    return resolve(
-                        hash,
-                        lists.putIfAbsent(hash, list),
-                        list,
-                        t -> new CanonicalValue.Nodes<>(hash, t)
-                    );
-                });
+                yield collision(canonicalValues).map(supplant(hashed::hashed))
+                    .orElseGet(() -> {
+                        List<Object> list = transform(canonicalValues, CanonicalValue::value);
+                        return resolve(
+                            hash,
+                            lists.putIfAbsent(hash, list),
+                            list,
+                            t -> new CanonicalValue.Nodes<>(hash, t)
+                        );
+                    });
             }
             case HashedTree.Leaf<H>(Hash<H> hash, Object value) -> resolve(
                 hash,
@@ -88,7 +92,15 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 : new CanonicalValue.Collision<>(hash, value);
     }
 
-    private Optional<CanonicalValue<H>> collision(Collection<CanonicalValue<H>> values) {
-        return values.stream().filter(CanonicalValue.Collision.class::isInstance).findFirst();
+    private Function<CanonicalValue.Collision<H>, CanonicalValue<H>> supplant(Supplier<Object> value) {
+        return collision -> new CanonicalValue.Collision<>(collision.hash(), collision);
+    }
+
+    @SuppressWarnings("RedundantTypeArguments") // Seems not
+    private Optional<CanonicalValue.Collision<H>> collision(Collection<CanonicalValue<H>> values) {
+        return values.stream()
+            .filter(CanonicalValue.Collision.class::isInstance)
+            .findFirst()
+            .<CanonicalValue.Collision<H>>map(CanonicalValue.Collision.class::cast);
     }
 }

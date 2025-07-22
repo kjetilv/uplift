@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.kernel.util;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -12,14 +13,12 @@ import java.util.stream.StreamSupport;
  */
 public final class Collectioons {
 
-    public static <T, R> List<R> transform(List<? extends T> list, Function<T, R> transform) {
-        return list.stream()
-            .map(transform)
-            .toList();
-    }
-
-    public static <T, R> List<R> transform(Iterable<? extends T> list, Function<T, R> transform) {
-        return stream(list)
+    public static <T, R> List<R> transform(
+        Iterable<? extends T> list,
+        Function<T, R> transform
+    ) {
+        Stream<? extends T> stream = stream(list);
+        return stream
             .map(transform)
             .toList();
     }
@@ -51,10 +50,12 @@ public final class Collectioons {
         };
     }
 
-    public static <T> Stream<T> stream(Iterable<T> iterable) {
-        return StreamSupport.stream(iterable.spliterator(), false);
+    private Collectioons() {
     }
 
-    private Collectioons() {
+    private static <T> Stream<T> stream(Iterable<T> iterable) {
+        return iterable instanceof Collection<T> collection
+            ? collection.stream()
+            : StreamSupport.stream(iterable.spliterator(), false);
     }
 }

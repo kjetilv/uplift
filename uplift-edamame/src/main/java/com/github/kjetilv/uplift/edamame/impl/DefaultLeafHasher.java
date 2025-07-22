@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.PojoBytes;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.hash.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -140,6 +137,12 @@ record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>>
         BigInteger bigInteger
     ) {
         return hashBuilder.hash(bigInteger.toByteArray());
+    }
+
+    static <H extends HashKind<H>> DefaultLeafHasher<H> create(H kind, PojoBytes pojoBytes) {
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind)
+            .map(Bytes::from);
+        return new DefaultLeafHasher<>(supplier, pojoBytes);
     }
 
     private enum T {
