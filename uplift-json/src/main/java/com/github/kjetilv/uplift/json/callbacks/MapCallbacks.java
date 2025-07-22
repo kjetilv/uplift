@@ -1,4 +1,7 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.callbacks;
+
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

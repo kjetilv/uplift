@@ -1,8 +1,6 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json.callbacks;
 
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.ListCallbacks;
-import com.github.kjetilv.uplift.json.MapCallbacks;
 import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.MapCallbacks;
+import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 import com.github.kjetilv.uplift.json.MapWriter;
 
 import javax.lang.model.element.Element;

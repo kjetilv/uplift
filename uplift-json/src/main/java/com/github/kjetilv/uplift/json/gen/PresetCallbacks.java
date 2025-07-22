@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.*;
+import com.github.kjetilv.uplift.json.callbacks.NullCallbacks;
 
 import java.util.Map;
 import java.util.function.*;

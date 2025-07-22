@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
 import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.LineSegmentBytesSource;
-import com.github.kjetilv.uplift.json.events.ValueCallbacks;
+import com.github.kjetilv.uplift.json.callbacks.ValueCallbacks;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
