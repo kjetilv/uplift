@@ -34,23 +34,8 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         this.hasher = Objects.requireNonNull(hasher, "hasher");
     }
 
-    /**
-     * Accepts a nested, JSON-like {@link Map map} and returns its {@link CanonicalValue canonical value}:
-     * All {@link Object#equals(Object) equals} values will be replaced by the same object reference.
-     * <p>
-     * Traverses the {@link HashedTree hashed tree} and re-builds it.  New substructures found in incoming
-     * structures are recorded under their respective {@link HashedTree#hash() hashes}.  If the hash is
-     * recorded already, that occurrence is retrieved and used to replace the incoming one.
-     * <p>
-     * This method tries to show the recursive flow with a minimum of fuss, which is why it calls out
-     * to a lot of one-liners, which would otherwise add up to a lot of clutter.
-     *
-     * @param value A map
-     * @return A {@link CanonicalValue value} which may be either a {@link CanonicalValue.Collision collision},
-     * or a holder for the canonical value
-     */
     @Override
-    public CanonicalValue<H> canonicalMap(Map<?, ?> value) {
+    public CanonicalValue<H> canonical(Object value) {
         return canonicalTree(hasher.hashedTree(value));
     }
 

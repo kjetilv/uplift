@@ -117,7 +117,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         if (rejected(identifier, requireAbsent)) {
             return false;
         }
-        CanonicalValue<H> canonical = canonicalValues.canonicalMap(value);
+        CanonicalValue<H> canonical = canonicalValues.canonical(value);
         return withWriteLock(() -> {
             switch (canonical) {
                 case CanonicalValue.Node<?, H> valueNode -> {
