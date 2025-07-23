@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.hash.HashKind;
 
+@SuppressWarnings("unused")
 public interface HashedTreeClimber<K, H extends HashKind<H>> {
 
     default HashedTreeClimber<K, H> startMap() {
