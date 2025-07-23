@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
+import java.util.Optional;
+
 public interface Callbacks {
 
     default Callbacks objectStarted() {
@@ -46,11 +48,7 @@ public interface Callbacks {
         return this;
     }
 
-    default TokenResolver tokenResolver() {
-        return null;
-    }
-
-    default boolean canonical() {
-        return false;
+    default Optional<TokenResolver> tokenResolver() {
+        return Optional.empty();
     }
 }

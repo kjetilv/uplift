@@ -4,6 +4,7 @@ import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Factory methods for {@link MapsMemoizer}s.
@@ -34,16 +35,34 @@ public final class MapsMemoizers {
      * @param keyHandler Key handler
      * @return Map memoizer
      */
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, H kind) {
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        KeyHandler<K> keyHandler,
+        H kind
+    ) {
         return MapMemoizerFactory.create(keyHandler, kind);
     }
 
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(PojoBytes pojoBytes, H kind) {
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        PojoBytes pojoBytes,
+        H kind
+    ) {
         return create(null, pojoBytes, kind);
     }
 
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(KeyHandler<K> keyHandler, PojoBytes pojoBytes, H kind) {
+    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+        KeyHandler<K> keyHandler,
+        PojoBytes pojoBytes,
+        H kind
+    ) {
         return MapMemoizerFactory.create(keyHandler, kind, pojoBytes);
+    }
+
+    public static <K, H extends HashKind<H>> HashedTreeClimber<K, H> climber(
+        KeyHandler<K> keyHandler,
+        H kind,
+        Consumer<HashedTree<K, H>> onDone
+    ) {
+        return MapMemoizerFactory.climber(keyHandler, kind, onDone);
     }
 
     private MapsMemoizers() {

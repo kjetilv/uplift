@@ -1,10 +1,16 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.*;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.callbacks.NullCallbacks;
 
 import java.util.Map;
-import java.util.function.*;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
 
@@ -91,8 +97,8 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
     }
 
     @Override
-    public TokenResolver tokenResolver() {
-        return tokenResolver;
+    public Optional<TokenResolver> tokenResolver() {
+        return Optional.ofNullable(tokenResolver);
     }
 
     @Override
@@ -102,11 +108,6 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
             build(consumer, bool);
         }
         return this;
-    }
-
-    @Override
-    public boolean canonical() {
-        return true;
     }
 
     private <V, S extends V> void build(BiConsumer<B, V> consumer, S s) {

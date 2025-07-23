@@ -44,7 +44,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private KeyHandler<K> canonicalKeys;
 
-    private Canonicalizer<H> canonicalValues;
+    private Canonicalizer<K, H> canonicalValues;
 
     /**
      * @param newBuilder Hash builder, not null

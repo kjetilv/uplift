@@ -22,7 +22,7 @@ import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
  * @param <K>
  */
 final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
-    implements Canonicalizer<H> {
+    implements Canonicalizer<K, H> {
 
     private final Map<Hash<H>, Map<K, Object>> maps = new ConcurrentHashMap<>();
 
@@ -38,8 +38,12 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     @Override
     public CanonicalValue<H> canonical(Object value) {
-        HashedTree<K, H> hashed = hasher.hashedTree(value);
-        return canonicalTree(hashed);
+        return canonical(hasher.hashedTree(value));
+    }
+
+    @Override
+    public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
+        return canonicalTree(hashedTree);
     }
 
     private CanonicalValue<H> canonicalTree(HashedTree<K, H> hashed) {

@@ -32,7 +32,7 @@ final class DefaultPullParser implements PullParser {
 
     private Callbacks processObject(Tokens tokens, Callbacks initial) {
         Callbacks callbacks = initial.objectStarted();
-        boolean canonical = callbacks.canonical();
+        boolean canonical = callbacks.tokenResolver().isPresent();
         Token next = tokens.nextField(canonical);
         do {
             if (next instanceof Token.Field fieldToken) {

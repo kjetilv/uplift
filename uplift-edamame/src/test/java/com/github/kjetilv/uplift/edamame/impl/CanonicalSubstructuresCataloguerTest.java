@@ -19,7 +19,7 @@ class CanonicalSubstructuresCataloguerTest {
 
     @Test
     void testLeaf() {
-        Canonicalizer<K128> cataloguer = new CanonicalSubstructuresCataloguer<K, K128>(
+        Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>(
             new RecursiveTreeHasher<>(
                 () -> Hashes.hashBuilder(HashKind.K128),
                 KeyHandler.defaultHandler(),
@@ -46,7 +46,7 @@ class CanonicalSubstructuresCataloguerTest {
 
     @Test
     void testMap() {
-        Canonicalizer<K128> cataloguer = new CanonicalSubstructuresCataloguer<K, K128>(
+        Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>(
             new RecursiveTreeHasher<>(
                 () -> Hashes.hashBuilder(HashKind.K128),
                 key -> new K(key.toString()),

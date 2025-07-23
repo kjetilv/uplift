@@ -1,13 +1,14 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
-import com.github.kjetilv.uplift.edamame.MapsMemoizer;
-import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.hash.Bytes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
 
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class MapMemoizerFactory {
 
@@ -88,7 +89,19 @@ public final class MapMemoizerFactory {
             : DefaultLeafHasher.create(kind, pojoBytes);
     }
 
-    private MapMemoizerFactory() {
+    public static <H extends HashKind<H>, K> HashedTreeClimber<K, H> climber(
+        KeyHandler<K> keyHandler,
+        H kind,
+        Consumer<HashedTree<K, H>> onDone
+    ) {
+        Supplier<HashBuilder<byte[], H>> supplier =
+            () -> Hashes.hashBuilder(kind)
+                .map(Bytes::from);
+        LeafHasher<H> leafHasher =
+            leafHasher(kind, PojoBytes.HASHCODE);
+        return new RootClimber<>(supplier, keyHandler, leafHasher, onDone);
     }
 
+    private MapMemoizerFactory() {
+    }
 }

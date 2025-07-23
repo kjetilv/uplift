@@ -13,7 +13,6 @@ import com.github.kjetilv.uplift.json.io.StringSink;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongToIntFunction;
 
@@ -119,7 +118,7 @@ final class JsonImpl implements Json {
     private static final TokenResolver ALLOCATOR = new Allocator();
 
     private static TokenResolver resolve(Callbacks callbacks) {
-        return Optional.ofNullable(callbacks.tokenResolver()).orElse(ALLOCATOR);
+        return callbacks.tokenResolver().orElse(ALLOCATOR);
     }
 
     private static Object process(BytesSource bytesSource) {
