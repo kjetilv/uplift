@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public class TreeClimber<H extends HashKind<H>> implements Callbacks {
 
-    public static <H extends HashKind<H>, K> Callbacks climb(
+    public static <H extends HashKind<H>> Callbacks climb(
         H kind,
         Consumer<HashedTree<Token.Field, H>> onDone
     ) {
@@ -24,8 +24,7 @@ public class TreeClimber<H extends HashKind<H>> implements Callbacks {
         LeafHasher<H> leafHasher, Object leaf
     ) {
         Hash<H> hash = leafHasher.hash(leaf);
-        HashedTree.Leaf<Token.Field, H> t = new HashedTree.Leaf<>(hash, leaf);
-        return t;
+        return new HashedTree.Leaf<>(hash, leaf);
     }
 
     private final Supplier<HashBuilder<byte[], H>> hashBuilderSupplier;

@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import static java.lang.Math.ceil;
 
+@SuppressWarnings("unused")
 public final class Maps {
 
     public static <K, V> Stream<V> get(Map<K, V> map, Predicate<K> keyLike) {

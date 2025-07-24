@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json;
 
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public interface Callbacks {
 
     default Callbacks objectStarted() {

@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.util.List;
 import java.util.Map;
