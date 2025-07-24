@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.edamame.*;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
@@ -23,7 +22,7 @@ class CanonicalSubstructuresCataloguerTest {
             new RecursiveTreeHasher<>(
                 () -> Hashes.hashBuilder(HashKind.K128),
                 KeyHandler.defaultHandler(),
-                DefaultLeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
+                LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
                 HashKind.K128
             )
         );
@@ -50,7 +49,7 @@ class CanonicalSubstructuresCataloguerTest {
             new RecursiveTreeHasher<>(
                 () -> Hashes.hashBuilder(HashKind.K128),
                 key -> new K(key.toString()),
-                DefaultLeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
+                LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
                 HashKind.K128
             )
         );

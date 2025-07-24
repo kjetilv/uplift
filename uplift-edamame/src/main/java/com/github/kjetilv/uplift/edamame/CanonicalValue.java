@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
@@ -11,7 +11,7 @@ import java.util.Objects;
  * A canonical value is the result of resolving a  nested {@link Map map} against shared
  * substructures of other nested maps, including {@link Collision hash collisions}.
  */
-sealed interface CanonicalValue<H extends HashKind<H>> {
+public sealed interface CanonicalValue<H extends HashKind<H>> {
 
     Object value();
 

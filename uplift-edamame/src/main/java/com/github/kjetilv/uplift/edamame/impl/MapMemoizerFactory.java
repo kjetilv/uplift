@@ -1,14 +1,12 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.*;
-import com.github.kjetilv.uplift.hash.Bytes;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
 
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
 
 public final class MapMemoizerFactory {
 
@@ -64,9 +62,30 @@ public final class MapMemoizerFactory {
         PojoBytes pojoBytes
     ) {
         Objects.requireNonNull(kind, "kind");
+        Canonicalizer<K, H> canonicalValues = canonicalKeys(keyHandler, leafHasher, kind, pojoBytes);
+        return new MapsMemoizerImpl<>(canonicalValues);
+    }
+
+    public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
+        return LeafHasher.create(kind, pojoBytes);
+    }
+
+    private MapMemoizerFactory() {
+    }
+
+    private static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalKeys(
+        KeyHandler<K> keyHandler,
+        LeafHasher<H> leafHasher,
+        H kind,
+        PojoBytes pojoBytes
+    ) {
         KeyHandler<K> handler = keyHandler != null
             ? keyHandler
             : KeyHandler.defaultHandler();
+        CanonicalKeysCataloguer<K> canonicalKeys = new CanonicalKeysCataloguer<>(Objects.requireNonNull(
+            handler,
+            "keyHandler"
+        ));
         LeafHasher<H> hasher = leafHasher != null
             ? leafHasher
             : leafHasher(
@@ -75,33 +94,13 @@ public final class MapMemoizerFactory {
                     ? PojoBytes.HASHCODE
                     : pojoBytes
             );
-        return new MapsMemoizerImpl<>(
-            () -> Hashes.hashBuilder(kind),
-            handler,
-            hasher,
+        MapHasher<K, H> mapHasher = new RecursiveTreeHasher<>(
+            requireNonNull(() -> Hashes.hashBuilder(kind), "newBuilder"),
+            canonicalKeys,
+            requireNonNull(hasher, "leafHasher"),
             kind
         );
-    }
-
-    public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
-        return pojoBytes.overrideDefaults()
-            ? leaf -> Hashes.hash(pojoBytes.bytes(leaf))
-            : DefaultLeafHasher.create(kind, pojoBytes);
-    }
-
-    public static <H extends HashKind<H>, K> HashedTreeClimber<K, H> climber(
-        KeyHandler<K> keyHandler,
-        H kind,
-        Consumer<HashedTree<K, H>> onDone
-    ) {
-        Supplier<HashBuilder<byte[], H>> supplier =
-            () -> Hashes.hashBuilder(kind)
-                .map(Bytes::from);
-        LeafHasher<H> leafHasher =
-            leafHasher(kind, PojoBytes.HASHCODE);
-        return new RootClimber<>(supplier, keyHandler, leafHasher, onDone);
-    }
-
-    private MapMemoizerFactory() {
+        return new CanonicalSubstructuresCataloguer<>(
+            requireNonNull(mapHasher, "mapHasher"));
     }
 }

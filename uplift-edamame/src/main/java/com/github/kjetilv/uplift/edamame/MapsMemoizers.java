@@ -4,7 +4,6 @@ import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Factory methods for {@link MapsMemoizer}s.
@@ -55,14 +54,6 @@ public final class MapsMemoizers {
         H kind
     ) {
         return MapMemoizerFactory.create(keyHandler, kind, pojoBytes);
-    }
-
-    public static <K, H extends HashKind<H>> HashedTreeClimber<K, H> climber(
-        KeyHandler<K> keyHandler,
-        H kind,
-        Consumer<HashedTree<K, H>> onDone
-    ) {
-        return MapMemoizerFactory.climber(keyHandler, kind, onDone);
     }
 
     private MapsMemoizers() {

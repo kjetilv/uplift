@@ -70,8 +70,10 @@ public final class Maps {
         return () -> new HashMap<>(capacity(size));
     }
 
-    public static <K, V, R> Map<K, R> transformValues(Map<K, V> map, Function<V, R> transform) {
-
+    public static <K, V, R> Map<K, R> transformValues(
+        Map<K, V> map,
+        Function<V, R> transform
+    ) {
         return Collections.unmodifiableMap(map.entrySet()
             .stream()
             .collect(Collectors.toMap(

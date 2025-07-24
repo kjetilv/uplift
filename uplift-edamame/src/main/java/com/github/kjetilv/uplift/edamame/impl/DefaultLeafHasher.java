@@ -2,7 +2,10 @@ package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
-import com.github.kjetilv.uplift.hash.*;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -21,30 +24,21 @@ import java.util.function.Supplier;
  *
  * @see T
  */
-record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes)
+public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes)
     implements LeafHasher<H> {
 
-    static <H extends HashKind<H>> DefaultLeafHasher<H> create(H kind, PojoBytes pojoBytes) {
-        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind).map(Bytes::from);
-        return new DefaultLeafHasher<>(supplier, pojoBytes);
-    }
-
-    DefaultLeafHasher(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes) {
+    public DefaultLeafHasher(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes) {
         this.newBuilder = Objects.requireNonNull(newBuilder, "newBuilder");
         this.pojoBytes = Objects.requireNonNull(pojoBytes, "pojoBytes");
     }
 
     @Override
     public Hash<H> hash(Object leaf) {
-        HashBuilder<byte[], H> hb = newBuilder.get();
-        return hashAny(hb, leaf, pojoBytes).get();
+        return hashTo(newBuilder.get(), leaf).get();
     }
 
-    private static <H extends HashKind<H>> HashBuilder<byte[], H> hashAny(
-        HashBuilder<byte[], H> hb,
-        Object leaf,
-        PojoBytes anyHash
-    ) {
+    @Override
+    public HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {
         return switch (leaf) {
             case String s -> hashString(T.STRING.tag(hb), s);
             case Boolean b -> hashString(T.BOOL.tag(hb), Boolean.toString(b));
@@ -53,7 +47,7 @@ record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>>
             case Number n -> hashNumber(T.NUMBER.tag(hb), n);
             case TemporalAccessor temporal -> hashTemporal(hb, temporal);
             case UUID u -> hashUuid(T.UUID.tag(hb), u);
-            default -> hashLeaf(T.OBJECT.tag(hb), leaf, anyHash);
+            default -> hashLeaf(T.OBJECT.tag(hb), leaf, pojoBytes);
         };
     }
 

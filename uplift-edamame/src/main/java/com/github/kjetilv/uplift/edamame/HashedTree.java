@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
+import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
 
 /**
  * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
@@ -36,7 +37,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
 
         @Override
         public Object hashed() {
-            return Maps.transformValues(map, HashedTree::hashed);
+            return transformValues(map, HashedTree::hashed);
         }
     }
 
