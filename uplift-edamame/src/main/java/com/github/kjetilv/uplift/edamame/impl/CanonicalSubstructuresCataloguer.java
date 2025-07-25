@@ -34,28 +34,13 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
 
-    private final MapHasher<K, H> hasher;
-
-    CanonicalSubstructuresCataloguer(MapHasher<K, H> hasher) {
-        this.hasher = Objects.requireNonNull(hasher, "hasher");
-    }
-
-    @Override
-    public CanonicalValue<H> canonical(Object value) {
-        return canonical(hasher.hashedTree(value));
-    }
-
     @Override
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
-        return canonicalTree(hashedTree);
-    }
-
-    private CanonicalValue<H> canonicalTree(HashedTree<K, H> hashed) {
-        return switch (hashed) {
+        return switch (hashedTree) {
             case HashedTree.Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
-                Map<K, CanonicalValue<H>> tree = recurse(valueMap, this::canonicalTree);
+                Map<K, CanonicalValue<H>> tree = recurse(valueMap, this::canonical);
                 yield collision(tree)
-                    .map(supplant(hashed::hashed))
+                    .map(supplant(hashedTree::hashed))
                     .orElseGet(() -> {
                         Map<K, Object> map = valueIn(tree);
                         return resolve(
@@ -67,9 +52,9 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                     });
             }
             case HashedTree.Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
-                List<CanonicalValue<H>> trees = recurse(values, this::canonicalTree);
+                List<CanonicalValue<H>> trees = recurse(values, this::canonical);
                 yield collision(trees)
-                    .map(supplant(hashed::hashed))
+                    .map(supplant(hashedTree::hashed))
                     .orElseGet(() -> {
                         List<Object> list = valueIn(trees);
                         return resolve(

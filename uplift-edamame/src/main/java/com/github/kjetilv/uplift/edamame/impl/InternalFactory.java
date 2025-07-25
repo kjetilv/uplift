@@ -60,46 +60,41 @@ public final class InternalFactory {
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
-        Canonicalizer<K, H> canonicalValues = canonicalValues(kind, keyHandler, leafHasher, pojoBytes);
-        return new MapsMemoizerImpl<>(canonicalValues);
+        MapHasher<K, H> mapHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
+        Canonicalizer<K, H> canonicalValues = new CanonicalSubstructuresCataloguer<>();
+        return new MapsMemoizerImpl<>(mapHasher, canonicalValues);
     }
 
     public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
         return LeafHasher.create(kind, pojoBytes);
     }
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalValues(
+    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
+        return new CanonicalSubstructuresCataloguer<>();
+    }
+
+    private InternalFactory() {
+    }
+
+    private static <K, H extends HashKind<H>> MapHasher<K, H> mapHasher(
         H kind,
         KeyHandler<K> keyHandler,
         LeafHasher<H> leafHasher,
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
-        KeyHandler<K> handler = keyHandler != null
-            ? keyHandler
-            : KeyHandler.defaultHandler();
-        CanonicalKeysCataloguer<K> canonicalKeys = new CanonicalKeysCataloguer<>(requireNonNull(
-            handler,
-            "keyHandler"
-        ));
+        KeyHandler<K> canonicalKeys = new CanonicalKeysCataloguer<>(
+            keyHandler != null
+                ? keyHandler
+                : KeyHandler.defaultHandler());
         LeafHasher<H> hasher = leafHasher != null
             ? leafHasher
-            : leafHasher(
-                kind,
-                pojoBytes == null
-                    ? PojoBytes.HASHCODE
-                    : pojoBytes
-            );
-        MapHasher<K, H> mapHasher = new RecursiveTreeHasher<>(
+            : leafHasher(kind, pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes);
+        return new RecursiveTreeHasher<>(
             requireNonNull(() -> Hashes.hashBuilder(kind), "newBuilder"),
             canonicalKeys,
             requireNonNull(hasher, "leafHasher"),
             kind
         );
-        return new CanonicalSubstructuresCataloguer<>(
-            requireNonNull(mapHasher, "mapHasher"));
-    }
-
-    private InternalFactory() {
     }
 }

@@ -19,13 +19,13 @@ public final class Mame {
     public static <H extends HashKind<H>> Callbacks climb(H kind, Consumer<Object> onDone) {
         Supplier<HashBuilder<Bytes, H>> supplier = () -> Hashes.hashBuilder(kind);
         LeafHasher<H> leafHasher = LeafHasher.create(kind, PojoBytes.HASHCODE);
-        Canonicalizer<Token.Field, H> canonicalizer = Canonicalizers.canonicalizer(
-            kind,
-            key -> (Token.Field) key,
+        Canonicalizer<Token.Field, H> canonicalizer = Canonicalizers.canonicalizer();
+        return new TreeClimber<>(
+            supplier,
             leafHasher,
-            PojoBytes.HASHCODE
+            canonicalizer,
+            onDone
         );
-        return new TreeClimber<>(supplier, leafHasher, canonicalizer, onDone);
     }
 
     private Mame() {
