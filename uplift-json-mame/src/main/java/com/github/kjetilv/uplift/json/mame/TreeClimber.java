@@ -8,17 +8,8 @@ import com.github.kjetilv.uplift.json.Token;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class TreeClimber<H extends HashKind<H>> implements Callbacks {
-
-    public static <H extends HashKind<H>> Callbacks climb(
-        H kind,
-        Consumer<HashedTree<Token.Field, H>> onDone
-    ) {
-        Supplier<HashBuilder<Bytes, H>> supplier = () -> Hashes.hashBuilder(kind);
-        LeafHasher<H> leafHasher = LeafHasher.create(kind, PojoBytes.HASHCODE);
-        MapsMemoizer<Object, String> objectStringMapsMemoizer = MapsMemoizers.create(kind);
-        return new TreeClimber<>(supplier, leafHasher, onDone);
-    }
 
     public static <H extends HashKind<H>> HashedTree.Leaf<Token.Field, H> tree(
         LeafHasher<H> leafHasher, Object leaf
@@ -31,33 +22,38 @@ public class TreeClimber<H extends HashKind<H>> implements Callbacks {
 
     private final LeafHasher<H> leafHasher;
 
-    private final Consumer<HashedTree<Token.Field, H>> cacher;
+    private final Canonicalizer<Token.Field, H> cacher;
+
+    private final Consumer<Object> onDone;
 
     public TreeClimber(
         Supplier<HashBuilder<Bytes, H>> hashBuilderSupplier,
         LeafHasher<H> leafHasher,
-        Consumer<HashedTree<Token.Field, H>> cacher
+        Canonicalizer<Token.Field, H> cacher,
+        Consumer<Object> onDone
     ) {
-        this.hashBuilderSupplier = () -> hashBuilderSupplier.get().map(Bytes::from);
+        this.hashBuilderSupplier = () -> hashBuilderSupplier.get()
+            .map(Bytes::from);
         this.leafHasher = leafHasher;
         this.cacher = cacher;
+        this.onDone = onDone;
     }
 
     @Override
     public Callbacks bool(boolean bool) {
-        cacher.accept(TreeClimber.tree(leafHasher, bool));
+        done(TreeClimber.tree(leafHasher, bool));
         return this;
     }
 
     @Override
     public Callbacks number(Token.Number number) {
-        cacher.accept(TreeClimber.tree(leafHasher, number.number()));
+        done(TreeClimber.tree(leafHasher, number.number()));
         return this;
     }
 
     @Override
     public Callbacks string(Token.Str str) {
-        cacher.accept(TreeClimber.tree(leafHasher, str.value()));
+        done(TreeClimber.tree(leafHasher, str.value()));
         return this;
     }
 
@@ -67,9 +63,8 @@ public class TreeClimber<H extends HashKind<H>> implements Callbacks {
             hashBuilderSupplier,
             leafHasher,
             this,
-            cacher,
-            _ -> {
-            }
+            cacher::canonical,
+            this::done
         );
     }
 
@@ -79,9 +74,13 @@ public class TreeClimber<H extends HashKind<H>> implements Callbacks {
             hashBuilderSupplier,
             leafHasher,
             this,
-            cacher,
-            _ -> {
-            }
+            cacher::canonical,
+            this::done
         );
+    }
+
+    private void done(HashedTree<Token.Field, H> tree) {
+        CanonicalValue<H> canonical = cacher.canonical(tree);
+        onDone.accept(canonical.value());
     }
 }

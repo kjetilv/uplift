@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public class ListClimber<H extends HashKind<H>> implements Callbacks {
 
-    private final Supplier<HashBuilder<byte[], H>> hashBuilderSupplier;
+    private final Supplier<HashBuilder<byte[], H>> supplier;
 
     private final LeafHasher<H> leafHasher;
 
@@ -29,40 +29,40 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
     private final HashBuilder<byte[], H> builder;
 
     public ListClimber(
-        Supplier<HashBuilder<byte[], H>> hashBuilderSupplier,
+        Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
         Consumer<HashedTree<Token.Field, H>> cacher,
         Consumer<HashedTree<Token.Field, H>> onDone
     ) {
-        this.hashBuilderSupplier = hashBuilderSupplier;
+        this.supplier = supplier;
         this.leafHasher = leafHasher;
         this.parent = parent;
         this.cacher = cacher;
         this.onDone = onDone;
 
-        this.builder = this.hashBuilderSupplier.get();
+        this.builder = this.supplier.get();
     }
 
     @Override
     public Callbacks objectStarted() {
         return new MapClimber<>(
-            hashBuilderSupplier,
+            supplier,
             leafHasher,
             this,
             cacher,
-            this::added
+            this::add
         );
     }
 
     @Override
     public Callbacks arrayStarted() {
         return new ListClimber<>(
-            hashBuilderSupplier,
+            supplier,
             leafHasher,
             this,
             cacher,
-            this::added
+            this::add
         );
     }
 
@@ -88,15 +88,13 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
     }
 
     private Callbacks add(Object object) {
-        HashedTree<Token.Field, H> added = added(TreeClimber.tree(leafHasher, object));
-        cacher.accept(added);
+        add(TreeClimber.tree(leafHasher, object));
         return this;
     }
 
-    private HashedTree<Token.Field, H> added(HashedTree<Token.Field, H> tree) {
+    private void add(HashedTree.Leaf<Token.Field, H> tree) {
         try {
             list.add(tree);
-            return tree;
         } finally {
             cacher.accept(tree);
         }

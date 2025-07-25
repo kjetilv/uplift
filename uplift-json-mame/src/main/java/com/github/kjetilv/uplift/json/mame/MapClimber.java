@@ -100,17 +100,15 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
     }
 
     private Callbacks set(Object object) {
-        HashedTree<Token.Field, H> added = setField(TreeClimber.tree(leafHasher, object));
-        cacher.accept(added);
+        setField(TreeClimber.tree(leafHasher, object));
         return this;
     }
 
-    private HashedTree<Token.Field, H> setField(HashedTree<Token.Field, H> tree) {
+    private void setField(HashedTree<Token.Field, H> tree) {
         try {
             map.put(field, tree);
-            return tree;
         } finally {
-            field = null;
+            cacher.accept(tree);
         }
     }
 }

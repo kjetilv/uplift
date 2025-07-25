@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory.create;
+import static com.github.kjetilv.uplift.edamame.impl.InternalFactory.create;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

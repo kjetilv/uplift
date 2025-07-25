@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
+import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
@@ -38,7 +38,7 @@ public final class MapsMemoizers {
         KeyHandler<K> keyHandler,
         H kind
     ) {
-        return MapMemoizerFactory.create(keyHandler, kind);
+        return InternalFactory.create(keyHandler, kind);
     }
 
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
@@ -53,7 +53,7 @@ public final class MapsMemoizers {
         PojoBytes pojoBytes,
         H kind
     ) {
-        return MapMemoizerFactory.create(keyHandler, kind, pojoBytes);
+        return InternalFactory.create(keyHandler, kind, pojoBytes);
     }
 
     private MapsMemoizers() {

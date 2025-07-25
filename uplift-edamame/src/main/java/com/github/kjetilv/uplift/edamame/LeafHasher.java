@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.edamame;
 
 import com.github.kjetilv.uplift.edamame.impl.DefaultLeafHasher;
-import com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory;
+import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
 import com.github.kjetilv.uplift.hash.*;
 
 import java.util.function.Supplier;
 
 /**
- * Strategy for hashing leaves.  {@link MapMemoizerFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes) Overridable}
+ * Strategy for hashing leaves.  {@link InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes) Overridable}
  * for testing purposes.
  */
 @FunctionalInterface

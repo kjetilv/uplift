@@ -4,11 +4,9 @@ import com.github.kjetilv.uplift.edamame.*;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
 
-import java.util.Objects;
-
 import static java.util.Objects.requireNonNull;
 
-public final class MapMemoizerFactory {
+public final class InternalFactory {
 
     /**
      * @param <I>        Id type
@@ -61,8 +59,8 @@ public final class MapMemoizerFactory {
         H kind,
         PojoBytes pojoBytes
     ) {
-        Objects.requireNonNull(kind, "kind");
-        Canonicalizer<K, H> canonicalValues = canonicalKeys(keyHandler, leafHasher, kind, pojoBytes);
+        requireNonNull(kind, "kind");
+        Canonicalizer<K, H> canonicalValues = canonicalValues(kind, keyHandler, leafHasher, pojoBytes);
         return new MapsMemoizerImpl<>(canonicalValues);
     }
 
@@ -70,19 +68,17 @@ public final class MapMemoizerFactory {
         return LeafHasher.create(kind, pojoBytes);
     }
 
-    private MapMemoizerFactory() {
-    }
-
-    private static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalKeys(
+    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalValues(
+        H kind,
         KeyHandler<K> keyHandler,
         LeafHasher<H> leafHasher,
-        H kind,
         PojoBytes pojoBytes
     ) {
+        requireNonNull(kind, "kind");
         KeyHandler<K> handler = keyHandler != null
             ? keyHandler
             : KeyHandler.defaultHandler();
-        CanonicalKeysCataloguer<K> canonicalKeys = new CanonicalKeysCataloguer<>(Objects.requireNonNull(
+        CanonicalKeysCataloguer<K> canonicalKeys = new CanonicalKeysCataloguer<>(requireNonNull(
             handler,
             "keyHandler"
         ));
@@ -102,5 +98,8 @@ public final class MapMemoizerFactory {
         );
         return new CanonicalSubstructuresCataloguer<>(
             requireNonNull(mapHasher, "mapHasher"));
+    }
+
+    private InternalFactory() {
     }
 }

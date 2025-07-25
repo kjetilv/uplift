@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.github.kjetilv.uplift.edamame.impl.MapMemoizerFactory.create;
+import static com.github.kjetilv.uplift.edamame.impl.InternalFactory.create;
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
