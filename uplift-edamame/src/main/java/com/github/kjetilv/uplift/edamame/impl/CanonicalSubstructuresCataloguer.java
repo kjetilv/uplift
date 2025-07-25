@@ -40,7 +40,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
             case HashedTree.Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
                 Map<K, CanonicalValue<H>> tree = recurse(valueMap, this::canonical);
                 yield collision(tree)
-                    .map(supplant(hashedTree::hashed))
+                    .map(supplant(hashedTree::unwrap))
                     .orElseGet(() -> {
                         Map<K, Object> map = valueIn(tree);
                         return resolve(
@@ -54,7 +54,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
             case HashedTree.Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
                 List<CanonicalValue<H>> trees = recurse(values, this::canonical);
                 yield collision(trees)
-                    .map(supplant(hashedTree::hashed))
+                    .map(supplant(hashedTree::unwrap))
                     .orElseGet(() -> {
                         List<Object> list = valueIn(trees);
                         return resolve(

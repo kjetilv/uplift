@@ -20,11 +20,11 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
 
     private final Callbacks parent;
 
-    private final Consumer<HashedTree<Token.Field, H>> cacher;
+    private final Consumer<HashedTree<String, H>> cacher;
 
-    private final Consumer<HashedTree<Token.Field, H>> onDone;
+    private final Consumer<HashedTree<String, H>> onDone;
 
-    private final List<HashedTree<Token.Field, H>> list = new ArrayList<>();
+    private final List<HashedTree<String, H>> list = new ArrayList<>();
 
     private final HashBuilder<byte[], H> builder;
 
@@ -32,8 +32,8 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
-        Consumer<HashedTree<Token.Field, H>> cacher,
-        Consumer<HashedTree<Token.Field, H>> onDone
+        Consumer<HashedTree<String, H>> cacher,
+        Consumer<HashedTree<String, H>> onDone
     ) {
         this.supplier = supplier;
         this.leafHasher = leafHasher;
@@ -92,7 +92,7 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
         return this;
     }
 
-    private void add(HashedTree.Leaf<Token.Field, H> tree) {
+    private void add(HashedTree.Leaf<String, H> tree) {
         try {
             list.add(tree);
         } finally {

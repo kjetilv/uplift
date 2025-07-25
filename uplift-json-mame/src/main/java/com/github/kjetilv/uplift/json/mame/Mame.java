@@ -9,25 +9,33 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class Mame {
+public record Mame<H extends HashKind<H>>(
+    Supplier<HashBuilder<byte[], H>> hashBuilderSupplier,
+    LeafHasher<H> leafHasher,
+    Canonicalizer<String, H> cacher
+) {
 
-    public static <H extends HashKind<H>> Callbacks climb(H kind, Consumer<Object> onDone) {
-        Supplier<HashBuilder<Bytes, H>> supplier = () -> Hashes.hashBuilder(kind);
+    public static <H extends HashKind<H>> Mame<H> create(H kind) {
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind)
+            .map(Bytes::from);
         LeafHasher<H> leafHasher = LeafHasher.create(kind, PojoBytes.HASHCODE);
-        Canonicalizer<Token.Field, H> canonicalizer = Canonicalizers.canonicalizer();
-        return new TreeClimber<>(
-            supplier,
-            leafHasher,
-            canonicalizer,
-            onDone
-        );
+        Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer();
+        return new Mame<>(supplier, leafHasher, canonicalizer);
     }
 
-    private Mame() {
+    public static <H extends HashKind<H>> Callbacks climb(H kind, Consumer<Object> onDone) {
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind)
+            .map(Bytes::from);
+        LeafHasher<H> leafHasher = LeafHasher.create(kind, PojoBytes.HASHCODE);
+        Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer();
+        return new TreeClimber<>(supplier, leafHasher, canonicalizer, onDone);
+    }
+
+    public Callbacks onDone(Consumer<Object> onDone) {
+        return new TreeClimber<>(hashBuilderSupplier, leafHasher, cacher, onDone);
     }
 }

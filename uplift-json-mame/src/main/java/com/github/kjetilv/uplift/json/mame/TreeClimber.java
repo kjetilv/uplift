@@ -1,42 +1,29 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.*;
-import com.github.kjetilv.uplift.hash.*;
+import com.github.kjetilv.uplift.edamame.CanonicalValue;
+import com.github.kjetilv.uplift.edamame.Canonicalizer;
+import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@SuppressWarnings("ClassCanBeRecord")
-public class TreeClimber<H extends HashKind<H>> implements Callbacks {
+public record TreeClimber<H extends HashKind<H>>(
+    Supplier<HashBuilder<byte[], H>> hashBuilderSupplier,
+    LeafHasher<H> leafHasher,
+    Canonicalizer<String, H> cacher,
+    Consumer<Object> onDone
+) implements Callbacks {
 
-    public static <H extends HashKind<H>> HashedTree.Leaf<Token.Field, H> tree(
-        LeafHasher<H> leafHasher, Object leaf
-    ) {
-        Hash<H> hash = leafHasher.hash(leaf);
-        return new HashedTree.Leaf<>(hash, leaf);
-    }
-
-    private final Supplier<HashBuilder<byte[], H>> hashBuilderSupplier;
-
-    private final LeafHasher<H> leafHasher;
-
-    private final Canonicalizer<Token.Field, H> cacher;
-
-    private final Consumer<Object> onDone;
-
-    public TreeClimber(
-        Supplier<HashBuilder<Bytes, H>> hashBuilderSupplier,
+    static <H extends HashKind<H>> HashedTree.Leaf<String, H> tree(
         LeafHasher<H> leafHasher,
-        Canonicalizer<Token.Field, H> cacher,
-        Consumer<Object> onDone
+        Object leaf
     ) {
-        this.hashBuilderSupplier = () -> hashBuilderSupplier.get()
-            .map(Bytes::from);
-        this.leafHasher = leafHasher;
-        this.cacher = cacher;
-        this.onDone = onDone;
+        return new HashedTree.Leaf<>(leafHasher.hash(leaf), leaf);
     }
 
     @Override
@@ -79,7 +66,7 @@ public class TreeClimber<H extends HashKind<H>> implements Callbacks {
         );
     }
 
-    private void done(HashedTree<Token.Field, H> tree) {
+    private void done(HashedTree<String, H> tree) {
         CanonicalValue<H> canonical = cacher.canonical(tree);
         onDone.accept(canonical.value());
     }

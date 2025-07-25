@@ -22,11 +22,11 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
 
     private final Callbacks parent;
 
-    private final Consumer<HashedTree<Token.Field, H>> cacher;
+    private final Consumer<HashedTree<String, H>> cacher;
 
-    private final Consumer<HashedTree<Token.Field, H>> onDone;
+    private final Consumer<HashedTree<String, H>> onDone;
 
-    private final Map<Token.Field, HashedTree<Token.Field, H>> map = new java.util.HashMap<>();
+    private final Map<String, HashedTree<String, H>> map = new java.util.HashMap<>();
 
     private final HashBuilder<byte[], H> builder;
 
@@ -36,8 +36,8 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
         Supplier<HashBuilder<byte[], H>> hashBuilderSupplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
-        Consumer<HashedTree<Token.Field, H>> cacher,
-        Consumer<HashedTree<Token.Field, H>> onDone
+        Consumer<HashedTree<String, H>> cacher,
+        Consumer<HashedTree<String, H>> onDone
     ) {
         this.hashBuilderSupplier = hashBuilderSupplier;
         this.keyHandler = key1 -> (Token.Field) key1;
@@ -104,9 +104,9 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
         return this;
     }
 
-    private void setField(HashedTree<Token.Field, H> tree) {
+    private void setField(HashedTree<String, H> tree) {
         try {
-            map.put(field, tree);
+            map.put(field.value(), tree);
         } finally {
             cacher.accept(tree);
         }

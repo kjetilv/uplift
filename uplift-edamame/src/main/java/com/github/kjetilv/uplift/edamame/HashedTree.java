@@ -20,7 +20,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
      */
     Hash<H> hash();
 
-    Object hashed();
+    Object unwrap();
 
     /**
      * A node in the tree
@@ -35,8 +35,8 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ) implements HashedTree<K, H> {
 
         @Override
-        public Object hashed() {
-            return transformValues(map, HashedTree::hashed);
+        public Object unwrap() {
+            return transformValues(map, HashedTree::unwrap);
         }
     }
 
@@ -52,8 +52,8 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ) implements HashedTree<K, H> {
 
         @Override
-        public Object hashed() {
-            return transform(values, HashedTree::hashed);
+        public Object unwrap() {
+            return transform(values, HashedTree::unwrap);
         }
     }
 
@@ -69,7 +69,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ) implements HashedTree<K, H> {
 
         @Override
-        public Object hashed() {
+        public Object unwrap() {
             return value;
         }
     }
@@ -82,7 +82,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ) implements HashedTree<K, H> {
 
         @Override
-        public Object hashed() {
+        public Object unwrap() {
             return null;
         }
     }
