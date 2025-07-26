@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MameTest {
+class JsonSessionTest {
 
     @SuppressWarnings("unchecked")
     @Test
     void testLists() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        Mame<HashKind.K256> mame = Mame.create(HashKind.K256);
+        JsonSession<HashKind.K256> jsonSession = JsonSessions.create(HashKind.K256);
         Json.INSTANCE.parse(
             //language=json
             """
@@ -27,11 +27,11 @@ class MameTest {
                   { "foo": "bar" }
                 ]
                 """,
-            mame.onDone(reference::set)
+            jsonSession.onDone(reference::set)
         );
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
-                .satisfies(MameTest::sameValues));
+                .satisfies(JsonSessionTest::sameValues));
 
         List<Object> objects = (List<Object>) reference.get();
         Map<String, Object> foobar = (Map<String, Object>) objects.getFirst();
@@ -47,18 +47,18 @@ class MameTest {
                       ]
                     }
                     """,
-            mame.onDone(reference2::set)
+            jsonSession.onDone(reference2::set)
         );
         Map<String, Object> zip = (Map<String, Object>) reference2.get();
         List<Map<String, Object>> list = (List<Map<String, Object>>) zip.get("zip");
-        assertThat(list).satisfies(MameTest::sameValues);
+        assertThat(list).satisfies(JsonSessionTest::sameValues);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testMaps() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        Mame<HashKind.K256> mame = Mame.create(HashKind.K256);
+        JsonSession<HashKind.K256> jsonSession = JsonSessions.create(HashKind.K256);
         Json.INSTANCE.parse(
             //language=json
             """
@@ -67,11 +67,11 @@ class MameTest {
                   "zot": { "foo": "bar" }
                 }
                 """,
-            mame.onDone(reference::set)
+            jsonSession.onDone(reference::set)
         );
         assertThat(reference).hasValueSatisfying(value -> {
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
-                .satisfies(MameTest::sameValues);
+                .satisfies(JsonSessionTest::sameValues);
         });
 
         Object foobar = ((Map<String, Object>) reference.get()).get("zip");
@@ -85,7 +85,7 @@ class MameTest {
                   "b": { "foo": "bar" }
                 }
                 """,
-            mame.onDone(reference2::set)
+            jsonSession.onDone(reference2::set)
         );
         assertThat(reference2).hasValueSatisfying(value -> {
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
@@ -104,7 +104,7 @@ class MameTest {
                   "b": { "foo": "bar" }
                 }
                 """,
-            mame.onDone(reference3::set)
+            jsonSession.onDone(reference3::set)
         );
         assertThat(reference3).hasValueSatisfying(r3 ->
             assertThat(r3).isSameAs(reference2.get()));

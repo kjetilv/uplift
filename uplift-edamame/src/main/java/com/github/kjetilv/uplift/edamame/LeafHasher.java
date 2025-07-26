@@ -13,14 +13,22 @@ import java.util.function.Supplier;
 @FunctionalInterface
 public interface LeafHasher<H extends HashKind<H>> {
 
-    static <H extends HashKind<H>> LeafHasher<H> create(H kind, PojoBytes pojoBytes) {
-        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind).map(Bytes::from);
-        return new DefaultLeafHasher<>(supplier, pojoBytes);
+    static <H extends HashKind<H>> LeafHasher<H> create(H kind) {
+        return create(kind, null);
     }
 
-    Hash<H> hash(Object leaf);
+    static <H extends HashKind<H>> LeafHasher<H> create(H kind, PojoBytes pojoBytes) {
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.hashBuilder(kind)
+            .map(Bytes::from);
+        return new DefaultLeafHasher<>(
+            supplier,
+            pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes
+        );
+    }
 
     default HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {
         return hb.hash(hash(leaf).bytes());
     }
+
+    Hash<H> hash(Object leaf);
 }
