@@ -4,8 +4,8 @@ import com.github.kjetilv.uplift.hash.Hashes;
 
 /**
  * Say you have a Java object.  How do you turn it into a byte array for hashing?  This interface knows how.
- * Implement it and pass it {@link MapsMemoizers#create(KeyHandler, PojoBytes, com.github.kjetilv.uplift.hash.HashKind) here} or
- * {@link MapsMemoizers#create(PojoBytes, com.github.kjetilv.uplift.hash.HashKind) here}.
+ * <p>
+ * Implement it or use {@link #HASHCODE one} {@link #TOSTRING of} {@link #UNSUPPORTED the} presets.
  */
 @SuppressWarnings("unused")
 public interface PojoBytes {
@@ -19,6 +19,15 @@ public interface PojoBytes {
      * Uses {@link Object#toString()} to derive bytes from the string
      */
     PojoBytes TOSTRING = value -> value.toString().getBytes();
+
+    /**
+     * Fails if called.  Use when we don't expect any POJOs
+     */
+    PojoBytes UNSUPPORTED = value -> {
+        throw new IllegalArgumentException(
+            "Unexpected pojo:" + value + (value == null ? "" : " of " + value.getClass())
+        );
+    };
 
     byte[] bytes(Object pojo);
 }

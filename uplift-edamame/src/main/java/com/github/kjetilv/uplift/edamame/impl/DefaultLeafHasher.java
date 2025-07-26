@@ -37,8 +37,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         return hashTo(newBuilder.get(), leaf).get();
     }
 
-    @Override
-    public HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {
+    private HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {
         return switch (leaf) {
             case String s -> hashString(T.STRING.tag(hb), s);
             case Boolean b -> hashString(T.BOOL.tag(hb), Boolean.toString(b));

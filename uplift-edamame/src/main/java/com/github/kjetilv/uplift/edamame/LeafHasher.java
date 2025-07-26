@@ -45,9 +45,5 @@ public interface LeafHasher<H extends HashKind<H>> {
         );
     }
 
-    default HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {
-        return hb.hash(hash(leaf).bytes());
-    }
-
     Hash<H> hash(Object leaf);
 }
