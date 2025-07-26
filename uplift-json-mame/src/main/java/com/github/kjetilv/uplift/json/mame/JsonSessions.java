@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 public final class JsonSessions {
 
-    public static <H extends HashKind<H>> JsonSession<H> create(H kind) {
+    public static <H extends HashKind<H>> JsonSession create(H kind) {
         Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.bytesBuilder(kind);
         LeafHasher<H> leafHasher = LeafHasher.create(kind, supplier);
         Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer();

@@ -18,7 +18,7 @@ class JsonSessionTest {
     @Test
     void testLists() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession<HashKind.K256> jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
         Json.INSTANCE.parse(
             //language=json
             """
@@ -39,26 +39,28 @@ class JsonSessionTest {
         AtomicReference<Object> reference2 = new AtomicReference<>();
         Json.INSTANCE.parse(
             //language=json
-                """
-                    {
-                      "zip" : [
-                          { "foo": "bar" },
-                          { "foo": "bar" }
-                      ]
-                    }
-                    """,
+            """
+                {
+                  "zip" : [
+                      { "foo": "bar" },
+                      { "foo": "bar" }
+                  ]
+                }
+                """,
             jsonSession.onDone(reference2::set)
         );
         Map<String, Object> zip = (Map<String, Object>) reference2.get();
         List<Map<String, Object>> list = (List<Map<String, Object>>) zip.get("zip");
-        assertThat(list).satisfies(JsonSessionTest::sameValues);
+        assertThat(list)
+            .satisfies(JsonSessionTest::sameValues)
+            .allSatisfy(m -> assertThat(m).isSameAs(foobar));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testMaps() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession<HashKind.K256> jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
         Json.INSTANCE.parse(
             //language=json
             """
@@ -69,10 +71,9 @@ class JsonSessionTest {
                 """,
             jsonSession.onDone(reference::set)
         );
-        assertThat(reference).hasValueSatisfying(value -> {
+        assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
-                .satisfies(JsonSessionTest::sameValues);
-        });
+                .satisfies(JsonSessionTest::sameValues));
 
         Object foobar = ((Map<String, Object>) reference.get()).get("zip");
 
@@ -87,13 +88,12 @@ class JsonSessionTest {
                 """,
             jsonSession.onDone(reference2::set)
         );
-        assertThat(reference2).hasValueSatisfying(value -> {
+        assertThat(reference2).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
                 .satisfies(map -> {
                     allSame(map.values(), map.values());
                     allSame(map.values(), List.of(foobar));
-                });
-        });
+                }));
 
         AtomicReference<Object> reference3 = new AtomicReference<>();
         Json.INSTANCE.parse(
