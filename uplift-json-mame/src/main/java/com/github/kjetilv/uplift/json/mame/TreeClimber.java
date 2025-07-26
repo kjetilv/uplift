@@ -19,28 +19,28 @@ public record TreeClimber<H extends HashKind<H>>(
     Consumer<Object> onDone
 ) implements Callbacks {
 
-    static <H extends HashKind<H>> HashedTree.Leaf<String, H> tree(
+    static <H extends HashKind<H>> HashedTree.Leaf<String, H> leaf(
         LeafHasher<H> leafHasher,
-        Object leaf
+        Object object
     ) {
-        return new HashedTree.Leaf<>(leafHasher.hash(leaf), leaf);
+        return new HashedTree.Leaf<>(leafHasher.hash(object), object);
     }
 
     @Override
     public Callbacks bool(boolean bool) {
-        done(TreeClimber.tree(leafHasher, bool));
+        done(TreeClimber.leaf(leafHasher, bool));
         return this;
     }
 
     @Override
     public Callbacks number(Token.Number number) {
-        done(TreeClimber.tree(leafHasher, number.number()));
+        done(TreeClimber.leaf(leafHasher, number.number()));
         return this;
     }
 
     @Override
     public Callbacks string(Token.Str str) {
-        done(TreeClimber.tree(leafHasher, str.value()));
+        done(TreeClimber.leaf(leafHasher, str.value()));
         return this;
     }
 

@@ -14,8 +14,49 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class MameTest {
 
+    @SuppressWarnings("unchecked")
     @Test
-    void test() {
+    void testLists() {
+        AtomicReference<Object> reference = new AtomicReference<>();
+        Mame<HashKind.K256> mame = Mame.create(HashKind.K256);
+        Json.INSTANCE.parse(
+            //language=json
+            """
+                [
+                  { "foo": "bar" },
+                  { "foo": "bar" }
+                ]
+                """,
+            mame.onDone(reference::set)
+        );
+        assertThat(reference).hasValueSatisfying(value ->
+            assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
+                .satisfies(MameTest::sameValues));
+
+        List<Object> objects = (List<Object>) reference.get();
+        Map<String, Object> foobar = (Map<String, Object>) objects.getFirst();
+
+        AtomicReference<Object> reference2 = new AtomicReference<>();
+        Json.INSTANCE.parse(
+            //language=json
+                """
+                    {
+                      "zip" : [
+                          { "foo": "bar" },
+                          { "foo": "bar" }
+                      ]
+                    }
+                    """,
+            mame.onDone(reference2::set)
+        );
+        Map<String, Object> zip = (Map<String, Object>) reference2.get();
+        List<Map<String, Object>> list = (List<Map<String, Object>>) zip.get("zip");
+        assertThat(list).satisfies(MameTest::sameValues);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testMaps() {
         AtomicReference<Object> reference = new AtomicReference<>();
         Mame<HashKind.K256> mame = Mame.create(HashKind.K256);
         Json.INSTANCE.parse(
@@ -73,7 +114,11 @@ class MameTest {
         allSame(m.values(), m.values());
     }
 
-    private static void allSame(Collection<Object> c1, Collection<Object> c2) {
+    private static void sameValues(Collection<?> c1) {
+        allSame(c1, c1);
+    }
+
+    private static void allSame(Collection<?> c1, Collection<?> c2) {
         assertThat(c1).allSatisfy(value ->
             assertThat(c2).allSatisfy(otherValue ->
                 assertThat(otherValue).isSameAs(value)));

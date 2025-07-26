@@ -68,17 +68,17 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
 
     @Override
     public Callbacks bool(boolean bool) {
-        return add(bool);
+        return add(leaf(bool));
     }
 
     @Override
     public Callbacks number(Token.Number number) {
-        return add(number.number());
+        return add(leaf(number.number()));
     }
 
     @Override
     public Callbacks string(Token.Str str) {
-        return add(str.value());
+        return add(leaf(str.value()));
     }
 
     @Override
@@ -87,16 +87,16 @@ public class ListClimber<H extends HashKind<H>> implements Callbacks {
         return parent;
     }
 
-    private Callbacks add(Object object) {
-        add(TreeClimber.tree(leafHasher, object));
-        return this;
-    }
-
-    private void add(HashedTree.Leaf<String, H> tree) {
+    private Callbacks add(HashedTree<String, H> tree) {
         try {
             list.add(tree);
         } finally {
             cacher.accept(tree);
         }
+        return this;
+    }
+
+    private HashedTree.Leaf<String, H> leaf(Object value) {
+        return TreeClimber.leaf(leafHasher, value);
     }
 }

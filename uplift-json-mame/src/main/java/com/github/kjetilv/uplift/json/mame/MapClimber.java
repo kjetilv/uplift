@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public class MapClimber<H extends HashKind<H>> implements Callbacks {
 
-    private final Supplier<HashBuilder<byte[], H>> hashBuilderSupplier;
+    private final Supplier<HashBuilder<byte[], H>> supplier;
 
     private final LeafHasher<H> leafHasher;
 
@@ -33,20 +33,20 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
     private Token.Field field;
 
     public MapClimber(
-        Supplier<HashBuilder<byte[], H>> hashBuilderSupplier,
+        Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        this.hashBuilderSupplier = hashBuilderSupplier;
+        this.supplier = supplier;
         this.keyHandler = key1 -> (Token.Field) key1;
         this.leafHasher = leafHasher;
         this.parent = parent;
         this.cacher = cacher;
         this.onDone = onDone;
 
-        this.builder = this.hashBuilderSupplier.get();
+        this.builder = this.supplier.get();
     }
 
     @Override
@@ -59,38 +59,32 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
     @Override
     public Callbacks objectStarted() {
         return new MapClimber<>(
-            hashBuilderSupplier,
+            supplier,
             leafHasher,
             this,
             cacher,
-            this::setField
+            this::set
         );
     }
 
     @Override
     public Callbacks bool(boolean bool) {
-        return set(bool);
+        return set(leaf(bool));
     }
 
     @Override
     public Callbacks number(Token.Number number) {
-        return set(number.number());
+        return set(leaf(number.number()));
     }
 
     @Override
     public Callbacks string(Token.Str str) {
-        return set(str.value());
+        return set(leaf(str.value()));
     }
 
     @Override
     public Callbacks arrayStarted() {
-        return new ListClimber<>(
-            hashBuilderSupplier,
-            leafHasher,
-            this,
-            cacher,
-            this::setField
-        );
+        return new ListClimber<>(supplier, leafHasher, this, cacher, this::set);
     }
 
     @Override
@@ -99,16 +93,16 @@ public class MapClimber<H extends HashKind<H>> implements Callbacks {
         return parent;
     }
 
-    private Callbacks set(Object object) {
-        setField(TreeClimber.tree(leafHasher, object));
-        return this;
-    }
-
-    private void setField(HashedTree<String, H> tree) {
+    private Callbacks set(HashedTree<String, H> tree) {
         try {
             map.put(field.value(), tree);
         } finally {
             cacher.accept(tree);
         }
+        return this;
+    }
+
+    private HashedTree.Leaf<String, H> leaf(Object value) {
+        return TreeClimber.leaf(leafHasher, value);
     }
 }
