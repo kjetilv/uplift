@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-final class ListClimber<H extends HashKind<H>> extends SubClimber<H> {
+final class ListClimber<H extends HashKind<H>>
+    extends SubClimber<H> {
 
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 
@@ -37,7 +38,7 @@ final class ListClimber<H extends HashKind<H>> extends SubClimber<H> {
     }
 
     @Override
-    protected void add(HashedTree<String, H> tree) {
+    protected void set(HashedTree<String, H> tree) {
         list.add(tree);
     }
 }

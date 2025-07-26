@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MapsMemoizersTest {
 
     static HashBuilder<byte[], HashKind.K128> md5HashBuilder() {
-        return Hashes.hashBuilder(HashKind.K128).map(Bytes::from);
+        return Hashes.bytesBuilder(HashKind.K128);
     }
 
     static com.github.kjetilv.uplift.hash.Hash<HashKind.K128> random() {

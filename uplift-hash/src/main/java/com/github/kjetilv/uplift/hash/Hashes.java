@@ -156,6 +156,10 @@ public final class Hashes {
         return bytes;
     }
 
+    public static <H extends HashKind<H>> HashBuilder<byte[], H> bytesBuilder(H kind) {
+        return hashBuilder(kind).map(Bytes::from);
+    }
+
     public static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBuilder(H kind) {
         return new DigestiveHashBuilder<>(new MessageByteDigest<>(kind), IDENTITY);
     }

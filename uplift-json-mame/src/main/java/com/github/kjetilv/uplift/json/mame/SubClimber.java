@@ -11,7 +11,8 @@ import com.github.kjetilv.uplift.json.Token;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-sealed abstract class SubClimber<H extends HashKind<H>> extends AbstractClimber<H>
+sealed abstract class SubClimber<H extends HashKind<H>>
+    extends AbstractClimber<H>
     permits ListClimber, MapClimber {
 
     private final HashBuilder<byte[], H> builder;
@@ -32,28 +33,23 @@ sealed abstract class SubClimber<H extends HashKind<H>> extends AbstractClimber<
         super(supplier, leafHasher, cacher);
         this.onDone = onDone;
         this.parent = parent;
-
         this.builder = supplier.get();
         this.hashBuilder = this.builder.map(Hash::bytes);
     }
 
     @Override
     public final Callbacks field(Token.Field key) {
-        if (this instanceof MapClimber) {
-            Token.Field field = normalized(key);
-            builder.hash(fieldBytes(field));
-            fieldWasSet(field);
-            return this;
-        }
-        throw new IllegalStateException("Unexecpted event");
+        Token.Field field = normalized(key);
+        builder.hash(fieldBytes(field));
+        fieldWasSet(field);
+        return this;
     }
 
     @Override
-    protected final Callbacks done(HashedTree<String, H> tree) {
+    protected final void done(HashedTree<String, H> tree) {
         hashBuilder.hash(tree.hash());
-        cacher.accept(tree);
-        add(tree);
-        return this;
+        cache(tree);
+        set(tree);
     }
 
     protected void fieldWasSet(Token.Field field) {
@@ -68,5 +64,5 @@ sealed abstract class SubClimber<H extends HashKind<H>> extends AbstractClimber<
 
     protected abstract HashedTree<String, H> hashedTree(Hash<H> hash);
 
-    protected abstract void add(HashedTree<String, H> tree);
+    protected abstract void set(HashedTree<String, H> tree);
 }

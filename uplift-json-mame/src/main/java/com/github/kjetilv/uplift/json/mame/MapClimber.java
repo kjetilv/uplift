@@ -13,11 +13,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-final class MapClimber<H extends HashKind<H>> extends SubClimber<H> implements Callbacks {
+final class MapClimber<H extends HashKind<H>>
+    extends SubClimber<H>
+    implements Callbacks {
 
     private final Map<String, HashedTree<String, H>> map = new HashMap<>();
 
-    private Token.Field field;
+    private Token.Field currentField;
 
     MapClimber(
         Supplier<HashBuilder<byte[], H>> supplier,
@@ -36,7 +38,7 @@ final class MapClimber<H extends HashKind<H>> extends SubClimber<H> implements C
 
     @Override
     protected void fieldWasSet(Token.Field field) {
-        this.field = field;
+        this.currentField = field;
     }
 
     @Override
@@ -45,7 +47,7 @@ final class MapClimber<H extends HashKind<H>> extends SubClimber<H> implements C
     }
 
     @Override
-    protected void add(HashedTree<String, H> tree) {
-        map.put(field.value(), tree);
+    protected void set(HashedTree<String, H> tree) {
+        map.put(currentField.value(), tree);
     }
 }
