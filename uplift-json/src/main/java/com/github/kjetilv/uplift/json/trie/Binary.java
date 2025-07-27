@@ -2,30 +2,28 @@ package com.github.kjetilv.uplift.json.trie;
 
 final class Binary {
 
-    static int search(int[] is, int i) {
-        if (is.length == 0) {
+    static int search(int[] ints, int target) {
+        if (ints.length == 0) {
             return NOT_FOUND;
         }
-        int len = is.length;
-        int lowerIndex = 0;
-        int upperIndex = len - 1;
-        int currentIndex = midPoint(lowerIndex, upperIndex);
-        do {
-            int current = is[currentIndex];
-            if (current == i) { // Found it
-                return currentIndex;
+        int lo = 0;
+        int hi = ints.length - 1;
+        while (lo <= hi) {
+            int index = midPoint(hi, lo);
+            int found = ints[index];
+            if (found == target) {
+                // Found it
+                return index;
             }
-            if (current < i) { // Search higher part; set lower bound one higher
-                lowerIndex = currentIndex + 1;
-            } else { // Search lower part; set upper bound one lower
-                upperIndex = currentIndex - 1;
+            if (found < target) {
+                // Search higher part; set lower bound one higher
+                lo = index + 1;
+            } else {
+                // Search lower part; set upper bound one lower
+                hi = index - 1;
             }
-            int nextIndex = midPoint(lowerIndex, upperIndex);
-            if (nextIndex == currentIndex || nextIndex == NOT_FOUND) { // Search stops
-                return NOT_FOUND;
-            }
-            currentIndex = nextIndex;
-        } while (true);
+        }
+        return NOT_FOUND;
     }
 
     private Binary() {
@@ -33,8 +31,8 @@ final class Binary {
 
     private static final int NOT_FOUND = -1;
 
-    private static int midPoint(int start, int end) {
-        int range = end - start;
-        return start + range / 2 + range % 2;
+    private static int midPoint(int hi, int lo) {
+        int r = hi - lo;
+        return lo + r / 2 + r % 2;
     }
 }
