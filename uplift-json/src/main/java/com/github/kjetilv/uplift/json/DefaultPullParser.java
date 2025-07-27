@@ -34,26 +34,23 @@ final class DefaultPullParser implements PullParser {
         Callbacks callbacks = initial.objectStarted();
         boolean canonical = callbacks.tokenResolver().isPresent();
         Token next = tokens.nextField(canonical);
-        do {
-            if (next instanceof Token.Field fieldToken) {
-                callbacks = processField(
+        while (next != Token.END_OBJECT) {
+            switch (next) {
+                case Token.Field fieldToken -> callbacks = processField(
                     tokens,
                     fieldToken,
                     callbacks
                 );
-            } else if (next == Token.SKIP_FIELD) {
-                skip(tokens);
-            } else {
-                return next == Token.END_OBJECT
-                    ? callbacks.objectEnded()
-                    : failParse(
-                        next,
-                        STRING,
-                        TokenType.END_OBJECT
-                    );
+                case Token.SkipField _ -> skip(tokens);
+                default -> failParse(
+                    next,
+                    STRING,
+                    TokenType.END_OBJECT
+                );
             }
             next = commaOr(tokens, Token.END_OBJECT, canonical);
-        } while (true);
+        }
+        return callbacks.objectEnded();
     }
 
     private Callbacks processArray(Tokens tokens, Callbacks initial) {
