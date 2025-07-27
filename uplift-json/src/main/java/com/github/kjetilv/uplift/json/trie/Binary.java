@@ -4,39 +4,37 @@ final class Binary {
 
     static int search(int[] is, int i) {
         if (is.length == 0) {
-            return -1;
+            return NOT_FOUND;
         }
         int len = is.length;
-        int lower = 0;
-        int upper = len - 1;
-        int index = mid(lower, upper);
+        int lowerIndex = 0;
+        int upperIndex = len - 1;
+        int currentIndex = midPoint(lowerIndex, upperIndex);
         do {
-            if (index == -1) {
-                return -1;
+            int current = is[currentIndex];
+            if (current == i) { // Found it
+                return currentIndex;
             }
-            int found = is[index];
-            if (found == i) {
-                return index;
+            if (current < i) { // Search higher part; set lower bound one higher
+                lowerIndex = currentIndex + 1;
+            } else { // Search lower part; set upper bound one lower
+                upperIndex = currentIndex - 1;
             }
-            if (found < i) {
-                lower = index + 1;
-            } else {
-                upper = index - 1;
+            int nextIndex = midPoint(lowerIndex, upperIndex);
+            if (nextIndex == currentIndex || nextIndex == NOT_FOUND) { // Search stops
+                return NOT_FOUND;
             }
-            int newIndex = mid(lower, upper);
-            if (index == newIndex) {
-                return -1;
-            }
-            index = newIndex;
+            currentIndex = nextIndex;
         } while (true);
     }
 
     private Binary() {
     }
 
-    private static int mid(int start, int end) {
+    private static final int NOT_FOUND = -1;
+
+    private static int midPoint(int start, int end) {
         int range = end - start;
-        int middle = range / 2 + range % 2;
-        return start + middle;
+        return start + range / 2 + range % 2;
     }
 }
