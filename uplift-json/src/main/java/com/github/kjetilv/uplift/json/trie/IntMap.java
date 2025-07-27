@@ -22,7 +22,6 @@ sealed interface IntMap<T> extends IntFunction<T> {
             .stream()
             .sorted(Comparator.comparing(IntMap::intKey))
             .toList();
-
         int[] keys = list
             .stream()
             .mapToInt(IntMap::intKey)
@@ -30,18 +29,17 @@ sealed interface IntMap<T> extends IntFunction<T> {
         Object[] values = list.stream()
             .map(Map.Entry::getValue).toArray();
 
-        if (size == 2) {
-            return new Two<>(keys[0], (T) values[0], keys[1], (T) values[1]);
-        }
+        return size == 2
+            ? new Two<>(keys[0], (T) values[0], keys[1], (T) values[1])
+            : new Sparse<T>(keys, values);
 
-        return new Sparse<>(keys, values);
     }
 
-    private static <T> int intKey(Map.Entry<? extends Number, T> e) {
+    private static int intKey(Map.Entry<? extends Number, ?> e) {
         return e.getKey().intValue();
     }
 
-    private static <T> int singleKey(Map<? extends Number, T> map) {
+    private static int singleKey(Map<? extends Number, ?> map) {
         return map.keySet().iterator().next().intValue();
     }
 

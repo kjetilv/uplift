@@ -27,8 +27,7 @@ final class TrieBuilder {
             return node(leaf.length(), leaf, null);
         }
         Map<Byte, Trie> level = nextLevel(fields, index);
-        IntMap<Trie> intMap = IntMap.from(level);
-        return node(index, leaf, intMap);
+        return node(index, leaf, IntMap.from(level));
     }
 
     private static Map<Byte, Trie> nextLevel(Collection<Token.Field> fields, int index) {

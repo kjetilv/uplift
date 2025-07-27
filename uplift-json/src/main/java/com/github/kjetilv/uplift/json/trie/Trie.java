@@ -10,9 +10,9 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 
-public record Trie(int pos, Token.Field field, IntFunction<Trie> level) {
+record Trie(int pos, Token.Field field, IntFunction<Trie> level) {
 
-    public static Trie node(int skip, Token.Field leaf, IntFunction<Trie> tries) {
+    public static Trie node(int skip, Token.Field leaf, IntMap<Trie> tries) {
         return new Trie(skip, leaf, tries);
     }
 
