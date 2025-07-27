@@ -7,7 +7,7 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-interface IntMap<T> extends IntFunction<T> {
+sealed interface IntMap<T> extends IntFunction<T> {
 
     @SuppressWarnings("unchecked")
     static <T> IntMap<T> from(Map<? extends Number, T> map) {
@@ -50,8 +50,8 @@ interface IntMap<T> extends IntFunction<T> {
         @SuppressWarnings("unchecked")
         @Override
         public T apply(int value) {
-            int i = Binary.search(keys, value);
-            return i < 0 ? null : (T) values[i];
+            int index = Binary.search(keys, value);
+            return index < 0 ? null : (T) values[index];
         }
 
         @Override

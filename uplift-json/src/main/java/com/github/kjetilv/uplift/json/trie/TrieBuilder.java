@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static com.github.kjetilv.uplift.json.trie.Trie.node;
+
 final class TrieBuilder {
 
     static Trie build(Collection<Token.Field> fields) {
@@ -22,10 +24,11 @@ final class TrieBuilder {
             .orElse(null);
 
         if (leaf != null && fields.size() == 1) {
-            return Trie.node(leaf.length(), leaf, null);
+            return node(leaf.length(), leaf, null);
         }
         Map<Byte, Trie> level = nextLevel(fields, index);
-        return Trie.node(index, leaf, IntMap.from(level));
+        IntMap<Trie> intMap = IntMap.from(level);
+        return node(index, leaf, intMap);
     }
 
     private static Map<Byte, Trie> nextLevel(Collection<Token.Field> fields, int index) {
