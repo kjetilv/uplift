@@ -10,13 +10,7 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
         super(new Ints(Objects.requireNonNull(stream, "stream")));
     }
 
-    private static final class Ints implements IntSupplier {
-
-        private final InputStream stream;
-
-        private Ints(InputStream stream) {
-            this.stream = Objects.requireNonNull(stream, "stream");
-        }
+    private record Ints(InputStream stream) implements IntSupplier {
 
         @Override
         public int getAsInt() {
