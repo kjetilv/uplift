@@ -69,7 +69,18 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
         return new HashedTree.Leaf<>(leafHasher.hash(object), object);
     }
 
-    private static final KeyHandler<Token.Field> KEY_HANDLER = key -> (Token.Field) key;
+    private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {
+
+        @Override
+        public Token.Field normalize(Object key) {
+            return (Token.Field) key;
+        }
+
+        @Override
+        public byte[] bytes(Token.Field key) {
+            return key.bytes();
+        }
+    };
 
     protected static byte[] fieldBytes(Token.Field field) {
         return KEY_HANDLER.bytes(field);

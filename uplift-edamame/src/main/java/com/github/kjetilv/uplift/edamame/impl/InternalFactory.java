@@ -70,7 +70,11 @@ public final class InternalFactory {
     }
 
     public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
-        return new CanonicalSubstructuresCataloguer<>();
+        return canonicalizer(false);
+    }
+
+    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(boolean collisionsNeverHappen) {
+        return new CanonicalSubstructuresCataloguer<>(collisionsNeverHappen);
     }
 
     private InternalFactory() {

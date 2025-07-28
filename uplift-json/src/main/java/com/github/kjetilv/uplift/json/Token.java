@@ -160,6 +160,10 @@ public sealed interface Token permits
             return lineSegment.asString();
         }
 
+        public byte[] bytes() {
+            return LineSegments.simpleBytes(lineSegment);
+        }
+
         public boolean differsAt(Field other, int index) {
             return lineSegment.byteAt(index) != other.lineSegment().byteAt(index);
         }

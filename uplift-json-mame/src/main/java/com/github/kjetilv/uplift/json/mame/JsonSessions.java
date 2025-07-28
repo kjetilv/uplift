@@ -18,7 +18,7 @@ public final class JsonSessions {
     public static <H extends HashKind<H>> JsonSession create(H kind) {
         return create(
             kind,
-            (BiConsumer<Hash<H>, Object>) null
+            (Consumer<Object>) null
         );
     }
 
@@ -28,7 +28,9 @@ public final class JsonSessions {
     ) {
         return create(
             kind,
-            (_, item) -> collisionHandler.accept(item)
+            collisionHandler == null
+                ? null
+                : (_, item) -> collisionHandler.accept(item)
         );
     }
 
@@ -36,9 +38,29 @@ public final class JsonSessions {
         H kind,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
+        return create(kind, collisionHandler, false);
+    }
+
+    public static <H extends HashKind<H>> JsonSession create(
+        H kind,
+        boolean collisionsNeverHappen
+    ) {
+        return create(kind, null, collisionsNeverHappen);
+    }
+
+    private static <H extends HashKind<H>> JsonSession create(
+        H kind,
+        BiConsumer<Hash<H>, Object> collisionHandler,
+        boolean collisionsNeverHappen
+    ) {
+        if (collisionsNeverHappen && collisionHandler != null) {
+            throw new IllegalStateException(
+                "Got a collision handler even though collisionsNeverHappen=true: " + collisionHandler
+            );
+        }
         Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.bytesBuilder(kind);
         LeafHasher<H> leafHasher = LeafHasher.create(kind, supplier, PojoBytes.UNSUPPORTED);
-        Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer();
+        Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer(collisionsNeverHappen);
         return onDone ->
             new Climber<>(supplier, leafHasher, canonicalizer, onDone, collisionHandler);
     }

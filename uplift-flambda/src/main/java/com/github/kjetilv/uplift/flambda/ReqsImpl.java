@@ -35,9 +35,8 @@ record ReqsImpl(URI uri) implements Reqs {
         boolean json
     ) {
         Objects.requireNonNull(method, "method");
-        URI uri1 = uri == null ? uri() : uri().resolve(uri);
         try {
-            HttpRequest.Builder base = HttpRequest.newBuilder(uri1);
+            HttpRequest.Builder base = HttpRequest.newBuilder(resolve(uri));
             if (headers != null) {
                 headers.forEach(base::header);
             }
@@ -53,8 +52,12 @@ record ReqsImpl(URI uri) implements Reqs {
                 return build.sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
             }
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Failed to execute " + method + " " + uri, e);
         }
+    }
+
+    private URI resolve(URI uri) {
+        return uri == null ? uri() : uri().resolve(uri);
     }
 
     private static boolean walksLikeADuck(String body) {

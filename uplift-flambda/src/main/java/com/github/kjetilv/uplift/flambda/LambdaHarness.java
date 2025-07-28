@@ -23,6 +23,12 @@ import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 @SuppressWarnings("unused")
 public class LambdaHarness implements Closeable {
 
+    public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
+        List.of("*"),
+        List.of("GET"),
+        Collections.emptyList()
+    );
+
     private final String name;
 
     private final ExecutorService testExec;
@@ -144,16 +150,9 @@ public class LambdaHarness implements Closeable {
         return this.reqs;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + name + " @ " + localLambda.getLambdaUri() + "]";
-    }
+    private static final int K_64 = 8 * 8192;
 
-    public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
-        List.of("*"),
-        List.of("GET"),
-        Collections.emptyList()
-    );
+    private static final int SHORT_Q = 10;
 
     private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
 
@@ -174,8 +173,12 @@ public class LambdaHarness implements Closeable {
         return new LocalLambdaSettings(
             localLambdaSettings == null ? null : localLambdaSettings.lambdaPort(),
             localLambdaSettings == null ? null : localLambdaSettings.apiPort(),
-            localLambdaSettings == null ? 8 * 8192 : localLambdaSettings.requestBufferSize(),
-            localLambdaSettings == null ? 10 : localLambdaSettings.queueLength(),
+            localLambdaSettings == null
+                ? K_64
+                : localLambdaSettings.requestBufferSize(),
+            localLambdaSettings == null
+                ? SHORT_Q
+                : localLambdaSettings.queueLength(),
             cors != null ? cors
                 : localLambdaSettings != null ? localLambdaSettings.cors()
                     : CORS_DEFAULTS,
@@ -187,5 +190,10 @@ public class LambdaHarness implements Closeable {
 
     private static Supplier<Instant> resolve(Supplier<Instant> time) {
         return time == null ? SYSTEM_TIME : time;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + name + " @ " + localLambda.getLambdaUri() + "]";
     }
 }

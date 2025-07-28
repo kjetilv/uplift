@@ -5,10 +5,11 @@ import com.github.kjetilv.uplift.edamame.Canonicalizer;
 import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.kernel.util.Collectioons;
-import com.github.kjetilv.uplift.kernel.util.Maps;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -33,6 +34,16 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     private final Map<Hash<H>, List<Object>> lists = new ConcurrentHashMap<>();
 
     private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
+
+    private final boolean collisionsNeverHappen;
+
+    CanonicalSubstructuresCataloguer() {
+        this(false);
+    }
+
+    CanonicalSubstructuresCataloguer(boolean collisionsNeverHappen) {
+        this.collisionsNeverHappen = collisionsNeverHappen;
+    }
 
     @Override
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
@@ -79,18 +90,18 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         Map<K, HashedTree<K, H>> valueMap,
         Function<HashedTree<K, H>, CanonicalValue<H>> canonicalTree
     ) {
-        return Maps.transformValues(valueMap, canonicalTree);
+        return transformValues(valueMap, canonicalTree);
     }
 
     private List<CanonicalValue<H>> recurse(
         List<HashedTree<K, H>> values,
         Function<HashedTree<K, H>, CanonicalValue<H>> canonicalTree
     ) {
-        return Collectioons.transform(values, canonicalTree);
+        return transform(values, canonicalTree);
     }
 
     private <T> CanonicalValue<H> resolve(Hash<H> hash, T existing, T value, Function<T, CanonicalValue<H>> wrap) {
-        return existing == null ? wrap.apply(value)
+        return existing == null || collisionsNeverHappen ? wrap.apply(existing == null ? value : existing)
             : existing.equals(value) ? wrap.apply(existing)
                 : new CanonicalValue.Collision<>(hash, value);
     }

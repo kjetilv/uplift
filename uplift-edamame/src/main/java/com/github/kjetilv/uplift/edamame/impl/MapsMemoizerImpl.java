@@ -139,11 +139,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     private boolean putOverflow(I identifier, Map<K, Object> value) {
-        overflowObjects.put(
-            identifier,
-            value
-        );
-        return true;
+        return overflowObjects.putIfAbsent(identifier, value) == null;
     }
 
     private <T> T withReadLock(ReadWriteLock lock, Supplier<T> action) {

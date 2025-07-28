@@ -40,7 +40,7 @@ final class Climber<H extends HashKind<H>>
         CanonicalValue<H> canonical = canonicalizer.canonical(tree);
         if (canonical instanceof CanonicalValue.Collision<H>(Hash<H> hash, Object value)) {
             if (collisionHandler == null) {
-                throw new IllegalStateException("Unexpected collision: " + hash + " -> " + value);
+                throw new IllegalStateException("Unhandled collision: " + hash + " -> " + value);
             }
             collisionHandler.accept(hash, value);
         }
