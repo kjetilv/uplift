@@ -43,20 +43,17 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     @Override
     public final Callbacks bool(boolean bool) {
-        done(leaf(bool));
-        return this;
+        return doneLeaf(bool);
     }
 
     @Override
     public final Callbacks number(Token.Number number) {
-        done(leaf(number.number()));
-        return this;
+        return doneLeaf(number.number());
     }
 
     @Override
     public final Callbacks string(Token.Str str) {
-        done(leaf(str.value()));
-        return this;
+        return doneLeaf(str.value());
     }
 
     protected final void cache(HashedTree<String, H> tree) {
@@ -64,6 +61,11 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     }
 
     protected abstract void done(HashedTree<String, H> tree);
+
+    private Callbacks doneLeaf(Object object) {
+        done(leaf(object));
+        return this;
+    }
 
     private HashedTree<String, H> leaf(Object object) {
         return new HashedTree.Leaf<>(leafHasher.hash(object), object);
