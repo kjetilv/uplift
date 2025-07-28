@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
 
