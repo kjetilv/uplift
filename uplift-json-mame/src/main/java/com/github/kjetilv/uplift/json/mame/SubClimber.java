@@ -38,28 +38,22 @@ sealed abstract class SubClimber<H extends HashKind<H>>
     }
 
     @Override
-    public final Callbacks field(Token.Field key) {
-        Token.Field field = normalized(key);
-        builder.hash(fieldBytes(field));
-        fieldWasSet(field);
-        return this;
-    }
-
-    @Override
     protected final void done(HashedTree<String, H> tree) {
         hashBuilder.hash(tree.hash());
-        cache(tree);
+        cacher.accept(tree);
         set(tree);
-    }
-
-    protected void fieldWasSet(Token.Field field) {
-        throw new IllegalStateException("Unexpected event: " + field);
     }
 
     protected Callbacks close() {
         Hash<H> hash = builder.get();
         onDone.accept(hashedTree(hash));
         return parent;
+    }
+
+    protected final Token.Field hashedField(Token.Field key) {
+        Token.Field field = normalized(key);
+        builder.hash(fieldBytes(field));
+        return field;
     }
 
     protected abstract HashedTree<String, H> hashedTree(Hash<H> hash);

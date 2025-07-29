@@ -15,11 +15,11 @@ import java.util.function.Supplier;
 sealed abstract class AbstractClimber<H extends HashKind<H>>
     implements Callbacks permits SubClimber, Climber {
 
+    protected final Consumer<HashedTree<String, H>> cacher;
+
     private final Supplier<HashBuilder<byte[], H>> supplier;
 
     private final LeafHasher<H> leafHasher;
-
-    private final Consumer<HashedTree<String, H>> cacher;
 
     public AbstractClimber(
         Supplier<HashBuilder<byte[], H>> supplier,
@@ -54,10 +54,6 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     @Override
     public final Callbacks string(Token.Str str) {
         return doneLeaf(str.value());
-    }
-
-    protected final void cache(HashedTree<String, H> tree) {
-        cacher.accept(tree);
     }
 
     protected abstract void done(HashedTree<String, H> tree);

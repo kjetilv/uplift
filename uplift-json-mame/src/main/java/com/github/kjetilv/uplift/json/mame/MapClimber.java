@@ -32,13 +32,14 @@ final class MapClimber<H extends HashKind<H>>
     }
 
     @Override
-    public Callbacks objectEnded() {
-        return close();
+    public Callbacks field(Token.Field key) {
+        this.currentField = hashedField(key);
+        return this;
     }
 
     @Override
-    protected void fieldWasSet(Token.Field field) {
-        this.currentField = field;
+    public Callbacks objectEnded() {
+        return close();
     }
 
     @Override
