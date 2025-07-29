@@ -47,6 +47,10 @@ public sealed interface CanonicalValue<H extends HashKind<H>> {
             this.hash = Objects.requireNonNull(hash, "hash");
             this.value = Objects.requireNonNull(value, "value");
         }
+
+        public static <K, H extends HashKind<H>> CanonicalValue<H> create(Hash<H> hash, Object object) {
+            return new Collision<>(hash, object);
+        }
     }
 
     record Null<H extends HashKind<H>>(Hash<H> hash) implements CanonicalValue<H> {
