@@ -77,9 +77,8 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     /**
      * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
      */
-    record Null<K, H extends HashKind<H>>(
-        Hash<H> hash
-    ) implements HashedTree<K, H> {
+    record Null<K, H extends HashKind<H>>(Hash<H> hash)
+        implements HashedTree<K, H> {
 
         @Override
         public Object unwrap() {

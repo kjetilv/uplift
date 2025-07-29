@@ -48,6 +48,9 @@ public final class JsonSessions {
         return create(kind, null, collisionsNeverHappen);
     }
 
+    private JsonSessions() {
+    }
+
     private static <H extends HashKind<H>> JsonSession create(
         H kind,
         BiConsumer<Hash<H>, Object> collisionHandler,
@@ -63,8 +66,5 @@ public final class JsonSessions {
         Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer(collisionsNeverHappen);
         return onDone ->
             new Climber<>(supplier, leafHasher, canonicalizer, onDone, collisionHandler);
-    }
-
-    private JsonSessions() {
     }
 }

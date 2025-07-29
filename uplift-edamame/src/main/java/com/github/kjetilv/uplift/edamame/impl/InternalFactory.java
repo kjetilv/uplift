@@ -66,7 +66,7 @@ public final class InternalFactory {
     }
 
     public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
-        return LeafHasher.create(kind, null, pojoBytes);
+        return LeafHasher.create(kind, pojoBytes);
     }
 
     public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
