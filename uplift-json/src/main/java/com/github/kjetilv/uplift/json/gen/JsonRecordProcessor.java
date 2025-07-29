@@ -22,47 +22,60 @@ import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.gen.Gen.*;
 
-@SupportedAnnotationTypes(
-    {
-        "com.github.kjetilv.uplift.json.anno.JsonRecord",
-        "com.github.kjetilv.uplift.json.anno.Field",
-        "com.github.kjetilv.uplift.json.anno.Singular"
-    }
-)
+@SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
 
     @Override
-    public boolean process(Set<? extends TypeElement> typedElements, RoundEnvironment roundEnv) {
-        if (containsJsonRecord(typedElements)) {
-            Collection<? extends Element> types = types(roundEnv);
-            Collection<? extends Element> enums = enums(roundEnv);
-            if (types.isEmpty()) {
-                requireEmptyEnums(enums);
+    public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnv) {
+        if (containsJsonRecord(typeElements)) {
+            Collection<? extends Element> typeEls = typeEls(roundEnv);
+            Collection<? extends Element> enumEls = enumEls(roundEnv);
+            if (typeEls.isEmpty()) {
+                requireEmptyEnums(enumEls);
                 return true;
             }
-            requireAllRecords(types);
-            requireAnyRootType(types);
+            requireAllRecords(typeEls);
+            requireAnyRootType(typeEls);
 
-            write(types, enums);
+            write(typeEls, enumEls);
         }
         return false;
     }
 
     private void write(
-        Collection<? extends Element> types,
-        Collection<? extends Element> enums
+        Collection<? extends Element> typeEls,
+        Collection<? extends Element> enumEls
     ) {
-        for (Element el : types) {
+        for (Element el : typeEls) {
             try {
-                TypeElement typeElement = typeEl(el);
-                Optional<TypeElement> rootElement = rootElement(typeElement);
-                PackageElement packageEl = packageEl(typeElement);
-                writeBuilder(packageEl, typeElement, builderFile(typeElement), types, enums);
-                writeCallbacks(packageEl, typeElement, callbackFile(typeElement), types, enums, rootElement.isPresent());
-                writeWriter(packageEl, typeElement, writerFile(typeElement), types, enums);
-                rootElement.ifPresent(rootEl ->
-                    writeRW(packageEl, rootEl, factoryFile(packageEl, rootEl))
+                TypeElement typeEl = typeEl(el);
+                Optional<TypeElement> rootEl = rootEl(typeEl);
+                PackageElement packageEl = packageEl(typeEl);
+                writeBuilder(
+                    packageEl,
+                    typeEl,
+                    builderFile(typeEl),
+                    typeEls,
+                    enumEls
+                );
+                writeCallbacks(
+                    packageEl,
+                    typeEl,
+                    callbackFile(typeEl),
+                    typeEls,
+                    enumEls,
+                    rootEl.isPresent()
+                );
+                writeWriter(
+                    packageEl,
+                    typeEl,
+                    writerFile(typeEl),
+                    typeEls,
+                    enumEls
+                );
+                rootEl.ifPresent(element ->
+                    writeRW(packageEl, element, factoryFile(packageEl, element))
                 );
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to write " + el, e);
@@ -70,24 +83,24 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         }
     }
 
-    private JavaFileObject factoryFile(PackageElement pe, TypeElement te) {
-        return file(factoryClassQ(pe, te));
+    private JavaFileObject factoryFile(PackageElement packageEl, TypeElement typeEl) {
+        return file(factoryClassQ(packageEl, typeEl));
     }
 
-    private JavaFileObject callbackFile(TypeElement typeElement) {
-        return classFileName(typeElement, "Callbacks");
+    private JavaFileObject callbackFile(TypeElement typeEl) {
+        return classFileName(typeEl, "Callbacks");
     }
 
-    private JavaFileObject writerFile(TypeElement typeElement) {
-        return classFileName(typeElement, "Writer");
+    private JavaFileObject writerFile(TypeElement typeEl) {
+        return classFileName(typeEl, "Writer");
     }
 
-    private JavaFileObject builderFile(TypeElement typeElement) {
-        return classFileName(typeElement, "Builder");
+    private JavaFileObject builderFile(TypeElement typeEl) {
+        return classFileName(typeEl, "Builder");
     }
 
-    private JavaFileObject classFileName(TypeElement typeElement, String callbacks) {
-        return file(fqName(typeElement) + '_' + callbacks);
+    private JavaFileObject classFileName(TypeElement typeEl, String callbacks) {
+        return file(fqName(typeEl) + '_' + callbacks);
     }
 
     private JavaFileObject file(String name) {
@@ -98,102 +111,100 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         }
     }
 
-    private static final String JSON_RECORD = JsonRecord.class.getName();
-
-    private static void requireAllRecords(Collection<? extends Element> types) {
-        if (types.stream().anyMatch(JsonRecordProcessor::isNotRecord)) {
+    private static void requireAllRecords(Collection<? extends Element> els) {
+        if (els.stream().anyMatch(JsonRecordProcessor::isNotRecord)) {
             throw new IllegalStateException(
                 "Only top-level record types are supported, found " + print(
-                    types,
+                    els,
                     JsonRecordProcessor::isNotRecord
                 ));
         }
     }
 
-    private static void requireEmptyEnums(Collection<? extends Element> enums) {
-        if (!enums.isEmpty()) {
+    private static void requireEmptyEnums(Collection<? extends Element> els) {
+        if (!els.isEmpty()) {
             throw new IllegalStateException(
-                "No types for " + enums.size() + " enums: " + print(enums));
+                "No types for " + els.size() + " enums: " + print(els));
         }
     }
 
-    private static void requireAnyRootType(Collection<? extends Element> types) {
-        if (rootType(types).isEmpty()) {
+    private static void requireAnyRootType(Collection<? extends Element> els) {
+        if (rootType(els).isEmpty()) {
             throw new IllegalStateException(
-                "None of " + types.size() + " elements are roots: " + print(types));
+                "None of " + els.size() + " elements are roots: " + print(els));
         }
     }
 
-    private static Optional<TypeElement> rootType(Collection<? extends Element> types) {
-        return typeElements(types)
-            .flatMap(typeElement ->
-                rootElement(typeElement).stream())
-            .findAny();
+    private static Optional<TypeElement> rootType(Collection<? extends Element> els) {
+        return typeEls(els).flatMap(typeEl -> rootEl(typeEl).stream()).findAny();
     }
 
-    private static TypeElement typeEl(Element element) {
-        if (element instanceof TypeElement typeElement) {
-            return typeElement;
+    private static TypeElement typeEl(Element el) {
+        if (el instanceof TypeElement typeEl) {
+            return typeEl;
         }
-        throw new IllegalStateException("Not a supported type: " + element);
+        throw new IllegalStateException("Not a supported type: " + el);
     }
 
-    private static Stream<TypeElement> typeElements(Collection<? extends Element> types) {
-        return types.stream()
+    private static Stream<TypeElement> typeEls(Collection<? extends Element> typeEls) {
+        return typeEls.stream()
             .filter(TypeElement.class::isInstance)
             .map(TypeElement.class::cast);
     }
 
-    private static boolean containsJsonRecord(Set<? extends TypeElement> typedElements) {
-        return Stream.ofNullable(typedElements).flatMap(Collection::stream)
-            .anyMatch(typeElement ->
-                typeElement.getQualifiedName().toString().equals(JSON_RECORD));
+    private static boolean containsJsonRecord(Set<? extends TypeElement> typeEls) {
+        return Stream.ofNullable(typeEls)
+            .flatMap(Collection::stream)
+            .anyMatch(JsonRecordProcessor::isJsonRecord);
+    }
+
+    private static boolean isJsonRecord(TypeElement typeEl) {
+        return typeEl.getQualifiedName().toString().equals(JsonRecord.class.getName());
     }
 
     private static boolean isNotRecord(Element element) {
-        return !isRecord(element);
+        return !isRecordElement(element);
     }
 
-    private static boolean isRecord(Element element) {
-        return kind(element, ElementKind.RECORD) &&
-               element instanceof TypeElement typeElement &&
-               isPackageOrClass(typeElement.getEnclosingElement());
+    private static boolean isRecordElement(Element el) {
+        return kind(el, ElementKind.RECORD) &&
+               el instanceof TypeElement typeEl &&
+               isPackageOrClass(typeEl.getEnclosingElement());
     }
 
-    private static boolean isPackageOrClass(Element enclosingElement) {
-        return enclosingElement instanceof PackageElement ||
-               enclosingElement instanceof TypeElement;
+    private static boolean isPackageOrClass(Element enclosingEl) {
+        return enclosingEl instanceof PackageElement || enclosingEl instanceof TypeElement;
     }
 
-    private static Collection<? extends Element> enums(RoundEnvironment roundEnv) {
+    private static Collection<? extends Element> enumEls(RoundEnvironment roundEnv) {
         return Gen.enums(roundEnv.getRootElements())
             .collect(Collectors.toSet());
     }
 
-    private static Collection<? extends Element> types(RoundEnvironment roundEnv) {
+    private static Collection<? extends Element> typeEls(RoundEnvironment roundEnv) {
         Stream<? extends Element> annotatedRecords = roundEnv.getRootElements()
             .stream()
-            .filter(element ->
-                element.getAnnotation(JsonRecord.class) != null);
+            .filter(el ->
+                el.getAnnotation(JsonRecord.class) != null);
         return typeStream(annotatedRecords)
             .collect(Collectors.toSet());
     }
 
-    private static Stream<? extends Element> typeStream(Stream<? extends Element> stream) {
-        return stream.flatMap(element ->
+    private static Stream<? extends Element> typeStream(Stream<? extends Element> els) {
+        return els.flatMap(el ->
             Stream.concat(
-                Stream.of(element),
-                typeStream(element.getEnclosedElements()
+                Stream.of(el),
+                typeStream(el.getEnclosedElements()
                     .stream()
                     .filter(enc -> enc.getKind() == ElementKind.RECORD))
             ));
     }
 
-    private static Optional<TypeElement> rootElement(TypeElement typeElement) {
-        return Optional.of(typeElement).flatMap(element ->
-            Optional.ofNullable(element.getAnnotation(JsonRecord.class))
+    private static Optional<TypeElement> rootEl(TypeElement typeEl) {
+        return Optional.of(typeEl).flatMap(el ->
+            Optional.ofNullable(el.getAnnotation(JsonRecord.class))
                 .filter(JsonRecord::root)
-                .map(_ -> element));
+                .map(_ -> el));
     }
 
     private static <E extends Element> String print(Collection<E> roots) {

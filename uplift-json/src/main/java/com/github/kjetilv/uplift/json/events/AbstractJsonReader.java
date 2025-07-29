@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, T> {
+abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, T> {
 
     private final Function<Consumer<T>, Callbacks> callbacksInitializer;
 

@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.json.io.Sink;
 
 import java.util.Objects;
 
-public abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<R, T, B> {
+abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<R, T, B> {
 
     private final ObjectWriter<T> objectWriter;
 
