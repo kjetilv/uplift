@@ -26,7 +26,7 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.206.0")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.207.0")
     implementation("software.amazon.awssdk:lambda:2.32.3")
     implementation("software.amazon.awssdk:cloudformation:2.32.3")
     implementation("software.amazon.awssdk:auth:2.32.3")
