@@ -13,6 +13,15 @@ import java.util.stream.StreamSupport;
  */
 public final class Collectioons {
 
+    public static <T, L extends Collection<T>, R> List<R> transform(
+        L list,
+        Function<T, R> transform
+    ) {
+        return list.stream()
+            .map(transform)
+            .toList();
+    }
+
     public static <T, R> List<R> transform(
         Iterable<? extends T> list,
         Function<T, R> transform

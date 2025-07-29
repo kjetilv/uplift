@@ -51,32 +51,32 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
             case Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
-                Map<K, CanonicalValue<H>> node = transformValues(valueMap, this::canonical);
-                yield collision(node.values()).orElseGet(() -> {
-                    Map<K, Object> map = transformValues(node, CanonicalValue::value);
-                    return resolve(
-                        hash,
-                        maps.putIfAbsent(hash, map),
-                        map,
-                        t -> new CanonicalValue.Node<>(hash, t)
-                    );
-                });
+                Map<K, CanonicalValue<H>> node = transformValues(valueMap, toCanonical());
+                yield collision(node.values())
+                    .orElseGet(() ->
+                        canonicalize(
+                            maps,
+                            hash,
+                            transformValues(node, toValue()),
+                            t ->
+                                new CanonicalValue.Node<>(hash, t)
+                        ));
             }
             case Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
-                List<CanonicalValue<H>> nodes = transform(values, this::canonical);
-                yield collision(nodes).orElseGet(() -> {
-                    List<Object> list = transform(nodes, CanonicalValue::value);
-                    return resolve(
-                        hash,
-                        lists.putIfAbsent(hash, list),
-                        list,
-                        t -> new CanonicalValue.Nodes<>(hash, t)
-                    );
-                });
+                List<CanonicalValue<H>> nodes = transform(values, toCanonical());
+                yield collision(nodes)
+                    .orElseGet(() ->
+                        canonicalize(
+                            lists,
+                            hash,
+                            transform(nodes, toValue()),
+                            t ->
+                                new CanonicalValue.Nodes<>(hash, t)
+                        ));
             }
-            case HashedTree.Leaf<?, H>(Hash<H> hash, Object value) -> resolve(
+            case HashedTree.Leaf<?, H>(Hash<H> hash, Object value) -> canonicalize(
+                leaves,
                 hash,
-                leaves.putIfAbsent(hash, value),
                 value,
                 t -> new CanonicalValue.Leaf<>(hash, t)
             );
@@ -84,13 +84,29 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         };
     }
 
-    private <T> CanonicalValue<H> resolve(Hash<H> hash, T existing, T value, Function<T, CanonicalValue<H>> wrap) {
-        return existing == null || collisionsNeverHappen ? wrap.apply(existing == null ? value : existing)
+    private Function<HashedTree<K, H>, CanonicalValue<H>> toCanonical() {
+        return this::canonical;
+    }
+
+    private Optional<CanonicalValue<H>> collision(Collection<CanonicalValue<H>> values) {
+        return values.stream()
+            .filter(Collision.class::isInstance)
+            .findFirst();
+    }
+
+    private <T> CanonicalValue<H> canonicalize(
+        Map<Hash<H>, T> map,
+        Hash<H> hash,
+        T value,
+        Function<T, CanonicalValue<H>> wrap
+    ) {
+        T existing = map.putIfAbsent(hash, value);
+        return existing == null || collisionsNeverHappen ? wrap.apply(value)
             : existing.equals(value) ? wrap.apply(existing)
                 : new Collision<>(hash, value);
     }
 
-    private Optional<CanonicalValue<H>> collision(Collection<CanonicalValue<H>> values) {
-        return values.stream().filter(Collision.class::isInstance).findFirst();
+    private static <H extends HashKind<H>> Function<CanonicalValue<H>, Object> toValue() {
+        return CanonicalValue::value;
     }
 }
