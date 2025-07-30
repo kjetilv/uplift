@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public final class BytesIO {
 
     public static byte[] readInputStream(InputStream stream) {
