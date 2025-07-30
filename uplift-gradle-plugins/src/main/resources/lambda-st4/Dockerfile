@@ -23,6 +23,9 @@ CMD /graalvm/*/bin/native-image ⎨main⎬ \
  -H:+ReportExceptionStackTraces \
  -H:+BuildReport \
  --enable-url-protocols=https \
+ ⎨enablepreview⎬ \
+ ⎨addmodules⎬ \
+ ⎨otheroptions⎬ \
  --target=linux-⎨arch⎬ \
  --class-path ⎨classpath⎬ \
  -o /out/⎨target⎬

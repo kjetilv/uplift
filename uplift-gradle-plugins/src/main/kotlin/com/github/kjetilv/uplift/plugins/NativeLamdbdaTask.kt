@@ -46,6 +46,15 @@ abstract class NativeLamdbdaTask : DefaultTask() {
     @get:Classpath
     abstract val classPath: ListProperty<File>
 
+    @get:Input
+    abstract val enablePreview: Property<Boolean>
+
+    @get:Input
+    abstract val addModules: Property<String>
+
+    @get:Input
+    abstract val otherOptions: Property<String>
+
     @TaskAction
     fun perform() {
         val dist = javaDist.get()
@@ -75,6 +84,9 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             "target" to identifier.get(),
             "arch" to arch.get(),
             "main" to main.get(),
+            "enablepreview" to (if (enablePreview.isPresent && enablePreview.get()) "--enable-preview" else ""),
+            "addmodules" to (if (addModules.isPresent) "--add-modules ${addModules.get()}" else ""),
+            "otheroptions" to (if (otherOptions.isPresent) otherOptions.get() else ""),
             "distfile" to file?.toASCIIString(),
             "disturi" to uri?.toASCIIString(),
             "classpath" to cp.joinToString(":") {

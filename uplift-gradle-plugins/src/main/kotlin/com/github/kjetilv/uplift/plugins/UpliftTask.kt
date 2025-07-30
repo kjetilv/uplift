@@ -69,11 +69,13 @@ abstract class UpliftTask : DefaultTask() {
     fun configure(
         account: String? = null,
         region: String? = null,
+        arch: String? = null,
         stack: String? = null,
         profile: String? = null
     ): UpliftTask = this.apply {
         account?.also(this.account::set)
         region?.also(this.region::set)
+        arch?.also(this.arch::set)
         stack?.also(this.stack::set)
         profile?.also(this.profile::set)
     }
