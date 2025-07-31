@@ -198,7 +198,9 @@ abstract class UpliftTask : DefaultTask() {
                     functionUrlConfigs(func).forEach { url ->
                         printer(
                             """
-                            ##   [${f + 1}] ${func.functionName()}: ${func.description()?.takeUnless(String::isBlank) ?: ""}
+                            ##   [${f + 1}] ${func.functionName()}: ${
+                                func.description()?.takeUnless(String::isBlank) ?: ""
+                            }
                             ##    modified @ ${func.lastModified() ?: "<unknown>"}
                             ##    Function URL ${url.functionUrl()} 
                             ##      created @ ${url.creationTime()}
@@ -301,7 +303,7 @@ abstract class UpliftTask : DefaultTask() {
         Files.write(
             upliftDir().resolve("Dockerfile"), "cdk-st4/Dockerfile".renderResource("arch" to arch.get())
         )
-        docker( upliftDir(), "build --tag cdk-site:latest ${upliftDir()}")
+        docker(upliftDir(), "build --tag cdk-site:latest ${upliftDir()}")
     }
 
     private fun volumes(vararg vols: Pair<*, *>) =

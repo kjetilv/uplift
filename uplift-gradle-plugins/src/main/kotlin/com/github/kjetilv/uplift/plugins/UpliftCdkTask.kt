@@ -44,7 +44,7 @@ abstract class UpliftCdkTask : UpliftTask() {
     }
 
 
-    private fun templated(pomCopy: Path?) =
+    private fun templated(pomCopy: Path) =
         Files.lines(pomCopy, StandardCharsets.UTF_8).collect(Collectors.toList()).flatMap { line ->
             if (line.contains("<mainClass>"))
                 addedMain(indent(line), line)

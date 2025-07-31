@@ -25,16 +25,13 @@ open class LambdaTask : DefaultTask() {
             logger.info("Wrote native artifact $path to $zipArtifact as $lambdaName")
         }
 
-    private val zipArtifact: Path get() = resolve(Path(target)).also { createDirectories(it.parent) }
+    private val zipArtifact: Path get() = resolve(Path(target)).also {
+        createDirectories(it.parent)
+    }
 
     private fun resolve(it: Path): Path = when {
-        isDirectory(it) ->
-            it.resolve("$artifact.zip")
-
-        it.toString().endsWith(".zip") ->
-            it
-
-        else ->
-            it.parent.resolve("${it.fileName}.zip")
+        isDirectory(it) -> it.resolve("$artifact.zip")
+        it.toString().endsWith(".zip") -> it
+        else -> it.parent.resolve("${it.fileName}.zip")
     }
 }
