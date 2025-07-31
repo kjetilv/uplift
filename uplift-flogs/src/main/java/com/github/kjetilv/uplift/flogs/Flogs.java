@@ -38,15 +38,11 @@ public final class Flogs {
     }
 
     public static Logger get(String name) {
-        return Optional.ofNullable(floggers.get())
+        return Optional.ofNullable(fLoggers.get())
             .map(logger ->
                 loggers.computeIfAbsent(name, logger::create))
             .orElseGet(() ->
-                emergencyLoggers.create(name)
-            );
-    }
-
-    public static void close() {
+                emergencyFLoggers.create(name));
     }
 
     private Flogs() {
@@ -54,12 +50,16 @@ public final class Flogs {
 
     private static final Map<String, Logger> loggers = new ConcurrentHashMap<>();
 
-    private static final AtomicReference<FLoggers> floggers = new AtomicReference<>();
+    private static final AtomicReference<FLoggers> fLoggers = new AtomicReference<>();
 
-    private static final FLoggers emergencyLoggers = initialized(null, null, null);
+    private static final FLoggers emergencyFLoggers = initialized(null, null, null);
 
-    private static FLoggers initialized(LogLevel logLevel, Consumer<String> printer, ExecutorService background) {
-        return floggers.updateAndGet(current ->
+    private static FLoggers initialized(
+        LogLevel logLevel,
+        Consumer<String> printer,
+        ExecutorService background
+    ) {
+        return fLoggers.updateAndGet(current ->
             new FLoggers(logLevel, printer, Instant::now, null));
     }
 }

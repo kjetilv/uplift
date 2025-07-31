@@ -36,3 +36,8 @@ bin/
 examples/**/gradle.properties
 gradle.properties
 .aider*
+
+### Java
+**/src/main/generated
+**/src/test/generated
+**/src/test/generated_tests

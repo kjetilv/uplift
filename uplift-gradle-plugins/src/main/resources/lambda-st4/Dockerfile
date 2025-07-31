@@ -21,7 +21,6 @@ CMD /graalvm/*/bin/native-image ⎨main⎬ \
  -g \
  -H:+UnlockExperimentalVMOptions \
  -H:+ReportExceptionStackTraces \
- -H:+BuildReport \
  --enable-url-protocols=https \
  ⎨enablepreview⎬ \
  ⎨addmodules⎬ \
