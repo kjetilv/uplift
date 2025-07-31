@@ -24,4 +24,4 @@ subprojects {
 }
 
 fun String.prop() =
-    project.takeIf { project.hasProperty(this) }?.property(this)?.toString()
+    project.takeIf { it.hasProperty(this) }?.property(this)?.toString()
