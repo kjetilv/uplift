@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
@@ -80,9 +81,20 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     record Null<K, H extends HashKind<H>>(Hash<H> hash)
         implements HashedTree<K, H> {
 
+        @SuppressWarnings("unchecked")
+        public static <K, H extends HashKind<H>> Null<K, H> instanceFor(H kind) {
+            return (Null<K, H>) NULLS.computeIfAbsent(
+                kind,
+                _ ->
+                    new Null<>(kind.blank())
+            );
+        }
+
         @Override
         public Object unwrap() {
             return null;
         }
+
+        private static final Map<HashKind<?>, Null<?, ?>> NULLS = new ConcurrentHashMap<>();
     }
 }

@@ -24,13 +24,14 @@ sealed abstract class SubClimber<H extends HashKind<H>>
     private final Consumer<HashedTree<String, H>> onDone;
 
     SubClimber(
+        H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone,
         Callbacks parent
     ) {
-        super(supplier, leafHasher, cacher);
+        super(kind, supplier, leafHasher, cacher);
         this.onDone = onDone;
         this.parent = parent;
         this.builder = supplier.get();

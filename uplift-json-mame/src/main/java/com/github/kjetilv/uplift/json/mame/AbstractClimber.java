@@ -17,15 +17,19 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     protected final Consumer<HashedTree<String, H>> cacher;
 
+    private final H kind;
+
     private final Supplier<HashBuilder<byte[], H>> supplier;
 
     private final LeafHasher<H> leafHasher;
 
-    public AbstractClimber(
+    protected AbstractClimber(
+        H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Consumer<HashedTree<String, H>> cacher
     ) {
+        this.kind = Objects.requireNonNull(kind, "kind");
         this.supplier = Objects.requireNonNull(supplier, "supplier");
         this.leafHasher = Objects.requireNonNull(leafHasher, "leafHasher");
         this.cacher = Objects.requireNonNull(cacher, "cacher");
@@ -33,12 +37,26 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     @Override
     public final Callbacks arrayStarted() {
-        return new ListClimber<>(supplier, leafHasher, this, cacher, this::done);
+        return new ListClimber<>(
+            kind,
+            supplier,
+            leafHasher,
+            this,
+            cacher,
+            this::done
+        );
     }
 
     @Override
     public final Callbacks objectStarted() {
-        return new MapClimber<>(supplier, leafHasher, this, cacher, this::done);
+        return new MapClimber<>(
+            kind,
+            supplier,
+            leafHasher,
+            this,
+            cacher,
+            this::done
+        );
     }
 
     @Override
@@ -56,6 +74,11 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
         return doneLeaf(str.value());
     }
 
+    @Override
+    public Callbacks nuul() {
+        return doneLeaf(null);
+    }
+
     protected abstract void done(HashedTree<String, H> tree);
 
     private Callbacks doneLeaf(Object object) {
@@ -64,7 +87,9 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     }
 
     private HashedTree<String, H> leaf(Object object) {
-        return new HashedTree.Leaf<>(leafHasher.hash(object), object);
+        return object == null
+            ? HashedTree.Null.instanceFor(kind)
+            : new HashedTree.Leaf<>(leafHasher.hash(object), object);
     }
 
     private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {

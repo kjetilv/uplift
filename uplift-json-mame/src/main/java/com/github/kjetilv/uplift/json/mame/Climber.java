@@ -23,13 +23,14 @@ final class Climber<H extends HashKind<H>>
     private final Canonicalizer<String, H> canonicalizer;
 
     Climber(
+        H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Canonicalizer<String, H> canonicalizer,
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(supplier, leafHasher, canonicalizer::canonical);
+        super(kind, supplier, leafHasher, canonicalizer::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

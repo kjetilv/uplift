@@ -65,6 +65,13 @@ public final class JsonSessions {
         LeafHasher<H> leafHasher = LeafHasher.create(kind, supplier, PojoBytes.UNSUPPORTED);
         Canonicalizer<String, H> canonicalizer = Canonicalizers.canonicalizer(collisionsNeverHappen);
         return onDone ->
-            new Climber<>(supplier, leafHasher, canonicalizer, onDone, collisionHandler);
+            new Climber<>(
+                kind,
+                supplier,
+                leafHasher,
+                canonicalizer,
+                onDone,
+                collisionHandler
+            );
     }
 }

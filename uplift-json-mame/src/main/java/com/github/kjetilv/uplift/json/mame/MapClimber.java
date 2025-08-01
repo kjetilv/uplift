@@ -22,13 +22,21 @@ final class MapClimber<H extends HashKind<H>>
     private Token.Field currentField;
 
     MapClimber(
+        H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(supplier, leafHasher, cacher, onDone, parent);
+        super(
+            kind,
+            supplier,
+            leafHasher,
+            cacher,
+            onDone,
+            parent
+        );
     }
 
     @Override

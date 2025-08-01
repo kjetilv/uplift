@@ -18,13 +18,21 @@ final class ListClimber<H extends HashKind<H>>
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 
     ListClimber(
+        H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(supplier, leafHasher, cacher, onDone, parent);
+        super(
+            kind,
+            supplier,
+            leafHasher,
+            cacher,
+            onDone,
+            parent
+        );
     }
 
     @Override
