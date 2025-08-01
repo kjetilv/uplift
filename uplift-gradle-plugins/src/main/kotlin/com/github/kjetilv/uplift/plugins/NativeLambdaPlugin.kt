@@ -25,6 +25,10 @@ class NativeLambdaPlugin : Plugin<Project> {
             buildsite %= "${project.shortGroupName}-buildsite"
             javaDist %= javaDistUri
 
+            enablePreview.convention(false)
+            addModules.convention("")
+            otherOptions.convention("")
+
             dependsOn("jar")
         }
     }

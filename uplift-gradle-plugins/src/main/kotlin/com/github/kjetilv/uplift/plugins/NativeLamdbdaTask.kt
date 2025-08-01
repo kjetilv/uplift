@@ -82,8 +82,8 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
             "arch" to arch.get(),
             "main" to main.get(),
             "enablepreview" to (if (enablePreview.isPresent && enablePreview.get()) "--enable-preview" else ""),
-            "addmodules" to (if (addModules.isPresent) "--add-modules ${addModules.get()}" else ""),
-            "otheroptions" to (if (otherOptions.isPresent) otherOptions.get() else ""),
+            "addmodules" to (if (addModules.isPresent && addModules.get().isNotBlank()) "--add-modules ${addModules.get()}" else ""),
+            "otheroptions" to (if (otherOptions.isPresent && otherOptions.get().isNotBlank()) otherOptions.get() else ""),
             "distfile" to file?.toASCIIString(),
             "disturi" to uri?.toASCIIString(),
             "classpath" to cp.joinToString(":") {

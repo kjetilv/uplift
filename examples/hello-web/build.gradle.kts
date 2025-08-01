@@ -18,7 +18,7 @@ subprojects {
 
     tasks {
         withType<Test> {
-            this.useJUnitPlatform()
+            useJUnitPlatform()
         }
     }
 }
