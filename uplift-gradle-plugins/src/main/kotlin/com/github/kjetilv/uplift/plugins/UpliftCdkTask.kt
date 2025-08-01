@@ -6,12 +6,15 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.process.ExecOperations
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
+import javax.inject.Inject
 
-abstract class UpliftCdkTask : UpliftTask() {
+abstract class UpliftCdkTask @Inject constructor(execOperations: ExecOperations) :
+    UpliftTask(execOperations) {
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)

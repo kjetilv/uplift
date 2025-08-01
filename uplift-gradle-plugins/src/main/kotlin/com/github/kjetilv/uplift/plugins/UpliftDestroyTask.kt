@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.plugins
 
-abstract class UpliftDestroyTask : UpliftCdkTask() {
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
+abstract class UpliftDestroyTask @Inject constructor(execOperations: ExecOperations) : UpliftCdkTask(execOperations) {
 
     override fun perform() {
         if (!cdkApp().isActualDirectory) {

@@ -13,14 +13,11 @@ import javax.inject.Inject
 import kotlin.io.path.toPath
 
 @CacheableTask
-abstract class NativeLamdbdaTask : DefaultTask() {
+abstract class NativeLamdbdaTask @Inject constructor(private var execOperations: ExecOperations) : DefaultTask() {
 
     init {
         group = "uplift"
     }
-
-    @Inject
-    lateinit var exec: ExecOperations
 
     @get:Input
     abstract val identifier: Property<String>
@@ -101,9 +98,21 @@ abstract class NativeLamdbdaTask : DefaultTask() {
             copyTo(dist.toPath(), uplift, target = "dist.tar.gz")
         }
 
-        docker(cwd = uplift, dockerCmd = "build --tag ${buildsite.get()}:latest $uplift")
-        docker(cwd = uplift, dockerCmd = "build --tag ${identifier.get()}:latest $uplift")
-        docker(cwd = uplift, dockerCmd = "run -v ${uplift.toAbsolutePath()}:/out ${buildsite.get()}:latest")
+        docker(
+            cwd = uplift,
+            dockerCmd = "build --tag ${buildsite.get()}:latest $uplift",
+            execOperations
+        )
+        docker(
+            cwd = uplift,
+            dockerCmd = "build --tag ${identifier.get()}:latest $uplift",
+            execOperations
+        )
+        docker(
+            cwd = uplift,
+            dockerCmd = "run -v ${uplift.toAbsolutePath()}:/out ${buildsite.get()}:latest",
+            execOperations
+        )
 
         zipFile(uplift.resolve(identifier.get()), zipFile = zipFile.get())
     }

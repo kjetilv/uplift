@@ -8,9 +8,9 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal operator fun <T> Property<T>.remAssign(value: T?): Unit = set(value)
+internal operator fun <T : Any> Property<T>.remAssign(value: T?): Unit = set(value)
 
-internal operator fun <T> ListProperty<T>.remAssign(values: Iterable<T>?): Unit = set(values)
+internal operator fun <T : Any> ListProperty<T>.remAssign(values: Iterable<T>?): Unit = set(values)
 
 internal fun Project.propertyOr(name: String, def: () -> String = { "" }): String =
     takeIf { hasProperty(name) }?.let { this.property(name) }?.toString() ?: def()
@@ -50,7 +50,7 @@ private fun Project.base() =
     this.group.toString().takeIf { it.isNotBlank() } ?: Path.of(System.getProperty("user.dir")).toAbsolutePath().last()
         .toString()
 
-internal val Property<String>.nonBlank: String? get() = orNull?.toString()?.takeIf { it.isNotBlank() }
+internal val Property<String>.nonBlank: String? get() = orNull?.takeIf { it.isNotBlank() }
 
 internal fun Task.dependencyOutputs() = outputs(dependencyTasks())
 

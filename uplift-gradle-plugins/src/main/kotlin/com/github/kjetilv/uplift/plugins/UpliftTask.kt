@@ -7,6 +7,7 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -25,8 +26,10 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.*
 import java.time.temporal.ChronoUnit
+import javax.inject.Inject
 
-abstract class UpliftTask : DefaultTask() {
+@Suppress("unused")
+abstract class UpliftTask @Inject constructor(private var execOperations: ExecOperations) : DefaultTask() {
 
     init {
         group = "uplift"
@@ -91,7 +94,8 @@ abstract class UpliftTask : DefaultTask() {
                 environment(
                     env.get()
                 ) +
-                "${"cdk-site:latest"} $cmd"
+                "${"cdk-site:latest"} $cmd",
+        execOperations
     )
 
     protected fun upliftDir(): Path = project.buildSubDirectory("uplift")
@@ -253,7 +257,7 @@ abstract class UpliftTask : DefaultTask() {
     private fun binarySourceFor(zip: Path) =
         zip.fileName.toString()
             .takeIf { it.endsWith(".zip") }
-            ?.let { name -> name.substring(0, name.length - ".zip".length) }
+            ?.dropLast(".zip".length)
             ?.let { zip.parent?.resolve(it) }
 
     private fun LambdaClient.functionConfiguration(stackResource: StackResource) =
@@ -303,7 +307,11 @@ abstract class UpliftTask : DefaultTask() {
         Files.write(
             upliftDir().resolve("Dockerfile"), "cdk-st4/Dockerfile".renderResource("arch" to arch.get())
         )
-        docker(upliftDir(), "build --tag cdk-site:latest ${upliftDir()}")
+        docker(
+            upliftDir(),
+            "build --tag cdk-site:latest ${upliftDir()}",
+            execOperations
+        )
     }
 
     private fun volumes(vararg vols: Pair<*, *>) =

@@ -4,9 +4,11 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.process.ExecOperations
 import java.nio.file.Path
+import javax.inject.Inject
 
-abstract class UpliftLambdaZipTask : UpliftTask() {
+abstract class UpliftLambdaZipTask @Inject constructor(execOperations: ExecOperations) : UpliftTask(execOperations) {
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -24,5 +26,4 @@ abstract class UpliftLambdaZipTask : UpliftTask() {
             ?: dependencyOutputs()
                 .filter(Path::isZip)
                 .takeIf(nonEmpty())
-
 }
