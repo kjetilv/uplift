@@ -68,7 +68,7 @@ subprojects {
         java {
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(24))
-                vendor.set(JvmVendorSpec.GRAAL_VM)
+                nativeImageCapable = true
             }
             sourceCompatibility = JavaVersion.VERSION_24
             targetCompatibility = JavaVersion.VERSION_24
