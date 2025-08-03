@@ -27,11 +27,12 @@ sealed abstract class SubClimber<H extends HashKind<H>>
         H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
+        boolean preserveNulls,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone,
         Callbacks parent
     ) {
-        super(kind, supplier, leafHasher, cacher);
+        super(kind, supplier, leafHasher, preserveNulls, cacher);
         this.onDone = onDone;
         this.parent = parent;
         this.builder = supplier.get();

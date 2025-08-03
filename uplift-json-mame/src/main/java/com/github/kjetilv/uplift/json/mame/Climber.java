@@ -27,10 +27,11 @@ final class Climber<H extends HashKind<H>>
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
         Canonicalizer<String, H> canonicalizer,
+        boolean preserveNulls,
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(kind, supplier, leafHasher, canonicalizer::canonical);
+        super(kind, supplier, leafHasher, preserveNulls, canonicalizer::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

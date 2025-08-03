@@ -23,15 +23,19 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     private final LeafHasher<H> leafHasher;
 
+    private final boolean preserveNulls;
+
     protected AbstractClimber(
         H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
+        boolean preserveNulls,
         Consumer<HashedTree<String, H>> cacher
     ) {
         this.kind = Objects.requireNonNull(kind, "kind");
         this.supplier = Objects.requireNonNull(supplier, "supplier");
         this.leafHasher = Objects.requireNonNull(leafHasher, "leafHasher");
+        this.preserveNulls = preserveNulls;
         this.cacher = Objects.requireNonNull(cacher, "cacher");
     }
 
@@ -41,6 +45,7 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
             kind,
             supplier,
             leafHasher,
+            preserveNulls,
             this,
             cacher,
             this::done
@@ -53,6 +58,7 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
             kind,
             supplier,
             leafHasher,
+            preserveNulls,
             this,
             cacher,
             this::done
@@ -76,7 +82,10 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     @Override
     public Callbacks nuul() {
-        return doneLeaf(null);
+        if (preserveNulls) {
+            done(HashedTree.Null.instanceFor(kind));
+        }
+        return this;
     }
 
     protected abstract void done(HashedTree<String, H> tree);
@@ -87,9 +96,7 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     }
 
     private HashedTree<String, H> leaf(Object object) {
-        return object == null
-            ? HashedTree.Null.instanceFor(kind)
-            : new HashedTree.Leaf<>(leafHasher.hash(object), object);
+        return new HashedTree.Leaf<>(leafHasher.hash(object), object);
     }
 
     private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {

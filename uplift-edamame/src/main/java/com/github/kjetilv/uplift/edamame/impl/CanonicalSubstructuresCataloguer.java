@@ -9,7 +9,6 @@ import com.github.kjetilv.uplift.edamame.HashedTree.Nodes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

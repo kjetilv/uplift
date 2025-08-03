@@ -1,12 +1,19 @@
 package com.github.kjetilv.uplift.plugins
 
+import com.github.kjetilv.uplift.plugins.UriType.FILE
+import com.github.kjetilv.uplift.plugins.UriType.HTTP
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.internal.extensions.stdlib.toDefaultLowerCase
 import org.gradle.process.ExecOperations
 import java.io.File
 import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpRequest.BodyPublishers.noBody
+import java.net.http.HttpResponse.BodyHandlers.discarding
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.inject.Inject
@@ -54,19 +61,9 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
 
     @TaskAction
     fun perform() {
-        val dist = javaDist.get()
-
-        val file = dist.takeIf {
-            it.scheme == "file"
-        }
-
-        val uri = dist.takeIf {
-            it.scheme == "https" || it.scheme == "http"
-        }
-
-        require(file != null || uri != null) {
-            "javaDist property must be file, http or https URI: $dist"
-        }
+        val (uriType, dist) = javaDist.get().let { dist ->
+            typeOf(dist) to dist
+        }.verify()
 
         val cp = runtimeClasspath + dependencyOutputs
 
@@ -82,10 +79,14 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
             "arch" to arch.get(),
             "main" to main.get(),
             "enablepreview" to (if (enablePreview.isPresent && enablePreview.get()) "--enable-preview" else ""),
-            "addmodules" to (if (addModules.isPresent && addModules.get().isNotBlank()) "--add-modules ${addModules.get()}" else ""),
-            "otheroptions" to (if (otherOptions.isPresent && otherOptions.get().isNotBlank()) otherOptions.get() else ""),
-            "distfile" to file?.toASCIIString(),
-            "disturi" to uri?.toASCIIString(),
+            "addmodules" to (if (addModules.isPresent && addModules.get()
+                    .isNotBlank()
+            ) "--add-modules ${addModules.get()}" else ""),
+            "otheroptions" to (if (otherOptions.isPresent && otherOptions.get()
+                    .isNotBlank()
+            ) otherOptions.get() else ""),
+            "distfile" to FILE.ifType(uriType, dist),
+            "disturi" to HTTP.ifType(uriType, dist),
             "classpath" to cp.joinToString(":") {
                 "/out/classpath/${it.fileName}"
             }
@@ -94,7 +95,7 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
         Files.write(uplift.resolve("Dockerfile"), split)
         logger.info("Created new DockerFile for ${buildsite.get()}")
 
-        if (dist.scheme == "file") {
+        if (uriType == FILE) {
             copyTo(dist.toPath(), uplift, target = "dist.tar.gz")
         }
 
@@ -117,6 +118,15 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
         zipFile(uplift.resolve(identifier.get()), zipFile = zipFile.get())
     }
 
+    private fun UriType.ifType(uriType: UriType, uri: URI): String? =
+        uriType.takeIf { it == this }.let { uri }.toASCIIString()
+
+    private fun typeOf(dist: URI): UriType = when (dist.scheme.toDefaultLowerCase()) {
+        "file" -> FILE
+        "https", "http" -> HTTP
+        else -> error("javaDist property must be file/http/https URI: $dist")
+    }
+
     private val runtimeClasspath get() = if (classPath.isPresent) classPath.get().map(File::toPath) else emptyList()
 
     private val dependencyOutputs get() = outputs(dependencyTasks()).filter { it.isJar || it.isDir }
@@ -124,4 +134,29 @@ abstract class NativeLamdbdaTask @Inject constructor(private var execOperations:
     private val uplift: Path get() = project.buildSubDirectory("uplift")
 
     private val upliftClasspath: Path get() = project.buildSubDirectory("uplift/classpath")
+}
+
+private fun Pair<UriType, URI>.verify() = first to first.verify(second)
+
+private enum class UriType {
+    FILE, HTTP;
+
+    fun verify(uri: URI) = when (this) {
+        FILE -> uri.also { check(Files.exists(it.toPath())) { "Failed to locate file $it" } }
+        HTTP -> uri.also {
+            HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build()
+                .use { client ->
+                client.send(
+                    HttpRequest.newBuilder(it)
+                        .method("OPTIONS", noBody())
+                        .build(),
+                    discarding()
+                ).also { response ->
+                    check(response.statusCode() < 400) { "Failed to fetch $it: ${response.statusCode()}" }
+                }
+            }
+        }
+    }
 }

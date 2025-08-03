@@ -52,16 +52,19 @@ subprojects {
     }
 
     if (project.name in listOf(
-            "uplift-flogs",
-            "uplift-uuid",
-            "uplift-s3",
-            "uplift-lambda",
-            "uplift-flambda",
-            "uplift-json",
-            "uplift-json-ffm",
-            "uplift-json-kernel",
-            "uplift-gradle-plugins"
-        )
+            "edamame",
+            "flambda",
+            "flogs",
+            "gradle-plugins",
+            "hash",
+            "json",
+            "json-ffm",
+            "json-kernel",
+            "json-mame",
+            "lambda",
+            "s3",
+            "uuid",
+        ).map { it -> "uplift-$it" }
     ) {
         logger.info("Configuring ${project.name} for publishing")
 
@@ -74,7 +77,22 @@ subprojects {
             targetCompatibility = JavaVersion.VERSION_24
             withSourcesJar()
         }
+    }
 
+    if (project.name in listOf(
+            "edamame",
+            "flambda",
+            "flogs",
+            "hash",
+            "json",
+            "json-ffm",
+            "json-kernel",
+            "json-mame",
+            "lambda",
+            "s3",
+            "uuid",
+        ).map { it -> "uplift-$it" }
+    ) {
         publishing {
             repositories {
                 mavenLocal()
@@ -92,19 +110,19 @@ subprojects {
                 register<MavenPublication>("upliftPublication") {
                     suppressAllPomMetadataWarnings()
                     pom {
-                        name.set("uplift")
-                        description.set("Uplift")
-                        url.set("https://github.com/kjetilv/uplift")
+                        name = "uplift"
+                        description = "Uplift"
+                        url = "https://github.com/kjetilv/uplift"
                         licenses {
                             license {
-                                name.set("GNU General Public License v3.0")
-                                url.set("https://raw.githubusercontent.com/kjetilv/uplift/refs/heads/main/LICENSE")
+                                name = "GNU General Public License v3.0"
+                                url = "https://raw.githubusercontent.com/kjetilv/uplift/refs/heads/main/LICENSE"
                             }
                         }
                         scm {
-                            connection.set("scm:git:https://github.com/kjetilv/uplift")
-                            developerConnection.set("scm:git:https://github.com/kjetilv/uplift")
-                            url.set("https://github.com/kjetilv/uplift")
+                            connection = "scm:git:https://github.com/kjetilv/uplift"
+                            developerConnection = "scm:git:https://github.com/kjetilv/uplift"
+                            url = "https://github.com/kjetilv/uplift"
                         }
                     }
                     from(components["java"])
@@ -116,7 +134,7 @@ subprojects {
 
 fun resolveProperty(property: String, variable: String? = null, defValue: String? = null) =
     System.getProperty(property)
-        ?: variable?.let { System.getenv(it) }
-        ?: project.takeIf { it.hasProperty(property) }?.property(property)?.toString()
+        ?: variable?.let(System::getenv)
+        ?: project.property(property)?.toString()
         ?: defValue
         ?: throw IllegalStateException("No variable $property found, no default value provided")

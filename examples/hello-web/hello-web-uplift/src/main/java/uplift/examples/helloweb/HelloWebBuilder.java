@@ -26,7 +26,6 @@ public class HelloWebBuilder implements Consumer<Stack> {
             .functionName("uplift-hello-web-function")
             .code(Code.fromAsset("/lambdas/hello-web-service.zip"))
             .handler("bootstrap")
-            .logRetention(ONE_DAY)
             .architecture(ARM_64)
             .memorySize(128)
             .runtime(Runtime.PROVIDED_AL2)

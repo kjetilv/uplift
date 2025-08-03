@@ -25,6 +25,7 @@ final class MapClimber<H extends HashKind<H>>
         H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,
+        boolean preserveNulls,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
@@ -33,6 +34,7 @@ final class MapClimber<H extends HashKind<H>>
             kind,
             supplier,
             leafHasher,
+            preserveNulls,
             cacher,
             onDone,
             parent

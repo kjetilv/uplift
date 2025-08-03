@@ -3,6 +3,9 @@ package com.github.kjetilv.uplift.json.mame;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -30,9 +33,20 @@ public class Main {
         Callbacks callbacks = session.get().onDone(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
         AtomicReference<Callbacks> cachingCallbacks = new AtomicReference<>(callbacks);
-        lines(args).forEach(line ->
-            json.parse(line, cachingCallbacks.get())
-        );
+        if (Arrays.stream(args).anyMatch(arg -> arg.endsWith(".jsonl"))) {
+            lines(args).forEach(line ->
+                json.parse(line, cachingCallbacks.get())
+            );
+        } else {
+            Arrays.stream(args)
+                .forEach(arg -> {
+                    try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(Path.of(arg)))) {
+                        json.parse(inputStream, cachingCallbacks.get());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        }
         long putTime = Duration.between(goStart, Instant.now()).toMillis();
         System.out.println("After put (" + putTime + "ms): " + Mem.create());
         System.gc();

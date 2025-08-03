@@ -38,14 +38,14 @@ public final class JsonSessions {
         H kind,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        return create(kind, collisionHandler, false);
+        return create(kind, collisionHandler, false, false);
     }
 
     public static <H extends HashKind<H>> JsonSession create(
         H kind,
         boolean collisionsNeverHappen
     ) {
-        return create(kind, null, collisionsNeverHappen);
+        return create(kind, null, false, collisionsNeverHappen);
     }
 
     private JsonSessions() {
@@ -54,6 +54,7 @@ public final class JsonSessions {
     private static <H extends HashKind<H>> JsonSession create(
         H kind,
         BiConsumer<Hash<H>, Object> collisionHandler,
+        boolean preserveNulls,
         boolean collisionsNeverHappen
     ) {
         if (collisionsNeverHappen && collisionHandler != null) {
@@ -70,6 +71,7 @@ public final class JsonSessions {
                 supplier,
                 leafHasher,
                 canonicalizer,
+                preserveNulls,
                 onDone,
                 collisionHandler
             );
