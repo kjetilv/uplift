@@ -1,21 +1,15 @@
 package uplift.examples.helloweb;
 
+import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.services.lambda.*;
+import software.amazon.awscdk.services.lambda.Runtime;
+
 import java.util.List;
 import java.util.function.Consumer;
 
-import software.amazon.awscdk.Duration;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.FunctionUrl;
-import software.amazon.awscdk.services.lambda.FunctionUrlAuthType;
-import software.amazon.awscdk.services.lambda.FunctionUrlCorsOptions;
-import software.amazon.awscdk.services.lambda.IFunction;
-import software.amazon.awscdk.services.lambda.Runtime;
-
 import static software.amazon.awscdk.services.lambda.Architecture.ARM_64;
 import static software.amazon.awscdk.services.lambda.HttpMethod.GET;
-import static software.amazon.awscdk.services.logs.RetentionDays.ONE_DAY;
 
 @SuppressWarnings("unused")
 public class HelloWebBuilder implements Consumer<Stack> {
