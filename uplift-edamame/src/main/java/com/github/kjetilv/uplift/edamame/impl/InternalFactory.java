@@ -91,9 +91,7 @@ public final class InternalFactory {
             keyHandler != null
                 ? keyHandler
                 : KeyHandler.defaultHandler());
-        LeafHasher<H> hasher = leafHasher != null
-            ? leafHasher
-            : leafHasher(kind, pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes);
+        LeafHasher<H> hasher = leafHasher != null ? leafHasher : leafHasher(kind, pojoBytes);
         return new RecursiveTreeHasher<>(
             requireNonNull(() -> Hashes.hashBuilder(kind), "newBuilder"),
             canonicalKeys,

@@ -41,7 +41,7 @@ public interface LeafHasher<H extends HashKind<H>> {
     ) {
         return new DefaultLeafHasher<>(
             supplier == null ? () -> Hashes.bytesBuilder(kind) : supplier,
-            pojoBytes == null ? PojoBytes.HASHCODE : pojoBytes
+            pojoBytes == null ? PojoBytes.UNSUPPORTED : pojoBytes
         );
     }
 

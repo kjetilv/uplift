@@ -14,12 +14,15 @@ public final class CachingJsonSessions {
     }
 
     public static <H extends HashKind<H>> JsonSession create(H kind, Consumer<Object> collisionHandler) {
-        return create(
-            kind,
-            collisionHandler == null
-                ? null
-                : (_, item) -> collisionHandler.accept(item)
-        );
+        return create(kind, bi(collisionHandler));
+    }
+
+    public static <H extends HashKind<H>> JsonSession create(
+        H kind,
+        Consumer<Object> collisionHandler,
+        CachingSettings cachingSettings
+    ) {
+        return create(kind, bi(collisionHandler), cachingSettings);
     }
 
     public static <H extends HashKind<H>> JsonSession create(H kind, BiConsumer<Hash<H>, Object> collisionHandler) {
@@ -27,10 +30,14 @@ public final class CachingJsonSessions {
     }
 
     public static <H extends HashKind<H>> JsonSession create(H kind, CachingSettings cachingSettings) {
-        return create(kind, null, cachingSettings);
+        return create(kind, (BiConsumer<Hash<H>, Object>) null, cachingSettings);
     }
 
     private CachingJsonSessions() {
+    }
+
+    private static <H extends HashKind<H>> BiConsumer<Hash<H>, Object> bi(Consumer<Object> collisionHandler) {
+        return collisionHandler == null ? null : (_, item) -> collisionHandler.accept(item);
     }
 
     private static <H extends HashKind<H>> JsonSession create(

@@ -85,7 +85,11 @@ class MapsMemoizersTest {
         Object l1 = new Leaf(42L, "123.234");
         Object l2 = new Leaf(34L, "424242");
 
-        MapsMemoizer<Long, String> mapsMemoizer = mapsMemoizer();
+        MapsMemoizer<Long, String> mapsMemoizer = InternalFactory.create(
+            null,
+            HashKind.K128,
+            PojoBytes.TOSTRING
+        );
 
         mapsMemoizer.put(
             42L, Map.of(

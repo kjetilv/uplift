@@ -22,15 +22,15 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
     CachingJsonSession(
         H kind,
-        CachingSettings settings,
+        CachingSettings cachingSettings,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        this.collisionHandler = collisionHandler(settings, collisionHandler);
-        this.canonicalizer = canonicalizer(settings);
+        this.collisionHandler = collisionHandler(cachingSettings, collisionHandler);
+        this.canonicalizer = canonicalizer(cachingSettings);
         this.strategy = new Climber.Strategy<>(
             kind,
             LeafHasher.create(kind, PojoBytes.UNSUPPORTED),
-            preserveNull(settings)
+            preserveNull(cachingSettings)
         );
     }
 

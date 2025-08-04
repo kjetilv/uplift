@@ -11,7 +11,7 @@ import com.github.kjetilv.uplift.hash.Hashes;
 public interface PojoBytes {
 
     /**
-     * Uses hashcode to derive four bytes. Used by default.
+     * Uses hashcode to derive four bytes.
      */
     PojoBytes HASHCODE = value -> Hashes.bytes(value.hashCode());
 
@@ -21,7 +21,7 @@ public interface PojoBytes {
     PojoBytes TOSTRING = value -> value.toString().getBytes();
 
     /**
-     * Fails if called.  Use when we don't expect any POJOs
+     * Fails if called.  Use when we don't expect any POJOs.  Default value.
      */
     PojoBytes UNSUPPORTED = value -> {
         throw new IllegalArgumentException(
