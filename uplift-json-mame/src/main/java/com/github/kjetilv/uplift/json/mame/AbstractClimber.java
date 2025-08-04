@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 sealed abstract class AbstractClimber<H extends HashKind<H>>
-    implements Callbacks permits SubClimber, Climber {
+    implements Callbacks permits StructureClimber, ValueClimber {
 
     protected final Consumer<HashedTree<String, H>> cacher;
 

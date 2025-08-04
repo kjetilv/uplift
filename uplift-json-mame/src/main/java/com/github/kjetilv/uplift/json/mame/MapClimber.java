@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 final class MapClimber<H extends HashKind<H>>
-    extends SubClimber<H>
+    extends StructureClimber<H>
     implements Callbacks {
 
     private final Map<String, HashedTree<String, H>> map = new HashMap<>();

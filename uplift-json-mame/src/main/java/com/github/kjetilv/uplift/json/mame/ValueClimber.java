@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-final class Climber<H extends HashKind<H>>
+final class ValueClimber<H extends HashKind<H>>
     extends AbstractClimber<H> {
 
     private final Consumer<Object> onDone;
@@ -22,7 +22,7 @@ final class Climber<H extends HashKind<H>>
 
     private final Canonicalizer<String, H> canonicalizer;
 
-    Climber(
+    ValueClimber(
         H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,

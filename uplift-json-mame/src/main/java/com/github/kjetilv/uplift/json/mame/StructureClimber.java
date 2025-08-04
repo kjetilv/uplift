@@ -11,7 +11,7 @@ import com.github.kjetilv.uplift.json.Token;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-sealed abstract class SubClimber<H extends HashKind<H>>
+sealed abstract class StructureClimber<H extends HashKind<H>>
     extends AbstractClimber<H>
     permits ListClimber, MapClimber {
 
@@ -23,7 +23,7 @@ sealed abstract class SubClimber<H extends HashKind<H>>
 
     private final Consumer<HashedTree<String, H>> onDone;
 
-    SubClimber(
+    StructureClimber(
         H kind,
         Supplier<HashBuilder<byte[], H>> supplier,
         LeafHasher<H> leafHasher,

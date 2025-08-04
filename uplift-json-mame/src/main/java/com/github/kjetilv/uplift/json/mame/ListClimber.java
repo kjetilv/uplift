@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 final class ListClimber<H extends HashKind<H>>
-    extends SubClimber<H> {
+    extends StructureClimber<H> {
 
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 
