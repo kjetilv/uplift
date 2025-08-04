@@ -23,11 +23,11 @@ public final class CachingJsonSessions {
     }
 
     public static <H extends HashKind<H>> JsonSession create(H kind, BiConsumer<Hash<H>, Object> collisionHandler) {
-        return create(kind, collisionHandler, false, false);
+        return create(kind, collisionHandler, null);
     }
 
-    public static <H extends HashKind<H>> JsonSession create(H kind, boolean collisionsNeverHappen) {
-        return create(kind, null, false, collisionsNeverHappen);
+    public static <H extends HashKind<H>> JsonSession create(H kind, CachingSettings cachingSettings) {
+        return create(kind, null, cachingSettings);
     }
 
     private CachingJsonSessions() {
@@ -36,9 +36,8 @@ public final class CachingJsonSessions {
     private static <H extends HashKind<H>> JsonSession create(
         H kind,
         BiConsumer<Hash<H>, Object> collisionHandler,
-        boolean preserveNulls,
-        boolean collisionsNeverHappen
+        CachingSettings cachingSettings
     ) {
-        return new CachingJsonSession<>(kind, preserveNulls, collisionsNeverHappen, collisionHandler);
+        return new CachingJsonSession<>(kind, cachingSettings, collisionHandler);
     }
 }

@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 sealed abstract class AbstractClimber<H extends HashKind<H>>
-    implements Climber<H>
+    implements Climber
     permits StructureClimber, ValueClimber {
 
     protected final Consumer<HashedTree<String, H>> cacher;

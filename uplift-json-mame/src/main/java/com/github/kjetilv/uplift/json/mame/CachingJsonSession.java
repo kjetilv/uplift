@@ -25,27 +25,44 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
     CachingJsonSession(
         H kind,
-        boolean preserveNulls,
-        boolean collisionsNeverHappen,
+        CachingSettings cachingSettings,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        if (collisionsNeverHappen && collisionHandler != null) {
+        if (conflicting(cachingSettings, collisionHandler)) {
             throw new IllegalStateException(
-                "Got a collisionHandler even though collisionsNeverHappen=" + collisionsNeverHappen +
-                ": " + collisionHandler
-            );
+                "Got a collisionHandler in conflict with " + cachingSettings + ": " + collisionHandler);
+        } else {
+            this.collisionHandler = collisionHandler;
         }
-        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.bytesBuilder(kind);
-        LeafHasher<H> leafHasher = LeafHasher.create(kind, supplier, PojoBytes.UNSUPPORTED);
+        this.canonicalizer = canonicalizer(cachingSettings);
 
-        this.collisionHandler = collisionHandler;
-        this.canonicalizer = Canonicalizers.canonicalizer(collisionsNeverHappen);
-        this.strategy = new Climber.Strategy<>(kind, supplier, leafHasher, preserveNulls);
+        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.bytesBuilder(kind);
+        this.strategy = new Climber.Strategy<>(
+            kind,
+            supplier,
+            LeafHasher.create(kind, supplier, PojoBytes.UNSUPPORTED),
+            preserveNull(cachingSettings)
+        );
     }
 
     @Override
     public Callbacks callbacks(Consumer<Object> onDone) {
         return new ValueClimber<>(strategy, canonicalizer, onDone, collisionHandler);
+    }
+
+    private static <H extends HashKind<H>> Canonicalizer<String, H> canonicalizer(CachingSettings cachingSettings) {
+        return Canonicalizers.canonicalizer(cachingSettings != null && cachingSettings.collisionsNeverHappen());
+    }
+
+    private static boolean preserveNull(CachingSettings cachingSettings) {
+        return cachingSettings != null && cachingSettings.preserveNulls();
+    }
+
+    private static <H extends HashKind<H>> boolean conflicting(
+        CachingSettings settings,
+        BiConsumer<Hash<H>, Object> handler
+    ) {
+        return settings != null && settings.collisionsNeverHappen() && handler != null;
     }
 
     @Override

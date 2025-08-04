@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.json.Callbacks;
 
 import java.util.function.Supplier;
 
-interface Climber<H extends HashKind<H>> extends Callbacks {
+interface Climber extends Callbacks {
 
     record Strategy<H extends HashKind<H>>(
         H kind,
