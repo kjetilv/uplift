@@ -5,15 +5,12 @@ import com.github.kjetilv.uplift.edamame.Canonicalizers;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.JsonSession;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
@@ -25,23 +22,15 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
     CachingJsonSession(
         H kind,
-        CachingSettings cachingSettings,
+        CachingSettings settings,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        if (conflicting(cachingSettings, collisionHandler)) {
-            throw new IllegalStateException(
-                "Got a collisionHandler in conflict with " + cachingSettings + ": " + collisionHandler);
-        } else {
-            this.collisionHandler = collisionHandler;
-        }
-        this.canonicalizer = canonicalizer(cachingSettings);
-
-        Supplier<HashBuilder<byte[], H>> supplier = () -> Hashes.bytesBuilder(kind);
+        this.collisionHandler = collisionHandler(settings, collisionHandler);
+        this.canonicalizer = canonicalizer(settings);
         this.strategy = new Climber.Strategy<>(
             kind,
-            supplier,
-            LeafHasher.create(kind, supplier, PojoBytes.UNSUPPORTED),
-            preserveNull(cachingSettings)
+            LeafHasher.create(kind, PojoBytes.UNSUPPORTED),
+            preserveNull(settings)
         );
     }
 
@@ -58,11 +47,14 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
         return cachingSettings != null && cachingSettings.preserveNulls();
     }
 
-    private static <H extends HashKind<H>> boolean conflicting(
+    private static <H extends HashKind<H>> BiConsumer<Hash<H>, Object> collisionHandler(
         CachingSettings settings,
         BiConsumer<Hash<H>, Object> handler
     ) {
-        return settings != null && settings.collisionsNeverHappen() && handler != null;
+        if (settings != null && settings.collisionsNeverHappen() && handler != null) {
+            throw new IllegalStateException("Got a collisionHandler in conflict with " + settings + ": " + handler);
+        }
+        return handler;
     }
 
     @Override
