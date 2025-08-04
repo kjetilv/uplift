@@ -1,16 +1,13 @@
 package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 final class ListClimber<H extends HashKind<H>>
     extends StructureClimber<H> {
@@ -18,23 +15,12 @@ final class ListClimber<H extends HashKind<H>>
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 
     ListClimber(
-        H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
-        LeafHasher<H> leafHasher,
-        boolean preserveNulls,
+        Strategy<H> strategy,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(
-            kind,
-            supplier,
-            leafHasher,
-            preserveNulls,
-            cacher,
-            onDone,
-            parent
-        );
+        super(strategy, cacher, onDone, parent);
     }
 
     @Override

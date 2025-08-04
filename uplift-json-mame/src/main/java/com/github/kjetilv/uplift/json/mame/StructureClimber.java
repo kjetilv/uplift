@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
@@ -9,7 +8,6 @@ import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 sealed abstract class StructureClimber<H extends HashKind<H>>
     extends AbstractClimber<H>
@@ -24,18 +22,15 @@ sealed abstract class StructureClimber<H extends HashKind<H>>
     private final Consumer<HashedTree<String, H>> onDone;
 
     StructureClimber(
-        H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
-        LeafHasher<H> leafHasher,
-        boolean preserveNulls,
+        Strategy<H> strategy,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone,
         Callbacks parent
     ) {
-        super(kind, supplier, leafHasher, preserveNulls, cacher);
+        super(strategy, cacher);
         this.onDone = onDone;
         this.parent = parent;
-        this.builder = supplier.get();
+        this.builder = strategy.supplier().get();
         this.hashBuilder = this.builder.map(Hash::bytes);
     }
 

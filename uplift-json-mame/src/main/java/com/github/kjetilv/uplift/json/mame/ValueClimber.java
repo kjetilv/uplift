@@ -3,15 +3,12 @@ package com.github.kjetilv.uplift.json.mame;
 import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.Canonicalizer;
 import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 final class ValueClimber<H extends HashKind<H>>
     extends AbstractClimber<H> {
@@ -23,15 +20,12 @@ final class ValueClimber<H extends HashKind<H>>
     private final Canonicalizer<String, H> canonicalizer;
 
     ValueClimber(
-        H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
-        LeafHasher<H> leafHasher,
+        Strategy<H> strategy,
         Canonicalizer<String, H> canonicalizer,
-        boolean preserveNulls,
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(kind, supplier, leafHasher, preserveNulls, canonicalizer::canonical);
+        super(strategy, canonicalizer::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

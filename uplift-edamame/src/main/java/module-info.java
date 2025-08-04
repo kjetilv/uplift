@@ -1,4 +1,4 @@
-module edamame {
+module uplift.edamame {
     requires uplift.kernel;
     requires uplift.hash;
 

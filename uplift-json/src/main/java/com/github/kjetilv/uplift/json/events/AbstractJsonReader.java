@@ -27,7 +27,7 @@ abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, 
 
     @Override
     public final void read(S source, Consumer<T> setter) {
-        Json.INSTANCE.parse(input(source), callbacksInitializer.apply(setter));
+        Json.instance().parse(input(source), callbacksInitializer.apply(setter));
     }
 
     protected abstract BytesSource input(S source);

@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
 import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.LineSegmentBytesSource;
-import com.github.kjetilv.uplift.json.callbacks.ValueCallbacks;
+import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
 import com.github.kjetilv.uplift.json.io.StringSink;
@@ -18,7 +18,15 @@ import java.util.function.LongToIntFunction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-final class JsonImpl implements Json {
+record JsonImpl(JsonSession jsonSession) implements Json {
+
+    JsonImpl() {
+        this(null);
+    }
+
+    JsonImpl(JsonSession jsonSession) {
+        this.jsonSession = jsonSession == null ? new DefaultJsonSession() : jsonSession;
+    }
 
     @Override
     public Object read(InputStream inputStream) {
@@ -113,18 +121,18 @@ final class JsonImpl implements Json {
         JsonWriter.write(new StreamSink(baos), object);
     }
 
+    private Object process(BytesSource bytesSource) {
+        AtomicReference<Object> reference = new AtomicReference<>();
+        parse(bytesSource, jsonSession.callbacks(reference::set));
+        return reference.get();
+    }
+
     private static final PullParser JSON_PULL_PARSER = new DefaultPullParser();
 
     private static final TokenResolver ALLOCATOR = new Allocator();
 
     private static TokenResolver resolve(Callbacks callbacks) {
         return callbacks.tokenResolver().orElse(ALLOCATOR);
-    }
-
-    private static Object process(BytesSource bytesSource) {
-        AtomicReference<Object> reference = new AtomicReference<>();
-        INSTANCE.parse(bytesSource, new ValueCallbacks(reference::set));
-        return reference.get();
     }
 
     private static class Allocator implements TokenResolver {

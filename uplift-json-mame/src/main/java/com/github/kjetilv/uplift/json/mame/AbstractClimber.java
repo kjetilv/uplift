@@ -2,67 +2,34 @@ package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 sealed abstract class AbstractClimber<H extends HashKind<H>>
-    implements Callbacks permits StructureClimber, ValueClimber {
+    implements Climber<H>
+    permits StructureClimber, ValueClimber {
 
     protected final Consumer<HashedTree<String, H>> cacher;
 
-    private final H kind;
+    private final Strategy<H> strategy;
 
-    private final Supplier<HashBuilder<byte[], H>> supplier;
-
-    private final LeafHasher<H> leafHasher;
-
-    private final boolean preserveNulls;
-
-    protected AbstractClimber(
-        H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
-        LeafHasher<H> leafHasher,
-        boolean preserveNulls,
-        Consumer<HashedTree<String, H>> cacher
-    ) {
-        this.kind = Objects.requireNonNull(kind, "kind");
-        this.supplier = Objects.requireNonNull(supplier, "supplier");
-        this.leafHasher = Objects.requireNonNull(leafHasher, "leafHasher");
-        this.preserveNulls = preserveNulls;
+    protected AbstractClimber(Strategy<H> strategy, Consumer<HashedTree<String, H>> cacher) {
+        this.strategy = Objects.requireNonNull(strategy, "climbingStrategy");
         this.cacher = Objects.requireNonNull(cacher, "cacher");
     }
 
     @Override
     public final Callbacks arrayStarted() {
-        return new ListClimber<>(
-            kind,
-            supplier,
-            leafHasher,
-            preserveNulls,
-            this,
-            cacher,
-            this::done
-        );
+        return new ListClimber<>(strategy, this, cacher, this::done);
     }
 
     @Override
     public final Callbacks objectStarted() {
-        return new MapClimber<>(
-            kind,
-            supplier,
-            leafHasher,
-            preserveNulls,
-            this,
-            cacher,
-            this::done
-        );
+        return new MapClimber<>(strategy, this, cacher, this::done);
     }
 
     @Override
@@ -82,8 +49,8 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     @Override
     public Callbacks nuul() {
-        if (preserveNulls) {
-            done(HashedTree.Null.instanceFor(kind));
+        if (strategy.preserveNulls()) {
+            done(strategy.getNull());
         }
         return this;
     }
@@ -96,7 +63,7 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     }
 
     private HashedTree<String, H> leaf(Object object) {
-        return new HashedTree.Leaf<>(leafHasher.hash(object), object);
+        return new HashedTree.Leaf<>(strategy.hashLeaf(object), object);
     }
 
     private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {

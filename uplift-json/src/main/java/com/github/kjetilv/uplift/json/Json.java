@@ -8,27 +8,37 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.SequencedMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unused")
 public interface Json {
 
-    default SequencedMap<?, ?> jsonMap(InputStream source) {
+    Json INSTANCE = new JsonImpl();
+
+    static Json instance() {
+        return INSTANCE;
+    }
+
+    static Json instance(JsonSession jsonSession) {
+        return jsonSession == null ? INSTANCE : new JsonImpl(jsonSession);
+    }
+
+    default Map<?, ?> jsonMap(InputStream source) {
         return asMap(source, read(source));
     }
 
-    default SequencedMap<?, ?> jsonMap(byte[] source) {
+    default Map<?, ?> jsonMap(byte[] source) {
         return asMap(source, read(new String(source, UTF_8)));
     }
 
-    default SequencedMap<?, ?> jsonMap(char[] source) {
+    default Map<?, ?> jsonMap(char[] source) {
         return asMap(source, read(source));
     }
 
-    default SequencedMap<?, ?> jsonMap(String source) {
+    default Map<?, ?> jsonMap(String source) {
         return asMap(source, read(source));
     }
 
@@ -92,13 +102,11 @@ public interface Json {
 
     Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks);
 
-    Json INSTANCE = new JsonImpl();
-
-    private static SequencedMap<?, ?> asMap(Object source, Object json) {
+    private static Map<?, ?> asMap(Object source, Object json) {
         if (json == null) {
             return Collections.emptySortedMap();
         }
-        if (json instanceof SequencedMap<?, ?> map) {
+        if (json instanceof Map<?, ?> map) {
             return map;
         }
         throw new IllegalArgumentException("Not an object: " + source + " => " + json);

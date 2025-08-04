@@ -54,7 +54,7 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
             return "<no payload>";
         }
         try {
-            return Json.INSTANCE.write(lambdaPayload.source());
+            return Json.instance().write(lambdaPayload.source());
         } catch (Exception e) {
             return lambdaPayload + " (" + Throwables.summary(e) + ")";
         }

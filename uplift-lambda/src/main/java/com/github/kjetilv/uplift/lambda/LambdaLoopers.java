@@ -92,7 +92,7 @@ final class LambdaLoopers {
     private static HttpRequest toLambdaResponsePost(
         Invocation<? extends HttpRequest, HttpResponse<InputStream>> invocation
     ) {
-        String jsonResult = Json.INSTANCE.write(invocation.toResult());
+        String jsonResult = Json.instance().write(invocation.toResult());
         return HttpRequest.newBuilder()
             .uri(responseRequestUri(invocation.request().uri(), invocation.id()))
             .POST(HttpRequest.BodyPublishers.ofString(jsonResult))

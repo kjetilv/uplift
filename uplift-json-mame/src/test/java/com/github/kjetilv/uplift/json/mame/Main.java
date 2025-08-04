@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.JsonSession;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -27,21 +28,20 @@ public class Main {
 
         AtomicReference<JsonSession> session = new AtomicReference<>();
         session.set(JsonSessions.create(K128));
-        Json json = Json.INSTANCE;
         System.out.println("Before go: " + Mem.create());
         Instant goStart = Instant.now();
-        Callbacks callbacks = session.get().onDone(list::add);
+        Callbacks callbacks = session.get().callbacks(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
         AtomicReference<Callbacks> cachingCallbacks = new AtomicReference<>(callbacks);
         if (Arrays.stream(args).anyMatch(arg -> arg.endsWith(".jsonl"))) {
             lines(args).forEach(line ->
-                json.parse(line, cachingCallbacks.get())
+                Json.instance().parse(line, cachingCallbacks.get())
             );
         } else {
             Arrays.stream(args)
                 .forEach(arg -> {
                     try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(Path.of(arg)))) {
-                        json.parse(inputStream, cachingCallbacks.get());
+                        Json.instance().parse(inputStream, cachingCallbacks.get());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

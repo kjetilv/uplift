@@ -642,7 +642,7 @@ class JsonTest {
         }
     }
 
-    public static final Json JSON = Json.INSTANCE;
+    public static final Json JSON = Json.instance();
 
     private static void failedRead(
         String bytesSource,

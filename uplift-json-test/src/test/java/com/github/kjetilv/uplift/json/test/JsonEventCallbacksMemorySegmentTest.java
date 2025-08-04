@@ -28,7 +28,7 @@ public class JsonEventCallbacksMemorySegmentTest {
                 """;
 
         BytesSource bytesSource = new LineSegmentBytesSource(LineSegments.of(source));
-        Callbacks myCallbacks = Json.INSTANCE.parse(bytesSource, callbacks());
+        Callbacks myCallbacks = Json.instance().parse(bytesSource, callbacks());
         assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
@@ -72,7 +72,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         BytesSource bytesSource = new LineSegmentBytesSource(LineSegments.of(json));
-        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(bytesSource, callbacks());
+        MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo str:bar
@@ -99,7 +99,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         BytesSource bytesSource = new LineSegmentBytesSource(LineSegments.of(json));
-        MyCallbacks myCallbacks = (MyCallbacks) Json.INSTANCE.parse(bytesSource, callbacks());
+        MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
@@ -128,7 +128,7 @@ public class JsonEventCallbacksMemorySegmentTest {
             }
             """;
         BytesSource bytesSource = new LineSegmentBytesSource(LineSegments.of(json));
-        Json.INSTANCE.parse(bytesSource, callbacks);
+        Json.instance().parse(bytesSource, callbacks);
     }
 
     private static final Pattern WS = Pattern.compile("\\s+");

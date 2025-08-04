@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
@@ -11,7 +9,6 @@ import com.github.kjetilv.uplift.json.Token;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 final class MapClimber<H extends HashKind<H>>
     extends StructureClimber<H>
@@ -22,23 +19,12 @@ final class MapClimber<H extends HashKind<H>>
     private Token.Field currentField;
 
     MapClimber(
-        H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
-        LeafHasher<H> leafHasher,
-        boolean preserveNulls,
+        Strategy<H> strategy,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(
-            kind,
-            supplier,
-            leafHasher,
-            preserveNulls,
-            cacher,
-            onDone,
-            parent
-        );
+        super(strategy, cacher, onDone, parent);
     }
 
     @Override
