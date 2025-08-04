@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.json.JsonSession;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public final class JsonSessions {
+public final class CachingJsonSessions {
 
     public static <H extends HashKind<H>> JsonSession create(H kind) {
         return create(kind, (Consumer<Object>) null);
@@ -30,7 +30,7 @@ public final class JsonSessions {
         return create(kind, null, false, collisionsNeverHappen);
     }
 
-    private JsonSessions() {
+    private CachingJsonSessions() {
     }
 
     private static <H extends HashKind<H>> JsonSession create(

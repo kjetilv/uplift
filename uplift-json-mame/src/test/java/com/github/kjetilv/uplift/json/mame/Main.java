@@ -27,7 +27,7 @@ public class Main {
         List<Object> unhashed = Collections.synchronizedList(new ArrayList<>());
 
         AtomicReference<JsonSession> session = new AtomicReference<>();
-        session.set(JsonSessions.create(K128));
+        session.set(CachingJsonSessions.create(K128));
         System.out.println("Before go: " + Mem.create());
         Instant goStart = Instant.now();
         Callbacks callbacks = session.get().callbacks(list::add);

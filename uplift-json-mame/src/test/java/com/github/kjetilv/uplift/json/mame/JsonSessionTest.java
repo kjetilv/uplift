@@ -19,7 +19,7 @@ class JsonSessionTest {
     @Test
     void testLists() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json
             """
@@ -60,7 +60,7 @@ class JsonSessionTest {
     @Test
     void testListsSession() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
         String json =
             //language=json
             """
@@ -82,7 +82,7 @@ class JsonSessionTest {
     @Test
     void testMaps() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json
             """
@@ -135,7 +135,7 @@ class JsonSessionTest {
     @Test
     void testMapsSession() {
         AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = JsonSessions.create(HashKind.K256);
+        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
         String json =
             //language=json
             """
