@@ -19,14 +19,14 @@ class DigestiveHashBuilderTest {
 
         builder.hash(Bytes.from("foo".getBytes(UTF_8)));
         builder.hash(Bytes.from("bar".getBytes(StandardCharsets.UTF_8)));
-        Hash<K128> hash1 = builder.get();
+        Hash<K128> hash1 = builder.build();
 
         builder.hash(Bytes.from("zot".getBytes(StandardCharsets.UTF_8)));
-        Hash<K128> hash2 = builder.get();
+        Hash<K128> hash2 = builder.build();
 
         builder.hash(Bytes.from("foo".getBytes(StandardCharsets.UTF_8)));
         builder.hash(Bytes.from("bar".getBytes(StandardCharsets.UTF_8)));
-        Hash<K128> hash3 = builder.get();
+        Hash<K128> hash3 = builder.build();
 
         assertNotEquals(hash1, hash2);
         assertEquals(hash1, hash3);
@@ -34,7 +34,6 @@ class DigestiveHashBuilderTest {
 
     @Test
     void testMap() {
-
         Function<String, Stream<String>> sss = s ->
             s.chars()
                 .mapToObj(c ->
@@ -50,8 +49,8 @@ class DigestiveHashBuilderTest {
         HashBuilder<String, K128> flatMap = Hashes.hashBuilder(K128)
             .map(ssb).flatMap(sss);
 
-        Hash<K128> mapHash = map.hash("foo").get();
-        Hash<K128> flatMapHash = flatMap.hash("foo").get();
+        Hash<K128> mapHash = map.hash("foo").build();
+        Hash<K128> flatMapHash = flatMap.hash("foo").build();
 
         assertEquals(mapHash, flatMapHash);
     }

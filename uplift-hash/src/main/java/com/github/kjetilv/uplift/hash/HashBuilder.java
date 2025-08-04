@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -11,17 +9,10 @@ import java.util.stream.Stream;
  *
  * @param <T>
  */
-public interface HashBuilder<T, H extends HashKind<H>>
-    extends Consumer<T>, Function<T, HashBuilder<T, H>>, Supplier<Hash<H>> {
+public interface HashBuilder<T, H extends HashKind<H>> {
 
-    @Override
     default void accept(T item) {
         hash(item);
-    }
-
-    @Override
-    default HashBuilder<T, H> apply(T item) {
-        return hash(item);
     }
 
     default HashBuilder<T, H> hash(List<T> items) {
@@ -32,7 +23,7 @@ public interface HashBuilder<T, H extends HashKind<H>>
     }
 
     default HashBuilder<T, H> hash(Stream<T> items) {
-        items.forEach(this);
+        items.forEach(this::accept);
         return this;
     }
 
@@ -45,8 +36,7 @@ public interface HashBuilder<T, H extends HashKind<H>>
      *
      * @return Hash
      */
-    @Override
-    Hash<H> get();
+    Hash<H> build();
 
     /**
      * @param toBytes Function from input type R to a stream of bytes

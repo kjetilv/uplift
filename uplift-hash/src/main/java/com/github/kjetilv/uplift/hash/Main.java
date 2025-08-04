@@ -22,7 +22,7 @@ public final class Main {
                 .map(Main::inputStream)
                 .forEach(hashTo(builder));
         }
-        System.out.println(builder.get().digest());
+        System.out.println(builder.build().digest());
     }
 
     private Main() {

@@ -42,7 +42,7 @@ sealed abstract class StructureClimber<H extends HashKind<H>>
     }
 
     protected Callbacks close() {
-        Hash<H> hash = builder.get();
+        Hash<H> hash = builder.build();
         onDone.accept(hashedTree(hash));
         return parent;
     }

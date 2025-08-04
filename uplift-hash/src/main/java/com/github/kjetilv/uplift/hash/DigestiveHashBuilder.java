@@ -7,8 +7,7 @@ import java.util.stream.Stream;
 record DigestiveHashBuilder<T, H extends HashKind<H>>(
     ByteDigest<H> byteDigest,
     Function<T, Stream<Bytes>> toBytes
-)
-    implements HashBuilder<T, H> {
+) implements HashBuilder<T, H> {
 
     DigestiveHashBuilder(ByteDigest<H> byteDigest, Function<T, Stream<Bytes>> toBytes) {
         this.byteDigest = Objects.requireNonNull(byteDigest, "byteDigest");
@@ -29,7 +28,7 @@ record DigestiveHashBuilder<T, H extends HashKind<H>>(
     }
 
     @Override
-    public Hash<H> get() {
+    public Hash<H> build() {
         return byteDigest.get();
     }
 

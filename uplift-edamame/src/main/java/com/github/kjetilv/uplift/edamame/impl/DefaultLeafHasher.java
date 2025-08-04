@@ -34,7 +34,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
 
     @Override
     public Hash<H> hash(Object leaf) {
-        return hashTo(newBuilder.get(), leaf).get();
+        return hashTo(newBuilder.get(), leaf).build();
     }
 
     private HashBuilder<byte[], H> hashTo(HashBuilder<byte[], H> hb, Object leaf) {

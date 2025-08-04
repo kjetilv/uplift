@@ -161,11 +161,11 @@ public final class Hashes {
     }
 
     public static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBuilder(H kind) {
-        return new DigestiveHashBuilder<>(new MessageByteDigest<>(kind), IDENTITY);
+        return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), IDENTITY);
     }
 
     public static <H extends HashKind<H>> HashBuilder<InputStream, H> inputStreamHashBuilder(H kind) {
-        return new DigestiveHashBuilder<>(new MessageByteDigest<>(kind), Hashes.inputStream2Bytes());
+        return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), Hashes.inputStream2Bytes());
     }
 
     public static Function<Integer, byte[]> intToBytes() {

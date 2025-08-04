@@ -80,9 +80,9 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(tree.size());
         tree.forEach((key, value) -> {
             keyHb.hash(key);
-            hashHb.apply(value.hash());
+            hashHb.hash(value.hash());
         });
-        return hb.get();
+        return hb.build();
     }
 
     private Hash<H> listHash(List<? extends HashedTree<K, H>> trees) {
@@ -91,8 +91,8 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(trees.size());
         trees.stream()
             .map(HashedTree::hash)
-            .forEach(hashHb);
-        return hashHb.get();
+            .forEach(hashHb::hash);
+        return hashHb.build();
     }
 
     private Hash<H> leafHash(Object value) {

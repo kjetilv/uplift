@@ -5,6 +5,10 @@ import java.util.Objects;
 
 final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
+    static <H extends HashKind<H>> MessageByteDigest<H> get(H kind) {
+        return new MessageByteDigest<>(kind);
+    }
+
     private final MessageDigest messageDigest;
 
     private final H kind;
