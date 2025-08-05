@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -21,9 +22,24 @@ record DigestiveHashBuilder<T, H extends HashKind<H>>(
 
     @Override
     public HashBuilder<T, H> hash(T item) {
-        Stream.ofNullable(item)
-            .flatMap(toBytes)
-            .forEach(byteDigest::digest);
+        return item == null
+            ? this
+            : hash(Stream.ofNullable(item));
+    }
+
+    @Override
+    public HashBuilder<T, H> hash(List<T> items) {
+        return items == null || items.isEmpty()
+            ? this
+            : hash(items.stream());
+    }
+
+    @Override
+    public HashBuilder<T, H> hash(Stream<T> items) {
+        if (items != null) {
+            items.flatMap(toBytes)
+                .forEach(byteDigest::digest);
+        }
         return this;
     }
 

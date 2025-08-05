@@ -61,7 +61,9 @@ class JsonSessionTest {
     void testListsSession() {
         AtomicReference<Object> reference = new AtomicReference<>();
         JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
-        String json =
+        Json json = Json.instance(jsonSession);
+
+        String string =
             //language=json
             """
                 [
@@ -69,9 +71,9 @@ class JsonSessionTest {
                   { "foo": "bar" }
                 ]
                 """;
-        Json.instance().parse(json, jsonSession.callbacks(reference::set));
+        Json.instance().parse(string, jsonSession.callbacks(reference::set));
 
-        List<?> sharedSessionList = Json.instance(jsonSession).jsonArray(json);
+        List<?> sharedSessionList = json.jsonArray(string);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
                 .satisfies(list ->
