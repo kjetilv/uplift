@@ -36,17 +36,9 @@ final class DefaultPullParser implements PullParser {
         Token next = tokens.nextField(canonical);
         while (next != Token.END_OBJECT) {
             switch (next) {
-                case Token.Field fieldToken -> callbacks = processField(
-                    tokens,
-                    fieldToken,
-                    callbacks
-                );
+                case Token.Field fieldToken -> callbacks = processField(tokens, fieldToken, callbacks);
                 case Token.SkipField _ -> skip(tokens);
-                default -> failParse(
-                    next,
-                    STRING,
-                    TokenType.END_OBJECT
-                );
+                default -> failParse(next, STRING, TokenType.END_OBJECT);
             }
             next = commaOr(tokens, Token.END_OBJECT, true, canonical);
         }

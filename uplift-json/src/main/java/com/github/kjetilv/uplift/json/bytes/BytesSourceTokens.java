@@ -7,9 +7,7 @@ import com.github.kjetilv.uplift.json.Tokens;
 import com.github.kjetilv.uplift.json.io.ReadException;
 import com.github.kjetilv.uplift.kernel.io.Bytes;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 public final class BytesSourceTokens implements Tokens {
 

@@ -43,11 +43,11 @@ class JsonTest {
 
     static void assertFailedParse(
         String bytesSource,
-        Consumer<? super AssertionError> failer
+        Consumer<? super Exception> failer
     ) {
         try {
             fail("Unexpected success: " + JSON.read(bytesSource));
-        } catch (AssertionError e) {
+        } catch (IllegalStateException e) {
             failer.accept(e);
         } catch (Exception e) {
             fail("Unexpected exception", e);
@@ -396,7 +396,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertThat(e).isInstanceOf(AssertionError.class)
+                assertThat(e).isInstanceOf(IllegalStateException.class)
         );
     }
 
@@ -418,7 +418,7 @@ class JsonTest {
                 tru
                 """,
             e ->
-                assertThat(e).isInstanceOf(AssertionError.class)
+                assertThat(e).isInstanceOf(IllegalStateException.class)
         );
     }
 
@@ -429,7 +429,7 @@ class JsonTest {
                 falsy
                 """,
             e ->
-                assertThat(e).isInstanceOf(AssertionError.class)
+                assertThat(e).isInstanceOf(IllegalStateException.class)
         );
     }
 
@@ -440,7 +440,7 @@ class JsonTest {
                 nil
                 """,
             e ->
-                assertThat(e).isInstanceOf(AssertionError.class)
+                assertThat(e).isInstanceOf(IllegalStateException.class)
         );
     }
 

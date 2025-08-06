@@ -16,9 +16,9 @@ public interface BytesSource {
 
     Bytes spoolNumber();
 
-    void skip4(byte c0, byte c1, byte c2);
+    void skip4(byte c1, byte c2, byte c3);
 
-    void skip5(byte c0, byte c1, byte c2, byte c3);
+    void skip5(byte c1, byte c2, byte c3, byte c4);
 
     boolean done();
 

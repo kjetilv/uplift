@@ -17,11 +17,6 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private int index;
 
-    protected final void initialize() {
-        this.next1 = nextByte();
-        this.next2 = next1 > 0 ? nextByte() : 0;
-    }
-
     @Override
     public Bytes spoolField() {
         index = 0;
@@ -46,17 +41,16 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         index = 0;
         boolean quo = false;
         while (true) {
-            byte b = next1;
-            if (b >> 5 == 0) {
+            if (next1 >> 5 == 0) {
                 if (quo) {
                     save();
                     quo = false;
                 } else {
-                    fail("Unescaped control char: " + (int) b);
+                    fail("Unescaped control char: " + (int) next1);
                 }
                 continue;
             }
-            switch (b) {
+            switch (next1) {
                 case '"' -> {
                     if (quo) {
                         save();
@@ -100,23 +94,39 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public void skip5(byte c0, byte c1, byte c2, byte c3) {
-        assert next1 == c0 : next1 + "!=" + c0;
-        assert next2 == c1 : next2 + "!=" + c1;
+    public void skip5(byte c1, byte c2, byte c3, byte c4) {
+        if (next1 != c1 || next2 != c2) {
+            throw new IllegalStateException(
+                "Expected '" + (char) c1 + "'/'" + (char) c2 + "' " +
+                "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
+            );
+        }
         byte next3 = nextByte();
-        assert next3 == c2 : next3 + "!=" + c2;
         byte next4 = nextByte();
-        assert next4 == c3 : next4 + "!=" + c3;
+        if (next3 != c3 || next4 != c4) {
+            throw new IllegalStateException(
+                "Expected '" + (char) c3 + "'/'" + (char) c4 + "' " +
+                "but got '" + (char) next2 + "'/'" + (char) next3 + "'"
+            );
+        }
         next1 = nextByte();
         next2 = nextByte();
     }
 
     @Override
-    public void skip4(byte c0, byte c1, byte c2) {
-        assert next1 == c0 : next1 + "!=" + c0;
-        assert next2 == c1 : next2 + "!=" + c1;
+    public void skip4(byte c1, byte c2, byte c3) {
+        if (next1 != c1 || next2 != c2) {
+            throw new IllegalStateException(
+                "Expected '" + (char) c1 + "'/'" + (char) c2 + "' " +
+                "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
+            );
+        }
         byte next3 = nextByte();
-        assert next3 == c2 : next3 + "!=" + c2;
+        if (next3 != c3) {
+            throw new IllegalStateException(
+                "Expected '" + (char) c3 + "' but got '" + (char) next2 + "'"
+            );
+        }
         next1 = nextByte();
         next2 = nextByte();
     }
@@ -161,6 +171,11 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return new Bytes(currentLexeme, 0, index);
     }
 
+    protected final void initialize() {
+        this.next1 = nextByte();
+        this.next2 = next1 > 0 ? nextByte() : 0;
+    }
+
     protected abstract byte nextByte();
 
     private void save() {
@@ -191,7 +206,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     private boolean digital(byte peek) {
-        return peek == '.' || isDigit(peek);
+        return isDigit(peek) || peek == '.';
     }
 
     private void fail(String msg) throws ReadException {
