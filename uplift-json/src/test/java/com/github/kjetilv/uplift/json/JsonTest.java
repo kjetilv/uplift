@@ -95,7 +95,7 @@ class JsonTest {
     void singleValueField() {
         Object read = JSON.read("""
             {
-              "foo": 234.234, 
+              "foo": 234.234,
               "bar": -54.32
             }
             """);

@@ -3,8 +3,6 @@ package com.github.kjetilv.uplift.jmh;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
@@ -21,7 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReadTest {
 
-//    @Fork(value = 2, warmups = 2)
+    public static final ObjectMapper objectMapper = new ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+
+    //    @Fork(value = 2, warmups = 2)
 //    @Threads(8)
     @Benchmark
     public Tweet readTweetUplift() {
@@ -47,17 +50,10 @@ public class ReadTest {
 //
     }
 
-    public static final ObjectMapper objectMapper = new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
-        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-
     private static final URL RESOURCE = Objects.requireNonNull(
         Thread.currentThread().getContextClassLoader().getResource("48.json"), "resource");
 
     private static final byte[] data;
-
-    private static final LineSegment lineSegment;
 
     private static final JsonReader<byte[], Tweet> bReader;
 
@@ -72,7 +68,6 @@ public class ReadTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lineSegment = LineSegments.of(data);
         System.out.println(Tweet_Callbacks.PRESETS);
         bReader = TweetRW.INSTANCE.bytesReader();
     }

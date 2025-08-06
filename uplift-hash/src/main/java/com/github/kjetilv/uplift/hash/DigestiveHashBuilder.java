@@ -50,10 +50,6 @@ record DigestiveHashBuilder<T, H extends HashKind<H>>(
         return byteDigest.get();
     }
 
-    public <R> HashBuilder<R, H> also(Function<R, Stream<Bytes>> toBytes) {
-        return new DigestiveHashBuilder<>(byteDigest, toBytes);
-    }
-
     @Override
     public <R> HashBuilder<R, H> map(Function<R, T> transform) {
         return new DigestiveHashBuilder<>(byteDigest, transform.andThen(toBytes));

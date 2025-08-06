@@ -18,10 +18,6 @@ public record Bytes(byte[] bytes, int offset, int length) {
         return new String(bytes, offset, length, UTF_8);
     }
 
-    public Bytes copy() {
-        return new Bytes(copyBytes(), 0, length);
-    }
-
     public byte[] copyBytes() {
         return Arrays.copyOf(bytes, length);
     }

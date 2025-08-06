@@ -29,7 +29,7 @@ public class CacheBenchmark {
     public Object readJsonCached() throws Exception {
         JsonSession jsonSession = CachingJsonSessions.create(K128);
         Json json = Json.instance(jsonSession);
-        try (Stream<String> lines = Files.lines(tmp);) {
+        try (Stream<String> lines = Files.lines(tmp)) {
             List<Object> list = new ArrayList<>();
             Callbacks callbacks = jsonSession.callbacks(list::add);
             lines.forEach(line ->
@@ -42,7 +42,7 @@ public class CacheBenchmark {
     @Benchmark
     public Object readJsonUncached() throws Exception {
         Json json = Json.instance();
-        try (Stream<String> lines = Files.lines(tmp);) {
+        try (Stream<String> lines = Files.lines(tmp)) {
             return lines.map(json::read).toList();
         }
     }
@@ -51,7 +51,7 @@ public class CacheBenchmark {
     @Benchmark
     public Object readJsonJackson() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        try (Stream<String> lines = Files.lines(tmp);) {
+        try (Stream<String> lines = Files.lines(tmp)) {
             return lines.map(line -> {
                 try {
                     return objectMapper.readValue(line, Map.class);
@@ -65,29 +65,3 @@ public class CacheBenchmark {
     private static final Path tmp = Gunzip.toTemp("iso_deliverables_metadata.jsonl.gz");
 }
 
-record Mem(
-    long usedM,
-    long freeM,
-    long totalM,
-    long maxM
-) {
-
-    public static Mem create() {
-        Runtime runtime = Runtime.getRuntime();
-        long free = runtime.freeMemory();
-        long total = runtime.totalMemory();
-        return new Mem(
-            (total - free) / M,
-            free / M,
-            total / M,
-            runtime.maxMemory() / M
-        );
-    }
-
-    private static final int M = 1024 * 1024;
-
-    @Override
-    public String toString() {
-        return usedM + "M";
-    }
-}

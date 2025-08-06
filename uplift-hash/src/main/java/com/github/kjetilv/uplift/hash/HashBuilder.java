@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.hash;
 
-import com.github.kjetilv.uplift.kernel.io.Bytes;
-
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -39,13 +37,6 @@ public interface HashBuilder<T, H extends HashKind<H>> {
      * @return Hash
      */
     Hash<H> build();
-
-    /**
-     * @param toBytes Function from input type R to a stream of bytes
-     * @param <R>     Input type
-     * @return A hasher which accepts R inputs and adds them to the hash
-     */
-    <R> HashBuilder<R, H> also(Function<R, Stream<Bytes>> toBytes);
 
     /**
      * @param transform Transformer for R to T

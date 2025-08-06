@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 
+@SuppressWarnings("unused")
 public final class Gunzip {
 
     public static Path toTemp(String resource) {

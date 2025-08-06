@@ -471,10 +471,6 @@ final class Gen {
         return simpleName(te) + "_Callbacks";
     }
 
-    static String callbacksClass(TypeElement te) {
-        return canonicalClassName(te, true) + "_Callbacks";
-    }
-
     static String factoryClassQ(PackageElement pe, TypeElement te) {
         return pe.getQualifiedName() + "." + factoryClass(te);
     }

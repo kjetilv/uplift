@@ -2,8 +2,6 @@ package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.uplift.kernel.io.Bytes;
 
-import java.util.Optional;
-
 public interface BytesSource {
 
     int chomp();
@@ -21,8 +19,4 @@ public interface BytesSource {
     void skip5(byte c1, byte c2, byte c3, byte c4);
 
     boolean done();
-
-    default Optional<String> pos() {
-        return Optional.empty();
-    }
 }
