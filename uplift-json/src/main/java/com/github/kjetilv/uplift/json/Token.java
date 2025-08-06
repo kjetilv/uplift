@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
+import java.util.Arrays;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("ALL")
 public sealed interface Token permits
@@ -121,10 +122,10 @@ public sealed interface Token permits
         }
     }
 
-    record Str(LineSegment lineSegment) implements Token {
+    record Str(byte[] bytes) implements Token {
 
         public String value() {
-            return lineSegment().asString();
+            return new String(bytes, UTF_8);
         }
 
         @Override
@@ -146,26 +147,26 @@ public sealed interface Token permits
         }
     }
 
-    record Field(LineSegment lineSegment, int length, int hash) implements Token {
+    record Field(byte[] bytes, int length, int hash) implements Token {
 
-        public Field(LineSegment lineSegment) {
+        public Field(byte[] bytes) {
             this(
-                lineSegment,
-                Math.toIntExact(lineSegment.endIndex() - lineSegment.startIndex()),
-                LineSegments.hashCode(lineSegment)
+                bytes,
+                bytes.length,
+                Arrays.hashCode(bytes)
             );
         }
 
         public String value() {
-            return lineSegment.asString();
+            return new String(bytes, UTF_8);
         }
 
         public byte[] bytes() {
-            return LineSegments.simpleBytes(lineSegment);
+            return bytes;
         }
 
         public boolean differsAt(Field other, int index) {
-            return lineSegment.byteAt(index) != other.lineSegment().byteAt(index);
+            return bytes[index] != other.bytes()[index];
         }
 
         @Override
@@ -182,9 +183,13 @@ public sealed interface Token permits
             if (o == this) {
                 return true;
             }
-            return o instanceof Field(LineSegment otherSegment, int otherLength, _) &&
-                   length == otherLength &&
-                   lineSegment.matches(otherSegment);
+            if (o instanceof Field field) {
+                if (field.hash != hash) {
+                    return false;
+                }
+                return length == field.length && Arrays.equals(bytes, field.bytes);
+            }
+            return false;
         }
 
         @Override
@@ -194,7 +199,7 @@ public sealed interface Token permits
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + lineSegment.asString() + "]";
+            return getClass().getSimpleName() + "[" + value() + "]";
         }
     }
 

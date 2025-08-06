@@ -41,7 +41,7 @@ final class TrieBuilder {
         return fields.stream()
             .filter(f -> f.length() > index)
             .collect(Collectors.groupingBy(field ->
-                field.lineSegment().byteAt(index)))
+                field.bytes()[index]))
             .entrySet();
     }
 

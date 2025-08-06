@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json.trie;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.Token;
 import org.junit.jupiter.api.Test;
 
@@ -61,10 +59,13 @@ class TokenTrieTest {
 
     private static Token.Field tok(String qoz) {
         String pre = "foo: \"";
-        return new Token.Field(c(pre + qoz + "\"").slice(pre.length(), pre.length() + qoz.length()));
+        byte[] c = c(pre + qoz + "\"");
+        byte[] slice = new byte[qoz.length()];
+        System.arraycopy(c, pre.length(), slice, 0, qoz.length());
+        return new Token.Field(slice);
     }
 
-    private static LineSegment c(String s) {
-        return LineSegments.of(s.getBytes(UTF_8));
+    private static byte[] c(String s) {
+        return s.getBytes(UTF_8);
     }
 }

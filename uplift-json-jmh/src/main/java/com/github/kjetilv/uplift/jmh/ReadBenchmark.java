@@ -3,14 +3,12 @@ package com.github.kjetilv.uplift.jmh;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kjetilv.flopp.kernel.*;
-import com.github.kjetilv.flopp.kernel.files.PartitionedPaths;
-import com.github.kjetilv.flopp.kernel.files.Partitioneds;
-import com.github.kjetilv.flopp.kernel.partitions.Partitionings;
+import com.github.kjetilv.flopp.kernel.Shape;
 import com.github.kjetilv.uplift.json.JsonReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Warmup;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,9 +29,17 @@ import java.util.concurrent.atomic.LongAdder;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@Fork
+@Warmup(iterations = 1, time = 10)
+@Measurement(iterations = 1, time = 10)
 public class ReadBenchmark {
 
-    public static void main(String[] args) throws IOException {
+    public static final ObjectMapper objectMapper = new ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
+        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+
+    static void main() throws IOException {
         System.out.println("OK");
 
         List<String> lines = Files.readAllLines(PATH_L, UTF_8);
@@ -43,63 +49,22 @@ public class ReadBenchmark {
             .toMillis());
 
         Shape shape = Shape.of(PATH_L);
-        MemorySegmentSource segmentSource = PartitionedPaths.fullMemorySegmentSource(PATH_L, shape);
 
         LongAdder longAdder = new LongAdder();
-        try (
-            Partitioned partitioned = Partitioneds.create(new Partitionings(1).single(), shape, segmentSource)
-        ) {
-            for (int i = 0; i < X / 4; i++) {
-                partitioned.streamers()
-                    .forEach(streamer -> {
-                        JsonReader<LineSegment, Tweet> reader = TweetRW.INSTANCE.lineSegmentReader();
-                        streamer.lines()
-                            .forEach(line -> {
-                                Tweet tweet = reader.read(line);
-                                longAdder.add(tweet == null ? 0 : 1);
-                            });
-                    });
-            }
-        }
-
-        Tweet upliftTweet = reader.read(lineSegment);
-        Tweet jacksonTweet = objectMapper.readValue(data, Tweet.class);
-        if (upliftTweet.equals(jacksonTweet)) {
-            throw new IllegalStateException("Not the same!");
-        }
+        doUplift(lines, longAdder, 4);
+        doJackson(lines, longAdder, 4);
 
         System.out.println("Warmed up");
         System.gc();
 
         Instant jacksonNow = Instant.now();
 
-        for (int i = 0; i < X; i++) {
-            for (String line : lines) {
-                try {
-                    Tweet tweet = objectMapper.readValue(line, Tweet.class);
-                    longAdder.add(tweet == null ? 0 : 1);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        doJackson(lines, longAdder, 1);
         Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
 
         Instant upliftNow = Instant.now();
-        try (
-            Partitioned partitioned = Partitioneds.create( Partitionings.LONG.single(), shape, segmentSource)
-        ) {
-            for (int i = 0; i < X; i++) {
-                partitioned.streamers()
-                    .forEach(streamer ->
-                        streamer.lines()
-                            .forEach(line -> {
-                                Tweet tweet = reader.read(line);
-                                longAdder.add(tweet == null ? 0 : 1);
-                            }));
-            }
-        }
+        doUplift(lines, longAdder, 1);
         Duration upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Uplift:" + longAdder + ": " + upliftTime);
         System.gc();
@@ -110,23 +75,15 @@ public class ReadBenchmark {
         System.out.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
     }
 
-    @Fork(value = 2, warmups = 2)
-    @Threads(8)
     @Benchmark
     public Tweet readTweetUplift() {
-        return reader.read(lineSegment);
+        return bReader.read(data);
     }
 
-    @Fork(value = 2, warmups = 2)
-//    @Benchmark
+    @Benchmark
     public Tweet readTweetJakcson() throws IOException {
         return objectMapper.readValue(data, Tweet.class);
     }
-
-    public static final ObjectMapper objectMapper = new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
-        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
 
     private static final URL RESOURCE = Objects.requireNonNull(
         Thread.currentThread().getContextClassLoader().getResource("48.json"), "resource");
@@ -140,9 +97,7 @@ public class ReadBenchmark {
 
     private static final byte[][] datas;
 
-    private static final LineSegment lineSegment;
-
-    private static final JsonReader<LineSegment, Tweet> reader;
+    private static final JsonReader<String, Tweet> reader;
 
     private static final JsonReader<byte[], Tweet> bReader;
 
@@ -174,9 +129,30 @@ public class ReadBenchmark {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lineSegment = LineSegments.of(data);
         bReader = TweetRW.INSTANCE.bytesReader();
-        reader = TweetRW.INSTANCE.lineSegmentReader();
+        reader = TweetRW.INSTANCE.stringReader();
+    }
+
+    private static void doUplift(List<String> lines, LongAdder longAdder, int split) {
+        for (int i = 0; i < X / split; i++) {
+            for (String line : lines) {
+                Tweet tweet = reader.read(line);
+                longAdder.add(tweet == null ? 0 : 1);
+            }
+        }
+    }
+
+    private static void doJackson(List<String> lines, LongAdder longAdder, int split) {
+        try {
+            for (int i = 0; i < X / split; i++) {
+                for (String line : lines) {
+                    Tweet tweet = objectMapper.readValue(line, Tweet.class);
+                    longAdder.add(tweet == null ? 0 : 1);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String perc(Duration par, Duration total) {

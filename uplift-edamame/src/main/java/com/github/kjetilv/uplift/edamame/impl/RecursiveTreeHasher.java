@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizers;
 import com.github.kjetilv.uplift.hash.*;
+import com.github.kjetilv.uplift.kernel.io.Bytes;
 import com.github.kjetilv.uplift.kernel.util.Maps;
 
 import java.util.Collections;

@@ -1,13 +1,12 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.util.function.IntSupplier;
 
 import static java.lang.Character.isDigit;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class AbstractIntsBytesSource implements BytesSource {
 
@@ -29,7 +28,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public LineSegment spoolField() {
+    public byte[] spoolField() {
         index = 0;
         while (true) {
             if (next1 >> 5 == 0) {
@@ -48,7 +47,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public LineSegment spoolString() {
+    public byte[] spoolString() {
         index = 0;
         boolean quo = false;
         while (true) {
@@ -90,7 +89,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public LineSegment spoolNumber() {
+    public byte[] spoolNumber() {
         index++; // First digit is already in buffer
         while (digital(next1)) {
             save();
@@ -163,8 +162,10 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public LineSegment lexeme() {
-        return LineSegments.of(currentLexeme, 0, index);
+    public byte[] lexeme() {
+        byte[] bytes = new byte[index];
+        System.arraycopy(currentLexeme, 0, bytes, 0, index);
+        return bytes;
     }
 
     private void save() {
@@ -202,8 +203,8 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return peek == '.' || isDigit(peek);
     }
 
-    private void fail(String msg) {
-        throw new ReadException(msg, "`" + lexeme().asString() + "`");
+    private void fail(String msg) throws ReadException {
+        throw new ReadException(msg, "`" + new String(lexeme(), UTF_8) + "`");
     }
 
     private static final int LN = 10;

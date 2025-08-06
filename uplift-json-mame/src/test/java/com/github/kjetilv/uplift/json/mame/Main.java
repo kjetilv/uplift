@@ -33,15 +33,16 @@ public class Main {
         Callbacks callbacks = session.get().callbacks(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
         AtomicReference<Callbacks> cachingCallbacks = new AtomicReference<>(callbacks);
+        Json json = Json.instance(CachingJsonSessions.create(K128));
         if (Arrays.stream(args).anyMatch(arg -> arg.endsWith(".jsonl"))) {
             lines(args).forEach(line ->
-                Json.instance().parse(line, cachingCallbacks.get())
+                json.parse(line, cachingCallbacks.get())
             );
         } else {
             Arrays.stream(args)
                 .forEach(arg -> {
                     try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(Path.of(arg)))) {
-                        Json.instance().parse(inputStream, cachingCallbacks.get());
+                        json.parse(inputStream, cachingCallbacks.get());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -62,16 +63,17 @@ public class Main {
     }
 
     private static Stream<String> lines(String[] args) {
-        return Arrays.stream(args)
+        List<Path> paths = Arrays.stream(args)
             .parallel()
             .map(Path::of)
             .filter(Files::isRegularFile)
-            .flatMap(path -> {
-                try {
-                    return Files.lines(path);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            .toList();
+        return paths.stream().flatMap(path -> {
+            try {
+                return Files.lines(path);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import com.github.kjetilv.uplift.kernel.io.Bytes;
+
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Iterator;

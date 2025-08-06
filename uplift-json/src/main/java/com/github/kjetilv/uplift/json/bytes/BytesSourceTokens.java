@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.MemorySegments;
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
@@ -9,6 +7,8 @@ import com.github.kjetilv.uplift.json.Tokens;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.math.BigDecimal;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class BytesSourceTokens implements Tokens {
 
@@ -46,18 +46,18 @@ public final class BytesSourceTokens implements Tokens {
             case 'f' -> alse();
             case 't' -> rue();
             case 'n' -> ull();
-            case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().asString() + "`");
+            case 0 -> fail("Unexpected end of stream", "`" + new String(bytesSource.lexeme()) + "`");
             case int x -> fail("Unrecognized character", "`" + (char) x + "`");
         };
     }
 
     private Token fieldToken(boolean canonical) {
-        LineSegment lexeme = bytesSource.spoolField();
+        byte[] lexeme = bytesSource.spoolField();
         if (canonical) {
             Token.Field resolved = knownTokens.get(lexeme);
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
-        return new Token.Field(bytesSource.lexeme());
+        return new Token.Field(lexeme);
     }
 
     private Token.Str stringToken() {
@@ -65,18 +65,18 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token numberToken() {
-        LineSegment lexeme = bytesSource.spoolNumber();
-        MemorySegments.Chars cs = lexeme.asChars(buffer).trim();
-        if (cs == MemorySegments.Chars.NULL) {
-            throw new IllegalArgumentException("Empty numeric value");
+        byte[] lexeme = bytesSource.spoolNumber();
+        int len = lexeme.length;
+        for (int i = 0; i < len; i++) {
+            buffer[i] = (char) lexeme[i];
         }
         try {
-            BigDecimal number = new BigDecimal(cs.chars(), cs.offset(), cs.length());
+            BigDecimal number = new BigDecimal(buffer, 0, len);
             return new Token.Number(number.scale() == 0
                 ? number.longValue()
                 : number);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse: `" + cs + "`", e);
+            throw new IllegalArgumentException("Failed to parse: `" + new String(lexeme, UTF_8) + "`", e);
         }
     }
 
@@ -113,6 +113,6 @@ public final class BytesSourceTokens implements Tokens {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + bytesSource.lexeme().asString() + "]";
+        return getClass().getSimpleName() + "[" + new String(bytesSource.lexeme()) + "]";
     }
 }

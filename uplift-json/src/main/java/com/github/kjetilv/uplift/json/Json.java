@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -93,10 +91,6 @@ public interface Json {
     Callbacks parse(InputStream source, Callbacks callbacks);
 
     Callbacks parseMulti(InputStream source, Callbacks callbacks);
-
-    Callbacks parse(LineSegment lineSegment, Callbacks callbacks);
-
-    Callbacks parseMulti(LineSegment lineSegment, Callbacks callbacks);
 
     Callbacks parse(BytesSource bytesSource, Callbacks callbacks);
 

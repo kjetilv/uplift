@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.TokenResolver;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.LongToIntFunction;
+import java.util.function.IntUnaryOperator;
 
 public class TokenTrie implements TokenResolver {
 
@@ -23,7 +23,45 @@ public class TokenTrie implements TokenResolver {
     }
 
     @Override
-    public Token.Field get(LongToIntFunction bytes, long offset, long length) {
+    public Token.Field get(byte[] bytes) {
+        Trie t = this.root;
+        do {
+            if (t == null) {
+                return null;
+            }
+            int pos = t.pos();
+            if (bytes.length == pos) {
+                return t.field();
+            }
+            if (bytes.length < pos) {
+                return null;
+            }
+            int b = bytes[pos];
+            t = t.descend(b);
+        } while (true);
+    }
+
+    @Override
+    public Token.Field get(byte[] bytes, int offset, int length) {
+        Trie t = this.root;
+        do {
+            if (t == null) {
+                return null;
+            }
+            int pos = t.pos();
+            if (length == pos) {
+                return t.field();
+            }
+            if (length < pos) {
+                return null;
+            }
+            int b = bytes[offset + pos];
+            t = t.descend(b);
+        } while (true);
+    }
+
+    @Override
+    public Token.Field get(IntUnaryOperator bytes, int offset, int length) {
         Trie t = this.root;
         do {
             if (t == null) {

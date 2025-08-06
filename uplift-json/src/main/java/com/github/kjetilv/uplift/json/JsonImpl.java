@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
 import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
-import com.github.kjetilv.uplift.json.bytes.LineSegmentBytesSource;
 import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
 import com.github.kjetilv.uplift.json.io.JsonWriter;
 import com.github.kjetilv.uplift.json.io.StreamSink;
@@ -14,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.LongToIntFunction;
+import java.util.function.IntUnaryOperator;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -51,18 +49,6 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public Callbacks parseMulti(InputStream source, Callbacks callbacks) {
         return parseMulti(new InputStreamIntsBytesSource(source), callbacks);
-    }
-
-    @Override
-    public Callbacks parse(LineSegment lineSegment, Callbacks callbacks) {
-        BytesSource bytesSource = new LineSegmentBytesSource(lineSegment);
-        return parse(bytesSource, callbacks);
-    }
-
-    @Override
-    public Callbacks parseMulti(LineSegment lineSegment, Callbacks callbacks) {
-        BytesSource bytesSource = new LineSegmentBytesSource(lineSegment);
-        return parseMulti(bytesSource, callbacks);
     }
 
     @Override
@@ -138,12 +124,12 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     private static class Allocator implements TokenResolver {
 
         @Override
-        public Token.Field get(LineSegment segment, long offset, long length) {
-            return new Token.Field(segment);
+        public Token.Field get(byte[] bytes, int offset, int length) {
+            return new Token.Field(bytes);
         }
 
         @Override
-        public Token.Field get(LongToIntFunction get, long offset, long length) {
+        public Token.Field get(IntUnaryOperator get, int offset, int length) {
             throw new UnsupportedOperationException();
         }
 

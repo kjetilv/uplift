@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import com.github.kjetilv.uplift.kernel.io.Bytes;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;

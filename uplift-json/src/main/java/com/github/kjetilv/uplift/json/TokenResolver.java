@@ -1,32 +1,27 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-import com.github.kjetilv.flopp.kernel.LineSegments;
+import java.util.function.IntUnaryOperator;
 
-import java.util.function.LongToIntFunction;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @FunctionalInterface
 public interface TokenResolver {
 
     default Token.Field get(Token.Field token) {
-        return get(token.lineSegment());
+        return get(token.bytes());
     }
 
     default Token.Field get(String token) {
-        return get(LineSegments.of(token));
+        return get(token.getBytes(UTF_8));
     }
 
-    default Token.Field get(LineSegment segment) {
-        return get(segment, 0, segment.length());
+    default Token.Field get(byte[] bytes) {
+        return get(bytes, 0, bytes.length);
     }
 
-    default Token.Field get(
-        LineSegment segment,
-        long offset,
-        long length
-    ) {
-        return get(segment::byteAt, offset, length);
+    default Token.Field get(byte[] bytes, int offset, int length) {
+        return get(i -> bytes[i], offset, length);
     }
 
-    Token.Field get(LongToIntFunction get, long offset, long length);
+    Token.Field get(IntUnaryOperator get, int offset, int length);
 }

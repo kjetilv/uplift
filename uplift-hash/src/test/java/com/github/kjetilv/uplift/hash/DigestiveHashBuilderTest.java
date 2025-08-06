@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
+import com.github.kjetilv.uplift.kernel.io.Bytes;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;

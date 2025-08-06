@@ -1,20 +1,18 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.flopp.kernel.LineSegment;
-
 import java.util.Optional;
 
 public interface BytesSource {
 
     int chomp();
 
-    LineSegment lexeme();
+    byte[] lexeme();
 
-    LineSegment spoolField();
+    byte[] spoolField();
 
-    LineSegment spoolString();
+    byte[] spoolString();
 
-    LineSegment spoolNumber();
+    byte[] spoolNumber();
 
     void skip4(byte c0, byte c1, byte c2);
 
