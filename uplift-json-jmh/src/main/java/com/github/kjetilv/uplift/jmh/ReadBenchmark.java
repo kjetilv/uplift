@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.jmh;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kjetilv.flopp.kernel.Shape;
 import com.github.kjetilv.uplift.json.JsonReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -47,8 +46,6 @@ public class ReadBenchmark {
         Instant initTime = Instant.now();
         System.out.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
             .toMillis());
-
-        Shape shape = Shape.of(PATH_L);
 
         LongAdder longAdder = new LongAdder();
         doUplift(lines, longAdder, 4);

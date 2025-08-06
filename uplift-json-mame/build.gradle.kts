@@ -3,7 +3,6 @@ dependencies {
     implementation(project(":uplift-json"))
     implementation(project(":uplift-hash"))
     implementation(project(":uplift-edamame"))
-    implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")

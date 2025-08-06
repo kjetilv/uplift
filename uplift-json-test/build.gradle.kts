@@ -1,7 +1,6 @@
 dependencies {
     implementation(project(":uplift-uuid"))
     implementation(project(":uplift-json"))
-    implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")
 
     testAnnotationProcessor(project(":uplift-json"))
 
