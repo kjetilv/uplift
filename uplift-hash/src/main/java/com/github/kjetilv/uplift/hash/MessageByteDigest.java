@@ -81,10 +81,11 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
     private static final int DIGEST_POOL_SIZE = 20;
 
     private static <H extends HashKind<H>> MessageDigest createDigest(H kind) {
+        String algorithm = kind.algorithm();
         try {
-            return MessageDigest.getInstance(kind.algorithm());
+            return MessageDigest.getInstance(algorithm);
         } catch (Exception e) {
-            throw new IllegalStateException("Expected " + kind + " implementation", e);
+            throw new IllegalStateException("Expected " + algorithm + " implementation", e);
         }
     }
 

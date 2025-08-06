@@ -34,11 +34,16 @@ public sealed interface HashKind<H extends HashKind<H>> {
         int digestLength,
         String digestPadding,
         Hash<K128> blank
-    )
-        implements HashKind<K128> {
+    ) implements HashKind<K128> {
 
         private K128() {
-            this("MD5", 128, 22, "==", Hashes.of(0L, 0L));
+            this(
+                "MD5",
+                128,
+                22,
+                "==",
+                Hashes.of(0L, 0L)
+            );
         }
 
         @Override
@@ -54,11 +59,16 @@ public sealed interface HashKind<H extends HashKind<H>> {
         int digestLength,
         String digestPadding,
         Hash<K256> blank
-    )
-        implements HashKind<K256> {
+    ) implements HashKind<K256> {
 
         private K256() {
-            this("SHA3-256", 256, 43, "=", Hashes.of(0L, 0L, 0L, 0L));
+            this(
+                "SHA3-256",
+                256,
+                43,
+                "=",
+                Hashes.of(0L, 0L, 0L, 0L)
+            );
         }
 
         @Override
