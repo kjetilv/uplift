@@ -10,9 +10,9 @@ dependencies {
     implementation(project(":uplift-json-mame"))
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-uuid"))
+
     annotationProcessor(project(":uplift-json"))
 
-    implementation("com.github.kjetilv.flopp:flopp-kernel:0.1.0-SNAPSHOT")
     implementation("com.fasterxml.jackson.core:jackson-core:2.19.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.19.2")
     implementation("org.openjdk.jmh:jmh-core:1.37")
