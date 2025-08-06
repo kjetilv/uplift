@@ -1,18 +1,20 @@
 package com.github.kjetilv.uplift.json;
 
+import com.github.kjetilv.uplift.kernel.io.Bytes;
+
 import java.util.Optional;
 
 public interface BytesSource {
 
     int chomp();
 
-    byte[] lexeme();
+    Bytes lexeme();
 
-    byte[] spoolField();
+    Bytes spoolField();
 
-    byte[] spoolString();
+    Bytes spoolString();
 
-    byte[] spoolNumber();
+    Bytes spoolNumber();
 
     void skip4(byte c0, byte c1, byte c2);
 

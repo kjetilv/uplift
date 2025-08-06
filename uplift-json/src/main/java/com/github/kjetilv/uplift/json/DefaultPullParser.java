@@ -48,7 +48,7 @@ final class DefaultPullParser implements PullParser {
                     TokenType.END_OBJECT
                 );
             }
-            next = commaOr(tokens, Token.END_OBJECT, canonical);
+            next = commaOr(tokens, Token.END_OBJECT, true, canonical);
         }
         return callbacks.objectEnded();
     }
@@ -58,7 +58,7 @@ final class DefaultPullParser implements PullParser {
         Token next = tokens.next();
         while (next != Token.END_ARRAY) {
             callbacks = processValue(tokens, next, callbacks);
-            next = commaOr(tokens, Token.END_ARRAY, false);
+            next = commaOr(tokens, Token.END_ARRAY, false, false);
         }
         return callbacks.arrayEnded();
     }
@@ -97,10 +97,10 @@ final class DefaultPullParser implements PullParser {
         } while (levels >= 0);
     }
 
-    private Token commaOr(Tokens tokens, Token closing, boolean canonical) {
-        Token token = tokens.next();
+    private Token commaOr(Tokens tokens, Token closing, boolean fieldName, boolean canonical) {
+        Token token = tokens.next(false, false);
         if (token == Token.COMMA) {
-            Token nextToken = tokens.next(closing == Token.END_OBJECT, canonical);
+            Token nextToken = tokens.next(fieldName, canonical);
             return nextToken == closing
                 ? failParse(nextToken, TokenType.valueTokens())
                 : nextToken;

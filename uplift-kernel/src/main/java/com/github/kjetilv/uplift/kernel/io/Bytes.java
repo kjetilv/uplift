@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.kernel.io;
 
+import java.util.Arrays;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public record Bytes(byte[] bytes, int offset, int length) {
@@ -14,5 +16,13 @@ public record Bytes(byte[] bytes, int offset, int length) {
 
     public String string() {
         return new String(bytes, offset, length, UTF_8);
+    }
+
+    public Bytes copy() {
+        return new Bytes(copyBytes(), 0, length);
+    }
+
+    public byte[] copyBytes() {
+        return Arrays.copyOf(bytes, length);
     }
 }

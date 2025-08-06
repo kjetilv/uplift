@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 import com.github.kjetilv.uplift.json.MapWriter;
+import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -69,8 +69,8 @@ record RecordAttribute(
         boolean isRoot = isType(element, roots) || isListType(element, roots);
         boolean isMap = element.asType().toString().startsWith(Map.class.getName());
         boolean convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
-                              .orElseGet(() -> BaseType.of(element))
-                              .requiresConversion());
+            .orElseGet(() -> BaseType.of(element))
+            .requiresConversion());
         String name = isRoot ? "object"
             : isMap ? "map"
                 : isEnum ? "string"
@@ -80,8 +80,7 @@ record RecordAttribute(
                "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType()
-                       .toString())) + "())"
+                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType().toString())) + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
     }
@@ -89,8 +88,7 @@ record RecordAttribute(
     private String writerClass(String name) {
         PackageElement packageElement = packageEl(element);
         String prefix = packageElement.toString();
-        return packageElement + "." + name
-            .substring(prefix.length() + 1)
+        return name.substring(prefix.length() + 1)
             .replace('.', '_') + "_Writer";
     }
 
@@ -177,21 +175,20 @@ record RecordAttribute(
         PRIMITIVE() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return packageEl(builderType) + "." + builderClassPlain(builderType) + "::" + setter(element);
+                return builderClassPlain(builderType) + "::" + setter(element);
             }
         },
         PRIMITIVE_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return packageEl(builderType) +
-                       "." + builderClassPlain(builderType) + "::" + adder(element);
+                return builderClassPlain(builderType) + "::" + adder(element);
             }
         },
         GENERATED() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "(callbacks, builder) -> " + packageEl(generated) +
-                       "." + callbacksClassPlain(generated) +
+                return "(callbacks, builder) -> " +
+                       callbacksClassPlain(generated) +
                        ".create(callbacks, builder::" + setter(
                     element) + ")";
             }
@@ -199,8 +196,8 @@ record RecordAttribute(
         GENERATED_LIST() {
             @Override
             String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "(callbacks, builder) -> " + packageEl(generated) +
-                       "." + callbacksClassPlain(generated) +
+                return "(callbacks, builder) -> " +
+                       callbacksClassPlain(generated) +
                        ".create(callbacks, builder::" + adder(element) + ")";
             }
         },

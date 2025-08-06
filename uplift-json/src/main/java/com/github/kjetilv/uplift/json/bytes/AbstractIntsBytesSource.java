@@ -2,11 +2,9 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
-
-import java.util.function.IntSupplier;
+import com.github.kjetilv.uplift.kernel.io.Bytes;
 
 import static java.lang.Character.isDigit;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class AbstractIntsBytesSource implements BytesSource {
 
@@ -19,16 +17,13 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private int index;
 
-    private final IntSupplier nextChar;
-
-    public AbstractIntsBytesSource(IntSupplier nextChar) {
-        this.nextChar = nextChar;
-        this.next1 = nextChar();
-        this.next2 = next1 > 0 ? nextChar() : 0;
+    protected final void initialize() {
+        this.next1 = nextByte();
+        this.next2 = next1 > 0 ? nextByte() : 0;
     }
 
     @Override
-    public byte[] spoolField() {
+    public Bytes spoolField() {
         index = 0;
         while (true) {
             if (next1 >> 5 == 0) {
@@ -41,13 +36,13 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 add(next1);
             } finally {
                 next1 = next2;
-                next2 = nextChar();
+                next2 = nextByte();
             }
         }
     }
 
     @Override
-    public byte[] spoolString() {
+    public Bytes spoolString() {
         index = 0;
         boolean quo = false;
         while (true) {
@@ -89,7 +84,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public byte[] spoolNumber() {
+    public Bytes spoolNumber() {
         index++; // First digit is already in buffer
         while (digital(next1)) {
             save();
@@ -108,22 +103,22 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     public void skip5(byte c0, byte c1, byte c2, byte c3) {
         assert next1 == c0 : next1 + "!=" + c0;
         assert next2 == c1 : next2 + "!=" + c1;
-        int next3 = this.nextChar.getAsInt();
+        byte next3 = nextByte();
         assert next3 == c2 : next3 + "!=" + c2;
-        int next4 = this.nextChar.getAsInt();
+        byte next4 = nextByte();
         assert next4 == c3 : next4 + "!=" + c3;
-        next1 = nextChar();
-        next2 = nextChar();
+        next1 = nextByte();
+        next2 = nextByte();
     }
 
     @Override
     public void skip4(byte c0, byte c1, byte c2) {
         assert next1 == c0 : next1 + "!=" + c0;
         assert next2 == c1 : next2 + "!=" + c1;
-        int next3 = this.nextChar.getAsInt();
+        byte next3 = nextByte();
         assert next3 == c2 : next3 + "!=" + c2;
-        next1 = nextChar();
-        next2 = nextChar();
+        next1 = nextByte();
+        next2 = nextByte();
     }
 
     @Override
@@ -162,11 +157,11 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public byte[] lexeme() {
-        byte[] bytes = new byte[index];
-        System.arraycopy(currentLexeme, 0, bytes, 0, index);
-        return bytes;
+    public Bytes lexeme() {
+        return new Bytes(currentLexeme, 0, index);
     }
+
+    protected abstract byte nextByte();
 
     private void save() {
         add(next1);
@@ -175,11 +170,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private void advance() {
         next1 = next2;
-        next2 = nextChar();
-    }
-
-    private byte nextChar() {
-        return (byte) this.nextChar.getAsInt();
+        next2 = nextByte();
     }
 
     private void add(byte chomped) {
@@ -204,7 +195,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     private void fail(String msg) throws ReadException {
-        throw new ReadException(msg, "`" + new String(lexeme(), UTF_8) + "`");
+        throw new ReadException(msg, "`" + lexeme().string() + "`");
     }
 
     private static final int LN = 10;
@@ -229,8 +220,9 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     public String toString() {
         int tail = Math.min(LN, index);
         int printOffset = index - tail;
-        return getClass().getSimpleName() + "[" + nextChar + " " +
+        return getClass().getSimpleName() + "[" +
                "<" + new String(currentLexeme, printOffset, tail) + ">" +
-               "<" + print(next1) + print(next2) + ">]";
+               "<" + print(next1) + print(next2) + ">" +
+               "]";
     }
 }

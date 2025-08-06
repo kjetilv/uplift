@@ -36,16 +36,16 @@ final class Gen {
                 ")",
                 "public final class " + factoryClass(te),
                 "    implements " + JsonRW.class.getName() + "<",
-                "        " + name,
+                "        " + unq(pe, name),
                 "    > {",
                 "",
                 "    public static com.github.kjetilv.uplift.json.gen.JsonRW<",
-                "        " + name,
+                "        " + unq(pe, name),
                 "    > INSTANCE = new " + factoryClass(te) + "();",
                 "",
                 "    @Override",
                 "    public " + Function.class.getName() + "< ",
-                "        " + Consumer.class.getName() + "<" + name + ">,",
+                "        " + Consumer.class.getName() + "<" + unq(pe, name) + ">,",
                 "        " + Callbacks.class.getName(),
                 "    > callbacks() {",
                 "        return " + callbacksClassPlain(te) + "::create;",
@@ -53,13 +53,13 @@ final class Gen {
                 "",
                 "    @Override",
                 "    public " + Callbacks.class.getName() + " callbacks(",
-                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "        " + Consumer.class.getName() + "<" + unq(pe, name) + "> onDone",
                 "    ) {",
-                "        return " + packageEl(te) + "." + callbacksClassPlain(te) + ".create(onDone);",
+                "        return " + callbacksClassPlain(te) + ".create(onDone);",
                 "    }",
                 "",
                 "    @Override",
-                "    public " + ObjectWriter.class.getName() + "<" + name + "> objectWriter() {",
+                "    public " + ObjectWriter.class.getName() + "<" + unq(pe, name) + "> objectWriter() {",
                 "        return new " + writerClassPlain(te) + "();",
                 "    }",
                 "",
@@ -81,6 +81,7 @@ final class Gen {
         Collection<? extends Element> enums
     ) {
         try (BufferedWriter bw = writer(file)) {
+            Name name = typeElement.getQualifiedName();
             write(
                 bw,
                 "package " + packageElement.getQualifiedName() + ";",
@@ -91,11 +92,11 @@ final class Gen {
                 ")",
                 "final class " + writerClassPlain(typeElement),
                 "    extends " + AbstractObjectWriter.class.getName() + "<",
-                "        " + typeElement.getQualifiedName(),
+                "    " + unq(packageElement, name),
                 "    > {",
                 "",
                 "    protected " + FieldEvents.class.getName() + " doWrite(",
-                "        " + typeElement.getQualifiedName() + " " + variableName(typeElement) + ", ",
+                "        " + unq(packageElement, name) + " " + variableName(typeElement) + ", ",
                 "        " + FieldEvents.class.getName() + " events",
                 "    ) {",
                 "        return events"
@@ -127,6 +128,7 @@ final class Gen {
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
+        Name name = typeElement.getQualifiedName();
         List<String> setters = typeElement.getRecordComponents()
             .stream().flatMap(el ->
                 Stream.of(
@@ -159,8 +161,8 @@ final class Gen {
 
         List<String> creatorStart = List.of(
             "    @Override",
-            "    public " + typeElement.asType() + " get() {",
-            "        return new " + typeElement.asType() + "("
+            "    public " + unq(packageElement, name) + " get() {",
+            "        return new " + unq(packageElement, name) + "("
         );
 
         List<String> creatorMeat = typeElement.getRecordComponents()
@@ -176,7 +178,6 @@ final class Gen {
             "    }"
         );
 
-        Name name = typeElement.getQualifiedName();
         try (BufferedWriter bw = writer(file)) {
             write(
                 bw,
@@ -188,7 +189,7 @@ final class Gen {
                 ")",
                 "final class " + builderClassPlain(typeElement),
                 "    implements " + Supplier.class.getName() + "<",
-                "        " + name,
+                "        " + unq(packageElement, name),
                 "    > {",
                 "",
                 "    static " + builderClassPlain(typeElement) + " create() {",
@@ -231,35 +232,36 @@ final class Gen {
                 "final class " + callbacksClassPlain(typeElement) + " {",
                 "",
                 "    static " + PresetCallbacks.class.getName() + "<",
-                "        " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ",",
-                "        " + name,
-                "    > create(",
-                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "        " + builderClassPlain(typeElement) + ",",
+                "        " + unq(packageElement, name),
+                "        > create(",
+                "        " + Consumer.class.getName() + "<" + unq(packageElement, name) + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
                 "    static " + PresetCallbacks.class.getName() + "<",
-                "        " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ",",
-                "        " + name,
-                "    > create(",
+                "        " + builderClassPlain(typeElement) + ",",
+                "        " + unq(packageElement, name),
+                "        > create(",
                 "        " + Callbacks.class.getName() + " parent, ",
-                "        " + Consumer.class.getName() + "<" + name + "> onDone",
+                "        " + Consumer.class.getName() + "<" + unq(packageElement, name) + "> onDone",
                 "    ) {",
                 "        return new " + PresetCallbacks.class.getName() + "<>(",
-                "            " + packageEl(typeElement) + "." + builderClassPlain(typeElement) + ".create(),",
+                "            " + builderClassPlain(typeElement) + ".create(),",
                 "            parent,",
                 "            PRESETS.getNumbers(),",
                 "            PRESETS.getStrings(),",
                 "            PRESETS.getBooleans(),",
                 "            PRESETS.getObjects(),",
                 "            onDone,",
-                "            PRESETS.getTokenTrie());",
+                "            PRESETS.getTokenTrie()",
+                "        );",
                 "    }",
                 "",
                 "    static final " + PresetCallbacksInitializer.class.getName() + "<",
-                "            " + builderClassPlain(typeElement) + ", ",
-                "            " + name,
+                "        " + builderClassPlain(typeElement) + ", ",
+                "        " + unq(packageElement, name),
                 "        > PRESETS;"
             );
             write(bw, "");
@@ -291,7 +293,7 @@ final class Gen {
                 recordAttributes.stream()
                     .filter(RecordAttribute::isGenerated)
                     .map(attribute ->
-                        "        PRESETS.sub(" + callbacksClass(attribute.internalType()) + ".PRESETS);")
+                        "        PRESETS.sub(" + callbacksClassPlain(attribute.internalType()) + ".PRESETS);")
                     .toList()
             );
 
@@ -489,6 +491,12 @@ final class Gen {
     }
 
     private static final String DEFAULT_SUFFIX = "RW";
+
+    private static String unq(PackageElement packageElement, Name name) {
+        String prefix = packageElement.getQualifiedName().toString();
+        String fullName = name.toString();
+        return fullName.startsWith(prefix) ? fullName.substring(prefix.length() + 1) : fullName;
+    }
 
     private static String listType(TypeElement te) {
         return listType(te.getQualifiedName());

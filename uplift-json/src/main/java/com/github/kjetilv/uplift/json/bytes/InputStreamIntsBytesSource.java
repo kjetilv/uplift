@@ -2,28 +2,35 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.function.IntSupplier;
 
 public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 
+    private final InputStream stream;
+
+    private final byte[] buffer = new byte[1024];
+
+    private int index;
+
+    private int read;
+
     public InputStreamIntsBytesSource(InputStream stream) {
-        super(new Ints(Objects.requireNonNull(stream, "stream")));
+        this.stream = Objects.requireNonNull(stream, "stream");
+        this.initialize();
     }
 
-    private record Ints(InputStream stream) implements IntSupplier {
-
-        @Override
-        public int getAsInt() {
+    @Override
+    protected byte nextByte() {
+        if (index == read) {
+            index = 0;
             try {
-                return stream.read();
+                read = stream.read(buffer);
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to read from " + stream, e);
             }
+            if (read < 0) {
+                return -1;
+            }
         }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + stream + "]";
-        }
+        return buffer[index++];
     }
 }

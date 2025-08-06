@@ -4,16 +4,15 @@ import com.github.kjetilv.uplift.json.Token;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 
-record Trie(int pos, Token.Field field, IntFunction<Trie> level) {
+record Trie(int pos, Token.Field field, IntMap<Trie> level) {
 
-    public static Trie node(int skip, Token.Field leaf, IntMap<Trie> tries) {
-        return new Trie(skip, leaf, tries);
+    public static Trie node(int pos, Token.Field field, IntMap<Trie> level) {
+        return new Trie(pos, field, level);
     }
 
     public Trie descend(int value) {
