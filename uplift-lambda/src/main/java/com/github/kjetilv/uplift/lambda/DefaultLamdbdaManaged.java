@@ -21,8 +21,6 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final LambdaHandler handler;
 
-    private final ExecutorService executor;
-
     private final HttpClient client;
 
     DefaultLamdbdaManaged(
@@ -34,8 +32,8 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        this.executor = requireNonNull(executor, "executor");
-        this.client = httpClient(this.executor, settings).build();
+        ExecutorService executor1 = requireNonNull(executor, "executor");
+        this.client = httpClient(executor1, settings).build();
     }
 
     @Override
