@@ -11,6 +11,7 @@ import org.gradle.process.ExecOperations
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpClient.Redirect.ALWAYS
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers.noBody
 import java.net.http.HttpResponse.BodyHandlers.discarding
@@ -142,21 +143,25 @@ private enum class UriType {
     FILE, HTTP;
 
     fun verify(uri: URI) = when (this) {
-        FILE -> uri.also { check(Files.exists(it.toPath())) { "Failed to locate file $it" } }
+        FILE -> uri.also {
+            check(Files.exists(it.toPath())) { "Failed to locate file $it" }
+        }
+
         HTTP -> uri.also {
             HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .followRedirects(ALWAYS)
                 .build()
                 .use { client ->
-                client.send(
-                    HttpRequest.newBuilder(it)
-                        .method("OPTIONS", noBody())
-                        .build(),
-                    discarding()
-                ).also { response ->
-                    check(response.statusCode() < 400) { "Failed to fetch $it: ${response.statusCode()}" }
+                    checkResponse(client, it)
+                }.apply {
+                    check(statusCode() < 400) { "Failed to fetch $uri: ${statusCode()}" }
                 }
-            }
         }
     }
+
+    private fun checkResponse(client: HttpClient, uri: URI) =
+        request(uri).let { client.send(it, discarding()) }
+
+    private fun request(uRI: URI): HttpRequest? =
+        HttpRequest.newBuilder(uRI).method("OPTIONS", noBody()).build()
 }
