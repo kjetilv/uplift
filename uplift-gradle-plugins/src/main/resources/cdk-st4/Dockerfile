@@ -1,4 +1,4 @@
-FROM --platform=linux/⎨arch⎬ eclipse-temurin:24
+FROM eclipse-temurin:21-jre-noble
 RUN apt-get update
 RUN apt-get -y install npm maven ca-certificates && update-ca-certificates
 VOLUME [ "/root/.aws", "/opt/app", "/lambdas" ]

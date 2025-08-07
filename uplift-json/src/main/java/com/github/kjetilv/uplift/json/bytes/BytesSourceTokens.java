@@ -33,7 +33,8 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token scanToken(boolean fieldName, boolean canonical) {
-        return switch (bytesSource.chomp()) {
+        int c = bytesSource.chomp();
+        return switch (c) {
             case ':' -> Token.COLON;
             case ',' -> Token.COMMA;
             case '{' -> Token.BEGIN_OBJECT;
@@ -46,7 +47,7 @@ public final class BytesSourceTokens implements Tokens {
             case 't' -> rue();
             case 'n' -> ull();
             case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().string() + "`");
-            case int x -> fail("Unrecognized character", "`" + (char) x + "`");
+            default -> fail("Unrecognized character", "`" + (char) c + "`");
         };
     }
 

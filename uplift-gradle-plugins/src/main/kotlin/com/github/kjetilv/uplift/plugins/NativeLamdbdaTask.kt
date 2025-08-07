@@ -154,7 +154,7 @@ private enum class UriType {
                 .use { client ->
                     checkResponse(client, it)
                 }.apply {
-                    check(statusCode() < 400) { "Failed to fetch $uri: ${statusCode()}" }
+                    check(statusCode() < 400) { "${statusCode()}: Failed to fetch: $uri" }
                 }
         }
     }
@@ -162,6 +162,6 @@ private enum class UriType {
     private fun checkResponse(client: HttpClient, uri: URI) =
         request(uri).let { client.send(it, discarding()) }
 
-    private fun request(uRI: URI): HttpRequest? =
-        HttpRequest.newBuilder(uRI).method("OPTIONS", noBody()).build()
+    private fun request(uri: URI): HttpRequest? =
+        HttpRequest.newBuilder(uri).method("HEAD", noBody()).build()
 }
