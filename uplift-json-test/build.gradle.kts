@@ -1,8 +1,9 @@
 dependencies {
     implementation(project(":uplift-uuid"))
     implementation(project(":uplift-json"))
+    implementation(project(":uplift-json-gen"))
 
-    testAnnotationProcessor(project(":uplift-json"))
+    annotationProcessor(project(":uplift-json-gen"))
 
     testImplementation(project(":uplift-json-samplegen"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")

@@ -7,11 +7,12 @@ dependencies {
 
     implementation(project(":uplift-hash"))
     implementation(project(":uplift-json"))
+    implementation(project(":uplift-json-gen"))
     implementation(project(":uplift-json-mame"))
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-uuid"))
 
-    annotationProcessor(project(":uplift-json"))
+    annotationProcessor(project(":uplift-json-gen"))
 
     implementation("com.fasterxml.jackson.core:jackson-core:2.19.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.19.2")
