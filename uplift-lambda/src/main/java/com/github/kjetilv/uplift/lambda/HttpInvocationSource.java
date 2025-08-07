@@ -43,7 +43,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         Duration timeout,
         Supplier<Instant> time
     ) {
-        this.fetch = requireNonNull(fetch, "send");
+        this.fetch = requireNonNull(fetch, "fetch");
         this.endpoint = requireNonNull(endpoint, "api");
         this.time = () -> {
             Instant instant = time.get();
@@ -82,7 +82,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
                         Invocation.<HttpRequest, HttpResponse<InputStream>>create(
                             id,
                             request,
-                            LambdaPayload.parse(((HttpResponse<? extends InputStream>) response).body()),
+                            LambdaPayload.parse(response.body()),
                             time.get()
                         ))
                     .orElseGet(() ->
@@ -93,18 +93,18 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
                     : Invocation.failed(request, throwable, time.get())));
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
-               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
-               "]";
-    }
-
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
         return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id")
             .stream()
             .filter(Objects::nonNull)
             .filter(value -> !value.isBlank())
             .findFirst();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
+               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
+               "]";
     }
 }

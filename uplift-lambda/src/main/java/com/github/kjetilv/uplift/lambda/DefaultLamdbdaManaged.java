@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
-import static java.net.http.HttpResponse.BodyHandlers.ofInputStream;
 import static java.util.Objects.requireNonNull;
 
 final class DefaultLamdbdaManaged implements LamdbdaManaged {
@@ -46,8 +45,12 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
-        Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client =
-            http(executor, settings);
+        Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client = request ->
+            this.client.sendAsync(
+                request,
+                HttpResponse.BodyHandlers.ofInputStream(),
+                null
+            );
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
             new HttpInvocationSource(
                 client,
@@ -66,14 +69,6 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     @Override
     public void close() {
         client.close();
-    }
-
-    private Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> http(
-        Executor executor,
-        LambdaClientSettings settings
-    ) {
-        return request ->
-            client.sendAsync(request, ofInputStream(), null);
     }
 
     private static HttpClient.Builder httpClient(Executor executor, LambdaClientSettings settings) {

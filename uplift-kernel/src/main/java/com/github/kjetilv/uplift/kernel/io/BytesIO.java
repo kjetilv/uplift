@@ -25,7 +25,8 @@ public final class BytesIO {
         requireNonNull(stream, "stream");
         byte[] buf = new byte[ATE_KAY];
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            return readTo(stream, buf, baos);
+            long l = stream.transferTo(baos);
+            return baos.toByteArray();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read" + (resource == null ? "" : " " + resource), e);
         }
