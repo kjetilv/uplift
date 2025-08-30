@@ -13,7 +13,7 @@ import static com.github.kjetilv.uplift.hash.Hashes.inputStreamHashBuilder;
 
 public final class Main {
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         HashBuilder<InputStream, K256> builder = inputStreamHashBuilder(HashKind.K256);
         if (args.length == 0) {
             hash(builder, System.in);

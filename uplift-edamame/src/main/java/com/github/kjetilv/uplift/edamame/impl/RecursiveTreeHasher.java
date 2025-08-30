@@ -4,7 +4,10 @@ import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizers;
-import com.github.kjetilv.uplift.hash.*;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.kernel.io.Bytes;
 import com.github.kjetilv.uplift.kernel.util.Maps;
 
@@ -75,8 +78,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
 
     private Hash<H> mapHash(Map<K, ? extends HashedTree<K, H>> tree) {
         HashBuilder<Bytes, H> hb = newBuilder.get();
-        HashBuilder<Hash<H>, H> hashHb =
-            hb.map((t) -> Bytes.from(t.bytes()));
+        HashBuilder<Hash<H>, H> hashHb = hb.map((t) -> Bytes.from(t.bytes()));
         HashBuilder<K, H> keyHb = hb.map(key -> Bytes.from(keyHandler.bytes(key)));
         hb.<Integer>map(i -> Bytes.from(Hashes.bytes(i))).hash(tree.size());
         tree.forEach((key, value) -> {
