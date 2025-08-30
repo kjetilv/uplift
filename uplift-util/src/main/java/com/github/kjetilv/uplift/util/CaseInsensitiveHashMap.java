@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.kernel.io;
+package com.github.kjetilv.uplift.util;
 
 import java.util.Collection;
 import java.util.Collections;

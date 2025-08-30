@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
-import com.github.kjetilv.uplift.kernel.io.Bytes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 interface ByteDigest<H extends HashKind<H>> {
 

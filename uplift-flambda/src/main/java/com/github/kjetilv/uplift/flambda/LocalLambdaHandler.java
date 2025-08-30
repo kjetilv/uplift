@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.flambda;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
-import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.util.Maps;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import org.slf4j.Logger;

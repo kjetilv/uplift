@@ -2,18 +2,15 @@
 //import com.github.kjetilv.uplift.bld.Native.runCommand
 
 dependencies {
-    implementation(project(":uplift-uuid"))
-
+    implementation(project(":uplift-asynchttp"))
     implementation(project(":uplift-flogs"))
+    implementation(project(":uplift-json"))
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-lambda"))
-    implementation(project(":uplift-json"))
-    implementation(project(":uplift-asynchttp"))
-    implementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
+    implementation(project(":uplift-util"))
+    implementation(project(":uplift-uuid"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    implementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
 }
 
 tasks.register<Copy>("copy-libs") {

@@ -1,4 +1,5 @@
 module uplift.hash {
-    requires uplift.kernel;
+    requires uplift.util;
+
     exports com.github.kjetilv.uplift.hash;
 }

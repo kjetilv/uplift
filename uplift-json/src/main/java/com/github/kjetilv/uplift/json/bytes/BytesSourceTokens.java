@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.Tokens;
 import com.github.kjetilv.uplift.json.io.ReadException;
-import com.github.kjetilv.uplift.kernel.io.Bytes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import java.math.BigDecimal;
 

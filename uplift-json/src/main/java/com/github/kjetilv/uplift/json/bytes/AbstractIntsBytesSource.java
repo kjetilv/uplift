@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
-import com.github.kjetilv.uplift.kernel.io.Bytes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static java.lang.Character.isDigit;
 

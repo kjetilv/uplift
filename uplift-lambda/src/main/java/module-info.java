@@ -6,6 +6,7 @@ module uplift.lambda {
     requires uplift.flogs;
     requires uplift.kernel;
     requires uplift.uuid;
+    requires uplift.util;
 
     exports com.github.kjetilv.uplift.lambda;
 }

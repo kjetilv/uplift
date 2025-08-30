@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.kernel.util;
+package com.github.kjetilv.uplift.util;
 
 import java.util.Objects;
 import java.util.stream.Collectors;

@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.flambda;
 
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.util.Maps;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.nio.charset.StandardCharsets;

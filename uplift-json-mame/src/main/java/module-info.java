@@ -1,4 +1,4 @@
-module uplift.json.jsonSession {
+module uplift.json.mame {
     requires uplift.edamame;
     requires uplift.hash;
     requires uplift.json;

@@ -3,6 +3,7 @@ module uplift.asynchttp {
     requires uplift.kernel;
     requires uplift.flogs;
     requires uplift.uuid;
+    requires uplift.util;
 
     exports com.github.kjetilv.uplift.asynchttp;
 }

@@ -14,15 +14,9 @@ dependencies {
 
     annotationProcessor(project(":uplift-json-gen"))
 
-    implementation("com.fasterxml.jackson.core:jackson-core:2.19.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     implementation("org.openjdk.jmh:jmh-core:1.37")
     implementation("org.openjdk.jmh:jmh-generator-annprocess:1.37")
     annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:1.37")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
-    testImplementation("org.assertj:assertj-core:3.27.3")
 }

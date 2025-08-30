@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap;
-import com.github.kjetilv.uplift.kernel.util.ToStrings;
+import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.util.ToStrings;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.util.Collections;

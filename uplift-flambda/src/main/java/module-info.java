@@ -6,4 +6,5 @@ module uplift.flambda {
     requires uplift.kernel;
     requires uplift.lambda;
     requires uplift.uuid;
+    requires uplift.util;
 }

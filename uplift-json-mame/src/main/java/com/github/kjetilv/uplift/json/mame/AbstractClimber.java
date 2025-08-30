@@ -58,12 +58,8 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     protected abstract void done(HashedTree<String, H> tree);
 
     private Callbacks doneLeaf(Object object) {
-        done(leaf(object));
+        done(new HashedTree.Leaf<>(strategy.hashLeaf(object), object));
         return this;
-    }
-
-    private HashedTree<String, H> leaf(Object object) {
-        return new HashedTree.Leaf<>(strategy.hashLeaf(object), object);
     }
 
     private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.kernel.io.Bytes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 public interface BytesSource {
 

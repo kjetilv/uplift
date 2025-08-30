@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.kjetilv.uplift.kernel.util.Collectioons.transform;
-import static com.github.kjetilv.uplift.kernel.util.Maps.transformValues;
+import static com.github.kjetilv.uplift.util.Collectioons.transform;
+import static com.github.kjetilv.uplift.util.Maps.transformValues;
 
 /**
  * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique

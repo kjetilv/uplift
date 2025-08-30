@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.kernel.util.Throwables;
+import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 
 import java.util.Optional;

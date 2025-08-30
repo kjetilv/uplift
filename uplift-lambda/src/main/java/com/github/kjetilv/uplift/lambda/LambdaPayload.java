@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.util.Maps;
 
 import java.io.InputStream;
 import java.util.Locale;

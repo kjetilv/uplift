@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.kernel.util;
+package com.github.kjetilv.uplift.util;
 
 import java.lang.reflect.Array;
 import java.util.Collection;

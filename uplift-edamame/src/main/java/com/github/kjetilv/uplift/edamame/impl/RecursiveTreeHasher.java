@@ -8,8 +8,8 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
-import com.github.kjetilv.uplift.kernel.io.Bytes;
-import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.util.Bytes;
+import com.github.kjetilv.uplift.util.Maps;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.github.kjetilv.uplift.edamame.HashedTree.*;
-import static com.github.kjetilv.uplift.kernel.util.Collectioons.*;
+import static com.github.kjetilv.uplift.util.Collectioons.*;
 import static java.util.Objects.requireNonNull;
 
 /**

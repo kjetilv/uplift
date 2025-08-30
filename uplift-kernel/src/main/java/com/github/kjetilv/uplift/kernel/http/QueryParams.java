@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.kernel.io.CaseInsensitiveHashMap.caseInsensitive;
+import static com.github.kjetilv.uplift.util.CaseInsensitiveHashMap.caseInsensitive;
 
 public final class QueryParams {
 

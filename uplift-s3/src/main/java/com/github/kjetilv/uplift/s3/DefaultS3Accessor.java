@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.Print;
 import com.github.kjetilv.uplift.kernel.io.Range;
-import com.github.kjetilv.uplift.kernel.util.Maps;
+import com.github.kjetilv.uplift.util.Maps;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
