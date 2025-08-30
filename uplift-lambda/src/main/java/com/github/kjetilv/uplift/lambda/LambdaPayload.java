@@ -11,6 +11,7 @@ import java.util.Optional;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public record LambdaPayload(
     String method,
     String path,

@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import static com.github.kjetilv.uplift.lambda.LambdaResult.status;
 import static java.util.Map.entry;
 
+@SuppressWarnings("unused")
 public abstract class LambdaHandlerSupport implements LambdaHandler {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(LambdaHandlerSupport.class);

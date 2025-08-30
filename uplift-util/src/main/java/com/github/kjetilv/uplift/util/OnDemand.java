@@ -75,7 +75,7 @@ public record OnDemand(Supplier<Instant> clock) {
             }
 
             private void force(T t) {
-                holder.updateAndGet(existing -> {
+                holder.updateAndGet(_ -> {
                     lastHolder.set(clock.get());
                     reset.set(false);
                     return t;

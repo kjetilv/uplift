@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.util.CaseInsensitiveHashMap.caseInsensitive;
 
+@SuppressWarnings("ALL")
 public final class QueryParams {
 
     public static Map<String, List<String>> read(String query) {
@@ -37,9 +38,9 @@ public final class QueryParams {
     private QueryParams() {
     }
 
+    @FunctionalInterface
     public interface Look {
 
         Optional<String> up(String key);
-
     }
 }

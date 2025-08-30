@@ -9,6 +9,7 @@ import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import com.github.kjetilv.uplift.s3.util.Xml;
+import com.github.kjetilv.uplift.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -291,7 +292,7 @@ public final class DefaultS3Accessor implements S3Accessor {
                     <Object>
                         <Key>%s</Key>
                       </Object>
-                      """,
+                    """,
                     object
                 )).collect(Collectors.joining("  "))
         );
