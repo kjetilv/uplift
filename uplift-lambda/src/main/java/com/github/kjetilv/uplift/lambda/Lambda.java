@@ -26,9 +26,18 @@ public final class Lambda {
         Duration responseTimeout,
         int parallellism
     ) {
-        LamdbdaManaged managed =
-            managed(lambdaHandler, connectTimeout, responseTimeout, parallellism);
-        managed.run();
+        try (
+            LamdbdaManaged managed = managed(
+                lambdaHandler,
+                connectTimeout,
+                responseTimeout,
+                parallellism
+            )
+        ) {
+            managed.run();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to run lambda: " + lambdaHandler, e);
+        }
     }
 
     public static LamdbdaManaged managed(
