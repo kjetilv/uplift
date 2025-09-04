@@ -22,15 +22,15 @@ sealed abstract class StructureClimber<H extends HashKind<H>>
     private final Consumer<HashedTree<String, H>> onDone;
 
     StructureClimber(
-        Strategy<H> strategy,
+        HashStrategy<H> hashStrategy,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone,
         Callbacks parent
     ) {
-        super(strategy, cacher);
+        super(hashStrategy, cacher);
         this.onDone = onDone;
         this.parent = parent;
-        this.builder = strategy.supplier().get();
+        this.builder = hashStrategy.supplier().get();
         this.hashBuilder = this.builder.map(Hash::bytes);
     }
 

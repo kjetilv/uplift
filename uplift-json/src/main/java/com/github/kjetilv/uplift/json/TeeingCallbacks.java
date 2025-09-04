@@ -1,13 +1,14 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Objects;
 import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
 
 public record TeeingCallbacks(Callbacks tee, Callbacks delegate) implements Callbacks {
 
     public TeeingCallbacks {
-        Objects.requireNonNull(tee, "tee");
-        Objects.requireNonNull(delegate, "delegate");
+        requireNonNull(tee, "tee");
+        requireNonNull(delegate, "delegate");
     }
 
     @Override

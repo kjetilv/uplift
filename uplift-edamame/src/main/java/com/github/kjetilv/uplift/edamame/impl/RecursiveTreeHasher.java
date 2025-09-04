@@ -14,6 +14,7 @@ import com.github.kjetilv.uplift.util.Maps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     public HashedTree<K, H> hashedTree(Object value) {
         return switch (value) {
             case Map<?, ?> map -> {
-                Map<K, HashedTree<K, H>> hashedMap = normalized(map);
+                Map<K, HashedTree<K, H>> hashedMap = transformMap(map, keyHandler, this::hashedTree);
                 yield new Node<>(mapHash(hashedMap), hashedMap);
             }
             case Iterable<?> iterable -> {
@@ -102,13 +103,17 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return leafHasher.hash(value);
     }
 
-    private Map<K, HashedTree<K, H>> normalized(Map<?, ?> value) {
+    private static <K, H extends HashKind<H>> Map<K, HashedTree<K, H>> transformMap(
+        Map<?, ?> value,
+        KeyHandler<K> keyHandler,
+        Function<Object, HashedTree<K, H>> transform
+    ) {
         return Collections.unmodifiableMap(value.entrySet()
             .stream()
             .filter(empty().negate())
             .collect(Collectors.toMap(
                 entry -> keyHandler.normalize(entry.getKey()),
-                entry -> hashedTree(entry.getValue()),
+                entry -> transform.apply(entry.getValue()),
                 Maps.noMerge(),
                 Maps.sizedMap(value.size())
             )));

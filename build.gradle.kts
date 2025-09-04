@@ -33,17 +33,19 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_24
     }
 
-    tasks {
-        withType<Test> {
-            useJUnitPlatform()
-        }
+    tasks.test {
+        useJUnitPlatform()
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
+        testImplementation(platform("org.junit:junit-bom:5.13.4"))
+
+        testImplementation("org.junit.jupiter:junit-jupiter-api")
+        testImplementation("org.junit.jupiter:junit-jupiter")
+
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.4")
+
         testImplementation("org.assertj:assertj-core:3.27.4")
     }
 

@@ -22,6 +22,9 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
      */
     Hash<H> hash();
 
+    /**
+     * @return The original structure
+     */
     Object unwrap();
 
     /**
@@ -91,11 +94,17 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
             );
         }
 
+        /**
+         * @return null
+         */
         @Override
         public Object unwrap() {
             return null;
         }
 
+        /**
+         * Cache of null values
+         */
         private static final Map<HashKind<?>, Null<?, ?>> NULLS = new ConcurrentHashMap<>();
     }
 }

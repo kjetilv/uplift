@@ -20,7 +20,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * This default {@link LeafHasher leaf hasher} supports typical Java classes seen in trees.
+ * This default {@link LeafHasher leaf hasher} supports typical Java classes, often
+ * found in trees.
  *
  * @see T
  */

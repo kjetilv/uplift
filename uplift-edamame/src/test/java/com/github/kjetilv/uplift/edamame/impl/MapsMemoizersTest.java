@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.Hashes;
@@ -25,7 +26,7 @@ class MapsMemoizersTest {
         return Hashes.bytesBuilder(HashKind.K128);
     }
 
-    static com.github.kjetilv.uplift.hash.Hash<HashKind.K128> random() {
+    static Hash<HashKind.K128> random() {
         UUID randomUUID = UUID.randomUUID();
         return Hashes.of(
             randomUUID.getMostSignificantBits(),
@@ -133,7 +134,7 @@ class MapsMemoizersTest {
 
     @Test
     void shouldHandleCollisions() {
-        com.github.kjetilv.uplift.hash.Hash<HashKind.K128> collider = random();
+        Hash<HashKind.K128> collider = random();
         LeafHasher<HashKind.K128> leafHasher = leaf ->
             leaf.equals("3") || leaf.equals("7")
                 ? collider
@@ -588,7 +589,7 @@ class MapsMemoizersTest {
     }
 
     private static LeafHasher<HashKind.K128> collidingLeafHasher() {
-        com.github.kjetilv.uplift.hash.Hash<HashKind.K128> collider = HashKind.K128.random();
+        Hash<HashKind.K128> collider = HashKind.K128.random();
         return _ -> collider;
     }
 

@@ -19,12 +19,12 @@ final class MapClimber<H extends HashKind<H>>
     private Token.Field currentField;
 
     MapClimber(
-        Strategy<H> strategy,
+        HashStrategy<H> hashStrategy,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(strategy, cacher, onDone, parent);
+        super(hashStrategy, cacher, onDone, parent);
     }
 
     @Override

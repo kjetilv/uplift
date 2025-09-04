@@ -18,13 +18,14 @@ import static java.util.Objects.requireNonNull;
  * Works by hashing nodes and leaves and storing them under their hashes. When structures and/or values
  * re-occur, they are replaced by the already registered, canonical instances.
  * <p>
- * MD5 (128-bit) hashes are used. If an incoming value provokes a hash collision, it will be stored as-is and
- * separately from the canonical trees.  This should be rare.
+ * If an incoming value provokes a hash collision, it will be stored as-is and separately from the canonical
+ * trees.  This should be rare, especially with {@link com.github.kjetilv.uplift.hash.HashKind.K256 SHA3-256}.
  * <p>
  * Use {@link MapsMemoizers#create(HashKind)} and siblings to create instances of this class.
  *
  * @param <I> Identifier type.  An identifier identifies exactly one of the cached maps
  * @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
+ * @param <H> Hash kind
  */
 @SuppressWarnings("unchecked")
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>

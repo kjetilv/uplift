@@ -15,12 +15,12 @@ final class ListClimber<H extends HashKind<H>>
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 
     ListClimber(
-        Strategy<H> strategy,
+        HashStrategy<H> hashStrategy,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(strategy, cacher, onDone, parent);
+        super(hashStrategy, cacher, onDone, parent);
     }
 
     @Override

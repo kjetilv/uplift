@@ -15,21 +15,21 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     protected final Consumer<HashedTree<String, H>> cacher;
 
-    private final Strategy<H> strategy;
+    private final HashStrategy<H> hashStrategy;
 
-    protected AbstractClimber(Strategy<H> strategy, Consumer<HashedTree<String, H>> cacher) {
-        this.strategy = Objects.requireNonNull(strategy, "climbingStrategy");
+    protected AbstractClimber(HashStrategy<H> hashStrategy, Consumer<HashedTree<String, H>> cacher) {
+        this.hashStrategy = Objects.requireNonNull(hashStrategy, "climbingStrategy");
         this.cacher = Objects.requireNonNull(cacher, "cacher");
     }
 
     @Override
     public final Callbacks arrayStarted() {
-        return new ListClimber<>(strategy, this, cacher, this::done);
+        return new ListClimber<>(hashStrategy, this, cacher, this::done);
     }
 
     @Override
     public final Callbacks objectStarted() {
-        return new MapClimber<>(strategy, this, cacher, this::done);
+        return new MapClimber<>(hashStrategy, this, cacher, this::done);
     }
 
     @Override
@@ -49,8 +49,8 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
 
     @Override
     public Callbacks nuul() {
-        if (strategy.preserveNulls()) {
-            done(strategy.getNull());
+        if (hashStrategy.preserveNulls()) {
+            done(hashStrategy.getNull());
         }
         return this;
     }
@@ -58,7 +58,7 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
     protected abstract void done(HashedTree<String, H> tree);
 
     private Callbacks doneLeaf(Object object) {
-        done(new HashedTree.Leaf<>(strategy.hashLeaf(object), object));
+        done(new HashedTree.Leaf<>(hashStrategy.hashLeaf(object), object));
         return this;
     }
 

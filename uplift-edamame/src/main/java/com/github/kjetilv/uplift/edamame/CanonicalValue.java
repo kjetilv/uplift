@@ -13,8 +13,14 @@ import java.util.Objects;
  */
 public sealed interface CanonicalValue<H extends HashKind<H>> {
 
+    /**
+     * @return The canonical value
+     */
     Object value();
 
+    /**
+     * @return The hash of the canonical value
+     */
     Hash<H> hash();
 
     record Node<K, H extends HashKind<H>>(Hash<H> hash, Map<K, Object> value) implements CanonicalValue<H> {

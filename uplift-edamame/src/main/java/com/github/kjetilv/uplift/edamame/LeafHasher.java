@@ -10,7 +10,7 @@ import com.github.kjetilv.uplift.hash.Hashes;
 import java.util.function.Supplier;
 
 /**
- * Strategy for hashing leaves.  {@link InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes) Overridable}
+ * Strategy for hashing leaf values.  {@link InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes) Overridable}
  * for testing purposes.
  */
 @FunctionalInterface
@@ -45,5 +45,9 @@ public interface LeafHasher<H extends HashKind<H>> {
         );
     }
 
+    /**
+     * @param leaf Leaf value
+     * @return Hash
+     */
     Hash<H> hash(Object leaf);
 }

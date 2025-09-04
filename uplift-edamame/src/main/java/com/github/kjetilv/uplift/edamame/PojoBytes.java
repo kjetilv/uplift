@@ -29,5 +29,9 @@ public interface PojoBytes {
         );
     };
 
+    /**
+     * @param pojo Plain old Java object
+     * @return Bytes for the object
+     */
     byte[] bytes(Object pojo);
 }

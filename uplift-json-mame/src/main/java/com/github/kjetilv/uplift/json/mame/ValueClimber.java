@@ -20,12 +20,12 @@ final class ValueClimber<H extends HashKind<H>>
     private final Canonicalizer<String, H> canonicalizer;
 
     ValueClimber(
-        Strategy<H> strategy,
+        HashStrategy<H> hashStrategy,
         Canonicalizer<String, H> canonicalizer,
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(strategy, canonicalizer::canonical);
+        super(hashStrategy, canonicalizer::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

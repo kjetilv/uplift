@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
-    private final Climber.Strategy<H> strategy;
+    private final HashStrategy<H> hashStrategy;
 
     private final Canonicalizer<String, H> canonicalizer;
 
@@ -27,7 +27,7 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
     ) {
         this.collisionHandler = collisionHandler(cachingSettings, collisionHandler);
         this.canonicalizer = canonicalizer(cachingSettings);
-        this.strategy = new Climber.Strategy<>(
+        this.hashStrategy = new DefaultHashStrategy<>(
             kind,
             LeafHasher.create(kind, PojoBytes.UNSUPPORTED),
             preserveNull(cachingSettings)
@@ -36,7 +36,7 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
     @Override
     public Callbacks callbacks(Consumer<Object> onDone) {
-        return new ValueClimber<>(strategy, canonicalizer, onDone, collisionHandler);
+        return new ValueClimber<>(hashStrategy, canonicalizer, onDone, collisionHandler);
     }
 
     private static <H extends HashKind<H>> Canonicalizer<String, H> canonicalizer(CachingSettings cachingSettings) {
@@ -61,7 +61,7 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
     public String toString() {
         return getClass().getSimpleName() + "[" +
                (collisionHandler == null ? "optimistic" : "collisionHandler:" + collisionHandler) +
-               " strategy:" + strategy +
+               " strategy:" + hashStrategy +
                "]";
     }
 }
