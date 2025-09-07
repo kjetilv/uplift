@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
-import static com.github.kjetilv.uplift.kernel.Time.UTC_CLOCK;
+import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 
 @SuppressWarnings("MagicNumber")
 public final class Main {

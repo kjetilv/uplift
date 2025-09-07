@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import java.time.Duration;
 
 import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.Time;
+import com.github.kjetilv.uplift.util.Time;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 

@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.JsonSession;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
-import com.github.kjetilv.uplift.kernel.io.Gunzip;
+import com.github.kjetilv.uplift.util.Gunzip;
 import org.openjdk.jmh.annotations.*;
 
 import java.nio.file.Files;

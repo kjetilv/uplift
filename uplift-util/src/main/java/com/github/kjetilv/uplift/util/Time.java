@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.kernel;
+package com.github.kjetilv.uplift.util;
 
 import java.time.Clock;
 import java.time.Instant;

@@ -5,11 +5,7 @@ import java.util.Iterator;
 @SuppressWarnings("unused")
 public interface Marker {
 
-    /**
-     * Get the name of this Marker.
-     *
-     * @return name of marker
-     */
+    /// @return name of this Marker
     String getName();
 
     void add(Marker reference);

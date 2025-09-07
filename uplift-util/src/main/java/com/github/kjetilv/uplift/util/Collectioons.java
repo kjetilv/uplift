@@ -8,9 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * Some collection-related nitty-gritty bits.
- */
+/// Some collection-related nitty-gritty bits.
 public final class Collectioons {
 
     public static <T, L extends Collection<T>, R> List<R> transform(
