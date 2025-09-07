@@ -18,14 +18,12 @@ import java.util.function.Function;
 import static com.github.kjetilv.uplift.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.util.Maps.transformValues;
 
-/**
- * Canonicalizes {@link HashedTree hashed trees}, progressively storing and resolving shared substructures
- * as they appear.
- * <p>
- * This class ought to be thread-safe, as it only appends to {@link ConcurrentMap concurrent maps}.
- *
- * @param <K>
- */
+/// Canonicalizes [hashed trees][HashedTree], progressively storing and resolving shared substructures
+/// as they appear.
+///
+/// This class ought to be thread-safe, as it only appends to [concurrent maps][ConcurrentMap].
+///
+/// @param <K>
 final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     implements Canonicalizer<K, H> {
 

@@ -14,19 +14,17 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * Works by hashing nodes and leaves and storing them under their hashes. When structures and/or values
- * re-occur, they are replaced by the already registered, canonical instances.
- * <p>
- * If an incoming value provokes a hash collision, it will be stored as-is and separately from the canonical
- * trees.  This should be rare, especially with {@link com.github.kjetilv.uplift.hash.HashKind.K256 SHA3-256}.
- * <p>
- * Use {@link MapsMemoizers#create(HashKind)} and siblings to create instances of this class.
- *
- * @param <I> Identifier type.  An identifier identifies exactly one of the cached maps
- * @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
- * @param <H> Hash kind
- */
+/// Works by hashing nodes and leaves and storing them under their hashes. When structures and/or values
+/// re-occur, they are replaced by the already registered, canonical instances.
+///
+/// If an incoming value provokes a hash collision, it will be stored as-is and separately from the canonical
+/// trees.  This should be rare, especially with [SHA3-256][com.github.kjetilv.uplift.hash.HashKind.K256].
+///
+/// Use [MapsMemoizers#create(HashKind)] and siblings to create instances of this class.
+///
+/// @param <I> Identifier type.  An identifier identifies exactly one of the cached maps
+/// @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
+/// @param <H> Hash kind
 @SuppressWarnings("unchecked")
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     implements MapsMemoizer<I, K>, MemoizedMaps<I, K> {
@@ -47,10 +45,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private Canonicalizer<K, H> canonicalValues;
 
-    /**
-     * @param canonicalValues Not null
-     * @see MapsMemoizers#create(KeyHandler, HashKind)
-     */
+    /// @param canonicalValues Not null
+    /// @see MapsMemoizers#create(KeyHandler, HashKind)
     MapsMemoizerImpl(MapHasher<K, H> mapHasher, Canonicalizer<K, H> canonicalValues) {
         this.mapHasher = requireNonNull(mapHasher, "mapHasher");
         this.canonicalValues = requireNonNull(canonicalValues, "canonicalValues");

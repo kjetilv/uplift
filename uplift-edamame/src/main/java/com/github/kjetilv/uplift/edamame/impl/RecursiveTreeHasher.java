@@ -23,12 +23,9 @@ import static com.github.kjetilv.uplift.edamame.HashedTree.*;
 import static com.github.kjetilv.uplift.util.Collectioons.*;
 import static java.util.Objects.requireNonNull;
 
-/**
- * Normalizes input trees and builds {@link HashedTree hashed trees}. Stateless and thread-safe.
- * <p>
- *
- * @param <K> Identifier type
- */
+/// Normalizes input trees and builds [hashed trees][HashedTree]. Stateless and thread-safe.
+///
+/// @param <K> Identifier type
 record RecursiveTreeHasher<K, H extends HashKind<H>>(
     Supplier<HashBuilder<Bytes, H>> newBuilder,
     KeyHandler<K> keyHandler,
@@ -36,12 +33,10 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     H kind
 ) implements MapHasher<K, H> {
 
-    /**
-     * @param newBuilder Hash builder, not null
-     * @param keyHandler Key handler, not null
-     * @param leafHasher Hasher, not null
-     * @see MapsMemoizers#create(KeyHandler, HashKind)
-     */
+    /// @param newBuilder Hash builder, not null
+    /// @param keyHandler Key handler, not null
+    /// @param leafHasher Hasher, not null
+    /// @see MapsMemoizers#create(KeyHandler, HashKind)
     RecursiveTreeHasher(
         Supplier<HashBuilder<Bytes, H>> newBuilder,
         KeyHandler<K> keyHandler,

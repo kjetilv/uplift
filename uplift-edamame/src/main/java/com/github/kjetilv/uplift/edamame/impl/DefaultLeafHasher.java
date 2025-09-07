@@ -19,12 +19,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-/**
- * This default {@link LeafHasher leaf hasher} supports typical Java classes, often
- * found in trees.
- *
- * @see T
- */
+/// This default [leaf hasher][LeafHasher] supports typical Java classes, often
+/// found in trees.
+///
+/// @see T
 public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte[], H>> newBuilder, PojoBytes pojoBytes)
     implements LeafHasher<H> {
 

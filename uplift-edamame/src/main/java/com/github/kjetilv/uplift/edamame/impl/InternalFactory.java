@@ -8,12 +8,10 @@ import static java.util.Objects.requireNonNull;
 
 public final class InternalFactory {
 
-    /**
-     * @param <I>        Id type
-     * @param <K>        Key type
-     * @param keyHandler Key handler, null means default behaviour
-     * @return Map memoizer
-     */
+    /// @param <I>        Id type
+    /// @param <K>        Key type
+    /// @param keyHandler Key handler, null means default behaviour
+    /// @return Map memoizer
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
         KeyHandler<K> keyHandler,
         H kind
@@ -21,11 +19,9 @@ public final class InternalFactory {
         return create(keyHandler, kind, null);
     }
 
-    /**
-     * @param keyHandler Key handler, null means default behaviour
-     * @param pojoBytes  Pojo bytes
-     * @return Map memoizer
-     */
+    /// @param keyHandler Key handler, null means default behaviour
+    /// @param pojoBytes  Pojo bytes
+    /// @return Map memoizer
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
         KeyHandler<K> keyHandler,
         H kind,
@@ -34,10 +30,8 @@ public final class InternalFactory {
         return create(keyHandler, null, kind, pojoBytes);
     }
 
-    /**
-     * @param pojoBytes Pojo bytes
-     * @return Map memoizer
-     */
+    /// @param pojoBytes Pojo bytes
+    /// @return Map memoizer
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
         H kind,
         PojoBytes pojoBytes
@@ -45,14 +39,12 @@ public final class InternalFactory {
         return create(null, null, kind, pojoBytes);
     }
 
-    /**
-     * @param <I>        Id type
-     * @param <K>        Key type
-     * @param <H>        Hash kind
-     * @param keyHandler Key handler, null means default behaviour
-     * @param leafHasher Leaf hasher, for testing purposes
-     * @return Map memoizer
-     */
+    /// @param <I>        Id type
+    /// @param <K>        Key type
+    /// @param <H>        Hash kind
+    /// @param keyHandler Key handler, null means default behaviour
+    /// @param leafHasher Leaf hasher, for testing purposes
+    /// @return Map memoizer
     public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
         KeyHandler<K> keyHandler,
         LeafHasher<H> leafHasher,

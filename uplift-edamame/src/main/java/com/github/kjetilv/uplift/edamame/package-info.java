@@ -1,5 +1,3 @@
-/**
- * Utility library for more efficient in-memory storage of nested structures of the JSON kind.
- */
+/// Utility library for more efficient in-memory storage of nested structures of the JSON kind.
 package com.github.kjetilv.uplift.edamame;
 

@@ -10,30 +10,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.github.kjetilv.uplift.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.util.Maps.transformValues;
 
-/**
- * A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
- * {@link #hash() hash}.
- */
+/// A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
+/// [hash][#hash()].
 @SuppressWarnings("unused")
 public sealed interface HashedTree<K, H extends HashKind<H>> {
 
-    /**
-     * @return The hash of this part of the tree
-     */
+    /// @return The hash of this part of the tree
     Hash<H> hash();
 
-    /**
-     * @return The original structure
-     */
+    /// @return The original structure
     Object unwrap();
 
-    /**
-     * A node in the tree
-     *
-     * @param hash Hash
-     * @param map  Map
-     * @param <K>  Type of key in the map
-     */
+    /// A node in the tree
+    ///
+    /// @param hash Hash
+    /// @param map  Map
+    /// @param <K>  Type of key in the map
     record Node<K, H extends HashKind<H>>(
         Hash<H> hash,
         Map<K, HashedTree<K, H>> map
@@ -45,12 +37,10 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
         }
     }
 
-    /**
-     * A list in the tree
-     *
-     * @param hash   Hash
-     * @param values List
-     */
+    /// A list in the tree
+    ///
+    /// @param hash   Hash
+    /// @param values List
     record Nodes<K, H extends HashKind<H>>(
         Hash<H> hash,
         List<HashedTree<K, H>> values
@@ -62,12 +52,10 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
         }
     }
 
-    /**
-     * A leaf in the tree
-     *
-     * @param hash  Hash
-     * @param value Leaf
-     */
+    /// A leaf in the tree
+    ///
+    /// @param hash  Hash
+    /// @param value Leaf
     record Leaf<K, H extends HashKind<H>>(
         Hash<H> hash,
         Object value
@@ -79,9 +67,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
         }
     }
 
-    /**
-     * Null value, which may occur in a list. Has the {@link HashKind#blank() null} hash.
-     */
+    /// Null value, which may occur in a list. Has the [null][HashKind#blank()] hash.
     record Null<K, H extends HashKind<H>>(Hash<H> hash)
         implements HashedTree<K, H> {
 
@@ -94,17 +80,13 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
             );
         }
 
-        /**
-         * @return null
-         */
+        /// @return null
         @Override
         public Object unwrap() {
             return null;
         }
 
-        /**
-         * Cache of null values
-         */
+        /// Cache of null values
         private static final Map<HashKind<?>, Null<?, ?>> NULLS = new ConcurrentHashMap<>();
     }
 }
