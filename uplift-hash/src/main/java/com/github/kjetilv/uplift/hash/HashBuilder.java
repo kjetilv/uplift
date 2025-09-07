@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 /**
  * Stateful interface for building ids.  Maintains an underlying hasher which can be {@link #hash(Object)} added to.
- *
+ * <p>
  * When done, {@link #build()} can be called to get the final hash, and reset the underlying hasher.
  *
  * @param <T>

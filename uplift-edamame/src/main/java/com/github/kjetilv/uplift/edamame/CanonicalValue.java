@@ -43,7 +43,7 @@ public sealed interface CanonicalValue<H extends HashKind<H>> {
 
     record Collision<H extends HashKind<H>>(Hash<H> hash, Object value) implements CanonicalValue<H> {
 
-        public static <K, H extends HashKind<H>> CanonicalValue<H> create(Hash<H> hash, Object object) {
+        public static <H extends HashKind<H>> CanonicalValue<H> create(Hash<H> hash, Object object) {
             return new Collision<>(hash, object);
         }
 
