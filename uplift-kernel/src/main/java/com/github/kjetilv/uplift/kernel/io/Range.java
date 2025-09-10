@@ -1,19 +1,21 @@
 package com.github.kjetilv.uplift.kernel.io;
 
+import com.github.kjetilv.uplift.util.Print;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public record Range(Long start, Long exclusiveEnd, Long length) {
 
     private static final Logger log = LoggerFactory.getLogger(Range.class);
 
     public static Optional<Range> read(String value) {
-        return Optional.ofNullable(value).stream()
+        return Optional.ofNullable(value)
+            .stream()
             .map(COMMA::split)
             .flatMap(Arrays::stream)
             .map(String::trim)
