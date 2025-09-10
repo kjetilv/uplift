@@ -10,14 +10,21 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public final class MainSupport {
 
-    public static boolean boolArg(Map<String, String> map, String param) {
+    public static boolean boolArg(
+        Map<String, String> map,
+        String param
+    ) {
         return Optional.ofNullable(map.get(param))
             .or(() -> caseInsensitiveLookup(param, map))
             .map(Boolean::valueOf)
             .orElse(false);
     }
 
-    public static int intArg(String[] args, String param, int defaultValue) {
+    public static int intArg(
+        String[] args,
+        String param,
+        int defaultValue
+    ) {
         return intArg(parameterMap(args), param, defaultValue);
     }
 
@@ -26,7 +33,10 @@ public final class MainSupport {
             .orElse(defaultValue);
     }
 
-    public static Optional<Integer> possibleIntArg(Map<String, String> map, String param) {
+    public static Optional<Integer> possibleIntArg(
+        Map<String, String> map,
+        String param
+    ) {
         return Optional.ofNullable(map.get(param))
             .or(() -> caseInsensitiveLookup(param, map))
             .map(Long::parseLong)
@@ -47,16 +57,19 @@ public final class MainSupport {
     private MainSupport() {
     }
 
-    public static final int MAX_REQUEST_SIZE = 4096;
+    public static final int MAX_REQUEST_SIZE = 0x1000;
 
-    private static final int PORT_80 = 80;
+    public static final int PORT_80 = 80;
 
-    private static final int PORTS_AVAILABLE = 65535;
+    public static final int PORTS_AVAILABLE = 0xFFFF;
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private static final Optional<Map.Entry<String, String>> EMPTY = Optional.empty();
 
-    private static Optional<String> caseInsensitiveLookup(String param, Map<String, String> map) {
+    private static Optional<String> caseInsensitiveLookup(
+        String param,
+        Map<String, String> map
+    ) {
         return map.entrySet()
             .stream()
             .filter(e ->
@@ -68,13 +81,17 @@ public final class MainSupport {
 
     @SuppressWarnings("SameParameterValue")
     private static Map<String, String> toMap(
-        String[] args, char split, Function<? super String, String> keyTrans
+        String[] args,
+        char split,
+        Function<? super String, String> keyTrans
     ) {
         return mapOut(Arrays.stream(args), split, keyTrans);
     }
 
     private static Map<String, String> mapOut(
-        Stream<String> stream, char split, Function<? super String, String> keyTrans
+        Stream<String> stream,
+        char split,
+        Function<? super String, String> keyTrans
     ) {
         Function<? super String, String> parser = keyTrans == null ? Function.identity() : keyTrans;
         return stream.map(arg -> entry(split, parser, arg))
@@ -94,7 +111,9 @@ public final class MainSupport {
     }
 
     private static Optional<Map.Entry<String, String>> entry(
-        String entry, int index, Function<? super String, String> parser
+        String entry,
+        int index,
+        Function<? super String, String> parser
     ) {
         return Optional.of(entry.substring(0, index))
             .filter(s -> !s.isBlank())
