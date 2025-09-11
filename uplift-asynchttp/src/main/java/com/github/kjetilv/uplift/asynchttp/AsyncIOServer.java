@@ -16,8 +16,7 @@ import java.nio.channels.CompletionHandler;
 import java.nio.channels.spi.AsynchronousChannelProvider;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Condition;
@@ -35,12 +34,10 @@ final class AsyncIOServer implements IOServer {
 
     static IOServer server(
         Integer port,
-        int requestBufferSize,
-        ExecutorService executorService
+        int requestBufferSize
     ) {
         return new AsyncIOServer(
             new InetSocketAddress(getInetAddress(), port == null || port <= 0 ? 0 : port),
-            requireNonNull(executorService, "executorService"),
             requestBufferSize > 0 ? requestBufferSize : MINIMUM_REQUEST_SIZE
         );
     }
@@ -62,12 +59,11 @@ final class AsyncIOServer implements IOServer {
     private final LongAdder readCount = new LongAdder();
 
     @SuppressWarnings("UnnecessaryToStringCall")
-    private AsyncIOServer(InetSocketAddress address, ExecutorService executorService, int requestBufferSize) {
+    private AsyncIOServer(InetSocketAddress address, int requestBufferSize) {
         this.requestBufferSize = requestBufferSize;
         try {
-            ExecutorService executor = executorService == null ? ForkJoinPool.commonPool() : executorService;
             this.channelGroup = AsynchronousChannelProvider.provider()
-                .openAsynchronousChannelGroup(executor, 0);
+                .openAsynchronousChannelGroup(Executors.newVirtualThreadPerTaskExecutor(), 0);
             this.serverSocketChannel = AsynchronousServerSocketChannel
                 .open(channelGroup)
                 .bind(address);

@@ -15,10 +15,6 @@ subprojects {
             }
         }
     }
-
-    tasks.test {
-        useJUnitPlatform()
-    }
 }
 
 fun String.prop() =

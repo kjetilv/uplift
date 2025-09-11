@@ -6,8 +6,6 @@ import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Emulates AWS lambda service.
@@ -25,17 +23,12 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
     private final URI apiUri;
 
-    public LocalLambda(
-        LocalLambdaSettings settings,
-        ExecutorService lambdaExecutor,
-        ExecutorService serverExecutor
-    ) {
+    public LocalLambda(LocalLambdaSettings settings) {
         this.lambdaHandler = new LocalLambdaHandler(settings.queueLength());
 
         ServerRunner lambdaServerRunner = ServerRunner.create(
             settings.lambdaPort(),
-            settings.requestBufferSize(),
-            Objects.requireNonNull(lambdaExecutor, "lambdaExecutor")
+            settings.requestBufferSize()
         );
         this.lambdaServer = lambdaServerRunner.run(new HttpChannelHandler(
             lambdaHandler,
@@ -45,8 +38,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
         ServerRunner apiServerRunner = ServerRunner.create(
             settings.apiPort(),
-            settings.requestBufferSize(),
-            Objects.requireNonNull(serverExecutor, "serverExecutor")
+            settings.requestBufferSize()
         );
         this.apiServer = apiServerRunner.run(new HttpChannelHandler(
             new LocalApiHandler(lambdaHandler, settings.cors()),

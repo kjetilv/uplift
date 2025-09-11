@@ -30,8 +30,7 @@ public final class Lambda {
             LamdbdaManaged managed = managed(
                 lambdaHandler,
                 connectTimeout,
-                responseTimeout,
-                parallellism
+                responseTimeout
             )
         ) {
             managed.run();
@@ -43,14 +42,13 @@ public final class Lambda {
     public static LamdbdaManaged managed(
         LambdaHandler lambdaHandler,
         Duration connectTimeout,
-        Duration responseTimeout,
-        int parallellism
+        Duration responseTimeout
     ) {
         return LamdbdaManaged.create(
             Env.actual().awsLambdaUri(),
             settings(Env.actual(), connectTimeout, responseTimeout),
             lambdaHandler,
-            executor("L", parallellism > 0 ? parallellism : PARALLELLISM)
+            executor()
         );
     }
 

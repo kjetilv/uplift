@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,7 @@ public abstract class AbstractFieldEvents implements FieldEvents {
 
     public AbstractFieldEvents(FieldEvents parent, Sink sink) {
         this.parent = parent;
-        this.sink = sink;
+        this.sink = Objects.requireNonNull(sink, "sink");
     }
 
     protected void field(String field) {

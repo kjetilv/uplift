@@ -26,11 +26,11 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(24))
+            languageVersion.set(JavaLanguageVersion.of(25))
         }
         withSourcesJar()
-        sourceCompatibility = JavaVersion.VERSION_24
-        targetCompatibility = JavaVersion.VERSION_24
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
 
     tasks.test {
@@ -62,6 +62,7 @@ subprojects {
             "json-mame",
             "lambda",
             "s3",
+            "util",
             "uuid",
         ).map { it -> "uplift-$it" }
     ) {
@@ -69,11 +70,11 @@ subprojects {
 
         java {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(24))
+                languageVersion.set(JavaLanguageVersion.of(25))
                 nativeImageCapable = true
             }
-            sourceCompatibility = JavaVersion.VERSION_24
-            targetCompatibility = JavaVersion.VERSION_24
+            sourceCompatibility = JavaVersion.VERSION_25
+            targetCompatibility = JavaVersion.VERSION_25
             withSourcesJar()
         }
     }
@@ -91,6 +92,7 @@ subprojects {
             "lambda",
             "s3",
             "uuid",
+            "util",
         ).map { it -> "uplift-$it" }
     ) {
         publishing {

@@ -2,21 +2,18 @@ package com.github.kjetilv.uplift.flambda;
 
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
-import com.github.kjetilv.uplift.kernel.ManagedExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 
 @SuppressWarnings("MagicNumber")
 public final class Main {
 
     public static void main(String[] args) {
-        ManagedExecutors.configure(4, 10);
         Flogs.initialize(LogLevel.DEBUG);
         Integer lambdaPort =
             Arrays.stream(args)
@@ -39,9 +36,7 @@ public final class Main {
                         List.of()
                     ),
                     UTC_CLOCK::instant
-                ),
-                executor("L", 4),
-                executor("S", 4)
+                )
             )
         ) {
             logger().info("Lambda: {}", localLambda);

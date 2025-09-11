@@ -5,9 +5,7 @@ import java.nio.channels.AsynchronousByteChannel;
 
 import static java.util.Objects.requireNonNull;
 
-final class AsyncByteChannelBufferedWriter implements BufferedWriter<ByteBuffer> {
-
-    private final AsynchronousByteChannel byteChannel;
+record AsyncByteChannelBufferedWriter(AsynchronousByteChannel byteChannel) implements BufferedWriter<ByteBuffer> {
 
     AsyncByteChannelBufferedWriter(AsynchronousByteChannel byteChannel) {
         this.byteChannel = requireNonNull(byteChannel, "out");

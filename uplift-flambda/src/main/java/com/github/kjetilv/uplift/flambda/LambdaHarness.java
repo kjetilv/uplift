@@ -112,15 +112,15 @@ public class LambdaHarness implements Closeable {
         this.name = Objects.requireNonNull(name, "name");
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
 
-        this.serverExec = executor(this.name + "-S", 5);
-        this.lambdaExec = executor(this.name + "-L", 5);
-        this.testExec = executor(this.name, 4);
+        this.serverExec = executor();
+        this.lambdaExec = executor();
+        this.testExec = executor();
 
         LocalLambdaSettings settings = localLambdaSettings == null
             ? settings(localLambdaSettings, corsSettings, time)
             : localLambdaSettings;
 
-        this.localLambda = new LocalLambda(settings, this.lambdaExec, this.serverExec);
+        this.localLambda = new LocalLambda(settings);
         this.testExec.submit(localLambda);
         this.localLambda.awaitStarted(Duration.ofMinutes(1));
 

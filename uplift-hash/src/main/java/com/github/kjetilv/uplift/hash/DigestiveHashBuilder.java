@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
-import com.github.kjetilv.uplift.util.Bytes;
+import module uplift.util;
 
 import java.util.List;
 import java.util.Objects;

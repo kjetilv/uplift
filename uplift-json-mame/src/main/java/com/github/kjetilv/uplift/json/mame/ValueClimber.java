@@ -25,7 +25,7 @@ final class ValueClimber<H extends HashKind<H>>
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(hashStrategy, canonicalizer::canonical);
+        super(hashStrategy, Objects.requireNonNull(canonicalizer, "canonicalizer")::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

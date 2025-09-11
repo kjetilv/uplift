@@ -6,11 +6,10 @@ import java.nio.ByteBuffer;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
-public final class ByteChannelStreamBridgingReader implements BufferedReader<ByteBuffer> {
-
-    private final InputStream in;
-
-    private final ByteBuffer buffer;
+public record ByteChannelStreamBridgingReader(
+    InputStream in,
+    ByteBuffer buffer
+) implements BufferedReader<ByteBuffer> {
 
     public ByteChannelStreamBridgingReader(InputStream in, ByteBuffer buffer) {
         this.in = requireNonNull(in, "in");

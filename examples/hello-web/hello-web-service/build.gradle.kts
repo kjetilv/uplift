@@ -26,15 +26,19 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
+        languageVersion.set(JavaLanguageVersion.of(25))
         nativeImageCapable = true
     }
-    sourceCompatibility = JavaVersion.VERSION_24
-    targetCompatibility = JavaVersion.VERSION_24
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
 }
 
 apply<NativeLambdaPlugin>()
+
+tasks.test {
+    useJUnitPlatform()
+}
 
 tasks.withType<NativeLamdbdaTask> {
     main = "uplift.examples.helloweb.HelloWeb"

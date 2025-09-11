@@ -4,32 +4,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ExecutorService;
 
 import static java.util.Objects.requireNonNull;
 
-public final class ServerRunner {
+public record ServerRunner(IOServer server) {
 
     private static final Logger log = LoggerFactory.getLogger(ServerRunner.class);
 
     public static ServerRunner create(
         Integer port,
-        int requestBufferSize,
-        ExecutorService executor
+        int requestBufferSize
     ) {
         IOServer server = AsyncIOServer.server(
             port,
-            requestBufferSize,
-            executor
+            requestBufferSize
         );
         ServerRunner runner = new ServerRunner(server);
         Runtime.getRuntime().addShutdownHook(new Thread(server::close, "Close"));
         return runner;
     }
 
-    private final IOServer server;
-
-    private ServerRunner(IOServer server) {
+    public ServerRunner(IOServer server) {
         this.server = requireNonNull(server, "server");
     }
 
