@@ -1,17 +1,17 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.MapWriter;
-import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.kjetilv.uplift.json.gen.Gen.*;
+import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
 record RecordAttribute(
     String callbackEvent,
@@ -51,16 +51,17 @@ record RecordAttribute(
     }
 
     String callbackHandler(TypeElement builderType) {
-        return "on" + callbackEvent + "(\"" +
-               fieldName(element) + "\", " +
-               variant.midTerm(element, internalType)
-                   .map(term -> term + ", ").orElse("") +
+        return "on" + callbackEvent + "(\"" + fieldName(element) + "\", " + variant.midTerm(
+                element,
+                internalType
+            )
+            .map(term -> term + ", ").orElse("") +
                variant.callbackHandler(builderType, element, internalType) +
                ")";
     }
 
     boolean isGenerated() {
-        return variant() == RecordAttribute.Variant.GENERATED_LIST || variant() == RecordAttribute.Variant.GENERATED;
+        return variant() == Variant.GENERATED_LIST || variant() == Variant.GENERATED;
     }
 
     String writeCall(TypeElement te) {
@@ -80,7 +81,8 @@ record RecordAttribute(
                "(\"" + element.getSimpleName() + "\", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType().toString())) + "())"
+                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType()
+                       .toString())) + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
     }
@@ -89,7 +91,40 @@ record RecordAttribute(
         PackageElement packageElement = packageEl(element);
         String prefix = packageElement.toString();
         return name.substring(prefix.length() + 1)
-            .replace('.', '_') + "_Writer";
+                   .replace('.', '_') + "_Writer";
+    }
+
+    private static Optional<Class<?>> primitiveEvent(RecordComponentElement element) {
+        return Arrays.stream(BaseType.values())
+            .filter(baseType ->
+                baseType.fieldTypes()
+                    .stream().anyMatch(fieldType ->
+                        fieldType.getName().equals(element.asType().toString())))
+            .flatMap(baseType ->
+                baseType.fieldTypes()
+                    .stream())
+            .findFirst();
+    }
+
+    private static Optional<RecordComponentElement> enumType(
+        RecordComponentElement element,
+        Collection<? extends Element> enums
+    ) {
+        return isType(element, enums)
+            ? Optional.of(element)
+            : Optional.empty();
+    }
+
+    private static Optional<TypeElement> generatedEvent(
+        RecordComponentElement element,
+        Collection<? extends Element> roots
+    ) {
+        String string = element.asType().toString();
+        return roots.stream()
+            .filter(root ->
+                root instanceof TypeElement te && te.getQualifiedName().toString().equals(string))
+            .map(TypeElement.class::cast)
+            .findFirst();
     }
 
     private static RecordAttribute resolveDeclared(
@@ -97,7 +132,8 @@ record RecordAttribute(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
-        return enumType(element, enums).map(_ ->
+        return enumType(element, enums)
+            .map(_ ->
                 new RecordAttribute(
                     "Enum",
                     element,
@@ -106,54 +142,59 @@ record RecordAttribute(
                     roots,
                     enums
                 ))
-            .or(() -> enumListType(element, enums).map(enumListType ->
-                new RecordAttribute(
-                    "Enum",
-                    element,
-                    Variant.ENUM_LIST,
-                    (TypeElement) enumListType,
-                    roots,
-                    enums
-                )))
-            .or(() -> primitiveEvent(element).map(event ->
-                new RecordAttribute(
-                    event.getSimpleName(),
-                    element,
-                    Variant.PRIMITIVE,
-                    null,
-                    roots,
-                    enums
-                )))
-            .or(() -> generatedEvent(element, roots).map(generatedType ->
-                new RecordAttribute(
-                    "Object",
-                    element,
-                    Variant.GENERATED,
-                    generatedType,
-                    roots,
-                    enums
-                )
-            ))
-            .or(() -> primitiveListType(element).map(primtiveType ->
-                new RecordAttribute(
-                    primtiveType.getSimpleName(),
-                    element,
-                    Variant.PRIMITIVE_LIST,
-                    null,
-                    roots,
-                    enums
-                )
-            ))
-            .or(() -> generatedListType(element, roots).map(generatedType ->
-                new RecordAttribute(
-                    "Object",
-                    element,
-                    Variant.GENERATED_LIST,
-                    generatedType,
-                    roots,
-                    enums
-                )
-            ))
+            .or(() -> enumListType(element, enums)
+                .map(enumListType ->
+                    new RecordAttribute(
+                        "Enum",
+                        element,
+                        Variant.ENUM_LIST,
+                        (TypeElement) enumListType,
+                        roots,
+                        enums
+                    )))
+            .or(() -> primitiveEvent(element)
+                .map(event ->
+                    new RecordAttribute(
+                        event.getSimpleName(),
+                        element,
+                        Variant.PRIMITIVE,
+                        null,
+                        roots,
+                        enums
+                    )))
+            .or(() -> generatedEvent(element, roots)
+                .map(generatedType ->
+                    new RecordAttribute(
+                        "Object",
+                        element,
+                        Variant.GENERATED,
+                        generatedType,
+                        roots,
+                        enums
+                    )
+                ))
+            .or(() -> primitiveListType(element)
+                .map(primtiveType ->
+                    new RecordAttribute(
+                        primtiveType.getSimpleName(),
+                        element,
+                        Variant.PRIMITIVE_LIST,
+                        null,
+                        roots,
+                        enums
+                    )
+                ))
+            .or(() -> generatedListType(element, roots)
+                .map(generatedType ->
+                    new RecordAttribute(
+                        "Object",
+                        element,
+                        Variant.GENERATED_LIST,
+                        generatedType,
+                        roots,
+                        enums
+                    )
+                ))
             .or(() -> Optional.of(element.asType().toString())
                 .filter(mapType ->
                     mapType.startsWith("java.util.Map"))
@@ -169,72 +210,5 @@ record RecordAttribute(
             )
             .orElseThrow(() ->
                 new IllegalStateException("Unsupported element/type: " + element + "/" + element.asType() + ", roots are: " + roots));
-    }
-
-    enum Variant {
-        PRIMITIVE() {
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassPlain(builderType) + "::" + setter(element);
-            }
-        },
-        PRIMITIVE_LIST() {
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassPlain(builderType) + "::" + adder(element);
-            }
-        },
-        GENERATED() {
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "(callbacks, builder) -> " +
-                       callbacksClassPlain(generated) +
-                       ".create(callbacks, builder::" + setter(
-                    element) + ")";
-            }
-        },
-        GENERATED_LIST() {
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "(callbacks, builder) -> " +
-                       callbacksClassPlain(generated) +
-                       ".create(callbacks, builder::" + adder(element) + ")";
-            }
-        },
-        GENERIC_MAP() {
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return "(callbacks, builder) -> " + MapCallbacks.class.getName() +
-                       ".create(callbacks, builder::" + setter(element) + ")";
-            }
-        },
-        ENUM() {
-            @Override
-            Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
-                return Optional.of(element.asType().toString() + "::valueOf");
-            }
-
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassPlain(builderType) + "::" + setter(element);
-            }
-        },
-        ENUM_LIST {
-            @Override
-            Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
-                return Optional.of(internalType.asType().toString() + "::valueOf");
-            }
-
-            @Override
-            String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
-                return builderClassPlain(builderType) + "::" + adder(element);
-            }
-        };
-
-        Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
-            return Optional.empty();
-        }
-
-        abstract String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated);
     }
 }

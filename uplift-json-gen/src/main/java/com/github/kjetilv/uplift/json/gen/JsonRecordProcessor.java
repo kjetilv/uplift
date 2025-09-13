@@ -24,8 +24,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.kjetilv.uplift.json.gen.Gen.*;
-
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
@@ -55,54 +53,17 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         for (Element el : typeEls) {
             try {
                 TypeElement typeEl = typeEl(el);
-                PackageElement packageEl = packageEl(typeEl);
+                PackageElement packageEl = GenUtils.packageEl(typeEl);
                 Gen gen = new Gen(packageEl, typeEl, time, this::file);
                 Optional<TypeElement> rootEl = rootEl(typeEl);
-                gen.writeBuilder(
-                    builderFile(typeEl),
-                    typeEls,
-                    enumEls
-                );
-                gen.writeCallbacks(
-                    callbackFile(typeEl),
-                    typeEls,
-                    enumEls,
-                    rootEl.isPresent()
-                );
-                gen.writeWriter(
-                    writerFile(typeEl),
-                    typeEls,
-                    enumEls
-                );
-                rootEl.ifPresent(element ->
-                    gen.writeRW(
-                        element,
-                        factoryFile(packageEl, element)
-                    ));
+                gen.writeBuilder(typeEls, enumEls);
+                gen.writeCallbacks(typeEls, enumEls, rootEl.isPresent());
+                gen.writeWriter(typeEls, enumEls);
+                rootEl.ifPresent(gen::writeRW);
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to write " + el, e);
             }
         }
-    }
-
-    private JavaFileObject factoryFile(PackageElement packageEl, TypeElement typeEl) {
-        return file(factoryClassQ(packageEl, typeEl));
-    }
-
-    private JavaFileObject callbackFile(TypeElement typeEl) {
-        return classFileName(typeEl, "Callbacks");
-    }
-
-    private JavaFileObject writerFile(TypeElement typeEl) {
-        return classFileName(typeEl, "Writer");
-    }
-
-    private JavaFileObject builderFile(TypeElement typeEl) {
-        return classFileName(typeEl, "Builder");
-    }
-
-    private JavaFileObject classFileName(TypeElement typeEl, String callbacks) {
-        return file(fqName(typeEl) + '_' + callbacks);
     }
 
     private JavaFileObject file(String name) {
@@ -185,7 +146,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static Collection<? extends Element> enumEls(RoundEnvironment roundEnv) {
-        return Gen.enums(roundEnv.getRootElements())
+        return GenUtils.enums(roundEnv.getRootElements())
             .collect(Collectors.toSet());
     }
 
