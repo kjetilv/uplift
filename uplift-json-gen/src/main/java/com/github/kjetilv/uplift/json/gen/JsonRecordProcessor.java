@@ -55,39 +55,29 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         for (Element el : typeEls) {
             try {
                 TypeElement typeEl = typeEl(el);
-                Optional<TypeElement> rootEl = rootEl(typeEl);
                 PackageElement packageEl = packageEl(typeEl);
-                writeBuilder(
-                    packageEl,
-                    typeEl,
+                Gen gen = new Gen(packageEl, typeEl, time, this::file);
+                Optional<TypeElement> rootEl = rootEl(typeEl);
+                gen.writeBuilder(
                     builderFile(typeEl),
                     typeEls,
-                    enumEls,
-                    time
+                    enumEls
                 );
-                writeCallbacks(
-                    packageEl,
-                    typeEl,
+                gen.writeCallbacks(
                     callbackFile(typeEl),
                     typeEls,
                     enumEls,
-                    rootEl.isPresent(),
-                    time
+                    rootEl.isPresent()
                 );
-                writeWriter(
-                    packageEl,
-                    typeEl,
+                gen.writeWriter(
                     writerFile(typeEl),
                     typeEls,
-                    enumEls,
-                    time
+                    enumEls
                 );
                 rootEl.ifPresent(element ->
-                    writeRW(
-                        packageEl,
+                    gen.writeRW(
                         element,
-                        factoryFile(packageEl, element),
-                        time
+                        factoryFile(packageEl, element)
                     ));
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to write " + el, e);

@@ -12,10 +12,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -23,329 +19,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class Gen {
-
-    static void writeRW(
-        PackageElement pe,
-        TypeElement te,
-        JavaFileObject file,
-        String time
-    ) {
-        Name name = te.getQualifiedName();
-        try (BufferedWriter bw = writer(file)) {
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Consumer.class),
-                importType(Function.class),
-                importType(Generated.class),
-                "",
-                importType(Callbacks.class),
-                importType(ObjectWriter.class),
-                importType(JsonRW.class),
-                "",
-                "/// Reading and writing instances of [" + unq(pe, name) + "]",
-                "///",
-                "/// Generated @ " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Reading and writing " + unq(pe, name) + "\"",
-                ")",
-                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unq(pe, name) + "> {",
-                "",
-                "    public static " + JSON_RW + "<" + unq(pe, name) + "> INSTANCE = new " + factoryClass(te) + "();",
-                "",
-                "    @Override",
-                "    public " + FUNCTION + "<" + CONSUMER + "<" + unq(pe, name) + ">, " + CALLBACKS + "> callbacks() {",
-                "        return " + callbacksClassPlain(te) + "::create;",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unq(pe, name) + "> onDone) {",
-                "        return " + callbacksClassPlain(te) + ".create(onDone);",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + OBJECT_WRITER + "<" + unq(pe, name) + "> objectWriter() {",
-                "        return new " + writerClassPlain(te) + "();",
-                "    }",
-                "",
-                "    private " + factoryClass(te) + "() {",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write factory for " + te, e);
-        }
-
-    }
-
-    static void writeWriter(
-        PackageElement pe,
-        TypeElement typeElement,
-        JavaFileObject file,
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums,
-        String time
-    ) {
-        try (BufferedWriter bw = writer(file)) {
-            Name name = typeElement.getQualifiedName();
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Generated.class),
-                "",
-                importType(AbstractObjectWriter.class),
-                importType(FieldEvents.class),
-                "",
-                "/// Writer for [" + unq(pe, name) + "]",
-                "///",
-                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Writer for " + unq(pe, name) + "\"",
-                ")",
-                "final class " + writerClassPlain(typeElement) + " extends " + ABSTRACT_OBJECT_WRITER + "<" + unq(
-                    pe,
-                    name
-                ) + "> {",
-                "",
-                "    protected " + FIELD_EVENTS + " doWrite(",
-                "        " + unq(pe, name) + " " + variableName(typeElement) + ", ",
-                "        " + FIELD_EVENTS + " events",
-                "    ) {",
-                "        return events"
-            );
-            typeElement.getRecordComponents()
-                .stream()
-                .map(element -> RecordAttribute.create(element, roots, enums))
-                .forEach(recordAttribute ->
-                    write(
-                        bw,
-                        "            ." + recordAttribute.writeCall(typeElement)
-                    ));
-            write(
-                bw,
-                "        ;",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write callbacks for " + typeElement, e);
-        }
-
-    }
-
-    static void writeBuilder(
-        PackageElement pe,
-        TypeElement typeElement,
-        JavaFileObject file,
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums,
-        String time
-    ) {
-        Name name = typeElement.getQualifiedName();
-
-        List<String> setters = typeElement.getRecordComponents()
-            .stream().flatMap(el ->
-                Stream.of(
-                    "    private " + el.asType() + " " + fieldName(el) + ";",
-                    "",
-                    "    void " + setter(el) + "(" + el.asType() + " " + fieldName(el) + ") {",
-                    "        this." + fieldName(el) + " = " + fieldName(el) + ";",
-                    "    }",
-                    ""
-                ))
-            .toList();
-
-        List<String> adders = typeElement.getRecordComponents()
-            .stream()
-            .flatMap(element ->
-                listType(element, roots, enums)
-                    .stream()
-                    .flatMap(listType ->
-                        Stream.of(
-                            "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
-                            "        if (this." + fieldName(element) + " == null) {",
-                            "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
-                            "        }",
-                            "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
-                            "    }",
-                            ""
-                        ))
-            )
-            .toList();
-
-        List<String> creatorStart = List.of(
-            "    @Override",
-            "    public " + unq(pe, name) + " get() {",
-            "        return new " + unq(pe, name) + "("
-        );
-
-        List<String> creatorMeat = typeElement.getRecordComponents()
-            .stream()
-            .map(el ->
-                "            " + fieldName(el) + ",")
-            .collect(Collectors.toCollection(LinkedList::new));
-        String last = creatorMeat.removeLast();
-        creatorMeat.addLast(last.substring(0, last.length() - 1));
-
-        List<String> creatorEnd = List.of(
-            "        );",
-            "    }"
-        );
-
-        try (BufferedWriter bw = writer(file)) {
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Supplier.class),
-                importType(Generated.class),
-                "",
-                "/// Builder for [" + unq(pe, name) + "]",
-                "///",
-                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Builder for " + unq(pe, name) + "\"",
-                ")",
-                "final class " + builderClassPlain(typeElement) + " implements " + SUPPLIER + "<" + unq(
-                    pe,
-                    name
-                ) + "> {",
-                "",
-                "    static " + builderClassPlain(typeElement) + " create() {",
-                "        return new " + builderClassPlain(typeElement) + "();",
-                "    }",
-                "",
-                "    private " + builderClassPlain(typeElement) + "() {",
-                "    }"
-            );
-            write(bw, "");
-            write(bw, setters);
-            write(bw, adders);
-            write(bw, creatorStart);
-            write(bw, creatorMeat);
-            write(bw, creatorEnd);
-            write(bw, "}");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write builder for " + typeElement, e);
-        }
-    }
-
-    static void writeCallbacks(
-        PackageElement pe,
-        TypeElement typeElement,
-        JavaFileObject file,
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums,
-        boolean isRoot,
-        String time
-    ) {
-        Name name = typeElement.getQualifiedName();
-        try (BufferedWriter bw = writer(file)) {
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Consumer.class),
-                importType(Generated.class),
-                "",
-                importType(Callbacks.class),
-                importType(JsonRecordProcessor.class),
-                importType(PresetCallbacks.class),
-                importType(PresetCallbacksInitializer.class),
-                "",
-                "/// Callbacks for [" + unq(pe, name) + "]",
-                "///",
-                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Callbacks for " + unq(pe, name) + "\"",
-                ")",
-                "final class " + callbacksClassPlain(typeElement) + " {",
-                "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(typeElement) + ", " + unq(
-                    pe,
-                    name
-                ) + "> create(",
-                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
-                "    ) {",
-                "        return create(null, onDone);",
-                "    }",
-                "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(typeElement) + ", " + unq(
-                    pe,
-                    name
-                ) + "> create(",
-                "        " + CALLBACKS + " parent, ",
-                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
-                "    ) {",
-                "        return new " + PRESET_CALLBACKS + "<>(",
-                "            " + builderClassPlain(typeElement) + ".create(),",
-                "            parent,",
-                "            PRESETS.getNumbers(),",
-                "            PRESETS.getStrings(),",
-                "            PRESETS.getBooleans(),",
-                "            PRESETS.getObjects(),",
-                "            onDone,",
-                "            PRESETS.getTokenTrie()",
-                "        );",
-                "    }",
-                "",
-                "    static final " + PRESET_CALLBACKS_INITIALIZER + "<" + builderClassPlain(typeElement) + ", " + unq(
-                    pe,
-                    name
-                ) + "> PRESETS;"
-            );
-            write(bw, "");
-            write(bw, "    static {");
-            write(bw, "        PRESETS = new " + PRESET_CALLBACKS_INITIALIZER + "<>();");
-            write(
-                bw,
-                typeElement.getRecordComponents()
-                    .stream()
-                    .filter(element ->
-                        element.getKind() == ElementKind.RECORD_COMPONENT)
-                    .map(element ->
-                        "        PRESETS." + RecordAttribute.create(element, roots, enums)
-                            .callbackHandler(typeElement) + ";"
-                    )
-                    .toList()
-            );
-
-            List<RecordAttribute> recordAttributes = typeElement.getRecordComponents()
-                .stream()
-                .filter(recordComponentElement ->
-                    recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
-                .map(element ->
-                    RecordAttribute.create(element, roots, enums))
-                .toList();
-
-            write(
-                bw,
-                recordAttributes.stream()
-                    .filter(RecordAttribute::isGenerated)
-                    .map(attribute ->
-                        "        PRESETS.sub(" + callbacksClassPlain(attribute.internalType()) + ".PRESETS);")
-                    .toList()
-            );
-
-            if (isRoot) {
-                write(bw, "        PRESETS.buildTokens(null);");
-            }
-            write(bw, "    }", "}");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write callbacks for " + typeElement, e);
-        }
-    }
+record Gen(PackageElement pe, TypeElement te, String time, Function<String, JavaFileObject> filer) {
 
     static String fieldName(RecordComponentElement el) {
         Field field = el.getAnnotation(Field.class);
@@ -517,7 +191,315 @@ final class Gen {
         return canonicalClassName(te, true);
     }
 
-    private Gen() {
+    void writeRW(
+        TypeElement te,
+        JavaFileObject file
+    ) {
+        Name name = te.getQualifiedName();
+        try (BufferedWriter bw = writer(file)) {
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Consumer.class),
+                importType(Function.class),
+                importType(Generated.class),
+                "",
+                importType(Callbacks.class),
+                importType(ObjectWriter.class),
+                importType(JsonRW.class),
+                "",
+                "/// Reading and writing instances of [" + unq(pe, name) + "]",
+                "///",
+                "/// Generated @ " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Reading and writing " + unq(pe, name) + "\"",
+                ")",
+                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unq(pe, name) + "> {",
+                "",
+                "    public static " + JSON_RW + "<" + unq(pe, name) + "> INSTANCE = new " + factoryClass(te) + "();",
+                "",
+                "    @Override",
+                "    public " + FUNCTION + "<" + CONSUMER + "<" + unq(pe, name) + ">, " + CALLBACKS + "> callbacks() {",
+                "        return " + callbacksClassPlain(te) + "::create;",
+                "    }",
+                "",
+                "    @Override",
+                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unq(pe, name) + "> onDone) {",
+                "        return " + callbacksClassPlain(te) + ".create(onDone);",
+                "    }",
+                "",
+                "    @Override",
+                "    public " + OBJECT_WRITER + "<" + unq(pe, name) + "> objectWriter() {",
+                "        return new " + writerClassPlain(te) + "();",
+                "    }",
+                "",
+                "    private " + factoryClass(te) + "() {",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write factory for " + te, e);
+        }
+
+    }
+
+    void writeWriter(
+        JavaFileObject file,
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums
+    ) {
+        try (BufferedWriter bw = writer(file)) {
+            Name name = te.getQualifiedName();
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Generated.class),
+                "",
+                importType(AbstractObjectWriter.class),
+                importType(FieldEvents.class),
+                "",
+                "/// Writer for [" + unq(pe, name) + "]",
+                "///",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Writer for " + unq(pe, name) + "\"",
+                ")",
+                "final class " + writerClassPlain(te) + " extends " + ABSTRACT_OBJECT_WRITER + "<" + unq(
+                    pe,
+                    name
+                ) + "> {",
+                "",
+                "    protected " + FIELD_EVENTS + " doWrite(",
+                "        " + unq(pe, name) + " " + variableName(te) + ", ",
+                "        " + FIELD_EVENTS + " events",
+                "    ) {",
+                "        return events"
+            );
+            te.getRecordComponents()
+                .stream()
+                .map(element -> RecordAttribute.create(element, roots, enums))
+                .forEach(recordAttribute ->
+                    write(
+                        bw,
+                        "            ." + recordAttribute.writeCall(te)
+                    ));
+            write(
+                bw,
+                "        ;",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
+        }
+
+    }
+
+    void writeCallbacks(
+        JavaFileObject file,
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums,
+        boolean isRoot
+    ) {
+        Name name = te.getQualifiedName();
+        try (BufferedWriter bw = writer(file)) {
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Consumer.class),
+                importType(Generated.class),
+                "",
+                importType(Callbacks.class),
+                importType(JsonRecordProcessor.class),
+                importType(PresetCallbacks.class),
+                importType(PresetCallbacksInitializer.class),
+                "",
+                "/// Callbacks for [" + unq(pe, name) + "]",
+                "///",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Callbacks for " + unq(pe, name) + "\"",
+                ")",
+                "final class " + callbacksClassPlain(te) + " {",
+                "",
+                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unq(
+                    pe,
+                    name
+                ) + "> create(",
+                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
+                "    ) {",
+                "        return create(null, onDone);",
+                "    }",
+                "",
+                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unq(
+                    pe,
+                    name
+                ) + "> create(",
+                "        " + CALLBACKS + " parent, ",
+                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
+                "    ) {",
+                "        return new " + PRESET_CALLBACKS + "<>(",
+                "            " + builderClassPlain(te) + ".create(),",
+                "            parent,",
+                "            PRESETS.getNumbers(),",
+                "            PRESETS.getStrings(),",
+                "            PRESETS.getBooleans(),",
+                "            PRESETS.getObjects(),",
+                "            onDone,",
+                "            PRESETS.getTokenTrie()",
+                "        );",
+                "    }",
+                "",
+                "    static final " + PRESET_CALLBACKS_INITIALIZER + "<" + builderClassPlain(te) + ", " + unq(
+                    pe,
+                    name
+                ) + "> PRESETS;"
+            );
+            write(bw, "");
+            write(bw, "    static {");
+            write(bw, "        PRESETS = new " + PRESET_CALLBACKS_INITIALIZER + "<>();");
+            write(
+                bw,
+                te.getRecordComponents()
+                    .stream()
+                    .filter(element ->
+                        element.getKind() == ElementKind.RECORD_COMPONENT)
+                    .map(element ->
+                        "        PRESETS." + RecordAttribute.create(element, roots, enums)
+                            .callbackHandler(te) + ";"
+                    )
+                    .toList()
+            );
+
+            List<RecordAttribute> recordAttributes = te.getRecordComponents()
+                .stream()
+                .filter(recordComponentElement ->
+                    recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
+                .map(element ->
+                    RecordAttribute.create(element, roots, enums))
+                .toList();
+
+            write(
+                bw,
+                recordAttributes.stream()
+                    .filter(RecordAttribute::isGenerated)
+                    .map(attribute ->
+                        "        PRESETS.sub(" + callbacksClassPlain(attribute.internalType()) + ".PRESETS);")
+                    .toList()
+            );
+
+            if (isRoot) {
+                write(bw, "        PRESETS.buildTokens(null);");
+            }
+            write(bw, "    }", "}");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
+        }
+    }
+
+    void writeBuilder(
+        JavaFileObject file,
+        Collection<? extends Element> roots,
+        Collection<? extends Element> enums
+    ) {
+        Name name = te.getQualifiedName();
+
+        List<String> setters = te.getRecordComponents()
+            .stream().flatMap(el ->
+                Stream.of(
+                    "    private " + el.asType() + " " + fieldName(el) + ";",
+                    "",
+                    "    void " + setter(el) + "(" + el.asType() + " " + fieldName(el) + ") {",
+                    "        this." + fieldName(el) + " = " + fieldName(el) + ";",
+                    "    }",
+                    ""
+                ))
+            .toList();
+
+        List<String> adders = te.getRecordComponents()
+            .stream()
+            .flatMap(element ->
+                listType(element, roots, enums)
+                    .stream()
+                    .flatMap(listType ->
+                        Stream.of(
+                            "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
+                            "        if (this." + fieldName(element) + " == null) {",
+                            "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
+                            "        }",
+                            "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
+                            "    }",
+                            ""
+                        ))
+            )
+            .toList();
+
+        List<String> creatorStart = List.of(
+            "    @Override",
+            "    public " + unq(pe, name) + " get() {",
+            "        return new " + unq(pe, name) + "("
+        );
+
+        List<String> creatorMeat = te.getRecordComponents()
+            .stream()
+            .map(el ->
+                "            " + fieldName(el) + ",")
+            .collect(Collectors.toCollection(LinkedList::new));
+        String last = creatorMeat.removeLast();
+        creatorMeat.addLast(last.substring(0, last.length() - 1));
+
+        List<String> creatorEnd = List.of(
+            "        );",
+            "    }"
+        );
+
+        try (BufferedWriter bw = writer(file)) {
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Supplier.class),
+                importType(Generated.class),
+                "",
+                "/// Builder for [" + unq(pe, name) + "]",
+                "///",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Builder for " + unq(pe, name) + "\"",
+                ")",
+                "final class " + builderClassPlain(te) + " implements " + SUPPLIER + "<" + unq(
+                    pe,
+                    name
+                ) + "> {",
+                "",
+                "    static " + builderClassPlain(te) + " create() {",
+                "        return new " + builderClassPlain(te) + "();",
+                "    }",
+                "",
+                "    private " + builderClassPlain(te) + "() {",
+                "    }"
+            );
+            write(bw, "");
+            write(bw, setters);
+            write(bw, adders);
+            write(bw, creatorStart);
+            write(bw, creatorMeat);
+            write(bw, creatorEnd);
+            write(bw, "}");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write builder for " + te, e);
+        }
     }
 
     private static final String GENERATED = Generated.class.getSimpleName();
@@ -613,12 +595,6 @@ final class Gen {
         return annotation == null || annotation.factoryClass().isBlank()
             ? name + DEFAULT_SUFFIX
             : annotation.factoryClass();
-    }
-
-    private static String time() {
-        return Instant.now().truncatedTo(ChronoUnit.SECONDS)
-            .atZone(ZoneId.of("Z"))
-            .format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     private static String singularVariableName(RecordComponentElement el) {
