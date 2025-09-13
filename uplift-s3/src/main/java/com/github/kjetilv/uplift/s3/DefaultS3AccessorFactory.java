@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.s3;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kjetilv.uplift.kernel.Env;
@@ -11,18 +12,17 @@ public final class DefaultS3AccessorFactory implements S3AccessorFactory {
 
     private final Env env;
 
-    private final Executor executor;
-
-    public DefaultS3AccessorFactory(Env env, Executor executor) {
+    public DefaultS3AccessorFactory(Env env) {
         this.env = env;
-        this.executor = executor;
     }
 
     @Override
     public S3Accessor create() {
         return s3Accessor.updateAndGet(current ->
             current == null
-                ? S3Accessor.fromEnvironment(this.env, this.executor)
+                ? S3Accessor.fromEnvironment(this.env, VIRTUAL)
                 : current);
     }
+
+    private static final ExecutorService VIRTUAL = Executors.newSingleThreadExecutor();
 }

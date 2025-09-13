@@ -6,8 +6,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
@@ -23,17 +23,11 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final HttpClient client;
 
-    DefaultLamdbdaManaged(
-        URI lambdaUri,
-        LambdaClientSettings settings,
-        LambdaHandler handler,
-        ExecutorService executor
-    ) {
+    DefaultLamdbdaManaged(URI lambdaUri, LambdaClientSettings settings, LambdaHandler handler) {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        ExecutorService executor1 = requireNonNull(executor, "executor");
-        this.client = httpClient(executor1, settings).build();
+        this.client = httpClient(settings).build();
     }
 
     @Override
@@ -69,10 +63,12 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         client.close();
     }
 
-    private static HttpClient.Builder httpClient(Executor executor, LambdaClientSettings settings) {
+    private static final ExecutorService VIRTUAL = Executors.newSingleThreadExecutor();
+
+    private static HttpClient.Builder httpClient(LambdaClientSettings settings) {
         HttpClient.Builder builder = HttpClient.newBuilder()
             .version(HTTP_1_1)
-            .executor(executor);
+            .executor(VIRTUAL);
         if (settings.hasConnectTimeout()) {
             builder.connectTimeout(settings.connectTimeout());
         }

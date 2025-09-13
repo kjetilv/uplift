@@ -170,7 +170,7 @@ final class AsyncIOServer implements IOServer {
 
     private static final int MINIMUM_REQUEST_SIZE = 1024;
 
-    private static final Duration GRACE_PERIOD = Duration.ofSeconds(5);
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(10);
 
     private static InetAddress getInetAddress() {
         try {

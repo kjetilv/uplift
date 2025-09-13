@@ -77,6 +77,9 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
     }
 
     protected final void close() {
+        if (channel == null) {
+            return;
+        }
         try {
             channel.close();
         } catch (Exception e) {

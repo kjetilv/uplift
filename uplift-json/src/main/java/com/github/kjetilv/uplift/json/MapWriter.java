@@ -16,7 +16,7 @@ public final class MapWriter implements ObjectWriter<Map<?, ?>> {
             case String string -> calls.string(key.toString(), string);
             case Number number -> calls.number(key.toString(), number);
             case Boolean bool -> calls.bool(key.toString(), bool);
-            case Map<?, ?> submap -> new MapWriter().write(submap, calls);
+            case Map<?, ?> map -> new MapWriter().write(map, calls);
             default -> throw new IllegalStateException(
                 "Not supported: " + value.getClass() + "(" + key + " -> " + value + ")"
             );

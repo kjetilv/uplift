@@ -11,7 +11,7 @@ abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<
 
     private final ObjectWriter<T> objectWriter;
 
-    public AbstractJsonWriter(ObjectWriter<T> objectWriter) {
+    AbstractJsonWriter(ObjectWriter<T> objectWriter) {
         this.objectWriter = Objects.requireNonNull(objectWriter, "objectWriter");
     }
 

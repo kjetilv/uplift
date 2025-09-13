@@ -127,8 +127,7 @@ public class LambdaHarness implements Closeable {
         LamdbdaManaged lamdbdaManaged = LamdbdaManaged.create(
             localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
-            lambdaHandler,
-            this.lambdaExec
+            lambdaHandler
         );
 
         this.looper = lamdbdaManaged.looper();

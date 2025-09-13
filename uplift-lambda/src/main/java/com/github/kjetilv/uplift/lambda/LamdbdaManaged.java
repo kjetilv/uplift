@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings("unused")
 public interface LamdbdaManaged extends Runnable, Closeable {
@@ -13,10 +12,9 @@ public interface LamdbdaManaged extends Runnable, Closeable {
     static LamdbdaManaged create(
         URI uri,
         LambdaClientSettings settings,
-        LambdaHandler handler,
-        ExecutorService executor
+        LambdaHandler handler
     ) {
-        return new DefaultLamdbdaManaged(uri, settings, handler, executor);
+        return new DefaultLamdbdaManaged(uri, settings, handler);
     }
 
     @Override

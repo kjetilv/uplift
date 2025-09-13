@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -14,23 +13,15 @@ import static java.util.Objects.requireNonNull;
 public final class Flogs {
 
     public static void initialize() {
-        initialize(null, null, null);
+        initialize(null, null);
     }
 
     public static void initialize(LogLevel logLevel) {
-        initialize(logLevel, null, null);
+        initialize(logLevel, null);
     }
 
     public static void initialize(LogLevel logLevel, Consumer<String> printer) {
-        initialize(logLevel, printer, null);
-    }
-
-    public static void initialize(
-        LogLevel logLevel,
-        Consumer<String> printer,
-        ExecutorService background
-    ) {
-        initialized(logLevel, printer, background);
+        initialized(logLevel, printer);
     }
 
     public static Logger get(Class<?> source) {
@@ -52,12 +43,11 @@ public final class Flogs {
 
     private static final AtomicReference<FLoggers> fLoggers = new AtomicReference<>();
 
-    private static final FLoggers emergencyFLoggers = initialized(null, null, null);
+    private static final FLoggers emergencyFLoggers = initialized(null, null);
 
     private static FLoggers initialized(
         LogLevel logLevel,
-        Consumer<String> printer,
-        ExecutorService background
+        Consumer<String> printer
     ) {
         return fLoggers.updateAndGet(current ->
             new FLoggers(logLevel, printer, Instant::now, null));

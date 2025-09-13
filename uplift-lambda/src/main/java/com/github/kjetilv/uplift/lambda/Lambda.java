@@ -1,11 +1,9 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.time.Duration;
-
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.util.Time;
 
-import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
+import java.time.Duration;
 
 @SuppressWarnings("unused")
 public final class Lambda {
@@ -47,8 +45,7 @@ public final class Lambda {
         return LamdbdaManaged.create(
             Env.actual().awsLambdaUri(),
             settings(Env.actual(), connectTimeout, responseTimeout),
-            lambdaHandler,
-            executor()
+            lambdaHandler
         );
     }
 

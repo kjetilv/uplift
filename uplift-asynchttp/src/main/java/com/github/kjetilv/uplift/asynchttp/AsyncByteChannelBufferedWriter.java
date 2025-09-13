@@ -5,31 +5,31 @@ import java.nio.channels.AsynchronousByteChannel;
 
 import static java.util.Objects.requireNonNull;
 
-record AsyncByteChannelBufferedWriter(AsynchronousByteChannel byteChannel) implements BufferedWriter<ByteBuffer> {
+record AsyncByteChannelBufferedWriter(AsynchronousByteChannel channel) implements BufferedWriter<ByteBuffer> {
 
-    AsyncByteChannelBufferedWriter(AsynchronousByteChannel byteChannel) {
-        this.byteChannel = requireNonNull(byteChannel, "out");
+    AsyncByteChannelBufferedWriter {
+        requireNonNull(channel, "channel");
     }
 
     @Override
     public void close() {
         try {
-            byteChannel.close();
+            channel.close();
         } catch (Exception e) {
-            throw new IllegalStateException(this + " failed to close " + byteChannel, e);
+            throw new IllegalStateException(this + " failed to close " + channel, e);
         }
     }
 
     @Override
     public void write(Writable<? extends ByteBuffer> writable) {
         try {
-            byteChannel.write(
+            channel.write(
                 writable.buffer(),
                 null,
-                new WriteableHandler(writable, byteChannel, 100)
+                new WriteableHandler(writable, channel, 100)
             );
         } catch (Exception e) {
-            throw new IllegalStateException("Could not write to " + byteChannel, e);
+            throw new IllegalStateException("Could not write to " + channel, e);
         }
     }
 }
