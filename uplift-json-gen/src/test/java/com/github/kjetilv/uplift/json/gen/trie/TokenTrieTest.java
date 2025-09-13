@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.trie;
+package com.github.kjetilv.uplift.json.gen.trie;
 
 import com.github.kjetilv.uplift.json.Token;
 import org.junit.jupiter.api.Test;

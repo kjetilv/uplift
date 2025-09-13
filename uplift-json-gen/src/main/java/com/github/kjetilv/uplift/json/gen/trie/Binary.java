@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.trie;
+package com.github.kjetilv.uplift.json.gen.trie;
 
 final class Binary {
 

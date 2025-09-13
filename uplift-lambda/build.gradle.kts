@@ -1,6 +1,7 @@
 dependencies {
     implementation(project(":uplift-flogs"))
     implementation(project(":uplift-json"))
+    implementation(project(":uplift-json-anno"))
     implementation(project(":uplift-json-gen"))
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-s3"))

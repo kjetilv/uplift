@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.trie;
+package com.github.kjetilv.uplift.json.gen.trie;
 
 import com.github.kjetilv.uplift.json.Token;
 
@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static com.github.kjetilv.uplift.json.trie.Trie.node;
+import static com.github.kjetilv.uplift.json.gen.trie.Trie.node;
 
 final class TrieBuilder {
 

@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.json.gen;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
-import com.github.kjetilv.uplift.json.trie.TokenTrie;
+import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
 import com.github.kjetilv.uplift.uuid.Uuid;
 
 import java.math.BigDecimal;
