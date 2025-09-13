@@ -13,8 +13,6 @@ internal val Path.isJar get() = fileName.toString().endsWith(".jar")
 
 internal val Path.isDir get() = fileName.isDirectory()
 
-internal val Path.isActualFile get() = Files.isRegularFile(this)
-
 internal val Path.isActualDirectory get() = Files.isDirectory(this)
 
 internal fun copyTo(sourcePath: Path, context: Path, target: String? = null) =

@@ -8,16 +8,20 @@ import java.nio.file.Path
 internal fun DefaultTask.docker(cwd: Path, dockerCmd: String, execOperations: ExecOperations) =
     project.resolveProperty("docker.binary", defValue = "docker").let { docker ->
         val cmd = "$docker $dockerCmd"
-        execOperations.exec { spec ->
-            spec.run {
-                this.workingDir = cwd.toFile()
-                this.commandLine = cmd.split(" ").also {
-                    logger.info("Running command in $cwd")
-                    logger.info("  ${it.joinToString(" ")}")
+        try {
+            execOperations.exec { spec ->
+                spec.run {
+                    this.workingDir = cwd.toFile()
+                    this.commandLine = cmd.split(" ").also {
+                        logger.info("Running command in $cwd")
+                        logger.info("  ${it.joinToString(" ")}")
+                    }
+                }.also {
+                    this.logger.info("Completed: ${cmd}")
                 }
-            }.also {
-                this.logger.info("Completed: ${cmd}")
             }
+        } catch (e: Exception) {
+            throw IllegalStateException("Failed to run command: `$cmd` in $cwd", e)
         }
     }
 

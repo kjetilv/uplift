@@ -24,13 +24,7 @@ internal inline fun <reified T : Task> Project.register(name: String, crossinlin
         tasks.register(name, T::class.java) { it.reg() }
     }
 
-internal val Project.classpath: List<File>
-    get() =
-        configurations
-            .first { conf ->
-                conf.incoming.path.equals("$path:runtimeClasspath")
-            }
-            .toList()
+internal val Project.classpath: List<File> get() = configurations.first("$path:runtimeClasspath"::equals).toList()
 
 internal fun Project.resolve(property: String) =
     System.getProperty(property)
@@ -47,7 +41,10 @@ internal val Project.shortGroupName
     }
 
 private fun Project.base() =
-    this.group.toString().takeIf { it.isNotBlank() } ?: Path.of(System.getProperty("user.dir")).toAbsolutePath().last()
+    this.group.toString()
+        .takeIf { it.isNotBlank() } ?: Path.of(System.getProperty("user.dir"))
+        .toAbsolutePath()
+        .last()
         .toString()
 
 internal val Property<String>.nonBlank: String? get() = orNull?.takeIf { it.isNotBlank() }
