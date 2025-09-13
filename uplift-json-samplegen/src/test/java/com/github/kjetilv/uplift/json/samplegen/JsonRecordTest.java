@@ -32,7 +32,7 @@ public class JsonRecordTest {
               }
             }
             """;
-        User readUser = STRING_READER.read(json);
+        User readUser = Users.INSTANCE.stringReader().read(json);
         System.out.println(readUser);
 
 //        assertThat(readUser.tags()).containsEntry("good", "evil");
