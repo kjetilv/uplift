@@ -12,6 +12,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,6 +51,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         Collection<? extends Element> typeEls,
         Collection<? extends Element> enumEls
     ) {
+        String time = time();
         for (Element el : typeEls) {
             try {
                 TypeElement typeEl = typeEl(el);
@@ -57,7 +62,8 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                     typeEl,
                     builderFile(typeEl),
                     typeEls,
-                    enumEls
+                    enumEls,
+                    time
                 );
                 writeCallbacks(
                     packageEl,
@@ -65,18 +71,24 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                     callbackFile(typeEl),
                     typeEls,
                     enumEls,
-                    rootEl.isPresent()
+                    rootEl.isPresent(),
+                    time
                 );
                 writeWriter(
                     packageEl,
                     typeEl,
                     writerFile(typeEl),
                     typeEls,
-                    enumEls
+                    enumEls,
+                    time
                 );
                 rootEl.ifPresent(element ->
-                    writeRW(packageEl, element, factoryFile(packageEl, element))
-                );
+                    writeRW(
+                        packageEl,
+                        element,
+                        factoryFile(packageEl, element),
+                        time
+                    ));
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to write " + el, e);
             }
@@ -109,6 +121,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         } catch (Exception e) {
             throw new IllegalStateException("Could not open file " + name, e);
         }
+    }
+
+    private static String time() {
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of("Z"))
+            .format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     private static void requireAllRecords(Collection<? extends Element> els) {

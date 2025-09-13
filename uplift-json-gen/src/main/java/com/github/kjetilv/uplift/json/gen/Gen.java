@@ -25,9 +25,13 @@ import java.util.stream.Stream;
 
 final class Gen {
 
-    static void writeRW(PackageElement pe, TypeElement te, JavaFileObject file) {
+    static void writeRW(
+        PackageElement pe,
+        TypeElement te,
+        JavaFileObject file,
+        String time
+    ) {
         Name name = te.getQualifiedName();
-        String time = time();
         try (BufferedWriter bw = writer(file)) {
             write(
                 bw,
@@ -83,7 +87,8 @@ final class Gen {
         TypeElement typeElement,
         JavaFileObject file,
         Collection<? extends Element> roots,
-        Collection<? extends Element> enums
+        Collection<? extends Element> enums,
+        String time
     ) {
         try (BufferedWriter bw = writer(file)) {
             Name name = typeElement.getQualifiedName();
@@ -98,10 +103,10 @@ final class Gen {
                 "",
                 "/// Writer for [" + unq(pe, name) + "]",
                 "///",
-                "/// Generated at " + time() + " by " + System.getProperty("user.name") + " using uplift",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time() + "\",",
+                "    date = \"" + time + "\",",
                 "    comments = \"Writer for " + unq(pe, name) + "\"",
                 ")",
                 "final class " + writerClassPlain(typeElement) + " extends " + ABSTRACT_OBJECT_WRITER + "<" + unq(
@@ -140,7 +145,8 @@ final class Gen {
         TypeElement typeElement,
         JavaFileObject file,
         Collection<? extends Element> roots,
-        Collection<? extends Element> enums
+        Collection<? extends Element> enums,
+        String time
     ) {
         Name name = typeElement.getQualifiedName();
 
@@ -203,10 +209,10 @@ final class Gen {
                 "",
                 "/// Builder for [" + unq(pe, name) + "]",
                 "///",
-                "/// Generated at " + time() + " by " + System.getProperty("user.name") + " using uplift",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time() + "\",",
+                "    date = \"" + time + "\",",
                 "    comments = \"Builder for " + unq(pe, name) + "\"",
                 ")",
                 "final class " + builderClassPlain(typeElement) + " implements " + SUPPLIER + "<" + unq(
@@ -239,10 +245,10 @@ final class Gen {
         JavaFileObject file,
         Collection<? extends Element> roots,
         Collection<? extends Element> enums,
-        boolean isRoot
+        boolean isRoot,
+        String time
     ) {
         Name name = typeElement.getQualifiedName();
-        String time = time();
         try (BufferedWriter bw = writer(file)) {
             write(
                 bw,
@@ -251,6 +257,7 @@ final class Gen {
                 importType(Consumer.class),
                 importType(Generated.class),
                 "",
+                importType(Callbacks.class),
                 importType(JsonRecordProcessor.class),
                 importType(PresetCallbacks.class),
                 importType(PresetCallbacksInitializer.class),
@@ -278,7 +285,7 @@ final class Gen {
                     pe,
                     name
                 ) + "> create(",
-                "        " + Callbacks.class.getName() + " parent, ",
+                "        " + CALLBACKS + " parent, ",
                 "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
                 "    ) {",
                 "        return new " + PRESET_CALLBACKS + "<>(",
