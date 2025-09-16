@@ -43,9 +43,9 @@ public final class BytesSourceTokens implements Tokens {
             case ']' -> Token.END_ARRAY;
             case '"' -> fieldName ? fieldToken(canonical) : stringToken();
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-' -> numberToken();
-            case 'f' -> alse();
-            case 't' -> rue();
-            case 'n' -> ull();
+            case 'f' -> _alse();
+            case 't' -> _rue();
+            case 'n' -> _ull();
             case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().string() + "`");
             default -> fail("Unrecognized character", "`" + (char) c + "`");
         };
@@ -80,32 +80,20 @@ public final class BytesSourceTokens implements Tokens {
         }
     }
 
-    private Token.False alse() {
-        bytesSource.skip5(A, L, S, E);
+    private Token.False _alse() {
+        bytesSource.skip('a', 'l', 's', 'e');
         return Token.FALSE;
     }
 
-    private Token.True rue() {
-        bytesSource.skip4(R, U, E);
+    private Token.True _rue() {
+        bytesSource.skip('r', 'u', 'e');
         return Token.TRUE;
     }
 
-    private Token.Null ull() {
-        bytesSource.skip4(U, L, L);
+    private Token.Null _ull() {
+        bytesSource.skip('u', 'l', 'l');
         return Token.NULL;
     }
-
-    private static final byte A = (byte) 'a';
-
-    private static final byte E = (byte) 'e';
-
-    private static final byte L = (byte) 'l';
-
-    private static final byte R = (byte) 'r';
-
-    private static final byte S = (byte) 's';
-
-    private static final byte U = (byte) 'u';
 
     private static Token fail(String msg, String details) {
         throw new ReadException(msg, details);

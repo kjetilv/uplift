@@ -9,6 +9,14 @@ import java.util.function.Consumer;
 
 public final class CachingJsonSessions {
 
+    public static JsonSession create128() {
+        return create(HashKind.K128);
+    }
+
+    public static JsonSession create256() {
+        return create(HashKind.K256);
+    }
+
     public static <H extends HashKind<H>> JsonSession create(H kind) {
         return create(kind, (Consumer<Object>) null);
     }

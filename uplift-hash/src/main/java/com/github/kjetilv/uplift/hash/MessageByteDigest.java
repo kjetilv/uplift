@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 
 /**
  * Maintains a simple pool of non-trivially-created instances of {@link MessageDigest}, in the form of a queue.
@@ -44,6 +43,11 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
         currentDigest().update(bs.bytes(), bs.offset(), bs.length());
     }
 
+    /**
+     * Drain current digest, unset it and offer it to the queue.
+     *
+     * @return Hash of current digest
+     */
     @Override
     public Hash<H> get() {
         digestLock.lock();
@@ -54,23 +58,26 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
             try {
                 return Hashes.hash(messageDigest.digest());
             } finally {
-                MessageDigest discardable = messageDigest;
+                MessageDigest unset = messageDigest;
                 messageDigest = null;
-                queue(kind).offer(discardable);
+                queue(kind).offer(unset);
             }
         } finally {
             digestLock.unlock();
         }
     }
 
+    /**
+     * Get the current digest.  If none is set, dequeue one. If queue was empty, create a new one.
+     *
+     * @return Current digest
+     */
     private MessageDigest currentDigest() {
         digestLock.lock();
         try {
             if (messageDigest == null) {
-                MessageDigest pooled = queue(kind).poll();
-                return messageDigest = pooled != null
-                    ? pooled
-                    : createDigest(kind);
+                MessageDigest pooled = queue(kind).pollFirst();
+                messageDigest = pooled == null ? createDigest(kind) : pooled;
             }
             return messageDigest;
         } finally {
@@ -83,20 +90,22 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
     private static final int DIGEST_POOL_SIZE = 20;
 
     private static <H extends HashKind<H>> MessageDigest createDigest(H kind) {
-        String algorithm = kind.algorithm();
         try {
-            return MessageDigest.getInstance(algorithm);
+            return MessageDigest.getInstance(kind.algorithm());
         } catch (Exception e) {
-            throw new IllegalStateException("Expected " + algorithm + " implementation", e);
+            throw new IllegalStateException("Expected " + kind.algorithm() + " implementation", e);
         }
     }
 
     private static Deque<MessageDigest> queue(HashKind<?> kind) {
-        return QUEUE.computeIfAbsent(kind, newPool());
+        return QUEUE.computeIfAbsent(
+            kind, _ ->
+                new LinkedBlockingDeque<>(DIGEST_POOL_SIZE)
+        );
     }
 
-    private static Function<HashKind<?>, Deque<MessageDigest>> newPool() {
-        return _ ->
-            new LinkedBlockingDeque<>(DIGEST_POOL_SIZE);
+    @Override
+    public String toString() {
+        return getClass().getName() + "[" + kind + "]";
     }
 }

@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.BytesSource;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.JsonReader;
+import com.github.kjetilv.uplift.json.*;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,8 +11,11 @@ abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, 
 
     private final Function<Consumer<T>, Callbacks> callbacksInitializer;
 
-    protected AbstractJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+    private final Json instance;
+
+    protected AbstractJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer, JsonSession jsonSession) {
         this.callbacksInitializer = Objects.requireNonNull(callbacksInitializer, "callbacks");
+        this.instance = jsonSession == null ? Json.instance() : Json.instance(jsonSession);
     }
 
     @Override
@@ -27,7 +27,7 @@ abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, 
 
     @Override
     public final void read(S source, Consumer<T> setter) {
-        Json.instance().parse(input(source), callbacksInitializer.apply(setter));
+        instance.parse(input(source), callbacksInitializer.apply(setter));
     }
 
     protected abstract BytesSource input(S source);

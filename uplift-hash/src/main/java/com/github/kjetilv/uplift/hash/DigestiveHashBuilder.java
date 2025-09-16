@@ -24,16 +24,12 @@ record DigestiveHashBuilder<T, H extends HashKind<H>>(
 
     @Override
     public HashBuilder<T, H> hash(T item) {
-        return item == null
-            ? this
-            : hash(Stream.ofNullable(item));
+        return item == null ? this : hash(Stream.ofNullable(item));
     }
 
     @Override
     public HashBuilder<T, H> hash(List<T> items) {
-        return items == null || items.isEmpty()
-            ? this
-            : hash(items.stream());
+        return items == null || items.isEmpty() ? this : hash(items.stream());
     }
 
     @Override

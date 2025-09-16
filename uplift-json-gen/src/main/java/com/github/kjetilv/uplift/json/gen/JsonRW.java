@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.JsonReader;
-import com.github.kjetilv.uplift.json.JsonWriter;
-import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.*;
 import com.github.kjetilv.uplift.json.events.*;
 
 import java.io.ByteArrayOutputStream;
@@ -32,6 +29,18 @@ public interface JsonRW<T extends Record> {
 
     default JsonWriter<byte[], T, ByteArrayOutputStream> bytesWriter() {
         return new BytesJsonWriter<>(objectWriter());
+    }
+
+    default JsonReader<String, T> stringReader(JsonSession jsonSession) {
+        return new StringJsonReader<>(callbacks(), jsonSession);
+    }
+
+    default JsonReader<byte[], T> bytesReader(JsonSession jsonSession) {
+        return new BytesJsonReader<>(callbacks(), jsonSession);
+    }
+
+    default JsonReader<InputStream, T> streamReader(JsonSession jsonSession) {
+        return new InputStreamJsonReader<>(callbacks(), jsonSession);
     }
 
     Callbacks callbacks(Consumer<T> onDone);

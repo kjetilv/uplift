@@ -3,9 +3,11 @@ package com.github.kjetilv.uplift.jmh;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 
@@ -21,8 +23,7 @@ public class ReadTest {
 
     public static final ObjectMapper objectMapper = new ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
-        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT);
 
     //    @Fork(value = 2, warmups = 2)
 //    @Threads(8)
@@ -35,6 +36,7 @@ public class ReadTest {
     @Test
     void read() throws IOException {
         Tweet read1 = bReader.read(data);
+        Tweet read1a = bReader.read(data);
         assertThat(read1).isNotNull();
 
         Tweet read3 = objectMapper.readValue(data, Tweet.class);
@@ -68,7 +70,6 @@ public class ReadTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(Tweet_Callbacks.PRESETS);
-        bReader = TweetRW.INSTANCE.bytesReader();
+        bReader = TweetRW.INSTANCE.bytesReader(CachingJsonSessions.create(HashKind.K128));
     }
 }

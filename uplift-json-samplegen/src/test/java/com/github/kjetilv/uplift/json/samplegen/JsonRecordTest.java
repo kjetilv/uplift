@@ -1,7 +1,9 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
+import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.JsonWriter;
+import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -32,7 +34,7 @@ public class JsonRecordTest {
               }
             }
             """;
-        User readUser = Users.INSTANCE.stringReader().read(json);
+        User readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
         System.out.println(readUser);
 
 //        assertThat(readUser.tags()).containsEntry("good", "evil");

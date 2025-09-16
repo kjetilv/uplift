@@ -12,7 +12,6 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private byte next2;
 
-    @SuppressWarnings("StringBufferField")
     private byte[] currentLexeme = new byte[1024];
 
     private int index;
@@ -94,10 +93,10 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     @Override
-    public void skip5(byte c1, byte c2, byte c3, byte c4) {
+    public void skip(char c1, char c2, char c3, char c4) {
         if (next1 != c1 || next2 != c2) {
             throw new IllegalStateException(
-                "Expected '" + (char) c1 + "'/'" + (char) c2 + "' " +
+                "Expected '" + c1 + "'/'" + c2 + "' " +
                 "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
             );
         }
@@ -105,30 +104,28 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         byte next4 = nextByte();
         if (next3 != c3 || next4 != c4) {
             throw new IllegalStateException(
-                "Expected '" + (char) c3 + "'/'" + (char) c4 + "' " +
+                "Expected '" + c3 + "'/'" + c4 + "' " +
                 "but got '" + (char) next2 + "'/'" + (char) next3 + "'"
             );
         }
-        next1 = nextByte();
-        next2 = nextByte();
+        initialize();
     }
 
     @Override
-    public void skip4(byte c1, byte c2, byte c3) {
+    public void skip(char c1, char c2, char c3) {
         if (next1 != c1 || next2 != c2) {
             throw new IllegalStateException(
-                "Expected '" + (char) c1 + "'/'" + (char) c2 + "' " +
+                "Expected '" + c1 + "'/'" + c2 + "' " +
                 "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
             );
         }
         byte next3 = nextByte();
         if (next3 != c3) {
             throw new IllegalStateException(
-                "Expected '" + (char) c3 + "' but got '" + (char) next2 + "'"
+                "Expected '" + c3 + "' but got '" + (char) next2 + "'"
             );
         }
-        next1 = nextByte();
-        next2 = nextByte();
+        initialize();
     }
 
     @Override
@@ -213,27 +210,19 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         throw new ReadException(msg, "`" + lexeme().string() + "`");
     }
 
-    private static final int LN = 10;
-
-    private static final int TAB = 9;
-
-    private static final int CR = 13;
-
-    private static final int BS = 8;
-
     private static String print(int c) {
         return switch (c) {
-            case LN -> "\\n";
-            case CR -> "\\r";
-            case TAB -> "\\t";
-            case BS -> "\\b";
+            case 10 -> "\\n"; // LN
+            case 13 -> "\\r"; // CR
+            case 9 -> "\\t"; // tab
+            case 8 -> "\\b"; // backspace
             default -> Character.toString(c);
         };
     }
 
     @Override
     public String toString() {
-        int tail = Math.min(LN, index);
+        int tail = Math.min(10, index); // LN
         int printOffset = index - tail;
         return getClass().getSimpleName() + "[" +
                "<" + new String(currentLexeme, printOffset, tail) + ">" +

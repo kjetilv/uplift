@@ -7,4 +7,5 @@ dependencies {
     annotationProcessor(project(":uplift-json-gen"))
 
     testImplementation(project(":uplift-json-mame"))
+    testImplementation(project(":uplift-hash"))
 }
