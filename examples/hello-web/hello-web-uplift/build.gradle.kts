@@ -8,6 +8,9 @@ plugins {
 }
 
 dependencies {
+    runtimeOnly("com.github.kjetilv.uplift:uplift-flambda:0.1.1-SNAPSHOT")
+    runtimeOnly("com.github.kjetilv.uplift:uplift-asynchttp:0.1.1-SNAPSHOT")
+
     implementation("software.amazon.awscdk:aws-cdk-lib:2.207.0")
     implementation("software.amazon.awssdk:cloudformation:2.32.3")
     implementation("software.constructs:constructs:10.4.2")

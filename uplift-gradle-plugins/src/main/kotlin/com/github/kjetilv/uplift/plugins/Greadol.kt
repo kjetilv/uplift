@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.internal.impldep.org.jsoup.nodes.Entities
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,7 +25,14 @@ internal inline fun <reified T : Task> Project.register(name: String, crossinlin
         tasks.register(name, T::class.java) { it.reg() }
     }
 
-internal val Project.classpath: List<File> get() = configurations.first("$path:runtimeClasspath"::equals).toList()
+internal val Project.classpath: List<File>
+    get() =
+        configurations
+            .firstOrNull { "runtimeClasspath".equals(it.name, true) }
+            ?.toList()
+            ?: emptyList<File>().also {
+            logger.warn("WARNING: No configuration found: $path, configuratiohns: ${configurations.joinToString(", ") {it.name}}")
+        }
 
 internal fun Project.resolve(property: String) =
     System.getProperty(property)

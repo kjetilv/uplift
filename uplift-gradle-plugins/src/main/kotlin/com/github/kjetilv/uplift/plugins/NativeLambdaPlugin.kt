@@ -17,8 +17,12 @@ class NativeLambdaPlugin : Plugin<Project> {
                 "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.0/graalvm-community-jdk-25.0.0_linux-${osArch}_bin.tar.gz"
             )
 
-            classPath %= project.classpath
-            zipFile %= target.resolve("$projectName.zip")
+            classPath %= project.classpath.also { files ->
+                logger.info("$this: Classpath: ${files.joinToString(":")}")
+            }
+            zipFile %= target.resolve("$projectName.zip").also { files ->
+                logger.info("$this: Zipfile: ${files.joinToString(":")}")
+            }
             identifier %= projectName
             bootstrapFile %= target.resolve(projectName)
             arch %= osArch

@@ -66,7 +66,7 @@ subprojects {
             "s3",
             "util",
             "uuid",
-        ).map { it -> "uplift-$it" }
+        ).map { "uplift-$it" }
     ) {
         logger.info("Configuring ${project.name} for publishing")
 
@@ -82,6 +82,7 @@ subprojects {
     }
 
     if (project.name in listOf(
+            "gradle-plugins",
             "asynchttp",
             "edam",
             "edamame",
@@ -97,7 +98,7 @@ subprojects {
             "s3",
             "util",
             "uuid",
-        ).map { it -> "uplift-$it" }
+        ).map { "uplift-$it" }
     ) {
         publishing {
             repositories {
