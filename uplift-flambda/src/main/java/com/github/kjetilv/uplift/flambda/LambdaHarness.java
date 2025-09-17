@@ -101,6 +101,7 @@ public class LambdaHarness implements Closeable {
         );
     }
 
+    @SuppressWarnings("resource")
     private LambdaHarness(
         String name,
         LambdaHandler lambdaHandler,
@@ -123,14 +124,11 @@ public class LambdaHarness implements Closeable {
         this.localLambda = new LocalLambda(settings);
         this.testExec.submit(localLambda);
         this.localLambda.awaitStarted(Duration.ofMinutes(1));
-
-        LamdbdaManaged lamdbdaManaged = LamdbdaManaged.create(
-            localLambda.getLambdaUri(),
+        this.looper = LamdbdaManaged.create(
+            this.localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
             lambdaHandler
-        );
-
-        this.looper = lamdbdaManaged.looper();
+        ).get();
         this.testExec.submit(this.looper);
         this.reqs = this.localLambda.reqs();
     }

@@ -1,0 +1,26 @@
+package com.github.kjetilv.uplift.edam.internal;
+
+import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.edam.patterns.Occurrence;
+import com.github.kjetilv.uplift.hash.HashKind;
+
+final class OnHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
+
+    private final Occurrence<K>[] occurrences;
+
+    OnHeapStorage(Window window) {
+        super(window);
+        //noinspection unchecked
+        this.occurrences = new Occurrence[window.count()];
+    }
+
+    @Override
+    protected Occurrence<K> retrieveFrom(long index) {
+        return occurrences[Math.toIntExact(index)];
+    }
+
+    @Override
+    protected void storeTo(long index, Occurrence<K> occurrence) {
+        occurrences[Math.toIntExact(index)] = occurrence;
+    }
+}

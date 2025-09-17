@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
-public interface LamdbdaManaged extends Runnable, Closeable {
+public interface LamdbdaManaged
+    extends Runnable, Closeable, Supplier<LambdaLooper<HttpRequest, HttpResponse<InputStream>>> {
 
     static LamdbdaManaged create(
         URI uri,
@@ -22,6 +24,11 @@ public interface LamdbdaManaged extends Runnable, Closeable {
         try (LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper = looper()) {
             looper.run();
         }
+    }
+
+    @Override
+    default LambdaLooper<HttpRequest, HttpResponse<InputStream>> get() {
+        return looper();
     }
 
     LambdaHandler handler();

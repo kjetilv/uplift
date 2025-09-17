@@ -50,10 +50,12 @@ subprojects {
     }
 
     if (project.name in listOf(
+            "gradle-plugins",
+            "asynchttp",
+            "edam",
             "edamame",
             "flambda",
             "flogs",
-            "gradle-plugins",
             "hash",
             "json",
             "json-anno",
@@ -80,6 +82,8 @@ subprojects {
     }
 
     if (project.name in listOf(
+            "asynchttp",
+            "edam",
             "edamame",
             "flambda",
             "flogs",
@@ -91,8 +95,8 @@ subprojects {
             "kernel",
             "lambda",
             "s3",
-            "uuid",
             "util",
+            "uuid",
         ).map { it -> "uplift-$it" }
     ) {
         publishing {

@@ -12,22 +12,26 @@ Then check out [an example](./examples/hello-web) that deploys a native service.
 
 ## What's all this then
 
-This is my own toolkit for serverless development. I have split it out from a hobby project to make it more stand-alone.
-
-It is designed to speed up development of small-ish Java-based applications to AWS Lambda, running as native images.
+Homegrown toolkit for serverless development. Designed to speed up development of small-ish Java-based applications to
+AWS Lambda, running as native images.
 
 ### Runtime libraries
 
 These can be used by lambdas you want to deploy, but they are not required:
 
-* [`uplift-kernel`](./uplift-kernel) contains various utilities
-* `uplift-hash`
-* `uplift-flogs` contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces.
-  These will forward to the Java logging library. No other logging
+* [`uplift-util`](uplift-util) contains various utilities
+* [`uplift-hash`](uplift-hash) hashes stuff
+* [`uplift-flogs`](uplift-flogs) contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces.
+  libraries needed, These will forward to the Java logging library. No other logging
   libraries needed,
-  and no dynamic classloading needed to get started. The application can use the familiar slf4j API.
+* [`uplift-kernel`](./uplift-kernel) contains various utilities
+* [`uplift-edam`](uplift-edam) logs exceptions, sparingly
+* [`uplift-edamame`](uplift-edamame) creates canonical trees
 * [`uplift-json`](./uplift-json) contains a minimal JSON parser. Why not, right? It can read and write `Map` and `List`
-  structures. It is no Jackson substitute, but it has none of that startup time either.
+* [`uplift-json-mame`](./uplift-json-mame) reads json trees with mame
+* [`uplift-json-gen`](./uplift-json-gen) generates JSON r/w code from annotated records, not we can read and write
+  records
+* [`uplift-json-anno`](./uplift-json-anno) the annotations
 * [`uplift-s3`](./uplift-s3) contains home-made, artisan code to talk to S3. No need for AWS libraries, for most use
   cases.
 * [`uplift-lambda`](./uplift-lambda) handles setup of the infrastructure between AWS Lambda and your application,
