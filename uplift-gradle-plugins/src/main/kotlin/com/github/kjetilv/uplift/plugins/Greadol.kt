@@ -4,7 +4,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.internal.impldep.org.jsoup.nodes.Entities
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
