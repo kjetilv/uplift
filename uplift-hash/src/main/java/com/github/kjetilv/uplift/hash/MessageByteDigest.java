@@ -11,12 +11,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Maintains a simple pool of non-trivially-created instances of {@link MessageDigest}, in the form of a queue.
- * On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.
- *
- * @param <H>
- */
+/// Maintains a simple pool of non-trivially-created instances of [MessageDigest], in the form of a queue.
+/// On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.
+///
+/// @param <H>
 final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
     static <H extends HashKind<H>> MessageByteDigest<H> get(H kind) {
@@ -43,11 +41,9 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
         currentDigest().update(bs.bytes(), bs.offset(), bs.length());
     }
 
-    /**
-     * Drain current digest, unset it and offer it to the queue.
-     *
-     * @return Hash of current digest
-     */
+    /// Drain current digest, unset it and offer it to the queue.
+    ///
+    /// @return Hash of current digest
     @Override
     public Hash<H> get() {
         digestLock.lock();
@@ -67,11 +63,9 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
         }
     }
 
-    /**
-     * Get the current digest.  If none is set, dequeue one. If queue was empty, create a new one.
-     *
-     * @return Current digest
-     */
+    /// Get the current digest.  If none is set, dequeue one. If queue was empty, create a new one.
+    ///
+    /// @return Current digest
     private MessageDigest currentDigest() {
         digestLock.lock();
         try {

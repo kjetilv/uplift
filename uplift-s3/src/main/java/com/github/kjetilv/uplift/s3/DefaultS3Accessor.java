@@ -2,13 +2,13 @@ package com.github.kjetilv.uplift.s3;
 
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.util.Print;
 import com.github.kjetilv.uplift.kernel.io.Range;
-import com.github.kjetilv.uplift.util.Maps;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import com.github.kjetilv.uplift.s3.util.Xml;
+import com.github.kjetilv.uplift.util.Maps;
+import com.github.kjetilv.uplift.util.Print;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -280,20 +280,22 @@ public final class DefaultS3Accessor implements S3Accessor {
     private static String deletes(Collection<String> objects) {
         return String.format(
             """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Delete xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
-               %s  <Quiet>true</Quiet>
-            </Delete>
-            """,
-            objects.stream().map(object ->
-                String.format(
-                    """
-                    <Object>
-                        <Key>%s</Key>
-                      </Object>
-                    """,
-                    object
-                )).collect(Collectors.joining("  "))
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Delete xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+                   %s  <Quiet>true</Quiet>
+                </Delete>
+                """,
+            objects.stream()
+                .map(object ->
+                    String.format(
+                        """
+                            <Object>
+                                <Key>%s</Key>
+                              </Object>
+                            """,
+                        object
+                    ))
+                .collect(Collectors.joining("  "))
         );
     }
 
@@ -305,7 +307,8 @@ public final class DefaultS3Accessor implements S3Accessor {
         if (qps == null || qps.isEmpty()) {
             return "";
         }
-        return "?" + qps.entrySet().stream()
+        return "?" + qps.entrySet()
+            .stream()
             .map(e -> e.getKey() + (e.getValue().isEmpty() ? "" : "=" + e.getValue()))
             .collect(Collectors.joining("&"));
     }
@@ -323,7 +326,7 @@ public final class DefaultS3Accessor implements S3Accessor {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" +
-            Print.semiSecret(accessKey) + "/*** -> " + bucket + "@" + region +
-            "]";
+               Print.semiSecret(accessKey) + "/*** -> " + bucket + "@" + region +
+               "]";
     }
 }

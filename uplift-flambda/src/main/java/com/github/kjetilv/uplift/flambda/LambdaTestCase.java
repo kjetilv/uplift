@@ -23,21 +23,17 @@ public abstract class LambdaTestCase {
         lambdaHarness = null;
     }
 
-    /**
-     * This method can be overridden.
-     *
-     * @param testInfo Test info
-     * @return Lambda test harness
-     */
+    /// This method can be overridden.
+    ///
+    /// @param testInfo Test info
+    /// @return Lambda test harness
     protected LambdaHarness lambdaHarness(TestInfo testInfo) {
         return new LambdaHarness(testName(testInfo), lambdaHandler());
     }
 
-    /**
-     * This method will be called if you don't override {@link #lambdaHarness(TestInfo)}.
-     *
-     * @return A new lambda handler
-     */
+    /// This method will be called if you don't override [#lambdaHarness(TestInfo)].
+    ///
+    /// @return A new lambda handler
     protected LambdaHandler lambdaHandler() {
         throw new UnsupportedOperationException("Override either this method or #lambdaTestHarness");
     }

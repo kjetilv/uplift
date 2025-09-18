@@ -10,11 +10,9 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * @param pattern     The pattern that has occurred
- * @param occurrences THe occurrences
- * @param timespan    Timespan of all occurrences
- */
+/// @param pattern     The pattern that has occurred
+/// @param occurrences THe occurrences
+/// @param timespan    Timespan of all occurrences
 public record PatternMatch<K extends HashKind<K>>(
     Pattern<K> pattern,
     List<PatternOccurrence<K>> occurrences,

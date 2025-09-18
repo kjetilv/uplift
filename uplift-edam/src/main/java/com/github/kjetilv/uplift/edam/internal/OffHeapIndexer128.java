@@ -16,9 +16,7 @@ import static java.lang.foreign.MemoryLayout.sequenceLayout;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
-/**
- * Uses an off-heap memory segment to store hashes.
- */
+/// Uses an off-heap memory segment to store hashes.
 final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
 
     private final MemorySegment segment;

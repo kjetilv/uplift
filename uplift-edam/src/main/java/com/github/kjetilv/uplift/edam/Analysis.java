@@ -18,24 +18,18 @@ import java.util.stream.Stream;
 import static com.github.kjetilv.uplift.edam.internal.Utils.Lists.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
-/**
- * Analysis of repeated occurrences.  Spans
- */
+/// Analysis of repeated occurrences.  Spans
 @SuppressWarnings("unused")
 sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
 
     ZoneId UTC = ZoneId.of("UTC");
 
-    /**
-     * @return The number of occurrences of the {@link #trigger()} id
-     */
+    /// @return The number of occurrences of the [#trigger()] id
     default int triggerHashCount() {
         return count(trigger().hash());
     }
 
-    /**
-     * @return The number of occurrences in all patterns in total
-     */
+    /// @return The number of occurrences in all patterns in total
     default int hashesCount() {
         return count(null);
     }
@@ -44,25 +38,19 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
         return trigger().hash();
     }
 
-    /**
-     * @return UTC time in milliseconds resolution
-     */
+    /// @return UTC time in milliseconds resolution
     default ZonedDateTime utcTime() {
         return startTime().truncatedTo(java.time.temporal.ChronoUnit.MILLIS).atZone(UTC);
     }
 
-    /**
-     * @return The time of the {@link #trigger() trigger}.
-     */
+    /// @return The time of the [trigger][#trigger()].
     @Override
     default Instant startTime() {
         return firstOccurrence().time();
     }
 
-    /**
-     * @return The duration of the analysis, as in the duration between
-     * {@link #firstOccurrence() first occurrence} and the {@link #trigger() trigger}.
-     */
+    /// @return The duration of the analysis, as in the duration between
+    /// [first occurrence][#firstOccurrence()] and the [trigger][#trigger()].
     @Override
     default Duration duration() {
         return Duration.between(firstOccurrence().time(), trigger().time());
@@ -76,43 +64,29 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
         return trigger().time();
     }
 
-    /**
-     * @return The number of distinct occurrences in all {@link #distinctPatternsCount()} total
-     */
+    /// @return The number of distinct occurrences in all [#distinctPatternsCount()] total
     int distinctOccurrencesCount();
 
-    /**
-     * @return The earliest occurrence in the analysis
-     */
+    /// @return The earliest occurrence in the analysis
     Occurrence<K> firstOccurrence();
 
-    /**
-     * @return The occurrence that triggered the analysis, ie. the latest occurrence
-     */
+    /// @return The occurrence that triggered the analysis, ie. the latest occurrence
     Occurrence<K> trigger();
 
-    /**
-     * @return The number of patterns detected in this analysis
-     */
+    /// @return The number of patterns detected in this analysis
     int distinctPatternsCount();
 
-    /**
-     * @return The number of occurences of the Id
-     */
+    /// @return The number of occurences of the Id
     int count(Hash<K> hash);
 
     String toPatternMatchesString();
 
-    /**
-     * @return The simple component of this analysis, if any.
-     */
+    /// @return The simple component of this analysis, if any.
     Optional<Simple<K>> simpleMatch();
 
-    /**
-     * No repeats of the item in the given timespan/history length.
-     *
-     * @param trigger Occurrence
-     */
+    /// No repeats of the item in the given timespan/history length.
+    ///
+    /// @param trigger Occurrence
     record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K>, Temporal {
 
         @Override
@@ -161,11 +135,9 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
         }
     }
 
-    /**
-     * Simple repeats of a single item, in the given timespan/history length.
-     *
-     * @param occurrences The occurrences
-     */
+    /// Simple repeats of a single item, in the given timespan/history length.
+    ///
+    /// @param occurrences The occurrences
     record Simple<K extends HashKind<K>>(
         List<Occurrence<K>> occurrences
     ) implements Analysis<K>, Temporal {
@@ -220,13 +192,11 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
         }
     }
 
-    /**
-     * Various repeated sequences involving the item, in the given timespan/history length.  Can be
-     * {@link #simple() projected} onto a {@link Simple simple} analysis.
-     *
-     * @param trigger Trigger for the analysis
-     * @param matches The matches
-     */
+    /// Various repeated sequences involving the item, in the given timespan/history length.  Can be
+    /// [projected][#simple()] onto a [simple][Simple] analysis.
+    ///
+    /// @param trigger Trigger for the analysis
+    /// @param matches The matches
     record Multiple<K extends HashKind<K>>(
         Occurrence<K> trigger,
         List<PatternMatch<K>> matches
@@ -307,12 +277,10 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
             return occurrences(List.of(hashes));
         }
 
-        /**
-         * Project this analysis onto a simple analysis, showing only the number of
-         * times the {@link #trigger() triggers} has occurred
-         *
-         * @return Simple analysis
-         */
+        /// Project this analysis onto a simple analysis, showing only the number of
+        /// times the [triggers][#trigger()] has occurred
+        ///
+        /// @return Simple analysis
         public Simple<K> simple() {
             PatternMatch<K> simplePattern = matches().stream()
                 .filter(PatternMatch::isSimple)

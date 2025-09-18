@@ -7,10 +7,8 @@ import java.util.Base64;
 
 public final class Hashes {
 
-    /**
-     * Hashes the string contents (assumed to be UTF-8) using the SHA-256
-     * algorithm.
-     */
+    /// Hashes the string contents (assumed to be UTF-8) using the SHA-256
+    /// algorithm.
     public static byte[] sha256(String text) {
         return sha256(text.getBytes(StandardCharsets.UTF_8));
     }

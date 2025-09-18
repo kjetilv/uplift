@@ -1,41 +1,21 @@
 package com.github.kjetilv.uplift.s3.auth;
 
+import com.github.kjetilv.uplift.s3.util.BinaryUtils;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
 
 final class AwsAuths {
-
-    static final String SCHEME = "AWS4";
-
-    static final String ALGORITHM = "HMAC-SHA256";
-
-    static final String TERMINATOR = "aws4_request";
-
-    static final DateTimeFormatter DATETIME_FORMATTER =
-        DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'", Locale.ROOT);
-
-    static final DateTimeFormatter DATESTAMP_FORMATTER =
-        DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ROOT);
-
-    static final ZoneId UTC = ZoneId.of("UTC");
 
     static byte[] sign(String stringData, byte[] key) {
         try {
@@ -48,18 +28,15 @@ final class AwsAuths {
         }
     }
 
-    /**
-     * Examines the specified query string parameters and returns a
-     * canonicalized form.
-     * <p>
-     * The canonicalized query string is formed by first sorting all the query
-     * string parameters, then URI encoding both the key and value and then
-     * joining them, in order, separating key value pairs with an '&'.
-     *
-     * @param parameters The query string parameters to be canonicalized.
-     *
-     * @return A canonicalized form for the specified query string parameters.
-     */
+    /// Examines the specified query string parameters and returns a
+    /// canonicalized form.
+    ///
+    /// The canonicalized query string is formed by first sorting all the query
+    /// string parameters, then URI encoding both the key and value and then
+    /// joining them, in order, separating key value pairs with an '&'.
+    ///
+    /// @param parameters The query string parameters to be canonicalized.
+    /// @return A canonicalized form for the specified query string parameters.
     static String getCanonicalizedQueryString(Map<String, String> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
@@ -67,7 +44,7 @@ final class AwsAuths {
 
         SortedMap<String, String> sorted = new TreeMap<>();
 
-        for (Map.Entry<String, String> pair: parameters.entrySet()) {
+        for (Map.Entry<String, String> pair : parameters.entrySet()) {
             String key = pair.getKey();
             String value = pair.getValue();
             sorted.put(
@@ -91,25 +68,22 @@ final class AwsAuths {
         return builder.toString();
     }
 
-    /**
-     * Returns the canonical collection of header names that will be included in
-     * the signature. For AWS4, all header names must be included in the process
-     * in sorted canonicalized order.
-     */
+    /// Returns the canonical collection of header names that will be included in
+    /// the signature. For AWS4, all header names must be included in the process
+    /// in sorted canonicalized order.
     static String getCanonicalizeHeaderNames(Map<String, String> headers) {
         if (headers == null || headers.isEmpty()) {
             return "";
         }
-        return headers.keySet().stream()
+        return headers.keySet()
+            .stream()
             .sorted(String.CASE_INSENSITIVE_ORDER)
             .map(s -> s.toLowerCase(Locale.ROOT))
             .collect(Collectors.joining(";"));
     }
 
-    /**
-     * Computes the canonical headers with values for the request. For AWS4, all
-     * headers must be included in the signing process.
-     */
+    /// Computes the canonical headers with values for the request. For AWS4, all
+    /// headers must be included in the signing process.
     static String getCanonicalizedHeaderString(Map<String, String> headers) {
         if (headers == null || headers.isEmpty()) {
             return "";
@@ -123,7 +97,7 @@ final class AwsAuths {
         // Multiple white spaces in the values should be compressed to a single
         // space.
         StringBuilder buffer = new StringBuilder();
-        for (String key: sortedHeaders) {
+        for (String key : sortedHeaders) {
             buffer
                 .append(WS.matcher(key.toLowerCase()).replaceAll(" "))
                 .append(":")
@@ -133,12 +107,10 @@ final class AwsAuths {
         return buffer.toString();
     }
 
-    /**
-     * Returns the canonical request string to go into the signer process; this
-     * consists of several canonical sub-parts.
-     *
-     * @return Canonical request
-     */
+    /// Returns the canonical request string to go into the signer process; this
+    /// consists of several canonical sub-parts.
+    ///
+    /// @return Canonical request
     static String getCanonicalRequest(
         URI endpoint,
         String httpMethod,
@@ -170,6 +142,20 @@ final class AwsAuths {
 
     }
 
+    static final String SCHEME = "AWS4";
+
+    static final String ALGORITHM = "HMAC-SHA256";
+
+    static final String TERMINATOR = "aws4_request";
+
+    static final DateTimeFormatter DATETIME_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'", Locale.ROOT);
+
+    static final DateTimeFormatter DATESTAMP_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ROOT);
+
+    static final ZoneId UTC = ZoneId.of("UTC");
+
     private static final Pattern WS = Pattern.compile("\\s+");
 
     private static final String HMAC_SHA_256 = "HmacSHA256";
@@ -181,9 +167,7 @@ final class AwsAuths {
             : encoded;
     }
 
-    /**
-     * Returns the canonicalized resource path for the service endpoint.
-     */
+    /// Returns the canonicalized resource path for the service endpoint.
     private static String getCanonicalizedResourcePath(URI endpoint) {
         if (endpoint == null) {
             return "/";

@@ -9,9 +9,7 @@ import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static com.github.kjetilv.uplift.hash.Hashes.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
-/**
- * A 256-bit hash, exposed as four longs.
- */
+/// A 256-bit hash, exposed as four longs.
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> permits Hash.H128, Hash.H256 {
 
     String LPAR = "⟨";
@@ -24,9 +22,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
             .collect(Collectors.joining("—"));
     }
 
-    /**
-     * @return Unique {@link #digestLength() digest-length} string representation
-     */
+    /// @return Unique [digest-length][#digestLength()] string representation
     default String digest() {
         long[] ls = ls();
         byte[] bytes = toBytes(ls);
@@ -40,9 +36,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         throw new IllegalStateException("Unusual hash: " + base64);
     }
 
-    /**
-     * @return Byte representation of the id
-     */
+    /// @return Byte representation of the id
     default byte[] bytes() {
         long[] ls = ls();
         byte[] bytes = new byte[ls.length * 8];
@@ -108,11 +102,9 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     int digestLength();
 
-    /**
-     * The longs,
-     *
-     * @return Longs
-     */
+    /// The longs,
+    ///
+    /// @return Longs
     long[] ls();
 
     record H128(long l0, long l1) implements Hash<K128> {

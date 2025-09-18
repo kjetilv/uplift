@@ -7,9 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
 
-/**
- * Emulates AWS lambda service.
- */
+/// Emulates AWS lambda service.
 @SuppressWarnings("unused")
 public final class LocalLambda implements Closeable, Runnable, HttpChannelHandler.Server {
 

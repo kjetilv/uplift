@@ -4,9 +4,7 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import java.util.Map;
 
-/**
- * Record structure that can capture both 1.0 and 2.0 inputs.
- */
+/// Record structure that can capture both 1.0 and 2.0 inputs.
 @JsonRecord
 public record RequestIn(
     String version,

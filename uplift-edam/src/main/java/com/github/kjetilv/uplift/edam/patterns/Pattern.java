@@ -16,9 +16,7 @@ import java.util.stream.Stream;
 import static com.github.kjetilv.uplift.edam.internal.Utils.Lists.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
-/**
- * @param hashes Hashes in this pattern
- */
+/// @param hashes Hashes in this pattern
 @SuppressWarnings("unused")
 public record Pattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Comparable<Pattern<K>>, Iterable<Hash<K>> {
 

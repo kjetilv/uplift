@@ -24,9 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-/**
- * HTTP handler that accepts API requests, exposes them to lambda functions and return their responses.
- */
+/// HTTP handler that accepts API requests, exposes them to lambda functions and return their responses.
 final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(LocalLambdaHandler.class);

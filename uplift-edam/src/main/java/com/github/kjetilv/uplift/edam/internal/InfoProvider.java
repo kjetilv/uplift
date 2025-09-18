@@ -6,9 +6,7 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.function.Function;
 
-/**
- * Storage for {@link Throwable}s.
- */
+/// Storage for [Throwable]s.
 @SuppressWarnings("unused")
 interface InfoProvider<T, I extends Info<T, K>, K extends HashKind<K>> {
 

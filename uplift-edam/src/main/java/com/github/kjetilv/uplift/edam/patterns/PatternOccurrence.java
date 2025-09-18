@@ -18,10 +18,8 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * @param pattern     A pattern
- * @param occurrences Actual occurrences following the pattern
- */
+/// @param pattern     A pattern
+/// @param occurrences Actual occurrences following the pattern
 @SuppressWarnings("unused")
 public record PatternOccurrence<K extends HashKind<K>>(Pattern<K> pattern, List<Occurrence<K>> occurrences)
     implements Spanning, Comparable<PatternOccurrence<K>>, Iterable<Occurrence<K>> {
