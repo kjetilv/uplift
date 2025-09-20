@@ -128,7 +128,7 @@ public class LambdaHarness implements Closeable {
             this.localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
             lambdaHandler
-        ).get();
+        ).looper();
         this.testExec.submit(this.looper);
         this.reqs = this.localLambda.reqs();
     }

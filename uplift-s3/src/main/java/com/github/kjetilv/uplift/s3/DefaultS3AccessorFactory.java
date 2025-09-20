@@ -20,9 +20,9 @@ public final class DefaultS3AccessorFactory implements S3AccessorFactory {
     public S3Accessor create() {
         return s3Accessor.updateAndGet(current ->
             current == null
-                ? S3Accessor.fromEnvironment(this.env, VIRTUAL)
+                ? S3Accessor.fromEnvironment(this.env, VIRTUAL_THREADS)
                 : current);
     }
 
-    private static final ExecutorService VIRTUAL = Executors.newSingleThreadExecutor();
+    private static final ExecutorService VIRTUAL_THREADS = Executors.newSingleThreadExecutor();
 }

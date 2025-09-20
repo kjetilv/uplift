@@ -27,12 +27,7 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        this.client = httpClient(settings).build();
-    }
-
-    @Override
-    public LambdaHandler handler() {
-        return handler;
+        this.client = httpClient(this.settings).build();
     }
 
     @Override
@@ -63,16 +58,16 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         client.close();
     }
 
-    private static final ExecutorService VIRTUAL = Executors.newSingleThreadExecutor();
+    private static final ExecutorService VIRTUAL_THREADS = Executors.newSingleThreadExecutor();
 
     private static HttpClient.Builder httpClient(LambdaClientSettings settings) {
-        HttpClient.Builder builder = HttpClient.newBuilder()
-            .version(HTTP_1_1)
-            .executor(VIRTUAL);
-        if (settings.hasConnectTimeout()) {
-            builder.connectTimeout(settings.connectTimeout());
-        }
-        return builder;
+        return settings.hasConnectTimeout()
+            ? builder().connectTimeout(settings.connectTimeout())
+            : builder();
+    }
+
+    private static HttpClient.Builder builder() {
+        return HttpClient.newBuilder().version(HTTP_1_1).executor(VIRTUAL_THREADS);
     }
 
     @Override
