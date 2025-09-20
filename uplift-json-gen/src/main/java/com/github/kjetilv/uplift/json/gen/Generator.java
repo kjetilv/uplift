@@ -17,7 +17,12 @@ import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
-record Gen(PackageElement pe, TypeElement te, String time, Function<String, JavaFileObject> filer) {
+record Generator(
+    PackageElement pe,
+    TypeElement te,
+    String time,
+    Function<String, JavaFileObject> filer
+) {
 
     void writeRW(TypeElement te) {
         Name name = te.getQualifiedName();
@@ -130,7 +135,7 @@ record Gen(PackageElement pe, TypeElement te, String time, Function<String, Java
     void writeCallbacks(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums,
-        boolean isRoot
+        boolean root
     ) {
         Name name = te.getQualifiedName();
         JavaFileObject file = callbackFile(te);
@@ -223,7 +228,7 @@ record Gen(PackageElement pe, TypeElement te, String time, Function<String, Java
                     .toList()
             );
 
-            if (isRoot) {
+            if (root) {
                 write(bw, "        PRESETS.buildTokens(null);");
             }
             write(bw, "    }", "}");

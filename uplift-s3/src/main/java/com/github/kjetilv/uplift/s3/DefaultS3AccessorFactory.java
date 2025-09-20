@@ -1,18 +1,18 @@
 package com.github.kjetilv.uplift.s3;
 
+import com.github.kjetilv.uplift.kernel.Env;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.github.kjetilv.uplift.kernel.Env;
-
-public final class DefaultS3AccessorFactory implements S3AccessorFactory {
+final class DefaultS3AccessorFactory implements S3AccessorFactory {
 
     private final AtomicReference<S3Accessor> s3Accessor = new AtomicReference<>();
 
     private final Env env;
 
-    public DefaultS3AccessorFactory(Env env) {
+    DefaultS3AccessorFactory(Env env) {
         this.env = env;
     }
 

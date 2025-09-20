@@ -12,6 +12,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
+import java.lang.annotation.Annotation;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -51,17 +52,21 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     ) {
         String time = time();
         for (Element el : typeEls) {
-            try {
-                TypeElement typeEl = typeEl(el);
-                PackageElement packageEl = GenUtils.packageEl(typeEl);
-                Gen gen = new Gen(packageEl, typeEl, time, this::file);
-                Optional<TypeElement> rootEl = rootEl(typeEl);
-                gen.writeBuilder(typeEls, enumEls);
-                gen.writeCallbacks(typeEls, enumEls, rootEl.isPresent());
-                gen.writeWriter(typeEls, enumEls);
-                rootEl.ifPresent(gen::writeRW);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to write " + el, e);
+            if (el instanceof TypeElement te) {
+                try {
+                    PackageElement pe = GenUtils.packageEl(te);
+                    Generator generator = new Generator(pe, te, time, this::file);
+                    if (isRoot(te)) {
+                        generator.writeRW(te);
+                    }
+                    generator.writeBuilder(typeEls, enumEls);
+                    generator.writeCallbacks(typeEls, enumEls, isRoot(te));
+                    generator.writeWriter(typeEls, enumEls);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to write " + el, e);
+                }
+            } else {
+                throw new IllegalStateException("Not a supported type: " + el);
             }
         }
     }
@@ -105,14 +110,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static Optional<TypeElement> rootType(Collection<? extends Element> els) {
-        return typeEls(els).flatMap(typeEl -> rootEl(typeEl).stream()).findAny();
-    }
-
-    private static TypeElement typeEl(Element el) {
-        if (el instanceof TypeElement typeEl) {
-            return typeEl;
-        }
-        throw new IllegalStateException("Not a supported type: " + el);
+        return typeEls(els).filter(JsonRecordProcessor::isRoot).findAny();
     }
 
     private static Stream<TypeElement> typeEls(Collection<? extends Element> typeEls) {
@@ -169,11 +167,9 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             ));
     }
 
-    private static Optional<TypeElement> rootEl(TypeElement typeEl) {
-        return Optional.of(typeEl).flatMap(el ->
-            Optional.ofNullable(el.getAnnotation(JsonRecord.class))
-                .filter(JsonRecord::root)
-                .map(_ -> el));
+    private static boolean isRoot(TypeElement typeEl) {
+        JsonRecord annotation = typeEl.getAnnotation(JsonRecord.class);
+        return annotation != null && annotation.root();
     }
 
     private static <E extends Element> String print(Collection<E> roots) {
