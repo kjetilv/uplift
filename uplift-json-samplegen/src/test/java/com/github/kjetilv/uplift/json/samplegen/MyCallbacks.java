@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.test;
+package com.github.kjetilv.uplift.json.samplegen;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-final class MyCallbacks implements Callbacks {
+public final class MyCallbacks implements Callbacks {
 
     static final AtomicInteger COUNT = new AtomicInteger();
 

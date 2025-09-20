@@ -77,11 +77,11 @@ public final class Hashes {
     @SuppressWarnings("unchecked")
     public static <H extends HashKind<H>> Hash<H> hash(String raw) {
         int length = requireNonNull(raw, "raw").length();
-        if (length == K128.digestLength()) {
+        if (length == K128.digest().length()) {
             long[] ls = toLongs(raw, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
-        if (length == K256.digestLength()) {
+        if (length == K256.digest().length()) {
             long[] ls = toLongs(raw, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }

@@ -1,9 +1,10 @@
-package com.github.kjetilv.uplift.json.test;
+package com.github.kjetilv.uplift.json.samplegen;
 
 import com.github.kjetilv.uplift.json.BytesSource;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class JsonEventCallbacksTest {
 
         BytesSource bytesSource = new ByteArrayIntsBytesSource(source.getBytes());
         Callbacks myCallbacks = Json.instance().parse(bytesSource, callbacks());
-        assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -72,7 +73,7 @@ public class JsonEventCallbacksTest {
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
         MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
+        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo str:bar
               field:zot number:5
@@ -99,7 +100,7 @@ public class JsonEventCallbacksTest {
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
         MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
-        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
+        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
                   field:foo str:bar

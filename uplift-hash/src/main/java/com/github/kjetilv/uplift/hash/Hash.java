@@ -27,8 +27,8 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         long[] ls = ls();
         byte[] bytes = toBytes(ls);
         String base64 = new String(ENCODER.encode(bytes), US_ASCII);
-        String padding = kind().digestPadding();
-        if (base64.length() == kind().digestLength() + padding.length() && base64.endsWith(padding)) {
+        String padding = kind().digest().padding();
+        if (base64.length() == kind().digest().length() + padding.length() && base64.endsWith(padding)) {
             return base64.substring(0, digestLength())
                 .replace(BAD_1, GOOD_1)
                 .replace(BAD_2, GOOD_2);
@@ -94,7 +94,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     default String defaultToString() {
-        int fifth = kind().digestLength() / 5;
+        int fifth = ((HashKind<H>) kind()).digest().length() / 5;
         return LPAR + digest().substring(0, Math.max(10, fifth)) + RPAR;
     }
 

@@ -1,8 +1,6 @@
-package com.github.kjetilv.uplift.json.test;
+package com.github.kjetilv.uplift.json.samplegen;
 
 import com.github.kjetilv.uplift.json.events.BytesJsonReader;
-import com.github.kjetilv.uplift.json.samplegen.User;
-import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

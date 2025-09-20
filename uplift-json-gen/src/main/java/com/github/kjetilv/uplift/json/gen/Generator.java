@@ -129,7 +129,6 @@ record Generator(
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write callbacks for " + te, e);
         }
-
     }
 
     void writeCallbacks(
