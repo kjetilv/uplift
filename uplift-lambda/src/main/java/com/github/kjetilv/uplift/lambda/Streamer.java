@@ -1,13 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.Closeable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import module java.base;
 
 final class Streamer<T> implements Closeable {
 

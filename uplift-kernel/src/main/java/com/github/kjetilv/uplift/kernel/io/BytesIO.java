@@ -1,15 +1,7 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import com.github.kjetilv.uplift.uuid.Uuid;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.IntStream;
+import module java.base;
+import module uplift.uuid;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;

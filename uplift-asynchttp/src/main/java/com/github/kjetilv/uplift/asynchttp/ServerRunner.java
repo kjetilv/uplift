@@ -1,9 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import module java.management;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.management.ManagementFactory;
 
 import static java.util.Objects.requireNonNull;
 

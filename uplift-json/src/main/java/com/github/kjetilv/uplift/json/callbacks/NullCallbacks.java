@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.callbacks;
 
-import com.github.kjetilv.uplift.json.Callbacks;
+import module java.base;
+import module uplift.json;
 
 public record NullCallbacks(Callbacks parent) implements Callbacks {
 

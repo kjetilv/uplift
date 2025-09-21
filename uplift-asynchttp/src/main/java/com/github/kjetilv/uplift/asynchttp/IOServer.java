@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.io.Closeable;
-import java.net.InetSocketAddress;
-import java.nio.channels.AsynchronousByteChannel;
-import java.time.Duration;
+import module java.base;
 
 public interface IOServer extends Closeable {
 

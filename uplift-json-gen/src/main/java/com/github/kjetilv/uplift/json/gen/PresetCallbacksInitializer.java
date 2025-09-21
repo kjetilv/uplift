@@ -1,23 +1,10 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenResolver;
-import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
-import com.github.kjetilv.uplift.uuid.Uuid;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.time.*;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module java.compiler;
+import module uplift.json;
+import module uplift.json.gen;
+import module uplift.uuid;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

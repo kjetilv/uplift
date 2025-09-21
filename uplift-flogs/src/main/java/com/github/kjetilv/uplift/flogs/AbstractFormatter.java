@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

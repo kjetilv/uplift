@@ -1,14 +1,8 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.CanonicalValue;
-import com.github.kjetilv.uplift.edamame.Canonicalizer;
-import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import module java.base;
+import module uplift.edamame;
+import module uplift.hash;
 
 final class ValueClimber<H extends HashKind<H>>
     extends AbstractClimber<H> {

@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
-import com.github.kjetilv.uplift.uuid.Uuid;
-
-import java.io.InputStream;
-import java.util.Map;
+import module java.base;
+import module uplift.json.anno;
+import module uplift.uuid;
 
 @JsonRecord
 public record ResponseIn(

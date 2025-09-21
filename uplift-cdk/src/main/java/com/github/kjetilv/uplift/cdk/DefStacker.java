@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.cdk;
 
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.lambda.*;
+import module aws.cdk.lib;
+import software.amazon.awscdk.services.lambda.Code;
+import software.amazon.awscdk.services.lambda.Function;
 
 import java.util.Objects;
 

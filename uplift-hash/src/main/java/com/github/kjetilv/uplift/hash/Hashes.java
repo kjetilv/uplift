@@ -1,14 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import module java.base;
 import module uplift.util;
-
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.Iterator;
-import java.util.Spliterators;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static com.github.kjetilv.uplift.hash.Hash.H128;
 import static com.github.kjetilv.uplift.hash.Hash.H256;

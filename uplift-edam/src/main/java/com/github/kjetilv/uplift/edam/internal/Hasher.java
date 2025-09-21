@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.function.Function;
+import module java.base;
+import module uplift.hash;
 
 /// Strategy interface for identifying objects. Thread-safe.
 @FunctionalInterface

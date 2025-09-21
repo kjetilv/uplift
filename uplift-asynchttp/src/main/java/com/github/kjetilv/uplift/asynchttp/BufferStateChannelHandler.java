@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.time.Instant;
-import java.util.function.Supplier;
+import module java.base;
 
 @SuppressWarnings("unused")
 public abstract class BufferStateChannelHandler<C extends AbstractChannelHandler<BufferState, C>>

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edam;
 
-import java.util.function.ToLongFunction;
+import module java.base;
 
 public interface HashFun<T> extends ToLongFunction<T> {
 

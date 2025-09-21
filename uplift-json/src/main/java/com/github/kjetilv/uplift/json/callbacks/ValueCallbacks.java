@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.json.callbacks;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
-
-import java.util.function.Consumer;
+import module java.base;
+import module uplift.json;
 
 public record ValueCallbacks(Consumer<Object> onDone) implements Callbacks {
 

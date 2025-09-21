@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import java.util.Map;
+import module java.base;
 
 /// Provides access to memoized maps after [completion][#complete()].
 ///

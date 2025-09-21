@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import module java.base;
 
 final class Cycles {
 

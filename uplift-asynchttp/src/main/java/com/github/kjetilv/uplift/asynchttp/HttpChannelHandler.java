@@ -1,14 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -58,7 +52,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     @SuppressWarnings("resource")
     private void write(HttpRes res) {
-        BufferedWriter<ByteBuffer> writer = responseWriter();
+        BufferingWriter<ByteBuffer> writer = responseWriter();
         byte[] bytes = res.toResponseHeader().getBytes(UTF_8);
         writer.write(new WritableBuffer<>(ByteBuffer.wrap(bytes), bytes.length));
         if (res.hasBody()) {

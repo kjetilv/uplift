@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.*;
-import com.github.kjetilv.uplift.json.events.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import module java.base;
+import module uplift.json;
 
 @SuppressWarnings("unused")
 public interface JsonRW<T extends Record> {

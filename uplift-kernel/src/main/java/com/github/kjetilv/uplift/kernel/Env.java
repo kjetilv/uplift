@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.kernel;
 
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
-
+import module java.base;
 import com.github.kjetilv.uplift.kernel.aws.DefaultEnv;
 
 public interface Env {

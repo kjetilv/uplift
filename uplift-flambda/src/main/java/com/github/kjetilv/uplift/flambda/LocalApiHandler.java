@@ -1,14 +1,8 @@
 package com.github.kjetilv.uplift.flambda;
 
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
-import com.github.kjetilv.uplift.asynchttp.HttpReq;
-import com.github.kjetilv.uplift.asynchttp.HttpRes;
-import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import module java.base;
+import module uplift.asynchttp;
+import module uplift.util;
 
 record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> corsHeaders)
     implements HttpChannelHandler.Server {

@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
-import com.github.kjetilv.uplift.util.Bytes;
+import module uplift.hash;
+import module uplift.util;
 
 import java.util.List;
 import java.util.Objects;

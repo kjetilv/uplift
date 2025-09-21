@@ -1,15 +1,11 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
+import module java.base;
+import module uplift.edamame;
+import module uplift.hash;
+import module uplift.json;
 
-import java.util.function.Consumer;
-
-sealed abstract class StructureClimber<H extends HashKind<H>>
+abstract sealed class StructureClimber<H extends HashKind<H>>
     extends AbstractClimber<H>
     permits ListClimber, MapClimber {
 
@@ -37,7 +33,7 @@ sealed abstract class StructureClimber<H extends HashKind<H>>
     @Override
     protected final void done(HashedTree<String, H> tree) {
         hashBuilder.hash(tree.hash());
-        cacher.accept(tree);
+        cache(tree);
         set(tree);
     }
 

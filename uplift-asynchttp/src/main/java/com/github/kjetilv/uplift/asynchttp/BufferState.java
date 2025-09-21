@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
+import module java.base;
 
 public record BufferState(ByteBuffer requestBuffer) implements ChannelState {
 

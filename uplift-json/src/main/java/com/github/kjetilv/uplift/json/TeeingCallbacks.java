@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Optional;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.uuid;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
+import module java.base;
 
 public interface Uuid {
 

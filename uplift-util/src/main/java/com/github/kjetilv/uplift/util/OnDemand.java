@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.time.Instant;
-import java.time.temporal.TemporalAmount;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import module java.base;
 
 public record OnDemand(Supplier<Instant> clock) {
 

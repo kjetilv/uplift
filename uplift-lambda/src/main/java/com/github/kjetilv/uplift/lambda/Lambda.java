@@ -1,9 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.util.Time;
-
-import java.time.Duration;
+import module java.base;
+import module uplift.kernel;
+import module uplift.util;
 
 @SuppressWarnings("unused")
 public final class Lambda {

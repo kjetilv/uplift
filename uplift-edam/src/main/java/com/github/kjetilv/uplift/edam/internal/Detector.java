@@ -1,15 +1,8 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edam.patterns.Pattern;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.LongFunction;
-import java.util.function.Supplier;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 
 record Detector(int depth) {
 

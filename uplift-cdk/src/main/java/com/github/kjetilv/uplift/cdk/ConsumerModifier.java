@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.cdk;
 
+import module aws.cdk.lib;
+import module java.base;
 import software.amazon.awscdk.Stack;
 
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.time.ZonedDateTime;
+import module java.base;
 
 final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
 

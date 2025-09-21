@@ -1,5 +1,6 @@
 module uplift.edam {
 
+    requires jdk.incubator.vector;
     requires uplift.util;
     requires uplift.hash;
 

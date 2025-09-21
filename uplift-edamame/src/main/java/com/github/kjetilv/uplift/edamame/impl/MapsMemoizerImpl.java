@@ -1,16 +1,15 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.*;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
+import module java.base;
+import module uplift.hash;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
+import com.github.kjetilv.uplift.edamame.CanonicalValue;
+import com.github.kjetilv.uplift.edamame.Canonicalizer;
+import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.edamame.MapsMemoizer;
+import com.github.kjetilv.uplift.edamame.MapsMemoizers;
+import com.github.kjetilv.uplift.edamame.MemoizedMaps;
 
 import static java.util.Objects.requireNonNull;
 

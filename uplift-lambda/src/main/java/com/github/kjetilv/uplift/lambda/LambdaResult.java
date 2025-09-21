@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import module java.base;
 
 import static com.github.kjetilv.uplift.lambda.Utils.encodeResponseBody;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;

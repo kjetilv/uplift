@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.kernel.aws;
 
-import java.util.Objects;
+import module java.base;
 
 public record AwsAuth(String key, String secret) {
 

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import java.io.InputStream;
-import java.util.Objects;
+import module java.base;
 
 public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 

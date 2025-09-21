@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import module java.base;
+import module uplift.kernel;
 
 final class Utils {
 

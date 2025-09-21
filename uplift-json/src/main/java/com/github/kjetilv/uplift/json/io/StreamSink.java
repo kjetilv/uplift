@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import module java.base;
 
 public record StreamSink(ByteArrayOutputStream baos) implements Sink {
 

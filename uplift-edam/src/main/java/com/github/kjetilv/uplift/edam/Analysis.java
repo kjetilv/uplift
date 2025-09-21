@@ -1,26 +1,16 @@
 package com.github.kjetilv.uplift.edam;
 
-import com.github.kjetilv.uplift.edam.patterns.*;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module uplift.edam;
+import module uplift.hash;
+import com.github.kjetilv.uplift.edam.patterns.Timelined;
 
 import static com.github.kjetilv.uplift.edam.internal.Utils.Lists.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 /// Analysis of repeated occurrences.  Spans
 @SuppressWarnings("unused")
-sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
+public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
 
     ZoneId UTC = ZoneId.of("UTC");
 
@@ -87,7 +77,7 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
     /// No repeats of the item in the given timespan/history length.
     ///
     /// @param trigger Occurrence
-    record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K>, Temporal {
+    record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K>, Timelined {
 
         @Override
         public Timespan timespan() {
@@ -140,7 +130,7 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
     /// @param occurrences The occurrences
     record Simple<K extends HashKind<K>>(
         List<Occurrence<K>> occurrences
-    ) implements Analysis<K>, Temporal {
+    ) implements Analysis<K>, Timelined {
 
         @Override
         public Occurrence<K> trigger() {
@@ -200,7 +190,7 @@ sealed public interface Analysis<K extends HashKind<K>> extends Temporal {
     record Multiple<K extends HashKind<K>>(
         Occurrence<K> trigger,
         List<PatternMatch<K>> matches
-    ) implements Analysis<K>, Temporal {
+    ) implements Analysis<K>, Timelined {
 
         public Multiple {
             requireNonNull(trigger, "occurrence");

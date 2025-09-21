@@ -1,16 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edam.Window;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.function.LongPredicate;
 
 abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 

@@ -1,19 +1,8 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.json.ObjectWriter;
-
-import javax.annotation.processing.Generated;
-import javax.lang.model.element.*;
-import javax.tools.JavaFileObject;
-import java.io.BufferedWriter;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module java.compiler;
+import module uplift.json;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 

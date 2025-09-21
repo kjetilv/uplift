@@ -1,14 +1,8 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.json.ObjectWriter;
-import com.github.kjetilv.uplift.uuid.Uuid;
-
-import java.net.URI;
-import java.net.URL;
-import java.time.*;
-import java.util.UUID;
-import java.util.regex.Pattern;
+import module java.base;
+import module uplift.json;
+import module uplift.uuid;
 
 @SuppressWarnings({"MethodMayBeStatic", "unused"})
 public abstract class AbstractObjectWriter<T extends Record> implements ObjectWriter<T> {

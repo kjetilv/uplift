@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.util.function.Function;
+import module java.base;
 
 interface LogFormatter<E> extends Function<E, String> {
 

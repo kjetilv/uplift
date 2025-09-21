@@ -1,18 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
-import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
-import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
-import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
-import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
-import com.github.kjetilv.uplift.json.io.JsonWriter;
-import com.github.kjetilv.uplift.json.io.StreamSink;
-import com.github.kjetilv.uplift.json.io.StringSink;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntUnaryOperator;
+import module java.base;
+import module uplift.json;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -90,21 +79,21 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public String write(Object object) {
         StringBuilder sb = new StringBuilder();
-        JsonWriter.write(new StringSink(sb), object);
+        JsonWrites.write(new StringSink(sb), object);
         return sb.toString();
     }
 
     @Override
     public byte[] writeBytes(Object object) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter.write(new StreamSink(baos), object);
+        JsonWrites.write(new StreamSink(baos), object);
         return baos.toByteArray();
     }
 
     @Override
     public void write(Object object, OutputStream outputStream) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter.write(new StreamSink(baos), object);
+        JsonWrites.write(new StreamSink(baos), object);
     }
 
     private Object process(BytesSource bytesSource) {

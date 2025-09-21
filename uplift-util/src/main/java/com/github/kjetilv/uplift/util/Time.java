@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.function.Supplier;
+import module java.base;
 
 public final class Time {
 

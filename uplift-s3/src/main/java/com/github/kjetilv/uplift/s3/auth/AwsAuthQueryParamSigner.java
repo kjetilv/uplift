@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.s3.auth;
 
+import module java.base;
+import module uplift.flogs;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.util.Map;
 
 import static com.github.kjetilv.uplift.s3.auth.AwsAuths.ALGORITHM;
 import static com.github.kjetilv.uplift.s3.auth.AwsAuths.SCHEME;

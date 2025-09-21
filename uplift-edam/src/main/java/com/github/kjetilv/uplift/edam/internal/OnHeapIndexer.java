@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.edam.HashFun;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
+import module java.base;
+import module jdk.incubator.vector;
+import module uplift.edam;
+import module uplift.hash;
+import module uplift.util;
 
 @SuppressWarnings("unused")
 final class OnHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K> {

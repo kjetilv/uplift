@@ -1,14 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -87,8 +81,8 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
         }
     }
 
-    protected final BufferedWriter<ByteBuffer> responseWriter() {
-        return new AsyncByteChannelBufferedWriter(channel);
+    protected final BufferingWriter<ByteBuffer> responseWriter() {
+        return new AsyncByteChannelBufferingWriter(channel);
     }
 
     protected final Instant now() {
@@ -130,7 +124,7 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
     }
 
     private Processing writeResponse(ByteBuffer headerBuffer, Object... values) {
-        try (BufferedWriter<ByteBuffer> writer = responseWriter()) {
+        try (BufferingWriter<ByteBuffer> writer = responseWriter()) {
             writer.write(new WritableBuffer<>(headerBuffer, headerBuffer.capacity()));
         }
         return Processing.OK;

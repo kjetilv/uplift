@@ -1,15 +1,11 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.edam.HashFun;
-import com.github.kjetilv.uplift.hash.Hash;
+import module java.base;
+import module jdk.incubator.vector;
+import module uplift.edam;
+import module uplift.hash;
+import module uplift.util;
 import com.github.kjetilv.uplift.hash.HashKind.K256;
-import com.github.kjetilv.uplift.hash.Hashes;
-
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.invoke.VarHandle;
-import java.util.Objects;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.sequenceLayout;

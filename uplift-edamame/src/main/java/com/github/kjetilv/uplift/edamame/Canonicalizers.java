@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.edamame;
 
+import module uplift.hash;
 import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
-import com.github.kjetilv.uplift.hash.HashKind;
 
 @SuppressWarnings("unused")
 public final class Canonicalizers {

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
-import java.util.UUID;
+import module java.base;
 
 /// It's a kind hash
 public sealed interface HashKind<H extends HashKind<H>> {

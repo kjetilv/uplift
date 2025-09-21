@@ -1,15 +1,10 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.hash;
+
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Instant;
-import java.util.Objects;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 final class Analyzer<T, K extends HashKind<K>> {
 

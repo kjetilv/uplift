@@ -1,22 +1,8 @@
 package com.github.kjetilv.uplift.flambda;
 
-import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
-import com.github.kjetilv.uplift.lambda.LambdaHandler;
-import com.github.kjetilv.uplift.lambda.LambdaLooper;
-import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
-
-import java.io.Closeable;
-import java.io.InputStream;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import module java.base;
+import module java.net.http;
+import module uplift.lambda;
 
 import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
 

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.util.List;
-import java.util.Map;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

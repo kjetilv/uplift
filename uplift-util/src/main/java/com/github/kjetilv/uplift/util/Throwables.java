@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
 
 public final class Throwables {
 

@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Stream;
+import module java.base;
 
 @SuppressWarnings("unused")
 public record Timespan(Instant start, Instant end) implements Spanning, Comparable<Timespan> {

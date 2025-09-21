@@ -1,19 +1,10 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.json.JsonReader;
-import com.github.kjetilv.uplift.json.JsonWriter;
-import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module org.assertj.core;
+import module org.junit.jupiter.api;
+import module uplift.json;
+import module uplift.json.mame;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.MAP;

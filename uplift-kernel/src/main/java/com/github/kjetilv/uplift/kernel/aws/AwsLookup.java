@@ -1,13 +1,7 @@
 package com.github.kjetilv.uplift.kernel.aws;
 
-import com.github.kjetilv.uplift.util.Maps;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
+import module java.base;
+import module uplift.util;
 
 final class AwsLookup {
 

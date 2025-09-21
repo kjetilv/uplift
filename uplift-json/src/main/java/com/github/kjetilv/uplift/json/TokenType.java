@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Arrays;
+import module java.base;
 
 public enum TokenType {
 

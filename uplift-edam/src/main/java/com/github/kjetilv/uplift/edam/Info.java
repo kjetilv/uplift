@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.edam;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
+import module uplift.hash;
 
 public interface Info<T, K extends HashKind<K>> {
 

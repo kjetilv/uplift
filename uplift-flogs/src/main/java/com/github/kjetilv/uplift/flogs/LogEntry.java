@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import module java.base;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;

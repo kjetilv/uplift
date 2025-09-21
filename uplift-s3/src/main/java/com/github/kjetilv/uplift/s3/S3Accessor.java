@@ -1,24 +1,8 @@
 package com.github.kjetilv.uplift.s3;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.EnvLookup;
-import com.github.kjetilv.uplift.kernel.io.Range;
+import module java.base;
+import module java.net.http;
+import module uplift.kernel;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 

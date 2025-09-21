@@ -1,15 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import module java.base;
 import module uplift.util;
-
-import java.security.MessageDigest;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /// Maintains a simple pool of non-trivially-created instances of [MessageDigest], in the form of a queue.
 /// On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.

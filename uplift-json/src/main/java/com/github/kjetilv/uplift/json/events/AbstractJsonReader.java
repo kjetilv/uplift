@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.*;
-
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import module java.base;
+import module uplift.json;
 
 abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, T> {
 

@@ -1,14 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.io.PrintStream;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

@@ -1,16 +1,11 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.json.Callbacks;
+import module java.base;
+import module uplift.edamame;
+import module uplift.hash;
+import module uplift.json;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-final class ListClimber<H extends HashKind<H>>
-    extends StructureClimber<H> {
+final class ListClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
     private final List<HashedTree<String, H>> list = new ArrayList<>();
 

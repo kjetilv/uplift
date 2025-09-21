@@ -1,13 +1,7 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashed;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
-import java.util.concurrent.atomic.LongAdder;
+import module java.base;
+import module uplift.hash;
 
 import static java.util.Objects.requireNonNull;
 

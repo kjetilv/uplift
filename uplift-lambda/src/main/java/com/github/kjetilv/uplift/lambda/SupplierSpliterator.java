@@ -1,18 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.Closeable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<CompletionStage<T>> implements Closeable {
 

@@ -1,23 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.*;
-import java.time.chrono.ChronoLocalDate;
-import java.time.chrono.ChronoLocalDateTime;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.chrono.Era;
-import java.time.temporal.TemporalAccessor;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 /// This default [leaf hasher][LeafHasher] supports typical Java classes, often
 /// found in trees.

@@ -1,13 +1,10 @@
 package com.github.kjetilv.uplift.edamame;
 
+import module java.base;
+import module uplift.hash;
+
 import com.github.kjetilv.uplift.edamame.impl.DefaultLeafHasher;
 import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
-
-import java.util.function.Supplier;
 
 /// Strategy for hashing leaf values.  [Overridable][InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes)]
 /// for testing purposes.

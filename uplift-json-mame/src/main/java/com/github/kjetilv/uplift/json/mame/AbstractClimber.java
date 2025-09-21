@@ -1,19 +1,15 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
+import module java.base;
+import module uplift.edamame;
+import module uplift.hash;
+import module uplift.json;
 
-import java.util.Objects;
-import java.util.function.Consumer;
-
-sealed abstract class AbstractClimber<H extends HashKind<H>>
+abstract sealed class AbstractClimber<H extends HashKind<H>>
     implements Climber
     permits StructureClimber, ValueClimber {
 
-    protected final Consumer<HashedTree<String, H>> cacher;
+    private final Consumer<HashedTree<String, H>> cacher;
 
     private final HashStrategy<H> hashStrategy;
 
@@ -53,6 +49,10 @@ sealed abstract class AbstractClimber<H extends HashKind<H>>
             done(hashStrategy.getNull());
         }
         return this;
+    }
+
+    protected void cache(HashedTree<String, H> tree) {
+        cacher.accept(tree);
     }
 
     protected abstract void done(HashedTree<String, H> tree);

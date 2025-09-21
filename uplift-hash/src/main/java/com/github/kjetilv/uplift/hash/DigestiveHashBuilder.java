@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import module java.base;
 import module uplift.util;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 record DigestiveHashBuilder<T, H extends HashKind<H>>(
     ByteDigest<H> byteDigest,

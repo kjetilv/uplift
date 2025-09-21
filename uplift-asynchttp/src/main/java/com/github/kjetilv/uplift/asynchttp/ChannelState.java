@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
+import module java.base;
 
 @FunctionalInterface
 public interface ChannelState {

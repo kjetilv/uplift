@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import com.github.kjetilv.uplift.json.BytesSource;
-import com.github.kjetilv.uplift.json.io.ReadException;
-import com.github.kjetilv.uplift.util.Bytes;
+import module java.base;
+import module uplift.json;
+import module uplift.util;
 
 import static java.lang.Character.isDigit;
 

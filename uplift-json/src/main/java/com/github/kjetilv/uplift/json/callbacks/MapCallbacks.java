@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.json.callbacks;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import module java.base;
+import module uplift.json;
 
 public final class MapCallbacks implements Callbacks {
 

@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.edamame;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import module java.base;
+import module uplift.hash;
 
 /// A canonical value is the result of resolving a  nested [map][Map] against shared
 /// substructures of other nested maps, including [hash collisions][Collision].

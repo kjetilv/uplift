@@ -1,13 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind.K256;
-
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.function.Consumer;
 
 import static com.github.kjetilv.uplift.hash.Hashes.inputStreamHashBuilder;
 

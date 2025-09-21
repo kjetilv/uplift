@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.uuid;
 
-import java.util.Base64;
-import java.util.UUID;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;

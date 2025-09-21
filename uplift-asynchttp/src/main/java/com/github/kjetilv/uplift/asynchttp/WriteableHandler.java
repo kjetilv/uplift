@@ -1,15 +1,8 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.CompletionHandler;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.LongAdder;
 
 final class WriteableHandler implements CompletionHandler<Integer, Object> {
 

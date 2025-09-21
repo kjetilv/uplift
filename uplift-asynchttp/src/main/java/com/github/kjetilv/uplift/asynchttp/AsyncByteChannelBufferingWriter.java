@@ -1,13 +1,12 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 
-record AsyncByteChannelBufferedWriter(AsynchronousByteChannel channel) implements BufferedWriter<ByteBuffer> {
+record AsyncByteChannelBufferingWriter(AsynchronousByteChannel channel) implements BufferingWriter<ByteBuffer> {
 
-    AsyncByteChannelBufferedWriter {
+    AsyncByteChannelBufferingWriter {
         requireNonNull(channel, "channel");
     }
 

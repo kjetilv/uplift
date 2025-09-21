@@ -1,16 +1,11 @@
 package com.github.kjetilv.uplift.cdk;
 
+import module aws.cdk.lib;
+import module java.base;
 import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.HttpMethod;
-import software.amazon.awscdk.services.logs.RetentionDays;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Stacker extends Consumer<Stack> {

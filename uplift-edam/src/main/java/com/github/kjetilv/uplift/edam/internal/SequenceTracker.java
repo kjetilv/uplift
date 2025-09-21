@@ -1,16 +1,13 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Analysis.None;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.Pattern;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.edam.Analysis.Multiple;
 import static com.github.kjetilv.uplift.edam.Analysis.Simple;

@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.Closeable;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import module java.base;
+import module java.net.http;
 
 @SuppressWarnings("unused")
 public interface LamdbdaManaged

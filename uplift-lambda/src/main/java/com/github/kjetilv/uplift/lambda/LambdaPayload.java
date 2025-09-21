@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.util.Maps;
-
-import java.io.InputStream;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import module java.base;
+import module uplift.kernel;
+import module uplift.util;
 
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 import static java.util.Objects.requireNonNull;

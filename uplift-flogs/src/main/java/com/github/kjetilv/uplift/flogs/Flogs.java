@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

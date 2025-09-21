@@ -1,14 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.zip.GZIPInputStream;
+import module java.base;
 
 @SuppressWarnings("unused")
 public final class Gunzip {

@@ -1,18 +1,10 @@
 package com.github.kjetilv.uplift.json.io;
 
-import com.github.kjetilv.uplift.uuid.Uuid;
+import module java.base;
+import module uplift.json;
+import module uplift.uuid;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
-public final class JsonWriter {
+public final class JsonWrites {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     public static void write(Sink sink, Object object) {
@@ -43,7 +35,7 @@ public final class JsonWriter {
         }
     }
 
-    private JsonWriter() {
+    private JsonWrites() {
     }
 
     private static final Pattern QUOTE = Pattern.compile("\"");

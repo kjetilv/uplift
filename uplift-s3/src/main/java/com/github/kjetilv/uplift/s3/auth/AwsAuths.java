@@ -1,17 +1,7 @@
 package com.github.kjetilv.uplift.s3.auth;
 
+import module java.base;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
 

@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.function.Consumer;
+import module java.base;
 
 public interface JsonReader<S, T extends Record> {
 

@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousByteChannel;
-import java.nio.channels.CompletionHandler;
+import module java.base;
 
 public interface ChannelHandler<S extends ChannelState, C extends ChannelHandler<S, C>>
     extends CompletionHandler<Integer, S> {

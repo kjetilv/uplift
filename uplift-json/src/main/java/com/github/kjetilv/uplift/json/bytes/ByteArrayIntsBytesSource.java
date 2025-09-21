@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import java.util.Objects;
+import module java.base;
 
 public final class ByteArrayIntsBytesSource extends AbstractIntsBytesSource {
 

@@ -1,15 +1,6 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.time.*;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.*;
-import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;

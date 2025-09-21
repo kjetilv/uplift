@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Map;
+import module java.base;
 
 public final class MapWriter implements ObjectWriter<Map<?, ?>> {
 

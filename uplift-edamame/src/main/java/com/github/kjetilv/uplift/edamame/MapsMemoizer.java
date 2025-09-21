@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import java.util.Map;
+import module java.base;
 
 /// Behold the memoizer! Maps will be stored in canonical form, avoiding memory wasted on identical
 /// trees.

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import module java.base;
 
 public record StringSink(StringBuilder sb) implements Sink {
 

@@ -1,30 +1,15 @@
 package com.github.kjetilv.uplift.s3;
 
-import com.github.kjetilv.uplift.kernel.Env;
-import com.github.kjetilv.uplift.kernel.io.BytesIO;
-import com.github.kjetilv.uplift.kernel.io.Range;
+import module java.base;
+import module java.net.http;
+import module uplift.flogs;
+import module uplift.kernel;
+import module uplift.util;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import com.github.kjetilv.uplift.s3.util.Xml;
-import com.github.kjetilv.uplift.util.Maps;
-import com.github.kjetilv.uplift.util.Print;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;

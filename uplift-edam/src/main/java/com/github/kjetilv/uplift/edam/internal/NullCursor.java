@@ -1,11 +1,8 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 final class NullCursor<K extends HashKind<K>> implements Storage.Cursor<K> {
 

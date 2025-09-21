@@ -1,18 +1,8 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ByteBuffers {
 

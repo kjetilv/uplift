@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.ObjectWriter;
-import com.github.kjetilv.uplift.json.io.Sink;
-import com.github.kjetilv.uplift.json.io.StreamSink;
-
-import java.io.ByteArrayOutputStream;
+import module java.base;
+import module uplift.json;
 
 public final class BytesJsonWriter<T extends Record> extends AbstractJsonWriter<T, ByteArrayOutputStream, byte[]> {
 

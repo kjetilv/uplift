@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.flambda;
 
-import com.github.kjetilv.uplift.flogs.Flogs;
-import com.github.kjetilv.uplift.flogs.LogLevel;
+import module java.base;
+import module uplift.flogs;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 

@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import module java.base;
 
 /// Stateful interface for building ids.  Maintains an underlying hasher which can be [#hash(Object)] added to.
 ///

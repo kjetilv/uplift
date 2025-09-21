@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
-import java.util.function.Supplier;
+import module java.base;
 
 @FunctionalInterface
 public interface Hashed<H extends HashKind<H>> extends Supplier<Hash<H>> {

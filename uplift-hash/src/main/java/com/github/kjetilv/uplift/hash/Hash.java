@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
-import com.github.kjetilv.uplift.util.Bytes;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import module java.base;
+import module uplift.util;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;

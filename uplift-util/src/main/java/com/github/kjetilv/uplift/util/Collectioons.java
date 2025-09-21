@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import module java.base;
 
 /// Some collection-related nitty-gritty bits.
 public final class Collectioons {

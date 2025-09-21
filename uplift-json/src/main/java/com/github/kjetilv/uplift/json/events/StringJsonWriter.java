@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.ObjectWriter;
-import com.github.kjetilv.uplift.json.io.Sink;
-import com.github.kjetilv.uplift.json.io.StringSink;
+import module uplift.json;
 
 public class StringJsonWriter<T extends Record> extends AbstractJsonWriter<T, StringBuilder, String> {
 

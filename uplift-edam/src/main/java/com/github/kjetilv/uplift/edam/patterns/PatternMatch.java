@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
+import module java.base;
+import module uplift.hash;
+
 import com.github.kjetilv.uplift.edam.internal.Utils;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import static java.util.Objects.requireNonNull;
 
 /// @param pattern     The pattern that has occurred
@@ -17,7 +13,7 @@ public record PatternMatch<K extends HashKind<K>>(
     Pattern<K> pattern,
     List<PatternOccurrence<K>> occurrences,
     Timespan timespan
-) implements Temporal, Comparable<PatternMatch<K>>, Iterable<PatternOccurrence<K>> {
+) implements Timelined, Comparable<PatternMatch<K>>, Iterable<PatternOccurrence<K>> {
 
     public static <K extends HashKind<K>>String toShortString(List<PatternMatch<K>> sequenceOccurrences) {
         return toShortString(sequenceOccurrences, null);

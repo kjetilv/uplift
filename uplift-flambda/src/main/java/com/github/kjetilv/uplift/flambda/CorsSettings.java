@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.util.List;
+import module java.base;
 
 @SuppressWarnings("WeakerAccess")
 public record CorsSettings(

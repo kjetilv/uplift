@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
 

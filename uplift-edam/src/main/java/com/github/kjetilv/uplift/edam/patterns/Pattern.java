@@ -1,17 +1,7 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module uplift.hash;
 
 import static com.github.kjetilv.uplift.edam.internal.Utils.Lists.requireNotEmpty;
 import static java.util.Objects.requireNonNull;

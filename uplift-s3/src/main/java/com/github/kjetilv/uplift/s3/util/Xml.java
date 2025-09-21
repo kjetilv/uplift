@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.s3.util;
 
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import module java.base;
 
 public final class Xml {
 

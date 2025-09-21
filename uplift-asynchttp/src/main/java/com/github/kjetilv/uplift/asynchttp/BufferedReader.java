@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.io.Closeable;
+import module java.base;
 
 public interface BufferedReader<B> extends Closeable {
 

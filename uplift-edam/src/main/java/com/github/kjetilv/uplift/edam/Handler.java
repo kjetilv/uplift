@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.edam;
 
+import module java.base;
+import module uplift.hash;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.edam.Analysis.Multiple;
 

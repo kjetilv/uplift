@@ -1,16 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenResolver;
-import com.github.kjetilv.uplift.json.callbacks.NullCallbacks;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import module java.base;
+import module uplift.json;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
 

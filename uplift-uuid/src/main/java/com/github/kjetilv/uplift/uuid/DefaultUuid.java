@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.uuid;
 
-import java.util.UUID;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

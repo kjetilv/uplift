@@ -1,13 +1,8 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.events.BytesJsonReader;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
+import module java.base;
+import module org.junit.jupiter.api;
+import module uplift.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

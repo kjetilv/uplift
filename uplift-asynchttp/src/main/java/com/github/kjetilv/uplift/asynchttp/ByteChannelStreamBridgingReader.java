@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.io.InputStream;
-import java.nio.ByteBuffer;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

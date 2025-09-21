@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import java.nio.ByteBuffer;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.IntPredicate;
-import java.util.stream.IntStream;
+import module java.base;
 
 record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 

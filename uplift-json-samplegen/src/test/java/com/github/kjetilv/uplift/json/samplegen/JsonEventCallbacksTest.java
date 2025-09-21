@@ -1,15 +1,11 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import com.github.kjetilv.uplift.json.BytesSource;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import module java.base;
+import module org.assertj.core;
+import module org.junit.jupiter.api;
+import module uplift.json;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,7 +25,7 @@ public class JsonEventCallbacksTest {
 
         BytesSource bytesSource = new ByteArrayIntsBytesSource(source.getBytes());
         Callbacks myCallbacks = Json.instance().parse(bytesSource, callbacks());
-        Assertions.assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
+        assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
                 number:1
@@ -73,7 +69,7 @@ public class JsonEventCallbacksTest {
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
         MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
-        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo str:bar
               field:zot number:5
@@ -100,7 +96,7 @@ public class JsonEventCallbacksTest {
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
         MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
-        Assertions.assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
+        assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
                   field:foo str:bar

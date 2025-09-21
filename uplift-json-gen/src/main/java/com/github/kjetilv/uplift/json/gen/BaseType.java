@@ -1,13 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import javax.lang.model.element.RecordComponentElement;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
+import module java.base;
+import module java.compiler;
 
 enum BaseType {
 

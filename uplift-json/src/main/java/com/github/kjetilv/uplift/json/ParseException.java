@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
+import module java.base;
 
 public final class ParseException extends RuntimeException {
 

@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.json.gen;
 
+import module java.base;
+import module java.compiler;
+import module uplift.json;
+import module uplift.json.anno;
 import com.github.kjetilv.uplift.json.anno.Field;
-import com.github.kjetilv.uplift.json.anno.JsonRecord;
-import com.github.kjetilv.uplift.json.anno.Singular;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 final class GenUtils {
 

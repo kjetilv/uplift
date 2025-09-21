@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
-
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
-import java.util.Optional;
+import module java.base;
+import module java.compiler;
+import module uplift.json;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 

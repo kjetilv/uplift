@@ -1,19 +1,14 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
+import module uplift.hash;
+
 import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.CanonicalValue.Collision;
 import com.github.kjetilv.uplift.edamame.Canonicalizer;
 import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.HashedTree.Node;
 import com.github.kjetilv.uplift.edamame.HashedTree.Nodes;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.util.Maps.transformValues;

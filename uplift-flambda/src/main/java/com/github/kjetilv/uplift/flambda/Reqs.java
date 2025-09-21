@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.net.URI;
-import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import module java.base;
+import module java.net.http;
 
 @SuppressWarnings("unused")
 public interface Reqs {

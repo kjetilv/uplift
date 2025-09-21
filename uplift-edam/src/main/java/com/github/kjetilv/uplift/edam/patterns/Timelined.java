@@ -1,10 +1,9 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
-import java.time.Duration;
-import java.time.Instant;
+import module java.base;
 
 @SuppressWarnings("unused")
-public interface Temporal extends Spanning {
+public interface Timelined extends Spanning {
 
     /// @return Start time of the event
     default Instant startTime() {

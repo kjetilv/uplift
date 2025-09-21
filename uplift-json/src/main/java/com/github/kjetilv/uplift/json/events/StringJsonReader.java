@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.json.events;
 
-import com.github.kjetilv.uplift.json.BytesSource;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.JsonSession;
-import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
-
-import java.util.function.Consumer;
-import java.util.function.Function;
+import module java.base;
+import module uplift.json;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

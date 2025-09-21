@@ -1,13 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.util.*;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.lang.Math.ceil;
 

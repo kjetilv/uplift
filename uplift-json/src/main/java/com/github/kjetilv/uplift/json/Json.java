@@ -1,13 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

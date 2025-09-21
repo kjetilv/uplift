@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.kernel.http;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
 
 import static com.github.kjetilv.uplift.util.CaseInsensitiveHashMap.caseInsensitive;
 

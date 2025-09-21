@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import module java.base;
 
 public interface FieldEvents {
 
