@@ -83,20 +83,19 @@ abstract class UpliftTask @Inject constructor(private var execOperations: ExecOp
         profile?.also(this.profile::set)
     }
 
-    protected fun runCdk(cmd: String): ExecResult = docker(
-        upliftDir(),
-        "run " +
-                volumes(
-                    awsAuth.get() to "/root/.aws",
-                    cdkApp() to "/opt/app",
-                    upliftDir() to "/lambdas"
-                ) +
-                environment(
-                    env.get()
-                ) +
-                "${"cdk-site:latest"} $cmd",
-        execOperations
-    )
+    protected fun runCdk(cmd: String): ExecResult {
+        val volumes = volumes(
+            awsAuth.get() to "/root/.aws",
+            cdkApp() to "/opt/app",
+            upliftDir() to "/lambdas"
+        ).padRight()
+        val environment = environment(env.get()).padRight()
+        return docker(
+            upliftDir(),
+            "run $volumes${environment}cdk-site:latest $cmd",
+            execOperations
+        )
+    }
 
     protected fun upliftDir(): Path = project.buildSubDirectory("uplift")
 
@@ -145,6 +144,13 @@ abstract class UpliftTask @Inject constructor(private var execOperations: ExecOp
         }.stackResources().toList()
         logStack(stack, stackResources, sources, logger::warn, logger::lifecycle)
     }
+
+    private fun String?.padRight(pad: String = " "): String = this?.run {
+        when {
+            isBlank() || endsWith(pad) -> this
+            else -> "$this$pad"
+        }
+    } ?: ""
 
     private fun logStack(
         stack: Stack,
@@ -315,14 +321,12 @@ abstract class UpliftTask @Inject constructor(private var execOperations: ExecOp
     }
 
     private fun volumes(vararg vols: Pair<*, *>) =
-        vols.joinToString("") { (local, contained) ->
-            "-v $local:$contained "
+        vols.takeUnless { it.isEmpty() }?.joinToString(" ") { (local, contained) ->
+            "-v $local:$contained"
         }
 
     private fun environment(env: Map<String, String>?) =
-        env?.entries?.joinToString("") { (key, value) ->
-            "-e $key=$value "
-        } ?: ""
+        env?.entries?.joinToString(" ") { (k, v) -> "-e $k=$v" }
 
     private fun Path.printSize(limit: Int) =
         Files.size(this).let {
