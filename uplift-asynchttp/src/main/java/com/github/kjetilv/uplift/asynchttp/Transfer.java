@@ -9,7 +9,7 @@ public record Transfer(long totalSize, int bufferSize) {
     private static final Logger log = LoggerFactory.getLogger(Transfer.class);
 
     public <B> long copy(
-        BufferedReader<B> reader,
+        BufferingReader<B> reader,
         BufferingWriter<? super B> writer
     ) {
         long transferred = 0;

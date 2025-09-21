@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
 
-public interface BufferedReader<B> extends Closeable {
+public interface BufferingReader<B> extends Closeable {
 
     @Override
     void close();

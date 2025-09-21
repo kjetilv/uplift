@@ -8,7 +8,7 @@ import static java.util.Objects.requireNonNull;
 public record ByteChannelStreamBridgingReader(
     InputStream in,
     ByteBuffer buffer
-) implements BufferedReader<ByteBuffer> {
+) implements BufferingReader<ByteBuffer> {
 
     public ByteChannelStreamBridgingReader(InputStream in, ByteBuffer buffer) {
         this.in = requireNonNull(in, "in");
