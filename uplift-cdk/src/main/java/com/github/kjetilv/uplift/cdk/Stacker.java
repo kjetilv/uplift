@@ -8,6 +8,7 @@ import software.amazon.awscdk.services.lambda.HttpMethod;
 import java.time.Duration;
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 public interface Stacker extends Consumer<Stack> {
 
     static Stacker lambda(String module) {

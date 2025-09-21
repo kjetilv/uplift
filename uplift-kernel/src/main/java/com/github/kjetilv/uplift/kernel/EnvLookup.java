@@ -24,7 +24,7 @@ public final class EnvLookup {
     ) {
         Optional<String> value = cache.computeIfAbsent(
             systemProperty + environmentVariable + required,
-            key ->
+            _ ->
                 resolve(systemProperty, environmentVariable, required)
         );
         return required

@@ -4,8 +4,6 @@ import module java.base;
 import module java.net.http;
 import module uplift.lambda;
 
-import static com.github.kjetilv.uplift.kernel.ManagedExecutors.executor;
-
 @SuppressWarnings("unused")
 public class LambdaHarness implements Closeable {
 
@@ -99,9 +97,10 @@ public class LambdaHarness implements Closeable {
         this.name = Objects.requireNonNull(name, "name");
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
 
-        this.serverExec = executor();
-        this.lambdaExec = executor();
-        this.testExec = executor();
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        this.serverExec = executor;
+        this.lambdaExec = executor;
+        this.testExec = executor;
 
         LocalLambdaSettings settings = localLambdaSettings == null
             ? settings(localLambdaSettings, corsSettings, time)

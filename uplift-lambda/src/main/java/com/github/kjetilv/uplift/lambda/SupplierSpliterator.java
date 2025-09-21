@@ -32,7 +32,7 @@ final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<Comp
         }
         return getNext()
             .map(next ->
-                next.whenComplete((t, throwable) -> {
+                next.whenComplete((_, throwable) -> {
                     completed.increment();
                     if (throwable != null) {
                         failedComplete.increment();

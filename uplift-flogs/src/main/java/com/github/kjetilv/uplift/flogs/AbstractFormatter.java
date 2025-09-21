@@ -15,7 +15,7 @@ abstract class AbstractFormatter<E> implements LogFormatter<E> {
             trim > 0
                 ? baseMessage + "-" + trim
                 : baseMessage,
-            key -> {
+            _ -> {
                 String pattern = rewrite
                     ? indexed(baseMessage, parameters.length - trim)
                     : baseMessage;

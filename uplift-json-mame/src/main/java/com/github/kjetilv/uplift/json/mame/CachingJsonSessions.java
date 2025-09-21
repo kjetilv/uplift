@@ -4,6 +4,7 @@ import module java.base;
 import module uplift.hash;
 import module uplift.json;
 
+@SuppressWarnings("unused")
 public final class CachingJsonSessions {
 
     public static JsonSession create128() {
