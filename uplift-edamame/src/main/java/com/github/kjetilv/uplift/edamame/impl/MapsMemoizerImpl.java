@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 /// @param <H> Hash kind
 @SuppressWarnings("unchecked")
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>
-    implements MapsMemoizer<I, K>, MemoizedMaps<I, K> {
+    implements MapsMemoizer<I, K> {
 
     private final Map<I, Hash<H>> memoizedHashes = new HashMap<>();
 

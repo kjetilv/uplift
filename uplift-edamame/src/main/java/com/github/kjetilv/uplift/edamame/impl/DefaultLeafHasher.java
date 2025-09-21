@@ -152,7 +152,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         OTHER_TEMPORAL,
         UUID;
 
-        private final byte[] bytes = new byte[] {(byte) ordinal()};
+        private final byte[] bytes = {(byte) ordinal()};
 
         <H extends HashKind<H>> HashBuilder<byte[], H> tag(HashBuilder<byte[], H> hb) {
             return hb.hash(bytes);

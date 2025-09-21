@@ -77,7 +77,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     /// No repeats of the item in the given timespan/history length.
     ///
     /// @param trigger Occurrence
-    record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K>, Timelined {
+    record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K> {
 
         @Override
         public Timespan timespan() {
@@ -130,7 +130,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     /// @param occurrences The occurrences
     record Simple<K extends HashKind<K>>(
         List<Occurrence<K>> occurrences
-    ) implements Analysis<K>, Timelined {
+    ) implements Analysis<K> {
 
         @Override
         public Occurrence<K> trigger() {
@@ -190,7 +190,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     record Multiple<K extends HashKind<K>>(
         Occurrence<K> trigger,
         List<PatternMatch<K>> matches
-    ) implements Analysis<K>, Timelined {
+    ) implements Analysis<K> {
 
         public Multiple {
             requireNonNull(trigger, "occurrence");

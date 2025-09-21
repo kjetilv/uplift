@@ -33,7 +33,7 @@ public final class Collectioons {
 
             private final int length = Array.getLength(array);
 
-            private int index = 0;
+            private int index;
 
             @Override
             public boolean hasNext() {

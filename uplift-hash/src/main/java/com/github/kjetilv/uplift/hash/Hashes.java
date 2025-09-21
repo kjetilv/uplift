@@ -164,7 +164,7 @@ public final class Hashes {
     }
 
     public static <H extends HashKind<H>> HashBuilder<InputStream, H> inputStreamHashBuilder(H kind) {
-        return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), Hashes.inputStream2Bytes());
+        return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), inputStream2Bytes());
     }
 
     public static Function<Integer, byte[]> intToBytes() {

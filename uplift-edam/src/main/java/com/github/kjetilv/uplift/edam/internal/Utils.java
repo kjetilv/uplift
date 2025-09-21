@@ -217,7 +217,7 @@ public final class Utils {
         }
 
         private Unit lessPrecise() {
-            return Unit.values()[ordinal() + 1];
+            return values()[ordinal() + 1];
         }
 
         private static final Duration SEC = Duration.ofSeconds(1);

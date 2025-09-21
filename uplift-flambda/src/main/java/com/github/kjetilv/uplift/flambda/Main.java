@@ -9,7 +9,7 @@ import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 @SuppressWarnings("MagicNumber")
 public final class Main {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         Flogs.initialize(LogLevel.DEBUG);
         Integer lambdaPort =
             Arrays.stream(args)

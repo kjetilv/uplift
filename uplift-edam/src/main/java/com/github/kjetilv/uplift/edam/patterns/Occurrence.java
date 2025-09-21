@@ -41,10 +41,7 @@ public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long
 
     private static final class Sns {
 
-        private Sns() {
-        }
-
-        private final static LongAdder sns = new LongAdder();
+        private static final LongAdder sns = new LongAdder();
 
         private static long next() {
             try {

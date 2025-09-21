@@ -21,7 +21,7 @@ final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<Comp
     private final LongAdder failedComplete = new LongAdder();
 
     SupplierSpliterator(Supplier<Optional<CompletionStage<T>>> provider) {
-        super(Long.MAX_VALUE, Spliterator.DISTINCT);
+        super(Long.MAX_VALUE, DISTINCT);
         this.provider = Objects.requireNonNull(provider, "provider");
     }
 

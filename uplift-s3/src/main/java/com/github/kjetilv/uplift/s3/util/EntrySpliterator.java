@@ -13,7 +13,7 @@ final class EntrySpliterator extends Spliterators.AbstractSpliterator<Map.Entry<
     private int position;
 
     EntrySpliterator(String xml, String... fields) {
-        super(fields.length, Spliterator.ORDERED);
+        super(fields.length, ORDERED);
         this.xml = xml;
         this.fields = fields;
     }

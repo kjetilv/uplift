@@ -88,7 +88,6 @@ record DefStacker(
                 .functionName(name)
                 .code(Code.fromAsset("/lambdas/" + module + ".zip"))
                 .handler("bootstrap")
-                .logRetention(this.settings().logRetention())
                 .architecture(settings.architecture())
                 .memorySize(settings.memoryMb())
                 .runtime(PROVIDED_AL2023)
