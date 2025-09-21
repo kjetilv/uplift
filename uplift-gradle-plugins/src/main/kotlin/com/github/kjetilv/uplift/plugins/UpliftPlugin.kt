@@ -8,27 +8,41 @@ import java.nio.file.Path
 class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.register<UpliftInitTask>("uplift-init") {
-            configureFor(project) {
-                activeJar.set(project.cdkFile(stackbuilderJar.get()))
-                activePom.set(project.cdkFile("pom.xml"))
+        project.tasks.register("uplift-init", UpliftInitTask::class.java) {
+            it.apply {
+                configureFor(project) {
+                    activeJar.set(project.cdkFile(stackbuilderJar.get()))
+                    activePom.set(project.cdkFile("pom.xml"))
+                }
             }
-        }.register<UpliftBootstrapTask>("uplift-bootstrap") {
-            configureFor(project) {
-                template.set(project.templateFile(this))
-                dependsOn("uplift-init")
+        }
+        project.tasks.register("uplift-bootstrap", UpliftBootstrapTask::class.java) {
+            it.apply {
+                configureFor(project) {
+                    template.set(project.templateFile(this))
+                    dependsOn("uplift-init")
+                }
             }
-        }.register<UpliftDeployTask>("uplift") {
-            configureFor(project) {
-                dependsOn("uplift-bootstrap")
+        }
+        project.tasks.register("uplift", UpliftDeployTask::class.java) {
+            it.apply {
+                configureFor(project) {
+                    dependsOn("uplift-bootstrap")
+                }
             }
-        }.register<UpliftPingTask>("uplift-ping") {
-            configureFor(project) {
-                clearDependencies()
+        }
+        project.tasks.register("uplift-ping", UpliftPingTask::class.java) {
+            it.apply {
+                configureFor(project) {
+                    clearDependencies()
+                }
             }
-        }.register<UpliftDestroyTask>("uplift-destroy") {
-            configureFor(project) {
-                clearDependencies()
+        }
+        project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) {
+            it.apply {
+                configureFor(project) {
+                    clearDependencies()
+                }
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import com.github.kjetilv.uplift.util.Bytes;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,8 +26,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     /// @return Unique [digest-length][#digestLength()] string representation
     default String digest() {
-        long[] ls = ls();
-        byte[] bytes = toBytes(ls);
+        byte[] bytes = Hashes.longsToBytes(ls());
         String base64 = new String(ENCODER.encode(bytes), US_ASCII);
         String padding = kind().digest().padding();
         if (base64.length() == kind().digest().length() + padding.length() && base64.endsWith(padding)) {
@@ -34,6 +35,10 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
                 .replace(BAD_2, GOOD_2);
         }
         throw new IllegalStateException("Unusual hash: " + base64);
+    }
+
+    default Bytes toBytes() {
+        return Bytes.from(bytes());
     }
 
     /// @return Byte representation of the id

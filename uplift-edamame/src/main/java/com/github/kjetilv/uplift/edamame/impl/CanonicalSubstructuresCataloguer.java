@@ -48,7 +48,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         return switch (hashedTree) {
             case Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
                 Map<K, CanonicalValue<H>> node = transformValues(valueMap, toCanonical());
-                CanonicalValue<H> collision = collision(node.values());
+                Collision<H> collision = collision(node.values());
                 yield collision == null ? canonicalize(
                     transformValues(node, toValue()),
                     hash,
@@ -59,7 +59,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
             }
             case Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
                 List<CanonicalValue<H>> nodes = transform(values, toCanonical());
-                CanonicalValue<H> collision = collision(nodes);
+                Collision<H> collision = collision(nodes);
                 yield collision == null ? canonicalize(
                     transform(nodes, toValue()),
                     hash,
@@ -80,10 +80,10 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         };
     }
 
-    private CanonicalValue<H> collision(Iterable<CanonicalValue<H>> values) {
+    private Collision<H> collision(Iterable<CanonicalValue<H>> values) {
         for (CanonicalValue<H> value : values) {
-            if (value instanceof Collision<H>) {
-                return value;
+            if (value instanceof Collision<H> collision) {
+                return collision;
             }
         }
         return null;

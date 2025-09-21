@@ -7,4 +7,6 @@ module uplift.flambda {
     requires uplift.lambda;
     requires uplift.uuid;
     requires uplift.util;
+
+    exports com.github.kjetilv.uplift.flambda;
 }

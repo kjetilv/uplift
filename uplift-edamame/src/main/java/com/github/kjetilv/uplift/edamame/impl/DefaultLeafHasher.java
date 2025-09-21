@@ -54,11 +54,11 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         Number n
     ) {
         return switch (n) {
-            case Long l -> T.LONG.tag(hb).hash(Hashes.bytes(l));
-            case Integer i -> T.INT.tag(hb).hash(Hashes.bytes(i));
-            case Double d -> T.DOUBLE.tag(hb).hash(Hashes.bytes(Double.doubleToRawLongBits(d)));
-            case Float f -> T.FLOAT.tag(hb).hash(Hashes.bytes(Float.floatToRawIntBits(f)));
-            case Short s -> T.SHORT.tag(hb).hash(Hashes.bytes(s));
+            case Long l -> T.LONG.tag(hb).hash(Hashes.longBytes(l));
+            case Integer i -> T.INT.tag(hb).hash(Hashes.intBytes(i));
+            case Double d -> T.DOUBLE.tag(hb).hash(Hashes.longBytes(Double.doubleToRawLongBits(d)));
+            case Float f -> T.FLOAT.tag(hb).hash(Hashes.intBytes(Float.floatToRawIntBits(f)));
+            case Short s -> T.SHORT.tag(hb).hash(Hashes.intBytes(s));
             case Byte b -> T.BYTE.tag(hb).hash(new byte[] {(byte) (int) b});
             default -> hashString(T.OTHER_NUMERIC.tag(hb), n.toString());
         };
@@ -106,7 +106,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         HashBuilder<byte[], H> hb,
         Instant instant
     ) {
-        hb.<Long>map(Hashes::bytes)
+        hb.<Long>map(Hashes::longBytes)
             .hash(instant.getEpochSecond())
             .hash((long) instant.getNano());
         return hb;
@@ -116,7 +116,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         HashBuilder<byte[], H> hb,
         UUID uuid
     ) {
-        hb.<Long>map(Hashes::bytes)
+        hb.<Long>map(Hashes::longBytes)
             .hash(uuid.getMostSignificantBits())
             .hash(uuid.getLeastSignificantBits());
         return hb;
@@ -127,7 +127,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         BigDecimal bigDecimal
     ) {
         return hb.hash(bigDecimal.unscaledValue().toByteArray())
-            .hash(Hashes.bytes(bigDecimal.scale()));
+            .hash(Hashes.intBytes(bigDecimal.scale()));
     }
 
     private static <H extends HashKind<H>> HashBuilder<byte[], H> hashBigInteger(

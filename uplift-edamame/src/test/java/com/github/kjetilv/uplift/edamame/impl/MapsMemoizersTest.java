@@ -76,9 +76,6 @@ class MapsMemoizersTest {
         assertEquals(bi, bi43);
         assertNotSame(bd, bd43);
         assertEquals(bd, bd43);
-
-//        assertSame(bd, access.get(43L).get("zot1"));
-//        assertSame(bi, access.get(43L).get("zot2"));
     }
 
     @Test
@@ -86,7 +83,7 @@ class MapsMemoizersTest {
         Object l1 = new Leaf(42L, "123.234");
         Object l2 = new Leaf(34L, "424242");
 
-        MapsMemoizer<Long, String> mapsMemoizer = InternalFactory.create(
+        MapsMemoizer<Long, String> mapsMemoizer = create(
             null,
             HashKind.K128,
             PojoBytes.TOSTRING
@@ -128,8 +125,6 @@ class MapsMemoizersTest {
         assertSame(l1, bd43);
         assertEquals(l1, bd43);
 
-//        assertSame(bd, access.get(43L).get("zot1"));
-//        assertSame(bi, access.get(43L).get("zot2"));
     }
 
     @Test

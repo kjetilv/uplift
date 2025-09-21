@@ -14,11 +14,12 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 class CanonicalSubstructuresCataloguerTest {
 
     @Test
     void testLeaf() {
-        MapHasher<K, K128> hasher = new RecursiveTreeHasher<>(
+        TreeHasher<K, K128> hasher = new RecursiveTreeHasher<>(
             () -> Hashes.hashBuilder(HashKind.K128),
             KeyHandler.defaultHandler(),
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
@@ -27,9 +28,9 @@ class CanonicalSubstructuresCataloguerTest {
         Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>();
         Supplier<Object> newObject = () -> new BigDecimal("42");
 
-        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hashedTree(newObject.get()));
+        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
         if (cv1 instanceof CanonicalValue.Leaf<K128>(Hash<K128> h1, Object o1)) {
-            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hashedTree(newObject.get()));
+            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
             if (cv2 instanceof CanonicalValue.Leaf<K128>(Hash<K128> h2, Object o2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(o1).isSameAs(o2);
@@ -43,7 +44,7 @@ class CanonicalSubstructuresCataloguerTest {
 
     @Test
     void testMap() {
-        MapHasher<K, K128> hasher = new RecursiveTreeHasher<>(
+        TreeHasher<K, K128> hasher = new RecursiveTreeHasher<>(
             () -> Hashes.hashBuilder(HashKind.K128),
             key -> new K(key.toString()),
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
@@ -56,10 +57,10 @@ class CanonicalSubstructuresCataloguerTest {
         Supplier<String> val = supplier("bar");
         Supplier<Object> newObject = () -> Map.of(key.get(), val.get());
 
-        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hashedTree(newObject.get()));
+        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
         if (cv1 instanceof CanonicalValue.Node<?, K128>(Hash<K128> h1, Map<?, Object> m1)) {
             assertThat(m1.keySet()).allMatch(K.class::isInstance);
-            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hashedTree(newObject.get()));
+            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
             if (cv2 instanceof CanonicalValue.Node<?, K128>(Hash<K128> h2, Map<?, Object> m2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(m1).isSameAs(m2);

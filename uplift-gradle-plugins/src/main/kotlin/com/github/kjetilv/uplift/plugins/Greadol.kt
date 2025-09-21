@@ -30,7 +30,9 @@ internal val Project.classpath: List<File>
             .firstOrNull { "runtimeClasspath".equals(it.name, true) }
             ?.toList()
             ?: emptyList<File>().also {
-            logger.warn("WARNING: No configuration found: $path, configuratiohns: ${configurations.joinToString(", ") {it.name}}")
+            logger.warn(
+                "WARNING: No configuration found: $path, candidates: ${configurations.joinToString(", ") {it.name}}"
+            )
         }
 
 internal fun Project.resolve(property: String) =

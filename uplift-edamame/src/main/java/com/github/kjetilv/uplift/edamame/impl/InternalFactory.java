@@ -52,9 +52,9 @@ public final class InternalFactory {
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
-        MapHasher<K, H> mapHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
+        TreeHasher<K, H> treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
         Canonicalizer<K, H> canonicalValues = new CanonicalSubstructuresCataloguer<>();
-        return new MapsMemoizerImpl<>(mapHasher, canonicalValues);
+        return new MapsMemoizerImpl<>(treeHasher, canonicalValues);
     }
 
     public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
@@ -72,7 +72,7 @@ public final class InternalFactory {
     private InternalFactory() {
     }
 
-    private static <K, H extends HashKind<H>> MapHasher<K, H> mapHasher(
+    private static <K, H extends HashKind<H>> TreeHasher<K, H> mapHasher(
         H kind,
         KeyHandler<K> keyHandler,
         LeafHasher<H> leafHasher,

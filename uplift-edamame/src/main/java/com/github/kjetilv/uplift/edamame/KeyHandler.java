@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.edamame;
 
+import com.github.kjetilv.uplift.util.Bytes;
+
 /// Strategy interface for key handling.  [Normalizes][#normalize(Object)] arbitrary objects into keys,
 /// and provides a way to [byte-encode][#bytes(Object)] keys for hashing purposes.
 ///
@@ -19,6 +21,10 @@ public interface KeyHandler<K> {
     @SuppressWarnings("unchecked")
     static <K> KeyHandler<K> defaultHandler() {
         return key -> (K) key.toString();
+    }
+
+    default Bytes toBytes(K key) {
+        return Bytes.from(bytes(key));
     }
 
     /// Affects how maps are hashed wrt. their keys.  Default implementation is to get the

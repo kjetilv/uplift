@@ -88,29 +88,33 @@ public final class Hashes {
         throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
     }
 
-    public static byte[] bytes(int i) {
+    public static Bytes intToBytes(int i) {
+        return Bytes.from(intBytes(i));
+    }
+
+    public static byte[] intBytes(int i) {
         return intToBytes(i, 0, new byte[Integer.BYTES]);
     }
 
-    public static byte[] bytes(long l) {
+    public static byte[] longBytes(long l) {
         return longToBytes(l, 0, new byte[Long.BYTES]);
     }
 
-    public static int toInt(byte[] bs) {
+    public static int bytesToInt(byte[] bs) {
         return (bs[0] & 0xFF) << 28 |
                (bs[1] & 0xFF) << 16 |
                (bs[2] & 0xFF) << 8 |
                bs[3] & 0xFF;
     }
 
-    public static byte[] bytes(long l0, long l1) {
+    public static byte[] longBytes(long l0, long l1) {
         byte[] bytes = new byte[16];
         longToBytes(l0, 0, bytes);
         longToBytes(l1, 8, bytes);
         return bytes;
     }
 
-    public static byte[] bytes(long l0, long l1, long l2, long l3) {
+    public static byte[] longBytes(long l0, long l1, long l2, long l3) {
         byte[] bytes = new byte[32];
         longToBytes(l0, 0, bytes);
         longToBytes(l1, 8, bytes);
@@ -140,7 +144,7 @@ public final class Hashes {
         return bytes;
     }
 
-    public static byte[] toBytes(long[] ls) {
+    public static byte[] longsToBytes(long[] ls) {
         byte[] bytes = new byte[ls.length * Long.BYTES];
         for (int l = 0; l < ls.length; l++) {
             longToBytes(ls[l], l * 8, bytes);
@@ -171,7 +175,7 @@ public final class Hashes {
     }
 
     public static Function<Integer, byte[]> intToBytes() {
-        return Hashes::bytes;
+        return Hashes::intBytes;
     }
 
     private Hashes() {

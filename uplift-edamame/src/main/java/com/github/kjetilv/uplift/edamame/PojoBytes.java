@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.hash.Hashes;
 public interface PojoBytes {
 
     /// Uses hashcode to derive four bytes.
-    PojoBytes HASHCODE = value -> Hashes.bytes(value.hashCode());
+    PojoBytes HASHCODE = value -> Hashes.intBytes(value.hashCode());
 
     /// Uses [Object#toString()] to derive bytes from the string
     PojoBytes TOSTRING = value -> value.toString().getBytes();

@@ -24,7 +24,7 @@ public class MultiThreadedTest {
             for (int i = 0; i < 10; i++) {
                 for (int j = 0; j < 100; j++) {
                     Map<CaKe, Object> caKeMap = map(i, j);
-                    zz(1);
+                    zz();
                     mapsMemoizer.putIfAbsent(i * 100 + j, caKeMap);
                 }
             }
@@ -36,7 +36,7 @@ public class MultiThreadedTest {
         for (int x = 0; x < 5 && !complete.get(); x++) {
             for (int i = 0; i < 10; i++) {
                 for (int j = 0; j < 100; j++) {
-                    zz(1);
+                    zz();
                     Map<CaKe, ?> map = mapsMemoizer.get(i * 100 + j);
                     if (map != null) {
                         comparisons++;
@@ -59,9 +59,9 @@ public class MultiThreadedTest {
         assertTrue(comparisons > 0);
     }
 
-    private static void zz(int ms) {
+    private static void zz() {
         try {
-            Thread.sleep(ms);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);

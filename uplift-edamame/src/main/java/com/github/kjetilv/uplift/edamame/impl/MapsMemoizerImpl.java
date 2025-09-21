@@ -41,14 +41,14 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private final ReadWriteLock overflowLock = new ReentrantReadWriteLock();
 
-    private final MapHasher<K, H> mapHasher;
+    private final TreeHasher<K, H> treeHasher;
 
     private Canonicalizer<K, H> canonicalValues;
 
     /// @param canonicalValues Not null
     /// @see MapsMemoizers#create(KeyHandler, HashKind)
-    MapsMemoizerImpl(MapHasher<K, H> mapHasher, Canonicalizer<K, H> canonicalValues) {
-        this.mapHasher = requireNonNull(mapHasher, "mapHasher");
+    MapsMemoizerImpl(TreeHasher<K, H> treeHasher, Canonicalizer<K, H> canonicalValues) {
+        this.treeHasher = requireNonNull(treeHasher, "mapHasher");
         this.canonicalValues = requireNonNull(canonicalValues, "canonicalValues");
     }
 
@@ -94,7 +94,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private boolean put(I identifier, Map<?, ?> value, boolean requireAbsent) {
         requireNonNull(identifier, "identifier");
         requireNonNull(value, "value");
-        HashedTree<K, H> hashedTree = mapHasher.hashedTree(value);
+        HashedTree<K, H> hashedTree = treeHasher.hash(value);
         CanonicalValue<H> canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
             case CanonicalValue.Node<?, H> node -> canonicalWrite(() ->

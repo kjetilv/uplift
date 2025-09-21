@@ -67,8 +67,14 @@ public final class Maps {
             ));
     }
 
-    public static <K, V> Supplier<Map<K, V>> sizedMap(int size) {
-        return () -> new HashMap<>(capacity(size));
+    public static <K, V> Supplier<Map<K, V>> getSizedMap(int size) {
+        return () -> sizedMap(size);
+    }
+
+    public static <K, V> Map<K, V> sizedMap(Map<K, V> input) {
+        Map<K, V> sizedMap = sizedMap(input.size());
+        sizedMap.putAll(input);
+        return Collections.unmodifiableMap(sizedMap);
     }
 
     public static <K, V, R> Map<K, R> transformValues(
@@ -81,8 +87,14 @@ public final class Maps {
                 Map.Entry::getKey,
                 entry -> transform.apply(entry.getValue()),
                 noMerge(),
-                sizedMap(map.size())
+                getSizedMap(map.size())
             )));
+    }
+
+    public static <R> BinaryOperator<R> noMerge() {
+        return (r1, r2) -> {
+            throw new IllegalStateException("Duplicate key " + r1 + "/" + r2);
+        };
     }
 
     static <K, T, V, R> Map<K, R> transformValues(
@@ -96,20 +108,18 @@ public final class Maps {
                 entry -> keyNormalizer.apply(entry.getKey()),
                 entry -> transform.apply(entry.getValue()),
                 noMerge(),
-                sizedMap(map.size())
+                getSizedMap(map.size())
             )));
-    }
-
-    public static <R> BinaryOperator<R> noMerge() {
-        return (r1, r2) -> {
-            throw new IllegalStateException("Duplicate key " + r1 + "/" + r2);
-        };
     }
 
     private Maps() {
     }
 
     private static final int MAX_POWER_OF_TWO = 1 << Integer.SIZE - 2;
+
+    private static <K, V> Map<K, V> sizedMap(int size) {
+        return new HashMap<>(capacity(size));
+    }
 
     private static <V> BinaryOperator<V> noCombine() {
         return (v1, v2) -> {
