@@ -1,7 +1,11 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module uplift.hash;
-import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.edamame.Canonicalizer;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
+import com.github.kjetilv.uplift.edamame.MapsMemoizer;
+import com.github.kjetilv.uplift.edamame.PojoBytes;
 
 import static java.util.Objects.requireNonNull;
 

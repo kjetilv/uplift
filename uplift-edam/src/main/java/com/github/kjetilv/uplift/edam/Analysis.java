@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.edam;
 import module java.base;
 import module uplift.edam;
 import module uplift.hash;
-import com.github.kjetilv.uplift.edam.patterns.Timelined;
 
 import static com.github.kjetilv.uplift.edam.internal.Utils.Lists.requireNotEmpty;
 import static java.util.Objects.requireNonNull;

@@ -4,6 +4,7 @@ import module java.base;
 import module java.net.http;
 import module uplift.flogs;
 import module uplift.kernel;
+import module uplift.s3;
 import module uplift.util;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
