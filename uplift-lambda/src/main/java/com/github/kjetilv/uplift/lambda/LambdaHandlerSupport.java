@@ -17,12 +17,12 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
 
     @Override
     public final LambdaResult handle(LambdaPayload lambdaPayload) {
-        return result(lambdaPayload).orElseGet(() ->
+        return lambdaResult(lambdaPayload).orElseGet(() ->
             error(lambdaPayload, BAD_REQUEST, "{}: No result: {} {}", this, lambdaPayload)
         );
     }
 
-    protected abstract Optional<LambdaResult> result(LambdaPayload payload);
+    protected abstract Optional<LambdaResult> lambdaResult(LambdaPayload payload);
 
     protected static final int OK = 200;
 
@@ -42,12 +42,13 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
         Object... args
     ) {
         LambdaResult result = status(statusCode);
-        try {
-            return result;
-        } finally {
-            log.error(error, args);
-            log.debug("Failing lambda request {} with {}", source(lambdaPayload), result);
-        }
+        log.error(error, args);
+        log.debug("Failing lambda request {} with {}", source(lambdaPayload), result);
+        return result;
+    }
+
+    protected static LambdaResult lambdaResult(byte[] body) {
+        return LambdaResult.json(OK, body, entry("Content-Type", "application/json"));
     }
 
     private static String source(LambdaPayload lambdaPayload) {
@@ -59,9 +60,5 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
         } catch (Exception e) {
             return lambdaPayload + " (" + Throwables.summary(e) + ")";
         }
-    }
-
-    protected static LambdaResult result(byte[] body) {
-        return LambdaResult.json(OK, body, entry("Content-Type", "application/json"));
     }
 }
