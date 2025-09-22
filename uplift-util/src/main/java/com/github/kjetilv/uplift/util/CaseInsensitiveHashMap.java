@@ -9,7 +9,12 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
     public static <T, V> Collector<T, ?, Map<String, List<V>>> caseInsensitive(
         Function<? super T, String> key, Function<? super T, ? extends List<V>> values
     ) {
-        return caseInsensitive(key, values, (vs1, vs2) -> Stream.concat(vs1.stream(), vs2.stream()).toList());
+        return caseInsensitive(
+            key,
+            values,
+            (vs1, vs2) -> Stream.concat(vs1.stream(), vs2.stream())
+                .toList()
+        );
     }
 
     public static <T, V> Collector<T, ?, Map<String, V>> caseInsensitive(
@@ -22,10 +27,8 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
 
     @SuppressWarnings("unchecked")
     public static <T> Map<String, T> wrap(Map<?, T> map) {
-        return map == null || map.isEmpty()
-            ? Collections.emptyMap()
-            : map instanceof CaseInsensitiveHashMap<?>
-                ? (CaseInsensitiveHashMap<T>)map
+        return map == null || map.isEmpty() ? Collections.emptyMap()
+            : map instanceof CaseInsensitiveHashMap<?> ? (CaseInsensitiveHashMap<T>) map
                 : new CaseInsensitiveHashMap<>(map);
     }
 
