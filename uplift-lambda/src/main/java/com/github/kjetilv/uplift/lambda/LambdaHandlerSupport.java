@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
-import module uplift.flogs;
 import module uplift.json;
 import module uplift.util;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.kjetilv.uplift.lambda.LambdaResult.status;
 import static java.util.Map.entry;
@@ -12,7 +12,7 @@ import static java.util.Map.entry;
 @SuppressWarnings("unused")
 public abstract class LambdaHandlerSupport implements LambdaHandler {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(LambdaHandlerSupport.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaHandlerSupport.class);
 
     @Override
     public final LambdaResult handle(LambdaPayload lambdaPayload) {

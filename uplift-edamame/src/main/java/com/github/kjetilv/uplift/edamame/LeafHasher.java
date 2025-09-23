@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.edamame;
 
 import module java.base;
 import module uplift.hash;
-
 import com.github.kjetilv.uplift.edamame.impl.DefaultLeafHasher;
 import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
 

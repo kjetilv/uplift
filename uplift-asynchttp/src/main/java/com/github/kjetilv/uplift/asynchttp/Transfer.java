@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.asynchttp;
 
-import module uplift.flogs;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unused")
 public record Transfer(long totalSize, int bufferSize) {

@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
+import module uplift.edam;
 import module uplift.hash;
 import module uplift.util;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

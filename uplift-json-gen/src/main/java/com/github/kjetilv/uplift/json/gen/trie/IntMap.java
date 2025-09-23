@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.json.gen.trie;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import module java.base;
 
 sealed interface IntMap<T> extends IntFunction<T> {
 

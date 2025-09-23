@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
-import com.github.kjetilv.uplift.edamame.KeyHandler;
+import module uplift.edamame;
 
 final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
 

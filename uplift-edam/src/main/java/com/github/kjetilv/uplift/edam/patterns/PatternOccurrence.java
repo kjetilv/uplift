@@ -6,22 +6,22 @@ import com.github.kjetilv.uplift.edam.internal.Utils;
 
 import static java.util.Objects.requireNonNull;
 
-/// @param pattern     A pattern
+/// @param hashPattern     A pattern
 /// @param occurrences Actual occurrences following the pattern
 @SuppressWarnings("unused")
-public record PatternOccurrence<K extends HashKind<K>>(Pattern<K> pattern, List<Occurrence<K>> occurrences)
+public record PatternOccurrence<K extends HashKind<K>>(HashPattern<K> hashPattern, List<Occurrence<K>> occurrences)
     implements Spanning, Comparable<PatternOccurrence<K>>, Iterable<Occurrence<K>> {
 
-    public PatternOccurrence(Pattern<K> pattern) {
-        this(pattern, new ArrayList<>());
+    public PatternOccurrence(HashPattern<K> hashPattern) {
+        this(hashPattern, new ArrayList<>());
     }
 
-    public PatternOccurrence(Pattern<K> pattern, List<Occurrence<K>> occurrences) {
-        if (pattern.validOccurrences(occurrences)) {
-            this.pattern = requireNonNull(pattern, "pattern");
+    public PatternOccurrence(HashPattern<K> hashPattern, List<Occurrence<K>> occurrences) {
+        if (hashPattern.validOccurrences(occurrences)) {
+            this.hashPattern = requireNonNull(hashPattern, "pattern");
             this.occurrences = Utils.Lists.nonNullSorted(occurrences, "occurrences");
         } else {
-            throw new IllegalArgumentException(pattern + ": Not an occurrence: " + occurrences);
+            throw new IllegalArgumentException(hashPattern + ": Not an occurrence: " + occurrences);
         }
     }
 
@@ -49,20 +49,20 @@ public record PatternOccurrence<K extends HashKind<K>>(Pattern<K> pattern, List<
 
     public Optional<PatternOccurrence<K>> matchingOccurrence(Occurrence<K> occ) {
         return matchesNext(occ.hash())
-            ? Optional.of(new PatternOccurrence<>(pattern, add(occ)))
+            ? Optional.of(new PatternOccurrence<>(hashPattern, add(occ)))
             : Optional.empty();
     }
 
     public boolean matchesNext(Hash<K> hash) {
-        return occurrences.size() < pattern().length() && pattern.hash(occurrences().size()).equals(hash);
+        return occurrences.size() < hashPattern().length() && hashPattern.hash(occurrences().size()).equals(hash);
     }
 
     public boolean match() {
-        return pattern.length() == occurrences.size();
+        return hashPattern.length() == occurrences.size();
     }
 
     public boolean isSimple() {
-        return pattern.isSimple();
+        return hashPattern.isSimple();
     }
 
     @Override
@@ -83,6 +83,6 @@ public record PatternOccurrence<K extends HashKind<K>>(Pattern<K> pattern, List<
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + pattern + ": " + occurrences + "]";
+        return getClass().getSimpleName() + "[" + hashPattern + ": " + occurrences + "]";
     }
 }

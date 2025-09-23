@@ -1,9 +1,8 @@
 package com.github.kjetilv.uplift.json.bytes;
 
+import module java.base;
 import module uplift.json;
 import module uplift.util;
-
-import java.math.BigDecimal;
 
 public final class BytesSourceTokens implements Tokens {
 

@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
-
-import com.github.kjetilv.uplift.edam.Info;
-import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 
 /// Storage for [Throwable]s.
 @SuppressWarnings("unused")

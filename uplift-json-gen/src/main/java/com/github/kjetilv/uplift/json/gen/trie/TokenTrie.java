@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.json.gen.trie;
 
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenResolver;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.function.IntUnaryOperator;
+import module java.base;
+import module uplift.json;
 
 public class TokenTrie implements TokenResolver {
 

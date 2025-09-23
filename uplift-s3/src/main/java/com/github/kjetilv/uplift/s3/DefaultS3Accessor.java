@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.s3;
 
 import module java.base;
 import module java.net.http;
-import module uplift.flogs;
 import module uplift.kernel;
 import module uplift.s3;
 import module uplift.util;
@@ -11,6 +10,7 @@ import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import com.github.kjetilv.uplift.s3.util.Xml;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;

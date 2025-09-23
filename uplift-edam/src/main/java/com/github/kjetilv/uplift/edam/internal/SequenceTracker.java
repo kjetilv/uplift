@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
-import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Analysis.None;
-import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.edam.patterns.Pattern;
-import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
-import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 
 import static com.github.kjetilv.uplift.edam.Analysis.Multiple;
 import static com.github.kjetilv.uplift.edam.Analysis.Simple;
@@ -32,11 +28,11 @@ record SequenceTracker<K extends HashKind<K>>(Storage<K> storage, Detector detec
     }
 
     private List<PatternMatch<K>> getPatternMatches(Occurrence<K> occurrence) {
-        List<Pattern<K>> patterns = detector.patterns(storage, storage.count());
+        List<HashPattern<K>> hashPatterns = detector.patterns(storage, storage.count());
         Stream<Occurrence<K>> occurrenceStream = storage.forward().spool();
         return Progressions.repeats(
             occurrence,
-            patterns,
+            hashPatterns,
             occurrenceStream
         );
     }

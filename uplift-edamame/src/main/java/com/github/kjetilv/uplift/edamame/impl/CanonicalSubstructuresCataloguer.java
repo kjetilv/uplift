@@ -1,12 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
+import module uplift.edamame;
 import module uplift.hash;
-
-import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.CanonicalValue.Collision;
-import com.github.kjetilv.uplift.edamame.Canonicalizer;
-import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.HashedTree.Node;
 import com.github.kjetilv.uplift.edamame.HashedTree.Nodes;
 

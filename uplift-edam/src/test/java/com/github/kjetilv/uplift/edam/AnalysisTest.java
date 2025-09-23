@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.edam;
 
+import com.github.kjetilv.uplift.edam.patterns.HashPattern;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.edam.patterns.Pattern;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 import org.junit.jupiter.api.Test;
@@ -29,24 +29,24 @@ class AnalysisTest {
         Occurrence<K128> occ2 = new Occurrence<>(ep(2), H2);
         Occurrence<K128> occ3 = new Occurrence<>(ep(3), H0);
         Occurrence<K128> occ4 = new Occurrence<>(ep(4), H2);
-        Pattern<K128> pattern1 = new Pattern<>(H0, H2, H0, H2);
-        Pattern<K128> pattern2 = new Pattern<>(H2);
+        HashPattern<K128> hashPattern1 = new HashPattern<>(H0, H2, H0, H2);
+        HashPattern<K128> hashPattern2 = new HashPattern<>(H2);
         Analysis.Multiple<K128> multiple = new Analysis.Multiple<>(
             occ4,
             List.of(
                 new PatternMatch<>(
-                    pattern1,
+                    hashPattern1,
                     List.of(
-                        new PatternOccurrence<>(pattern1, List.of(occ0, occ1)),
-                        new PatternOccurrence<>(pattern1, List.of(occ3, occ4))
+                        new PatternOccurrence<>(hashPattern1, List.of(occ0, occ1)),
+                        new PatternOccurrence<>(hashPattern1, List.of(occ3, occ4))
                     )
                 ),
                 new PatternMatch<>(
-                    pattern2,
+                    hashPattern2,
                     List.of(
-                        new PatternOccurrence<>(pattern2, List.of(occ1)),
-                        new PatternOccurrence<>(pattern2, List.of(occ2)),
-                        new PatternOccurrence<>(pattern2, List.of(occ4))
+                        new PatternOccurrence<>(hashPattern2, List.of(occ1)),
+                        new PatternOccurrence<>(hashPattern2, List.of(occ2)),
+                        new PatternOccurrence<>(hashPattern2, List.of(occ4))
                     )
                 )
             )

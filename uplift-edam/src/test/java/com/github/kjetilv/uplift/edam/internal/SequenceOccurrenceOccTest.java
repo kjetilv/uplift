@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import com.github.kjetilv.uplift.edam.patterns.HashPattern;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.edam.patterns.Pattern;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 import org.junit.jupiter.api.Test;
 
@@ -20,8 +20,8 @@ class SequenceOccurrenceOccTest {
         Hash<K128> h1 = K128.random();
         Hash<K128> h2 = K128.random();
         Hash<K128> h3 = K128.random();
-        Pattern<K128> pattern = new Pattern<>(h1, h2, h3);
-        PatternOccurrence<K128> occ1 = new PatternOccurrence<>(pattern);
+        HashPattern<K128> hashPattern = new HashPattern<>(h1, h2, h3);
+        PatternOccurrence<K128> occ1 = new PatternOccurrence<>(hashPattern);
         assertTrue(occ1.matchesNext(h1));
         assertFalse(occ1.matchesNext(h2));
         assertFalse(occ1.matchesNext(h3));

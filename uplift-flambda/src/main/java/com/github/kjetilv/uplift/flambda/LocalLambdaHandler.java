@@ -2,10 +2,10 @@ package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
 import module uplift.asynchttp;
-import module uplift.flogs;
 import module uplift.lambda;
 import module uplift.util;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 

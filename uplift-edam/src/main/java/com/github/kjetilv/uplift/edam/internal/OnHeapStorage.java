@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module uplift.edam;
 import module uplift.hash;
-
-import com.github.kjetilv.uplift.edam.Window;
-import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 
 final class OnHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
 

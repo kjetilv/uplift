@@ -8,15 +8,15 @@ import static java.util.Objects.requireNonNull;
 
 /// @param hashes Hashes in this pattern
 @SuppressWarnings("unused")
-public record Pattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Comparable<Pattern<K>>, Iterable<Hash<K>> {
+public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Comparable<HashPattern<K>>, Iterable<Hash<K>> {
 
     @SafeVarargs
     @SuppressWarnings("unused")
-    public Pattern(Hash<K>... hashes) {
+    public HashPattern(Hash<K>... hashes) {
         this(Cycles.find(hashes));
     }
 
-    public Pattern {
+    public HashPattern {
         requireNotEmpty(hashes, "ids");
     }
 
@@ -38,14 +38,14 @@ public record Pattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Co
     }
 
     @Override
-    public int compareTo(Pattern<K> pattern) {
+    public int compareTo(HashPattern<K> hashPattern) {
         int length = length();
-        int lengthCompare = Integer.compare(length, pattern.length());
+        int lengthCompare = Integer.compare(length, hashPattern.length());
         if (lengthCompare != 0) {
             return lengthCompare;
         }
         for (int i = 0; i < length; i++) {
-            int compared = hash(i).compareTo(pattern.hash(i));
+            int compared = hash(i).compareTo(hashPattern.hash(i));
             if (compared != 0) {
                 return compared;
             }
@@ -66,11 +66,11 @@ public record Pattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Co
             .filter(hash::equals).count());
     }
 
-    public Pattern<K> cyclicSubPattern() {
+    public HashPattern<K> cyclicSubPattern() {
         List<Hash<K>> base = Cycles.find(hashes);
         return base.size() == hashes.size()
             ? this
-            : new Pattern<>(base);
+            : new HashPattern<>(base);
     }
 
     public boolean isCandidate(Hash<K> start, Hash<K> end) {
@@ -78,9 +78,9 @@ public record Pattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Co
                || hashes.size() > 1 && hashes.getFirst().equals(start) && hashes.getLast().equals(end);
     }
 
-    public Pattern<K> with(Pattern<K> pattern) {
-        return new Pattern<>(
-            Stream.of(hashes(), pattern.hashes())
+    public HashPattern<K> with(HashPattern<K> hashPattern) {
+        return new HashPattern<>(
+            Stream.of(hashes(), hashPattern.hashes())
                 .flatMap(List::stream)
                 .toList()
         );

@@ -2,8 +2,8 @@ package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
 import module java.net.http;
-import module uplift.flogs;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 

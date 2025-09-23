@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.kernel.io;
 
 import module java.base;
-import module uplift.flogs;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ByteBuffers {
 

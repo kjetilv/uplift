@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.json.gen.trie;
 
-import com.github.kjetilv.uplift.json.Token;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
+import module uplift.json;
 
 import static java.util.Optional.ofNullable;
 

@@ -287,7 +287,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         public List<PatternOccurrence<K>> occurrences(List<Hash<K>> hashes) {
             return matches.stream()
                 .filter(patternOccurrences1 ->
-                    patternOccurrences1.pattern().hashes().equals(hashes))
+                    patternOccurrences1.hashPattern().hashes().equals(hashes))
                 .map(PatternMatch::occurrences)
                 .flatMap(List::stream)
                 .toList();

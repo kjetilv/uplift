@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
 import module java.base;
-import module uplift.json.anno;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
 
 @JsonRecord(factoryClass = "Users")
 public record User(

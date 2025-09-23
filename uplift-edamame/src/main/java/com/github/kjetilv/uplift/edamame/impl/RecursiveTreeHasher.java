@@ -1,12 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
+import module uplift.edamame;
 import module uplift.hash;
 import module uplift.util;
-import com.github.kjetilv.uplift.edamame.HashedTree;
-import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
-import com.github.kjetilv.uplift.edamame.MapsMemoizers;
 
 import static com.github.kjetilv.uplift.edamame.HashedTree.*;
 import static com.github.kjetilv.uplift.util.Collectioons.*;

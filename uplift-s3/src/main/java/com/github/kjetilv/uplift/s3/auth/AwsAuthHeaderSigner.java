@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.s3.auth;
 
 import module java.base;
-import module uplift.flogs;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /// Common methods and properties for all AWS4 signer variants
 public final class AwsAuthHeaderSigner extends AbstractSigner {

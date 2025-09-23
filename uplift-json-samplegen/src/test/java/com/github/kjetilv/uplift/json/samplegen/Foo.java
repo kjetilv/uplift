@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import module uplift.json;
-import module uplift.json.anno;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 @JsonRecord
 public record Foo(int foo) {

@@ -1,13 +1,18 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import module java.base;
-import module org.assertj.core;
-import module org.junit.jupiter.api;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class JsonEventCallbacksTest {
 

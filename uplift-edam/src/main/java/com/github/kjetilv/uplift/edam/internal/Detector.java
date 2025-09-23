@@ -1,12 +1,12 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
-import com.github.kjetilv.uplift.edam.patterns.Pattern;
 
 record Detector(int depth) {
 
-    <K extends HashKind<K>> List<Pattern<K>> patterns(
+    <K extends HashKind<K>> List<HashPattern<K>> patterns(
         LongFunction<? extends Supplier<Hash<K>>> get,
         long count
     ) {
@@ -14,13 +14,13 @@ record Detector(int depth) {
                 patterns(get, i, 0, count))
             .flatMap(Function.identity())
             .distinct()
-            .map(Pattern::cyclicSubPattern)
+            .map(HashPattern::cyclicSubPattern)
             .distinct()
             .sorted()
             .toList();
     }
 
-    private <K extends HashKind<K>> Stream<Pattern<K>> patterns(
+    private <K extends HashKind<K>> Stream<HashPattern<K>> patterns(
         LongFunction<? extends Supplier<Hash<K>>> get,
         long index,
         int length,
@@ -31,29 +31,29 @@ record Detector(int depth) {
             : expand(get, index, length, count, single(get, index));
     }
 
-    private <K extends HashKind<K>> Stream<Pattern<K>> expand(
+    private <K extends HashKind<K>> Stream<HashPattern<K>> expand(
         LongFunction<? extends Supplier<Hash<K>>> get,
         long index,
         int length,
         long count,
-        Pattern<K> pattern
+        HashPattern<K> hashPattern
     ) {
         return Stream.concat(
-            Stream.of(pattern),
+            Stream.of(hashPattern),
             remainingIndices(index, count)
                 .mapToObj(i ->
                     patterns(get, i, length + 1, count))
                 .flatMap(Function.identity())
                 .distinct()
-                .map(pattern::with)
+                .map(hashPattern::with)
         );
     }
 
-    private static <K extends HashKind<K>> Pattern<K> single(
+    private static <K extends HashKind<K>> HashPattern<K> single(
         LongFunction<? extends Supplier<Hash<K>>> get,
         long index
     ) {
-        return new Pattern<>(get.apply(index).get());
+        return new HashPattern<>(get.apply(index).get());
     }
 
     private static LongStream remainingIndices(long index, long size) {

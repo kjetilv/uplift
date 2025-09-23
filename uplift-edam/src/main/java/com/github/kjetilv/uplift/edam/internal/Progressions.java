@@ -1,26 +1,22 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
-
-import com.github.kjetilv.uplift.edam.patterns.Occurrence;
-import com.github.kjetilv.uplift.edam.patterns.Pattern;
-import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
-import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 
 record Progressions<K extends HashKind<K>>(
     Occurrence<K> current,
-    Map<Hash<K>, List<Pattern<K>>> starters,
+    Map<Hash<K>, List<HashPattern<K>>> starters,
     List<PatternOccurrence<K>> progressing,
     List<PatternOccurrence<K>> completed
 ) {
     static <K extends HashKind<K>> List<PatternMatch<K>> repeats(
         Occurrence<K> occurrence,
-        List<Pattern<K>> patterns,
+        List<HashPattern<K>> hashPatterns,
         Stream<Occurrence<K>> occurrences
     ) {
         return occurrences.reduce(
-            new Progressions<>(occurrence, patterns),
+            new Progressions<>(occurrence, hashPatterns),
             Progressions::proceed,
             Utils.Lists.noCombine()
         ).resolve();
@@ -33,10 +29,10 @@ record Progressions<K extends HashKind<K>>(
         Objects.requireNonNull(completed, "completed");
     }
 
-    private Progressions(Occurrence<K> occurrence, List<Pattern<K>> patterns) {
+    private Progressions(Occurrence<K> occurrence, List<HashPattern<K>> hashPatterns) {
         this(
             Objects.requireNonNull(occurrence, "occurrence"),
-            group(Objects.requireNonNull(patterns, "patterns")),
+            group(Objects.requireNonNull(hashPatterns, "patterns")),
             Collections.emptyList(),
             Collections.emptyList()
         );
@@ -53,15 +49,15 @@ record Progressions<K extends HashKind<K>>(
                 .flatMap(Optional::stream)
                 .toList();
 
-        Collection<Pattern<K>> stillViablePatterns = stillViableProgressions.stream()
-            .map(PatternOccurrence::pattern)
+        Collection<HashPattern<K>> stillViableHashPatterns = stillViableProgressions.stream()
+            .map(PatternOccurrence::hashPattern)
             .collect(Collectors.toSet());
 
         List<PatternOccurrence<K>> newCandidates = starters.get(historicalHash)
             .stream()
             .filter(hashPattern ->
                 hashPattern.isCandidate(historicalHash, currentHash) &&
-                !stillViablePatterns.contains(hashPattern))
+                !stillViableHashPatterns.contains(hashPattern))
             .map(PatternOccurrence::new)
             .map(patternOccurrence ->
                 patternOccurrence.matchingOccurrence(historical))
@@ -89,7 +85,7 @@ record Progressions<K extends HashKind<K>>(
 
     private List<PatternMatch<K>> resolve() {
         return completed.stream()
-            .collect(Collectors.groupingBy(PatternOccurrence::pattern))
+            .collect(Collectors.groupingBy(PatternOccurrence::hashPattern))
             .entrySet()
             .stream()
             .filter(entry ->
@@ -105,12 +101,12 @@ record Progressions<K extends HashKind<K>>(
         }
     }
 
-    private static <K extends HashKind<K>> Map<Hash<K>, List<Pattern<K>>> group(List<Pattern<K>> patterns) {
-        return patterns.stream()
+    private static <K extends HashKind<K>> Map<Hash<K>, List<HashPattern<K>>> group(List<HashPattern<K>> hashPatterns) {
+        return hashPatterns.stream()
             .collect(Collectors.groupingBy(pattern -> pattern.hashes().getFirst()));
     }
 
-    private static <K extends HashKind<K>> PatternMatch<K> patternOccurrences(Map.Entry<Pattern<K>, List<PatternOccurrence<K>>> entry) {
+    private static <K extends HashKind<K>> PatternMatch<K> patternOccurrences(Map.Entry<HashPattern<K>, List<PatternOccurrence<K>>> entry) {
         return new PatternMatch<>(entry.getKey(), entry.getValue());
     }
 

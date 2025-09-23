@@ -1,13 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
 import module uplift.util;
-
-import com.github.kjetilv.uplift.edam.Handler;
-import com.github.kjetilv.uplift.edam.HashFun;
-import com.github.kjetilv.uplift.edam.Window;
-import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 
 public final class InternalFactory {
 

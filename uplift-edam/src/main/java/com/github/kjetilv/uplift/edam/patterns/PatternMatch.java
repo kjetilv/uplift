@@ -2,15 +2,15 @@ package com.github.kjetilv.uplift.edam.patterns;
 
 import module java.base;
 import module uplift.hash;
-
 import com.github.kjetilv.uplift.edam.internal.Utils;
+
 import static java.util.Objects.requireNonNull;
 
-/// @param pattern     The pattern that has occurred
+/// @param hashPattern     The pattern that has occurred
 /// @param occurrences THe occurrences
 /// @param timespan    Timespan of all occurrences
 public record PatternMatch<K extends HashKind<K>>(
-    Pattern<K> pattern,
+    HashPattern<K> hashPattern,
     List<PatternOccurrence<K>> occurrences,
     Timespan timespan
 ) implements Timelined, Comparable<PatternMatch<K>>, Iterable<PatternOccurrence<K>> {
@@ -24,36 +24,36 @@ public record PatternMatch<K extends HashKind<K>>(
         String delimiter
     ) {
         return sequenceOccurrences.stream()
-            .sorted(Comparator.comparing(PatternMatch::pattern))
+            .sorted(Comparator.comparing(PatternMatch::hashPattern))
             .map(PatternMatch::toShortString)
             .map(Object::toString)
             .collect(Collectors.joining(delimiter == null ? "⁄" : delimiter));
     }
 
-    public PatternMatch(Pattern<K> pattern, List<PatternOccurrence<K>> patternOccurrences) {
+    public PatternMatch(HashPattern<K> hashPattern, List<PatternOccurrence<K>> patternOccurrences) {
         this(
-            requireNonNull(pattern, "pattern"),
+            requireNonNull(hashPattern, "pattern"),
             Utils.Lists.nonNullSorted(patternOccurrences, "patternOccurrences"),
             Timespan.of(patternOccurrences)
         );
     }
 
     public PatternMatch {
-        requireNonNull(pattern, "pattern");
+        requireNonNull(hashPattern, "pattern");
         requireNonNull(occurrences, "occurrences");
         requireNonNull(timespan, "timespan");
     }
 
     public int count(Hash<K> hash) {
-        return pattern.count(hash) * occurrences.size();
+        return hashPattern.count(hash) * occurrences.size();
     }
 
     public boolean isSimple() {
-        return pattern.isSimple();
+        return hashPattern.isSimple();
     }
 
     public boolean isCombined() {
-        return pattern.isCombined();
+        return hashPattern.isCombined();
     }
 
     @Override
@@ -84,7 +84,7 @@ public record PatternMatch<K extends HashKind<K>>(
     }
 
     public String toShortString() {
-        return occurrences.size() + "x" + pattern.toShortString() ;
+        return occurrences.size() + "x" + hashPattern.toShortString() ;
     }
 
     public Optional<List<Occurrence<K>>> singleOccurrence() {
@@ -95,14 +95,14 @@ public record PatternMatch<K extends HashKind<K>>(
 
     @Override
     public String toString() {
-        if (pattern.length() == 1 && occurrences.size() == 1) {
+        if (hashPattern.length() == 1 && occurrences.size() == 1) {
             return getClass().getSimpleName() + "[" +
-                   pattern.hashes().getFirst() + "@" + occurrences.getFirst() +
+                   hashPattern.hashes().getFirst() + "@" + occurrences.getFirst() +
                    "]";
         }
         return getClass().getSimpleName() + "[" +
-               "/" + pattern.hashes().size() +
-               "<" + pattern.hashes()
+               "/" + hashPattern.hashes().size() +
+               "<" + hashPattern.hashes()
                    .stream()
                    .map(Hash::toString)
                    .collect(Collectors.joining()) +

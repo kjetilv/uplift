@@ -1,7 +1,13 @@
 package com.github.kjetilv.uplift.json.samplegen;
 
-import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class MyCallbacks implements Callbacks {
 

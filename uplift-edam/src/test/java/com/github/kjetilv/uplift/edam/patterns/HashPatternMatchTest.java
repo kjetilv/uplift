@@ -10,15 +10,15 @@ import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static java.time.Instant.EPOCH;
 import static org.junit.jupiter.api.Assertions.*;
 
-class PatternMatchTest {
+class HashPatternMatchTest {
 
     @Test
     void counts() {
         PatternMatch<K128> patternMatch = new PatternMatch<>(
-            pattern,
+            HASH_PATTERN,
             List.of(
-                pattern.at(ep(0), ep(1), ep(2)),
-                pattern.at(ep(3), ep(4), ep(5))
+                HASH_PATTERN.at(ep(0), ep(1), ep(2)),
+                HASH_PATTERN.at(ep(3), ep(4), ep(5))
             )
         );
 
@@ -32,10 +32,10 @@ class PatternMatchTest {
     @Test
     void nonMatch() {
         PatternMatch<K128> patternMatch = new PatternMatch<>(
-            pattern,
+            HASH_PATTERN,
             List.of(
-                pattern.at(ep(0), ep(1)),
-                pattern.at(ep(3), ep(4), ep(5))
+                HASH_PATTERN.at(ep(0), ep(1)),
+                HASH_PATTERN.at(ep(3), ep(4), ep(5))
             )
         );
         assertFalse(patternMatch.match());
@@ -52,7 +52,7 @@ class PatternMatchTest {
 
     private final static Hash<K128> h2 = K128.random();
 
-    private final static Pattern<K128> pattern = new Pattern<>(h0, h1, h2);
+    private final static HashPattern<K128> HASH_PATTERN = new HashPattern<>(h0, h1, h2);
 
     private static Instant ep(int s) {
         return EPOCH.plusSeconds(s);

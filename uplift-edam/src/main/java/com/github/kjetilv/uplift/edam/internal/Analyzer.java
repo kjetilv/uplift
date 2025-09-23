@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import module uplift.edam;
 import module uplift.hash;
-
-import com.github.kjetilv.uplift.edam.Analysis;
-import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 
 final class Analyzer<T, K extends HashKind<K>> {
 
