@@ -9,40 +9,30 @@ class UpliftPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.tasks.register("uplift-init", UpliftInitTask::class.java) {
-            it.apply {
-                configureFor(project) {
-                    activeJar.set(project.cdkFile(stackbuilderJar.get()))
-                    activePom.set(project.cdkFile("pom.xml"))
-                }
+            it.configureFor(project) {
+                activeJar.set(project.cdkFile(stackbuilderJar.get()))
+                activePom.set(project.cdkFile("pom.xml"))
             }
         }
         project.tasks.register("uplift-bootstrap", UpliftBootstrapTask::class.java) {
-            it.apply {
-                configureFor(project) {
-                    template.set(project.templateFile(this))
-                    dependsOn("uplift-init")
-                }
+            it.configureFor(project) {
+                template.set(project.templateFile(this))
+                dependsOn("uplift-init")
             }
         }
         project.tasks.register("uplift", UpliftDeployTask::class.java) {
-            it.apply {
-                configureFor(project) {
-                    dependsOn("uplift-bootstrap")
-                }
+            it.configureFor(project) {
+                dependsOn("uplift-bootstrap")
             }
         }
         project.tasks.register("uplift-ping", UpliftPingTask::class.java) {
-            it.apply {
-                configureFor(project) {
-                    clearDependencies()
-                }
+            it.configureFor(project) {
+                clearDependencies()
             }
         }
         project.tasks.register("uplift-destroy", UpliftDestroyTask::class.java) {
-            it.apply {
-                configureFor(project) {
-                    clearDependencies()
-                }
+            it.configureFor(project) {
+                clearDependencies()
             }
         }
     }
@@ -74,8 +64,10 @@ class UpliftPlugin : Plugin<Project> {
     }
 
     private fun composeName(project: Project) = normalize(
-        if (project.name.startsWith(project.group.toString())) project.name
-        else "${project.group}-${project.name}"
+        if (project.name.startsWith(project.group.toString()))
+            project.name
+        else
+            "${project.group}-${project.name}"
     )
 
     private fun normalize(s: String) =

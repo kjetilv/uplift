@@ -60,7 +60,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
     @Override
     public void run() {
-        join();
+        lambdaServer.join();
     }
 
     @Override
@@ -80,18 +80,14 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
         return apiUri;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[api@" + apiUri + " -> lambda@" + lambdaUri + "]";
-    }
-
-    void join() {
-        lambdaServer.join();
-    }
-
     void awaitStarted(Duration timeout) {
         lambdaServer.awaitActive(timeout);
     }
 
     private static final String URL = "http://localhost:%1$d";
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[api@" + apiUri + " -> lambda@" + lambdaUri + "]";
+    }
 }

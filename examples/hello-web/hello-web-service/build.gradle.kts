@@ -40,6 +40,4 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<NativeLamdbdaTask> {
-    main = "uplift.examples.helloweb.HelloWeb"
-}
+tasks.withType<NativeLamdbdaTask> { main = "helloweb" }

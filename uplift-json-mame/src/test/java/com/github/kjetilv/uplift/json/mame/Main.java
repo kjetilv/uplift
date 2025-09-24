@@ -62,6 +62,9 @@ public class Main {
         System.out.println("After GC (" + gcTime + "ms): " + Mem.create());
     }
 
+    private Main() {
+    }
+
     private static Stream<String> lines(String[] args) {
         List<Path> paths = Arrays.stream(args)
             .parallel()

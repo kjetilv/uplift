@@ -125,7 +125,7 @@ public class LambdaHarness implements Closeable {
             .forEach(ExecutorService::shutdown);
 
         this.looper.close();
-        this.localLambda.join();
+        this.localLambda.run();
     }
 
     public Reqs reqs() {

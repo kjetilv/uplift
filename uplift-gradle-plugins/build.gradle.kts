@@ -26,10 +26,10 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.207.0")
-    implementation("software.amazon.awssdk:lambda:2.32.3")
-    implementation("software.amazon.awssdk:cloudformation:2.32.3")
-    implementation("software.amazon.awssdk:auth:2.32.3")
+    implementation("software.amazon.awscdk:aws-cdk-lib:2.216.0")
+    implementation("software.amazon.awssdk:lambda:2.34.2")
+    implementation("software.amazon.awssdk:cloudformation:2.34.2")
+    implementation("software.amazon.awssdk:auth:2.34.2")
     implementation("software.constructs:constructs:10.4.2")
     implementation("org.antlr:ST4:4.3.4")
 
