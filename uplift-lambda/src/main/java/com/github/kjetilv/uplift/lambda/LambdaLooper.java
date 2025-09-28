@@ -15,17 +15,17 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     private final LambdaHandler lambdaHandler;
 
-    private final Function<? super Invocation<Q, R>, ? extends Q> responseResolver;
+    private final ResponseResolver<Q, R> responseResolver;
 
     private final InvocationSink<Q, R> sink;
 
-    private final BiFunction<? super Invocation<Q, R>, ? super Throwable, Boolean> resultLog;
+    private final ResultLog<R> resultLog;
 
     private final Supplier<Instant> time;
 
     private final LongAdder initiated = new LongAdder();
 
-    private final LongAdder initiatedfFail = new LongAdder();
+    private final LongAdder initiatedFail = new LongAdder();
 
     private final LongAdder completedOk = new LongAdder();
 
@@ -40,9 +40,9 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     LambdaLooper(
         InvocationSource<Q, R> source,
         LambdaHandler lambdaHandler,
-        Function<? super Invocation<Q, R>, ? extends Q> responseResolver,
+        ResponseResolver<Q, R> responseResolver,
         InvocationSink<Q, R> sink,
-        BiFunction<? super Invocation<Q, R>, ? super Throwable, Boolean> resultLog,
+        ResultLog<R> resultLog,
         Supplier<Instant> time
     ) {
         this.source = requireNonNull(source, "source");
@@ -58,19 +58,10 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     public void run() {
         log.info("Loop started");
         try (
-            Streamer<Invocation<Q, R>> streamer = openStream();
-            Stream<CompletionStage<Invocation<Q, R>>> stream = streamer.open()
+            Stages<Invocation<Q, R>> stages = new Stages<>(source::next);
+            Stream<CompletionStage<Invocation<Q, R>>> stream = stages.stages()
         ) {
-            stream.map(stage ->
-                    stage.thenApply(this::process)
-                        .thenApply(invocation ->
-                            invocation.complete(responseResolver, time))
-                        .thenApply(sink::complete)
-                        .thenCompose(qr -> qr.completedAt(time.get()))
-                        .whenComplete(this::updateStats)
-                        .exceptionally(exception ->
-                            Invocation.failed(exception, time.get())))
-                .map(CompletionStage::toCompletableFuture)
+            stream.map(this::toFuture)
                 .peek(future ->
                     future.whenComplete(this::handleOutcome))
                 .forEach(CompletableFuture::join);
@@ -84,41 +75,14 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
         source.close();
     }
 
-    private Streamer<Invocation<Q, R>> openStream() {
-        return new Streamer<>(source::next);
-    }
-
-    private Invocation<Q, R> process(Invocation<Q, R> invocation) {
-        try {
-            return invocation.process(lambdaHandler, time);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to process " + invocation, e);
-        } finally {
-            initiated.increment();
-            lastTime.set(invocation.created());
-        }
-    }
-
-    private void updateStats(Invocation<Q, R> invocation, Throwable throwable) {
-        if (invocation == null || invocation.empty()) {
-            initiatedfFail.increment();
-            return;
-        }
-        try {
-            Boolean ok = null;
-            try {
-                ok = resultLog.apply(invocation, throwable);
-            } finally {
-                (ok != null && ok ? completedOk : completedFail).increment();
-            }
-            Duration timeSinceLast = Duration.between(lastTime.get(), invocation.created());
-            if (shouldlog(timeSinceLast, initiated.longValue())) {
-                log.info("{} completed {}", this, invocation);
-            }
-        } finally {
-            duration.accumulateAndGet(invocation.timeTaken(), Duration::plus);
-            lastTime.set(invocation.created());
-        }
+    private CompletableFuture<Invocation<Q, R>> toFuture(CompletionStage<Invocation<Q, R>> stage) {
+        return stage.thenApply(this::executeLambda)
+            .thenApply(this::prepareResponse)
+            .thenApply(sink::receive)
+            .thenCompose(this::markComplete)
+            .whenComplete(this::updateStats)
+            .exceptionally(this::fatalInvocation)
+            .toCompletableFuture();
     }
 
     private void handleOutcome(Invocation<Q, R> qr, Throwable throwable) {
@@ -137,6 +101,59 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
         } else {
             log.warn("Request failed: {}", qr, combine(throwable, qr.requestFailure()));
         }
+    }
+
+    private Invocation<Q, R> executeLambda(Invocation<Q, R> invocation) {
+        try {
+            LambdaResult result = lambdaHandler.handle(invocation.payload());
+            return invocation.result(result, time);
+        } catch (Exception e) {
+            try {
+                return invocation.result(LambdaResult.internalError(), e, time);
+            } finally {
+                initiatedFail.increment();
+            }
+        } finally {
+            try {
+                lastTime.set(invocation.created());
+            } finally {
+                initiated.increment();
+            }
+        }
+    }
+
+    private Invocation<Q, R> prepareResponse(Invocation<Q, R> invocation) {
+        return invocation.completed(responseResolver.resolve(invocation), time);
+    }
+
+    private CompletionStage<Invocation<Q, R>> markComplete(Invocation<Q, R> invocation) {
+        return invocation.completedAt(time.get());
+    }
+
+    private void updateStats(Invocation<Q, R> invocation, Throwable throwable) {
+        counter(invocation, throwable).increment();
+        if (invocation != null) {
+            updateTimes(invocation);
+        }
+    }
+
+    private Invocation<Q, R> fatalInvocation(Throwable exception) {
+        return Invocation.fatal(exception, time.get());
+    }
+
+    private void updateTimes(Invocation<Q, R> invocation) {
+        Duration timeSinceLast = Duration.between(lastTime.get(), invocation.created());
+        if (shouldlog(timeSinceLast, initiated.longValue())) {
+            log.info("{} completed {}", this, invocation);
+        }
+        duration.accumulateAndGet(invocation.timeTaken(), Duration::plus);
+        lastTime.set(invocation.created());
+    }
+
+    private LongAdder counter(Invocation<Q, R> invocation, Throwable throwable) {
+        return resultLog.ok(invocation, throwable)
+            ? completedOk
+            : completedFail;
     }
 
     private static final int WAIT_MS = 100;
@@ -180,5 +197,15 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
             completedFail,
             count > 0 ? Duration.ofMillis(duration.get().toMillis() / count) : Duration.ZERO
         );
+    }
+
+    interface ResponseResolver<Q, R> {
+
+        Q resolve(Invocation<Q, R> invocation);
+    }
+
+    interface ResultLog<R> {
+
+        boolean ok(Invocation<?, R> invocation, Throwable throwable);
     }
 }

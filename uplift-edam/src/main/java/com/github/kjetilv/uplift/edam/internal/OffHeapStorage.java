@@ -18,11 +18,7 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
         Indexer<Hash<K>> indexer,
         Arena arena
     ) {
-        return new OffHeapStorage<>(
-            window,
-            indexer,
-            arena
-        );
+        return new OffHeapStorage<>(window, indexer, arena);
     }
 
     private final MemorySegment segment;

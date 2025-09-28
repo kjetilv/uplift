@@ -5,11 +5,10 @@ import module java.net.http;
 
 import static java.util.Objects.requireNonNull;
 
-final class HttpInvocationSink implements InvocationSink<HttpRequest, HttpResponse<InputStream>> {
-
-    private final Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send;
-
-    private final Supplier<Instant> time;
+record HttpInvocationSink(
+    Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send,
+    Supplier<Instant> time
+) implements InvocationSink<HttpRequest, HttpResponse<InputStream>> {
 
     HttpInvocationSink(
         Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send,
@@ -20,9 +19,10 @@ final class HttpInvocationSink implements InvocationSink<HttpRequest, HttpRespon
     }
 
     @Override
-    public Invocation<HttpRequest, HttpResponse<InputStream>> complete(
+    public Invocation<HttpRequest, HttpResponse<InputStream>> receive(
         Invocation<HttpRequest, HttpResponse<InputStream>> invocation
     ) {
-        return invocation.completionFuture(send, time);
+        CompletionStage<HttpResponse<InputStream>> completionStage = send.apply(invocation.completionRequest());
+        return invocation.completionFuture(completionStage, time);
     }
 }

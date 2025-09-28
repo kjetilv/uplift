@@ -9,14 +9,12 @@ import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 @SuppressWarnings("MagicNumber")
 void main(String[] args) {
     Flogs.initialize(LogLevel.DEBUG);
-    Integer lambdaPort =
-        Arrays.stream(args)
-            .map(Integer::parseInt)
-            .findFirst().orElse(8081);
-    Integer apiPort =
-        Arrays.stream(args).skip(1)
-            .map(Integer::parseInt)
-            .findFirst().orElse(9001);
+    int lambdaPort = Arrays.stream(args)
+        .map(Integer::parseInt)
+        .findFirst().orElse(8081);
+    int apiPort = Arrays.stream(args).skip(1)
+        .map(Integer::parseInt)
+        .findFirst().orElse(9001);
     try (
         LocalLambda localLambda = new LocalLambda(
             new LocalLambdaSettings(

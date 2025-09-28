@@ -30,17 +30,13 @@ final class OffHeapIndexer256 extends AbstractOffHeapIndexer<K256> {
 
     private static final MemoryLayout HL = structLayout(JAVA_LONG, JAVA_LONG, JAVA_LONG, JAVA_LONG);
 
-    private static final VarHandle H0 = handle(0);
+    private static final VarHandle H0 = HL.varHandle(groupElement(0));
 
-    private static final VarHandle H1 = handle(1);
+    private static final VarHandle H1 = HL.varHandle(groupElement(1));
 
-    private static final VarHandle H2 = handle(2);
+    private static final VarHandle H2 = HL.varHandle(groupElement(2));
 
-    private static final VarHandle H3 = handle(3);
-
-    private static VarHandle handle(int index) {
-        return HL.varHandle(groupElement(index));
-    }
+    private static final VarHandle H3 = HL.varHandle(groupElement(3));
 
     record SegmentSlot256(MemorySegment slice) implements Slot<K256> {
 

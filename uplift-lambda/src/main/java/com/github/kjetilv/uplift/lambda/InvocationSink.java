@@ -1,7 +1,14 @@
 package com.github.kjetilv.uplift.lambda;
 
-@FunctionalInterface
-public interface InvocationSink<Q, R> {
+import java.util.function.Consumer;
 
-    Invocation<Q, R> complete(Invocation<Q, R> invocation);
+@FunctionalInterface
+public interface InvocationSink<Q, R> extends Consumer<Invocation<Q, R>> {
+
+    @Override
+    default void accept(Invocation<Q, R> invocation) {
+        receive(invocation);
+    }
+
+    Invocation<Q, R> receive(Invocation<Q, R> invocation);
 }

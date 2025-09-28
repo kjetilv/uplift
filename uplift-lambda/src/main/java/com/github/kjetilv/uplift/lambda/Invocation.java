@@ -12,7 +12,7 @@ public record Invocation<Q, R>(
     LambdaPayload payload,
     LambdaResult result,
     Q completionRequest,
-    CompletionStage<R> completionFuture,
+    CompletionStage<R> completionStage,
     R completionResponse,
     Throwable responseFailure
 ) {
@@ -50,15 +50,15 @@ public record Invocation<Q, R>(
         );
     }
 
-    public static <Q, R> Invocation<Q, R> failed(Throwable exception, Instant created) {
-        return failed(null, exception, created);
+    public static <Q, R> Invocation<Q, R> fatal(Throwable exception, Instant created) {
+        return failed(null, created, exception);
     }
 
     public static <Q, R> Invocation<Q, R> failed(Q initRequest, Instant created) {
-        return failed(initRequest, null, created);
+        return failed(initRequest, created, null);
     }
 
-    public static <Q, R> Invocation<Q, R> failed(Q initRequest, Throwable exception, Instant created) {
+    public static <Q, R> Invocation<Q, R> failed(Q initRequest, Instant created, Throwable exception) {
         return new Invocation<>(
             created,
             initRequest,
@@ -85,7 +85,7 @@ public record Invocation<Q, R>(
         LambdaPayload payload,
         LambdaResult result,
         Q completionRequest,
-        CompletionStage<R> completionFuture,
+        CompletionStage<R> completionStage,
         R completionResponse,
         Throwable responseFailure
     ) {
@@ -98,16 +98,12 @@ public record Invocation<Q, R>(
         this.payload = payload;
         this.result = result;
         this.completionRequest = completionRequest;
-        this.completionFuture = completionFuture;
+        this.completionStage = completionStage;
         this.completionResponse = completionResponse;
         this.responseFailure = responseFailure;
     }
 
-    Invocation<Q, R> process(LambdaHandler handler, Supplier<Instant> time) {
-        if (empty()) {
-            return this;
-        }
-        LambdaResult result = handler.handle(this.payload());
+    Invocation<Q, R> result(LambdaResult result, Supplier<Instant> time) {
         return empty() ? this : new Invocation<>(
             created,
             request,
@@ -118,7 +114,24 @@ public record Invocation<Q, R>(
             this.payload,
             result,
             completionRequest,
-            completionFuture,
+            completionStage,
+            completionResponse,
+            responseFailure
+        );
+    }
+
+    public Invocation<Q, R> result(LambdaResult result, Throwable requestFailure, Supplier<Instant> time) {
+        return empty() ? this : new Invocation<>(
+            created,
+            request,
+            requestFailure,
+            aborted,
+            time.get(),
+            id,
+            payload,
+            result,
+            completionRequest,
+            completionStage,
             completionResponse,
             responseFailure
         );
@@ -132,40 +145,25 @@ public record Invocation<Q, R>(
         return Duration.between(created, updated);
     }
 
-    Invocation<Q, R> complete(
-        Function<? super Invocation<Q, R>, ? extends Q> completionRequest,
-        Supplier<Instant> time
-    ) {
-        if (empty()) {
-            return this;
-        }
-        Q completion = completionRequest.apply(this);
-        return new Invocation<>(
+    Invocation<Q, R> completed(Q completionRequest, Supplier<Instant> time) {
+        return empty() ? this : new Invocation<>(
             created,
-            request,
+            this.request,
             requestFailure,
             aborted,
             time.get(),
             id,
             payload,
             result,
-            completion,
-            completionFuture,
+            completionRequest,
+            completionStage,
             completionResponse,
             responseFailure
         );
     }
 
-    Invocation<Q, R> completionFuture(
-        Function<? super Q, ? extends CompletionStage<R>> completer,
-        Supplier<Instant> time
-    ) {
-        if (empty()) {
-            return this;
-        }
-        CompletionStage<R> completionStage =
-            completer.apply(completionRequest);
-        return new Invocation<>(
+    Invocation<Q, R> completionFuture(CompletionStage<R> completionStage, Supplier<Instant> time) {
+        return empty() ? this : new Invocation<>(
             created,
             request,
             requestFailure,
@@ -182,24 +180,23 @@ public record Invocation<Q, R>(
     }
 
     CompletionStage<Invocation<Q, R>> completedAt(Instant time) {
-        if (empty()) {
-            return CompletableFuture.completedFuture(this);
-        }
-        return completionFuture.thenApply(completion ->
-            new Invocation<>(
-                created,
-                request,
-                requestFailure,
-                aborted,
-                time,
-                id,
-                payload,
-                result,
-                completionRequest,
-                completionFuture,
-                completion,
-                responseFailure
-            ));
+        return empty()
+            ? CompletableFuture.completedFuture(this)
+            : completionStage.thenApply(completion ->
+                new Invocation<>(
+                    created,
+                    request,
+                    requestFailure,
+                    aborted,
+                    time,
+                    id,
+                    payload,
+                    result,
+                    completionRequest,
+                    completionStage,
+                    completion,
+                    responseFailure
+                ));
     }
 
     boolean empty() {

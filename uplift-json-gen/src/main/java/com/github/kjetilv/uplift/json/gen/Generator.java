@@ -233,14 +233,17 @@ record Generator(
         JavaFileObject file = builderFile(te);
         List<String> setters = te.getRecordComponents()
             .stream().flatMap(el ->
-                Stream.of(
-                    "    private " + el.asType() + " " + fieldName(el) + ";",
+            {
+                TypeMirror type = el.asType();
+                return Stream.of(
+                    "    private " + print(type) + " " + fieldName(el) + ";",
                     "",
-                    "    void " + setter(el) + "(" + el.asType() + " " + fieldName(el) + ") {",
+                    "    void " + setter(el) + "(" + print(type) + " " + fieldName(el) + ") {",
                     "        this." + fieldName(el) + " = " + fieldName(el) + ";",
                     "    }",
                     ""
-                ))
+                );
+            })
             .toList();
 
         List<String> adders = te.getRecordComponents()
@@ -369,6 +372,25 @@ record Generator(
     private static final String FUNCTION = Function.class.getSimpleName();
 
     private static final String OBJECT_WRITER = ObjectWriter.class.getSimpleName();
+
+    private static String print(TypeMirror type) {
+        return Stream.of(
+                String.class,
+                Character.class,
+                Integer.class,
+                Long.class,
+                Double.class,
+                Float.class,
+                Short.class,
+                Byte.class,
+                Boolean.class
+            )
+            .filter(t ->
+                t.getName().equals(type.toString()))
+            .map(Class::getSimpleName)
+            .findFirst()
+            .orElseGet(type::toString);
+    }
 
     private static void write(BufferedWriter bw, String... strs) {
         write(bw, Arrays.asList(strs));

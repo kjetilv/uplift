@@ -35,25 +35,19 @@ record ThrowableInfoProvider<K extends HashKind<K>>(int briefCount)
     }
 
     private static String name(Throwable throwable) {
-        if (throwable == null) {
-            return "null";
-        }
-        Class<? extends Throwable> tc = throwable.getClass();
-        if (tc == NullPointerException.class) {
-            return "NPE";
-        }
-        if (tc == IllegalArgumentException.class) {
-            return "IAE";
-        }
-        if (tc == IllegalStateException.class) {
-            return "ISE";
-        }
-        if (tc == IOException.class) {
-            return "IOE";
-        }
-        if (tc.getPackage().getName().startsWith("java.")) {
-            return tc.getSimpleName();
-        }
-        return tc.getName();
+        return switch (throwable) {
+            case NullPointerException _ -> "NPE";
+            case IllegalArgumentException _ -> "IAE";
+            case IllegalStateException _ -> "ISE";
+            case ArrayIndexOutOfBoundsException _ -> "AIOE";
+            case UnsupportedOperationException _ -> "UOE";
+            case null -> "null";
+            default -> {
+                Class<? extends Throwable> tc = throwable.getClass();
+                yield tc.getModule().getName().equals("java.base")
+                    ? tc.getSimpleName()
+                    : tc.getName();
+            }
+        };
     }
 }

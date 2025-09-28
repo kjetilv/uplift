@@ -10,14 +10,10 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     private boolean full;
 
-    private final int count;
-
-    private final Duration duration;
+    private final Window window;
 
     protected AbstractStorage(Window window) {
-        Objects.requireNonNull(window, "window");
-        this.count = window.count();
-        this.duration = window.duration();
+        this.window = Objects.requireNonNull(window, "window");
     }
 
     @Override
@@ -27,7 +23,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     @Override
     public final Occurrence<K> get(long index) {
-        return retrieveFrom(full ? (this.index + index) % count : index);
+        return retrieveFrom(full ? (this.index + index) % window.count() : index);
     }
 
     @Override
@@ -94,7 +90,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     @Override
     public final long count() {
-        return full ? count : index;
+        return full ? window.count() : index;
     }
 
     protected abstract Occurrence<K> retrieveFrom(long index);
@@ -120,10 +116,10 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
     }
 
     private Instant lastTime() {
-        return getLast().time().minus(duration);
+        return getLast().time().minus(window.duration());
     }
 
     private long modInc(long l) {
-        return (l + 1L) % count;
+        return (l + 1L) % window.count();
     }
 }

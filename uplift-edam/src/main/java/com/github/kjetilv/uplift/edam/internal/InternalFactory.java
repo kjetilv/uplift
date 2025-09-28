@@ -16,7 +16,6 @@ public final class InternalFactory {
         int maxLength,
         boolean messages
     ) {
-
         return new DefaultHandler<>(
             new Analyzer<>(
                 new ThrowableHasher<>(

@@ -13,17 +13,7 @@ final class Params {
                 matcher.group(1));
     }
 
-    static List<String> params(String original, String pattern, String... names) {
-        String regex = Arrays.stream(names).reduce(pattern, Params::replace);
-        return Optional.of(Pattern.compile(regex).matcher(original))
-            .filter(Matcher::matches)
-            .map(matcher ->
-                IntStream.range(0, names.length).mapToObj(i -> i + 1).map(matcher::group).toList())
-            .orElseGet(Collections::emptyList);
-    }
-
     private Params() {
-
     }
 
     private static final String PATTERN = "([\\w\\-]*)";

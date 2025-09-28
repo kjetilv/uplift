@@ -15,7 +15,7 @@ final class Analyzer<T, K extends HashKind<K>> {
     private SequenceTracker<K> sequenceTracker;
 
     Analyzer(Hasher<T, K> hasher, Storage<K> storage, Supplier<Instant> now, int maxLength) {
-        this.hasher = Objects.requireNonNull(hasher, "ider");
+        this.hasher = Objects.requireNonNull(hasher, "hasher");
         this.now = Objects.requireNonNull(now, "now");
         this.sequenceTracker = new SequenceTracker<>(storage, new Detector(maxLength));
     }
@@ -23,8 +23,8 @@ final class Analyzer<T, K extends HashKind<K>> {
     Analysis<K> analyze(T item) {
         Instant now = this.now.get();
         Hash<K> hash = hasher.hash(item);
-        Occurrence<K> occ = new Occurrence<>(now, hash);
-        return updatedState(occ).process(occ);
+        Occurrence<K> occurrence = new Occurrence<>(now, hash);
+        return updatedState(occurrence).process(occurrence);
     }
 
     @SuppressWarnings("DataFlowIssue")

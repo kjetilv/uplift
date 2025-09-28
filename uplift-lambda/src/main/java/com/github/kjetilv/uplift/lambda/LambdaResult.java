@@ -12,6 +12,10 @@ public record LambdaResult(
     boolean binary
 ) {
 
+    public static LambdaResult internalError() {
+        return new LambdaResult(500, null, null, false);
+    }
+
     @SafeVarargs
     public static LambdaResult json(String body, Map.Entry<String, String>... headers) {
         return json(0, body, headers);

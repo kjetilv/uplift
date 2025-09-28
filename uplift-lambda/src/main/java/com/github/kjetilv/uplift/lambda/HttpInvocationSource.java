@@ -63,22 +63,14 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         if (closed.get()) {
             return Optional.empty();
         }
-        return Optional.of(fetch.apply(request)
+        CompletionStage<Invocation<HttpRequest, HttpResponse<InputStream>>> stage = fetch.apply(request)
             .thenApply(response ->
                 invocationId(response)
-                    .map(id ->
-                        Invocation.<HttpRequest, HttpResponse<InputStream>>create(
-                            id,
-                            request,
-                            LambdaPayload.parse(response.body()),
-                            time.get()
-                        ))
-                    .orElseGet(() ->
-                        Invocation.failed(request, time.get())))
-            .exceptionally(throwable ->
-                closed.get()
-                    ? Invocation.none(request, time.get())
-                    : Invocation.failed(request, throwable, time.get())));
+                    .map(invocationId ->
+                        invocation(invocationId, response))
+                    .orElseGet(this::failedInvocation))
+            .exceptionally(this::failedInvocation);
+        return Optional.of(stage);
     }
 
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
@@ -89,10 +81,28 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
             .findFirst();
     }
 
+    private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
+        String id, HttpResponse<InputStream> response
+    ) {
+        LambdaPayload payload = LambdaPayload.parse(response.body());
+        return Invocation.create(id, request, payload, this.time.get());
+    }
+
+    private Invocation<HttpRequest, HttpResponse<InputStream>> failedInvocation() {
+        return Invocation.failed(request, this.time.get());
+    }
+
+    private Invocation<HttpRequest, HttpResponse<InputStream>> failedInvocation(Throwable throwable) {
+        return closed.get()
+            ? Invocation.none(request, this.time.get())
+            : Invocation.failed(request, this.time.get(), throwable);
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[@" + endpoint + ", requests:" + requestsMade +
-               (requestsFailed.longValue() > 0 ? "(" + requestsFailed + " failed)" : "") +
+        return getClass().getSimpleName() + "[@" + endpoint +
+               " requests:" + requestsMade +
+               (requestsFailed.longValue() > 0 ? " (" + requestsFailed + " failed)" : "") +
                "]";
     }
 }

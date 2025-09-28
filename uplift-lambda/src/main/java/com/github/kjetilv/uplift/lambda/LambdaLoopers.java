@@ -16,48 +16,50 @@ final class LambdaLoopers {
         InvocationSink<HttpRequest, HttpResponse<InputStream>> sink,
         Supplier<Instant> time
     ) {
-        return looper(
-            source,
-            handler,
-            LambdaLoopers::toLambdaResponsePost,
-            sink,
-            LambdaLoopers::resultLog,
-            time
-        );
+        return looper(source, handler, toResponsePost(), sink, resultLog(), time);
     }
 
     static <Q, R> LambdaLooper<Q, R> looper(
-        InvocationSource<Q, R> invocationsProvider,
+        InvocationSource<Q, R> source,
         LambdaHandler handler,
-        Function<? super Invocation<Q, R>, ? extends Q> responseResolver,
-        InvocationSink<Q, R> completeInvocation,
-        BiFunction<Invocation<Q, R>, ? super Throwable, Boolean> resultLog,
+        LambdaLooper.ResponseResolver<Q, R> resolver,
+        InvocationSink<Q, R> sink,
+        LambdaLooper.ResultLog<R> resultLog,
         Supplier<Instant> time
     ) {
-        return new LambdaLooper<>(
-            invocationsProvider,
-            handler,
-            responseResolver,
-            completeInvocation,
-            resultLog,
-            time
-        );
+        return new LambdaLooper<>(source, handler, resolver, sink, resultLog, time);
     }
 
     private LambdaLoopers() {
     }
 
-    @SuppressWarnings("MagicNumber")
-    private static boolean resultLog(
-        Invocation<HttpRequest, ? extends HttpResponse<InputStream>> invocation,
-        Throwable throwable
-    ) {
-        if (invocation != null) {
+    private static LambdaLooper.ResponseResolver<HttpRequest, HttpResponse<InputStream>> toResponsePost() {
+        return invocation -> {
+            URI uri = invocation.request().uri()
+                .resolve("/2018-06-01/runtime/invocation/" + invocation.id() + "/response");
+            Map<String, Object> result = invocation.toResult();
+            String jsonResult = Json.instance().write(result);
+            return HttpRequest.newBuilder()
+                .uri(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonResult))
+                .build();
+        };
+    }
+
+    private static LambdaLooper.ResultLog<HttpResponse<InputStream>> resultLog() {
+        return (invocation, throwable) -> {
+            if (invocation == null) {
+                if (throwable != null) {
+                    log.error("Invocation failed", throwable);
+                }
+                return false;
+            }
             if (invocation.empty()) {
                 log.warn("Empty invocation, no id resolved");
                 return false;
             }
-            HttpResponse<InputStream> completion = invocation.completionResponse();
+            HttpResponse<InputStream> completion =
+                ((Invocation<?, ? extends HttpResponse<InputStream>>) invocation).completionResponse();
             if (completion == null) {
                 return false;
             }
@@ -75,24 +77,6 @@ final class LambdaLoopers {
                 return true;
             }
             return true;
-        }
-        if (throwable != null) {
-            log.error("Invocation failed", throwable);
-        }
-        return false;
-    }
-
-    private static HttpRequest toLambdaResponsePost(
-        Invocation<? extends HttpRequest, HttpResponse<InputStream>> invocation
-    ) {
-        String jsonResult = Json.instance().write(invocation.toResult());
-        return HttpRequest.newBuilder()
-            .uri(responseRequestUri(invocation.request().uri(), invocation.id()))
-            .POST(HttpRequest.BodyPublishers.ofString(jsonResult))
-            .build();
-    }
-
-    private static URI responseRequestUri(URI base, String id) {
-        return base.resolve("/2018-06-01/runtime/invocation/" + id + "/response");
+        };
     }
 }

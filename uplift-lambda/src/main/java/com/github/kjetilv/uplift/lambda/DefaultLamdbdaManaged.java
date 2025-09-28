@@ -25,7 +25,7 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
-        Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> client = request ->
+        Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch = request ->
             this.client.sendAsync(
                 request,
                 HttpResponse.BodyHandlers.ofInputStream(),
@@ -33,14 +33,14 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
             );
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
             new HttpInvocationSource(
-                client,
+                fetch,
                 lambdaUri,
                 settings.responseTimeout(),
                 settings.time()
             );
         InvocationSink<HttpRequest, HttpResponse<InputStream>> sink =
             new HttpInvocationSink(
-                client,
+                fetch,
                 settings.time()
             );
         return LambdaLoopers.looper(handler, source, sink, settings.time());

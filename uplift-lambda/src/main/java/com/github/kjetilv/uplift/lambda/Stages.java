@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
 
-final class Streamer<T> implements Closeable {
+final class Stages<T> implements Closeable {
 
     private final AtomicBoolean opened = new AtomicBoolean();
 
@@ -10,8 +10,10 @@ final class Streamer<T> implements Closeable {
 
     private final SupplierSpliterator<T> spliterator;
 
-    Streamer(Supplier<Optional<CompletionStage<T>>> provider) {
-        this.spliterator = new SupplierSpliterator<>(Objects.requireNonNull(provider, "provider"));
+    Stages(Supplier<Optional<CompletionStage<T>>> provider) {
+        this.spliterator = new SupplierSpliterator<>(
+            Objects.requireNonNull(provider, "provider")
+        );
     }
 
     @Override
@@ -21,9 +23,10 @@ final class Streamer<T> implements Closeable {
         }
     }
 
-    Stream<CompletionStage<T>> open() {
+    Stream<CompletionStage<T>> stages() {
         if (opened.compareAndSet(false, true)) {
-            return StreamSupport.stream(spliterator, false);
+            return StreamSupport.stream(spliterator, false)
+                .onClose(this::close);
         }
         throw new IllegalStateException("Already opened: " + this);
     }

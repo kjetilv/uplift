@@ -14,12 +14,12 @@ class InvocationTest {
     }
 
     @Test
-    void failedIsEmpty() {
-        assertThat(Invocation.failed(new Throwable(), Instant.now()).empty()).isTrue();
+    void fatalIsEmpty() {
+        assertThat(Invocation.fatal(new Throwable(), Instant.now()).empty()).isTrue();
     }
 
     @Test
-    void failedReqIsEmpty() {
-        assertThat(Invocation.failed("sdf", new Throwable(), Instant.now()).empty()).isTrue();
+    void fatalReqIsEmpty() {
+        assertThat(Invocation.failed("sdf", Instant.now(), new Throwable()).empty()).isTrue();
     }
 }

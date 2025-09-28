@@ -28,12 +28,10 @@ record SequenceTracker<K extends HashKind<K>>(Storage<K> storage, Detector detec
     }
 
     private List<PatternMatch<K>> getPatternMatches(Occurrence<K> occurrence) {
-        List<HashPattern<K>> hashPatterns = detector.patterns(storage, storage.count());
-        Stream<Occurrence<K>> occurrenceStream = storage.forward().spool();
         return Progressions.repeats(
             occurrence,
-            hashPatterns,
-            occurrenceStream
+            detector.patterns(storage, storage.count()),
+            storage.forward().spool()
         );
     }
 
