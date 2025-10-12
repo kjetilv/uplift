@@ -19,6 +19,10 @@ import static com.github.kjetilv.uplift.util.Maps.transformValues;
 final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     implements Canonicalizer<K, H> {
 
+    static <K, H extends HashKind<H>> Canonicalizer<K, H> create() {
+        return new CanonicalSubstructuresCataloguer<K, H>();
+    }
+
     private final Map<Hash<H>, Map<K, Object>> maps = new ConcurrentHashMap<>();
 
     private final Map<Hash<H>, List<Object>> lists = new ConcurrentHashMap<>();
@@ -27,7 +31,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final boolean collisionsNeverHappen;
 
-    CanonicalSubstructuresCataloguer() {
+    private CanonicalSubstructuresCataloguer() {
         this(false);
     }
 
@@ -39,10 +43,10 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
             case Node<K, H>(var hash, var valueMap) -> {
-                var node = transformValues(valueMap, toCanonical());
+                var node = transformValues(valueMap, this::canonical);
                 var collision = collision(node.values());
                 yield collision == null ? canonicalize(
-                    transformValues(node, toValue()),
+                    transformValues(node, CanonicalValue::value),
                     hash,
                     maps,
                     t ->
@@ -50,10 +54,10 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 ) : collision;
             }
             case Nodes<K, H>(var hash, var values) -> {
-                var nodes = transform(values, toCanonical());
+                var nodes = transform(values, this::canonical);
                 var collision = collision(nodes);
                 yield collision == null ? canonicalize(
-                    transform(nodes, toValue()),
+                    transform(nodes, CanonicalValue::value),
                     hash,
                     lists,
                     t ->
@@ -66,9 +70,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 leaves,
                 t -> new CanonicalValue.Leaf<>(hash, t)
             );
-            case HashedTree.Null<?, H>(
-                var hash
-            ) -> new CanonicalValue.Null<>(hash);
+            case HashedTree.Null<?, H>(var hash) -> new CanonicalValue.Null<>(hash);
         };
     }
 
@@ -91,13 +93,5 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         return existing == null || collisionsNeverHappen ? wrap.apply(value)
             : existing.equals(value) ? wrap.apply(existing)
                 : new Collision<>(hash, value);
-    }
-
-    private Function<HashedTree<K, H>, CanonicalValue<H>> toCanonical() {
-        return this::canonical;
-    }
-
-    private static <H extends HashKind<H>> Function<CanonicalValue<H>, Object> toValue() {
-        return CanonicalValue::value;
     }
 }

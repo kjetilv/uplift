@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.edamame.CanonicalValue;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
+import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.hash.Hashes;
@@ -24,7 +27,7 @@ class CanonicalSubstructuresCataloguerTest {
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
             HashKind.K128
         );
-        Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>();
+        var cataloguer = CanonicalSubstructuresCataloguer.<K, K128>create();
         Supplier<Object> newObject = () -> new BigDecimal("42");
 
         var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
@@ -49,11 +52,10 @@ class CanonicalSubstructuresCataloguerTest {
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
             HashKind.K128
         );
-        Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>(
-        );
+        var cataloguer = CanonicalSubstructuresCataloguer.<K, K128>create();
 
-        var key = supplier("foo");
-        var val = supplier("bar");
+        var key = copySupplier("foo");
+        var val = copySupplier("bar");
         Supplier<Object> newObject = () -> Map.of(key.get(), val.get());
 
         var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
@@ -75,8 +77,8 @@ class CanonicalSubstructuresCataloguerTest {
     }
 
     @SuppressWarnings("StringOperationCanBeSimplified")
-    private static Supplier<String> supplier(String bar) {
-        return () -> new String(bar);
+    private static Supplier<String> copySupplier(String original) {
+        return () -> new String(original);
     }
 
     public record K(String k) {

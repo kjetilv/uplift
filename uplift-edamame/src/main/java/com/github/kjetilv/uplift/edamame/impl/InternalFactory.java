@@ -52,7 +52,7 @@ public final class InternalFactory {
     ) {
         requireNonNull(kind, "kind");
         var treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
-        Canonicalizer<K, H> canonicalValues = new CanonicalSubstructuresCataloguer<>();
+        var canonicalValues = CanonicalSubstructuresCataloguer.<K, H>create();
         return new MapsMemoizerImpl<>(treeHasher, canonicalValues);
     }
 

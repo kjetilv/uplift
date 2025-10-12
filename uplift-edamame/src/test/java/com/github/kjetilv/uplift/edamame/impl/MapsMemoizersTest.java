@@ -95,8 +95,8 @@ class MapsMemoizersTest {
                 "zot1", l2
             )
         );
-        Object l1Copy = new Leaf(42L, "123.234");
-        Object l2Copy = new Leaf(34L, "424242");
+        var l1Copy = new Leaf(42L, "123.234");
+        var l2Copy = new Leaf(34L, "424242");
 
         mapsMemoizer.put(
             43L, Map.of(
