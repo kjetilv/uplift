@@ -28,7 +28,7 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
 
     @Override
     public Hash<K> hash(Throwable throwable) {
-        List<Throwable> chain = chain(throwable);
+        var chain = chain(throwable);
         lock.lock();
         try {
             return hash(chain);
@@ -47,9 +47,9 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
         if (messages) {
             shb.accept(t.getMessage());
         }
-        StackTraceElement[] st = t.getStackTrace();
+        var st = t.getStackTrace();
         ihb.hash(st.length);
-        for (StackTraceElement el : st) {
+        for (var el : st) {
             hashElement(el);
         }
     }

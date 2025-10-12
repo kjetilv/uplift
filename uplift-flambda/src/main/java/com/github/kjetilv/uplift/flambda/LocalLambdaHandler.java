@@ -52,14 +52,14 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     LambdaResponse lambdaResponse(LambdaRequest request) {
-        String id = String.valueOf(this.id.incrementAndGet());
-        LambdaRequest identifiedRequest = request.withId(id);
+        var id = String.valueOf(this.id.incrementAndGet());
+        var identifiedRequest = request.withId(id);
         try {
             doPut(identifiedRequest);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to accept: " + identifiedRequest, e);
         }
-        LambdaRequest fetched = requestsFetched.get(id);
+        var fetched = requestsFetched.get(id);
         return responsesReceived.get(fetched.id());
     }
 
@@ -79,13 +79,13 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
             }
         }
         requestsFetched.put(nextRequest.id(), nextRequest);
-        byte[] body = lambdaRequest(nextRequest);
-        Map<String, List<String>> headers = requestHeaders(nextRequest);
+        var body = lambdaRequest(nextRequest);
+        var headers = requestHeaders(nextRequest);
         return new HttpRes(OK, headers, body, nextRequest.request().id());
     }
 
     private HttpRes passResponse(HttpReq req) {
-        LambdaResponse response = lambdaResponse(req.body());
+        var response = lambdaResponse(req.body());
         responsesReceived.put(id(req.path()), response);
         return new HttpRes(204, req.id());
     }
@@ -122,8 +122,8 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     private static LambdaResponse lambdaResponse(byte[] response) {
-        try (ByteArrayInputStream source = new ByteArrayInputStream(response)) {
-            ResponseIn responseIn = ResponseIn.read(source);
+        try (var source = new ByteArrayInputStream(response)) {
+            var responseIn = ResponseIn.read(source);
             return new LambdaResponse(
                 responseIn.statusCode(),
                 Maps.mapValues(responseIn.headers(), String::valueOf),
@@ -146,7 +146,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     }
 
     private static String id(String uri) {
-        String[] parts = uri.split("/");
+        var parts = uri.split("/");
         return parts[parts.length - 2];
     }
 }

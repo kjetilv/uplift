@@ -20,8 +20,8 @@ public record StreamSink(ByteArrayOutputStream baos) implements Sink {
 
     @Override
     public Mark mark() {
-        int initialLength = baos.size();
-        AtomicReference<Boolean> moved = new AtomicReference<>();
+        var initialLength = baos.size();
+        var moved = new AtomicReference<Boolean>();
         return () ->
             moved.updateAndGet(alreadyMoved ->
                 truDat(alreadyMoved) || length() > initialLength);

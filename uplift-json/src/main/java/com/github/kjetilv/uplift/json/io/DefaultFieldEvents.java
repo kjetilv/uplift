@@ -102,9 +102,9 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         }
         field(field);
         sink().accept("[");
-        Sink.Mark arrayMark = sink().mark();
+        var arrayMark = sink().mark();
         try {
-            for (T value : values) {
+            for (var value : values) {
                 if (arrayMark.moved()) {
                     sink().accept(",");
                 }

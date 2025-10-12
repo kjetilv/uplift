@@ -16,7 +16,7 @@ void main(String[] args) {
         .map(Integer::parseInt)
         .findFirst().orElse(9001);
     try (
-        LocalLambda localLambda = new LocalLambda(
+        var localLambda = new LocalLambda(
             new LocalLambdaSettings(
                 lambdaPort,
                 apiPort,
@@ -31,7 +31,7 @@ void main(String[] args) {
             )
         )
     ) {
-        Logger logger = LoggerFactory.getLogger("flambda");
+        var logger = LoggerFactory.getLogger("flambda");
         logger.info("Lambda: {}", localLambda);
         localLambda.run();
         logger.info("Done: {}", localLambda);

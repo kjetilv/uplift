@@ -39,21 +39,22 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     @Override
     protected Processing process(HttpChannelState state) {
-        Optional<HttpReq> completed =
-            HttpBytes.read(state.requestBuffer())
-                .map(HttpReq::readRequest)
-                .filter(HttpReq::complete);
-        return completed.isEmpty() ? Processing.INCOMPLETE : completed.map(
-                request ->
-                    response(request, server, this::write))
-            .map(HttpChannelHandler::processing)
-            .orElse(Processing.FAIL);
+        var completed = HttpBytes.read(state.requestBuffer())
+            .map(HttpReq::readRequest)
+            .filter(HttpReq::complete);
+        return completed.isEmpty()
+            ? Processing.INCOMPLETE
+            : completed.map(
+                    request ->
+                        response(request, server, this::write))
+                .map(HttpChannelHandler::processing)
+                .orElse(Processing.FAIL);
     }
 
     @SuppressWarnings("resource")
     private void write(HttpRes res) {
-        BufferingWriter<ByteBuffer> writer = responseWriter();
-        byte[] bytes = res.toResponseHeader().getBytes(UTF_8);
+        var writer = responseWriter();
+        var bytes = res.toResponseHeader().getBytes(UTF_8);
         writer.write(new WritableBuffer<>(ByteBuffer.wrap(bytes), bytes.length));
         if (res.hasBody()) {
             writer.write(new WritableBuffer<>(ByteBuffer.wrap(res.body()), res.body().length));
@@ -78,7 +79,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
 
     @SuppressWarnings("MagicNumber")
     private static Processing processing(HttpRes res) {
-        int status = res.status();
+        var status = res.status();
         if (200 <= status && status < 400) {
             return Processing.OK;
         }

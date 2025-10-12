@@ -39,10 +39,10 @@ record Progressions<K extends HashKind<K>>(
     }
 
     private Progressions<K> proceed(Occurrence<K> historical) {
-        Hash<K> historicalHash = historical.hash();
-        Hash<K> currentHash = current.hash();
+        var historicalHash = historical.hash();
+        var currentHash = current.hash();
 
-        List<PatternOccurrence<K>> stillViableProgressions =
+        var stillViableProgressions =
             progressing.stream()
                 .map(patternOccurrence ->
                     patternOccurrence.matchingOccurrence(historical))
@@ -53,7 +53,7 @@ record Progressions<K extends HashKind<K>>(
             .map(PatternOccurrence::hashPattern)
             .collect(Collectors.toSet());
 
-        List<PatternOccurrence<K>> newCandidates = starters.get(historicalHash)
+        var newCandidates = starters.get(historicalHash)
             .stream()
             .filter(hashPattern ->
                 hashPattern.isCandidate(historicalHash, currentHash) &&
@@ -64,17 +64,17 @@ record Progressions<K extends HashKind<K>>(
             .flatMap(Optional::stream)
             .toList();
 
-        List<PatternOccurrence<K>> progressCompleted = Stream.of(stillViableProgressions, newCandidates)
+        var progressCompleted = Stream.of(stillViableProgressions, newCandidates)
             .flatMap(Collection::stream)
             .filter(PatternOccurrence::match)
             .toList();
 
-        List<PatternOccurrence<K>> stillProgressing = Stream.of(stillViableProgressions, newCandidates)
+        var stillProgressing = Stream.of(stillViableProgressions, newCandidates)
             .flatMap(Collection::stream)
             .filter(((Predicate<PatternOccurrence<K>>) PatternOccurrence::match).negate())
             .toList();
 
-        List<PatternOccurrence<K>> completed = Stream.concat(
+        var completed = Stream.concat(
                 completed().stream(),
                 progressCompleted.stream()
             )

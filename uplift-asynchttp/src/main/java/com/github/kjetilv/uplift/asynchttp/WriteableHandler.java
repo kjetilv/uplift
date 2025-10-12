@@ -31,7 +31,7 @@ final class WriteableHandler implements CompletionHandler<Integer, Object> {
 
     @Override
     public void completed(Integer result, Object attachment) {
-        long total = trackWrites(result);
+        var total = trackWrites(result);
         if (total < this.expectedTotal && buffer.hasRemaining()) {
             if (triesLeft.getAndDecrement() > 0) {
                 byteChannel.write(buffer, attachment, this);
@@ -56,15 +56,18 @@ final class WriteableHandler implements CompletionHandler<Integer, Object> {
         }
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + writtenTracker.longValue() + "/" + expectedTotal + "]";
-    }
-
     private long trackWrites(Integer result) {
-        writtenTracker.add(result != null ? result : 0);
+        writtenTracker.add(result != null
+            ? result
+            : 0
+        );
         return writtenTracker.longValue();
     }
 
     private static final int MIN_RETRIES = 10;
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + writtenTracker.longValue() + "/" + expectedTotal + "]";
+    }
 }

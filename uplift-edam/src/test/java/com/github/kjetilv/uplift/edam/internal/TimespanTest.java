@@ -12,20 +12,20 @@ class TimespanTest {
 
     @Test
     void spans() {
-        Instant t = Instant.EPOCH;
-        Timespan timespan1 = Timespan.of(
+        var t = Instant.EPOCH;
+        var timespan1 = Timespan.of(
             spanning(t),
             spanning(t.plusSeconds(20))
         );
         assertEquals(20, timespan1.duration().getSeconds());
 
-        Timespan timespan2 = Timespan.of(
+        var timespan2 = Timespan.of(
             spanning(t.plusSeconds(60)),
             spanning(t.plusSeconds(90))
         );
         assertEquals(30, timespan2.duration().getSeconds());
 
-        Timespan timespan3 = Timespan.of(timespan1, timespan2);
+        var timespan3 = Timespan.of(timespan1, timespan2);
         assertEquals(90, timespan3.duration().getSeconds());
     }
 

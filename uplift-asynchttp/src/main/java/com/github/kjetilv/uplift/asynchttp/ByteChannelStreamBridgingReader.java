@@ -33,7 +33,7 @@ public record ByteChannelStreamBridgingReader(
     public int read(ByteBuffer buffer) {
         try {
             buffer.clear();
-            int read = in.read(buffer.array());
+            var read = in.read(buffer.array());
             if (read > 0) {
                 buffer.limit(read);
             }

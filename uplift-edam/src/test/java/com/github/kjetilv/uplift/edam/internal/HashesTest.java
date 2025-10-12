@@ -15,8 +15,8 @@ class HashesTest {
             false,
             Hashes.hashBuilder(K128)
         );
-        RuntimeException exception = new RuntimeException("Test exception");
-        Hash<K128> hash = hasher.hash(exception);
+        var exception = new RuntimeException("Test exception");
+        var hash = hasher.hash(exception);
 
         assertNotNull(hash, "Hash should not be null");
     }
@@ -27,10 +27,10 @@ class HashesTest {
             false,
             Hashes.hashBuilder(K128)
         );
-        RuntimeException exception = new RuntimeException("Test exception");
+        var exception = new RuntimeException("Test exception");
 
-        Hash<K128> hash1 = hasher.hash(exception);
-        Hash<K128> hash2 = hasher.hash(exception);
+        var hash1 = hasher.hash(exception);
+        var hash2 = hasher.hash(exception);
 
         assertEquals(hash1, hash2, "Hashing the same exception twice should produce the same hash");
         assertEquals(hash1.digest(), hash2.digest(), "Hashes should be equal");
@@ -39,16 +39,16 @@ class HashesTest {
 
     @Test
     void testDifferentExceptions() {
-        RuntimeException exception1 = new RuntimeException("Test exception 1");
-        RuntimeException exception2 = new RuntimeException("Test exception 2");
+        var exception1 = new RuntimeException("Test exception 1");
+        var exception2 = new RuntimeException("Test exception 2");
 
         // Different exceptions should produce different hashes when messages are included
         Hasher<Throwable, K128> hasherWithMessages = new ThrowableHasher<>(
             true,
             Hashes.hashBuilder(K128)
         );
-        Hash<K128> hash1WithMessages = hasherWithMessages.hash(exception1);
-        Hash<K128> hash2WithMessages = hasherWithMessages.hash(exception2);
+        var hash1WithMessages = hasherWithMessages.hash(exception1);
+        var hash2WithMessages = hasherWithMessages.hash(exception2);
 
         assertNotEquals(
             hash1WithMessages,
@@ -59,25 +59,25 @@ class HashesTest {
 
     @Test
     void testMessagesOption() {
-        RuntimeException exception1 = new RuntimeException("Test exception");
-        RuntimeException exception2 = new RuntimeException("Different message");
+        var exception1 = new RuntimeException("Test exception");
+        var exception2 = new RuntimeException("Different message");
 
         // Without messages
-        Hash<K128> hash1WithoutMessages = new ThrowableHasher<>(
+        var hash1WithoutMessages = new ThrowableHasher<>(
             false,
             Hashes.hashBuilder(K128)
         ).hash(exception1);
-        Hash<K128> hash2WithoutMessages = new ThrowableHasher<>(
+        var hash2WithoutMessages = new ThrowableHasher<>(
             false,
             Hashes.hashBuilder(K128)
         ).hash(exception2);
 
         // With messages
-        Hash<K128> hash1WithMessages = new ThrowableHasher<>(
+        var hash1WithMessages = new ThrowableHasher<>(
             false,
             Hashes.hashBuilder(K128)
         ).hash(exception1);
-        Hash<K128> hash2WithMessages = new ThrowableHasher<>(
+        var hash2WithMessages = new ThrowableHasher<>(
             false,
             Hashes.hashBuilder(K128)
         ).hash(exception2);
@@ -104,13 +104,13 @@ class HashesTest {
         );
 
         // Exception without cause
-        RuntimeException exceptionWithoutCause = new RuntimeException("No cause");
-        Hash<K128> hashWithoutCause = hasher.hash(exceptionWithoutCause);
+        var exceptionWithoutCause = new RuntimeException("No cause");
+        var hashWithoutCause = hasher.hash(exceptionWithoutCause);
 
         // Exception with cause
-        IllegalArgumentException cause = new IllegalArgumentException("The cause");
-        RuntimeException exceptionWithCause = new RuntimeException("Has cause", cause);
-        Hash<K128> hashWithCause = hasher.hash(exceptionWithCause);
+        var cause = new IllegalArgumentException("The cause");
+        var exceptionWithCause = new RuntimeException("Has cause", cause);
+        var hashWithCause = hasher.hash(exceptionWithCause);
 
         assertNotEquals(
             hashWithoutCause, hashWithCause,
@@ -126,13 +126,13 @@ class HashesTest {
         );
 
         // Exception without suppressed
-        RuntimeException exceptionWithoutSuppressed = new RuntimeException("No suppressed");
-        Hash<K128> hashWithoutSuppressed = hasher.hash(exceptionWithoutSuppressed);
+        var exceptionWithoutSuppressed = new RuntimeException("No suppressed");
+        var hashWithoutSuppressed = hasher.hash(exceptionWithoutSuppressed);
 
         // Exception with suppressed
-        RuntimeException exceptionWithSuppressed = new RuntimeException("Has suppressed");
+        var exceptionWithSuppressed = new RuntimeException("Has suppressed");
         exceptionWithSuppressed.addSuppressed(new IllegalStateException("Suppressed exception"));
-        Hash<K128> hashWithSuppressed = hasher.hash(exceptionWithSuppressed);
+        var hashWithSuppressed = hasher.hash(exceptionWithSuppressed);
 
         assertNotEquals(
             hashWithoutSuppressed, hashWithSuppressed,
@@ -148,23 +148,23 @@ class HashesTest {
         );
 
         // Create a complex exception hierarchy
-        IllegalArgumentException deepCause = new IllegalArgumentException("Deep cause");
-        RuntimeException middleCause = new RuntimeException("Middle cause", deepCause);
-        RuntimeException topException = new RuntimeException("Top exception", middleCause);
+        var deepCause = new IllegalArgumentException("Deep cause");
+        var middleCause = new RuntimeException("Middle cause", deepCause);
+        var topException = new RuntimeException("Top exception", middleCause);
         topException.addSuppressed(new IllegalStateException("Suppressed 1"));
         topException.addSuppressed(new NullPointerException("Suppressed 2"));
 
-        Hash<K128> hash = hasher.hash(topException);
+        var hash = hasher.hash(topException);
         assertNotNull(hash, "Hash should not be null for complex exception hierarchy");
 
         // Create a slightly different hierarchy
-        IllegalArgumentException differentDeepCause = new IllegalArgumentException("Different deep cause");
-        RuntimeException differentMiddleCause = new RuntimeException("Middle cause", differentDeepCause);
-        RuntimeException differentTopException = new RuntimeException("Top exception", differentMiddleCause);
+        var differentDeepCause = new IllegalArgumentException("Different deep cause");
+        var differentMiddleCause = new RuntimeException("Middle cause", differentDeepCause);
+        var differentTopException = new RuntimeException("Top exception", differentMiddleCause);
         differentTopException.addSuppressed(new IllegalStateException("Suppressed 1"));
         differentTopException.addSuppressed(new NullPointerException("Suppressed 2"));
 
-        Hash<K128> differentHash = hasher.hash(differentTopException);
+        var differentHash = hasher.hash(differentTopException);
         assertNotEquals(hash, differentHash, "Different exception hierarchies should produce different hashes");
     }
 }

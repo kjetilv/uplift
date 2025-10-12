@@ -19,13 +19,13 @@ public record HttpReq(
 ) {
 
     static HttpReq readRequest(HttpBytes bytes) {
-        String reqLine = new String(bytes.req(), UTF_8);
-        int methodMark = reqLine.indexOf(' ');
-        String method = method(reqLine, methodMark);
-        String url = url(reqLine, methodMark);
-        Map<String, List<String>> queryParams = queryParams(reqLine, methodMark + 1);
-        String headersPart = new String(bytes.headers(), UTF_8);
-        Map<String, List<String>> headers = headers(headersPart);
+        var reqLine = new String(bytes.req(), UTF_8);
+        var methodMark = reqLine.indexOf(' ');
+        var method = method(reqLine, methodMark);
+        var url = url(reqLine, methodMark);
+        var queryParams = queryParams(reqLine, methodMark + 1);
+        var headersPart = new String(bytes.headers(), UTF_8);
+        var headers = headers(headersPart);
         return new HttpReq(method, url, queryParams, headers, bytes.body(), Uuid.random());
     }
 
@@ -67,7 +67,7 @@ public record HttpReq(
 
     @Override
     public String toString() {
-        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+        var base = new StringBuilder().append(getClass().getSimpleName())
             .append("[").append(id).append(" ").append(method).append(" ").append(path);
         if (!queryParams.isEmpty()) {
             ToStrings.print(base, queryParams);
@@ -82,7 +82,7 @@ public record HttpReq(
     }
 
     private Integer contentLength() {
-        List<String> value = this.headers().get("Content-Length");
+        var value = this.headers().get("Content-Length");
         if (value == null) {
             return 0;
         }
@@ -99,7 +99,7 @@ public record HttpReq(
     }
 
     private static Map.Entry<String, List<String>> headerEntry(String line) {
-        int index = line.indexOf(':');
+        var index = line.indexOf(':');
         return Map.entry(line.substring(0, index).trim(), values(line, index));
     }
 
@@ -109,12 +109,12 @@ public record HttpReq(
     }
 
     private static String url(String reqLine, int methodMark) {
-        int urlStart = methodMark + 1;
-        int queryStart = reqLine.indexOf('?', urlStart);
+        var urlStart = methodMark + 1;
+        var queryStart = reqLine.indexOf('?', urlStart);
         if (queryStart > 0) {
             return reqLine.substring(urlStart, queryStart);
         }
-        int urlEnd = reqLine.indexOf(' ', urlStart);
+        var urlEnd = reqLine.indexOf(' ', urlStart);
         if (urlEnd > 0) {
             return reqLine.substring(urlStart, urlEnd);
         }
@@ -126,12 +126,12 @@ public record HttpReq(
     }
 
     private static Map<String, List<String>> queryParams(String reqLine, int urlStart) {
-        int queryIndex = reqLine.indexOf('?', urlStart);
+        var queryIndex = reqLine.indexOf('?', urlStart);
         if (queryIndex < 0) {
             return Collections.emptyMap();
         }
-        int urlEnd = reqLine.indexOf(' ', urlStart);
-        int queryStart = queryIndex + 1;
+        var urlEnd = reqLine.indexOf(' ', urlStart);
+        var queryStart = queryIndex + 1;
         String query;
         try {
             query = urlEnd > 0

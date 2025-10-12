@@ -29,25 +29,25 @@ public class ReadTest {
 //    @Threads(8)
     @Benchmark
     public Tweet readTweetUplift() {
-        JsonReader<byte[], Tweet> reader1 = TweetRW.INSTANCE.bytesReader();
+        var reader1 = TweetRW.INSTANCE.bytesReader();
         return reader1.read(data);
     }
 
     @Test
     void read() throws IOException {
-        Tweet read1 = bReader.read(data);
-        Tweet read1a = bReader.read(data);
+        var read1 = bReader.read(data);
+        var read1a = bReader.read(data);
         assertThat(read1).isNotNull();
 
-        Tweet read3 = objectMapper.readValue(data, Tweet.class);
+        var read3 = objectMapper.readValue(data, Tweet.class);
         assertThat(read3).isNotNull();
 
 //        assertThat(read2).isEqualTo(read3);
 //        assertThat(read1).isEqualTo(read3);
 
-        TokenResolver tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
-        Token.Field resolve1 = tokenTrie.get("retweeters_count");
-        Token.Field resolve2 = tokenTrie.get("retweeters_count");
+        var tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
+        var resolve1 = tokenTrie.get("retweeters_count");
+        var resolve2 = tokenTrie.get("retweeters_count");
         assertThat(resolve1).isNotNull().isSameAs(resolve2);
 //
     }
@@ -61,9 +61,9 @@ public class ReadTest {
 
     static {
         try (
-            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            var out = new ByteArrayOutputStream()
         ) {
-            try (InputStream inputStream = RESOURCE.openStream()) {
+            try (var inputStream = RESOURCE.openStream()) {
                 inputStream.transferTo(out);
             }
             data = out.toByteArray();

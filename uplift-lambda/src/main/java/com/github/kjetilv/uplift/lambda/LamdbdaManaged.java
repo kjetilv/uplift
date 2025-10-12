@@ -17,7 +17,7 @@ public interface LamdbdaManaged
 
     @Override
     default void run() {
-        try (LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper = looper()) {
+        try (var looper = looper()) {
             looper.run();
         }
     }

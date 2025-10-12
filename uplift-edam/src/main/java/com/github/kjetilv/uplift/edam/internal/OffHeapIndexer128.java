@@ -46,7 +46,7 @@ final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
 
         @Override
         public void store(Hash<K128> hash) {
-            long[] ls = hash.ls();
+            var ls = hash.ls();
             H0.set(slice, 0, ls[0]);
             H1.set(slice, 0, ls[1]);
         }

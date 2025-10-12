@@ -48,7 +48,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         if (currentField == null) {
             return this;
         }
-        BiFunction<Callbacks, B, Callbacks> fun = objects.get(currentField);
+        var fun = objects.get(currentField);
         return fun == null
             ? new NullCallbacks(this)
             : fun.apply(this, builder);
@@ -71,7 +71,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         if (currentField == null) {
             return fail();
         }
-        BiConsumer<B, String> consumer = strings.get(currentField);
+        var consumer = strings.get(currentField);
         if (consumer != null) {
             build(consumer, token.value());
         }
@@ -80,7 +80,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
 
     @Override
     public Callbacks number(Token.Number number) {
-        BiConsumer<B, Number> consumer = numberConsumer();
+        var consumer = numberConsumer();
         if (consumer != null) {
             build(consumer, number.number());
         }
@@ -94,7 +94,7 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
 
     @Override
     public Callbacks bool(boolean bool) {
-        BiConsumer<B, Boolean> consumer = booleans.get(currentField);
+        var consumer = booleans.get(currentField);
         if (consumer != null) {
             build(consumer, bool);
         }

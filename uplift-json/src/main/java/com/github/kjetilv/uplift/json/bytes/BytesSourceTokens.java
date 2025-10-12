@@ -28,7 +28,7 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token scanToken(boolean fieldName, boolean canonical) {
-        int c = bytesSource.chomp();
+        var c = bytesSource.chomp();
         return switch (c) {
             case ':' -> Token.COLON;
             case ',' -> Token.COMMA;
@@ -47,9 +47,9 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token fieldToken(boolean canonical) {
-        Bytes lexeme = bytesSource.spoolField();
+        var lexeme = bytesSource.spoolField();
         if (canonical) {
-            Token.Field resolved = knownTokens.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
+            var resolved = knownTokens.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
         return new Token.Field(lexeme.copyBytes());
@@ -60,15 +60,15 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token numberToken() {
-        Bytes lexeme = bytesSource.spoolNumber();
-        int len = lexeme.length();
-        byte[] bytes = lexeme.bytes();
-        for (int i = 0; i < len; i++) {
+        var lexeme = bytesSource.spoolNumber();
+        var len = lexeme.length();
+        var bytes = lexeme.bytes();
+        for (var i = 0; i < len; i++) {
             buffer[i] = (char) bytes[i];
         }
         try {
-            BigDecimal number = new BigDecimal(buffer, 0, len);
-            Number numberValue = number.scale() == 0 ? number.longValue() : number;
+            var number = new BigDecimal(buffer, 0, len);
+            var numberValue = number.scale() == 0 ? number.longValue() : number;
             return new Token.Number(numberValue);
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse: `" + lexeme.string() + "`", e);

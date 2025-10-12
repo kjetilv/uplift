@@ -23,11 +23,11 @@ abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<
 
     @Override
     public final long exchange(Hash<K> hash) {
-        long initPos = hashFunction.compute(hash) & lastIndex;
-        long pos = initPos;
+        var initPos = hashFunction.compute(hash) & lastIndex;
+        var pos = initPos;
         while (true) {
-            Slot<K> slot = slot(pos);
-            Hash<K> loaded = slot.load();
+            var slot = slot(pos);
+            var loaded = slot.load();
             if (loaded.isBlank()) {
                 try {
                     slot.store(hash);
@@ -51,9 +51,9 @@ abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<
         if (index == limit) {
             throw new IllegalArgumentException(this + ": Index out of bounds: " + index);
         }
-        long pos = index & lastIndex;
-        Slot<K> slot = slot(pos);
-        Hash<K> hash = slot.load();
+        var pos = index & lastIndex;
+        var slot = slot(pos);
+        var hash = slot.load();
         if (hash.isBlank()) {
             throw new IllegalArgumentException(this + ": No hash @ " + index);
         }

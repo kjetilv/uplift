@@ -18,8 +18,8 @@ class LambdaLoopTest {
     @Test
     void flow() {
         Collection<String> responses = new ArrayList<>();
-        AtomicReference<Throwable> failed = new AtomicReference<>();
-        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
+        var failed = new AtomicReference<Throwable>();
+        var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
         LambdaLoopers.looper(
             () ->
                 responses.size() > 3
@@ -38,12 +38,12 @@ class LambdaLoopTest {
                     false
                 ),
             invocation -> {
-                URI uri = invocation.request().uri();
-                URI resolve = uri.resolve("/bar/" + invocation.id() + "/foo");
+                var uri = invocation.request().uri();
+                var resolve = uri.resolve("/bar/" + invocation.id() + "/foo");
                 return HttpRequest.newBuilder(resolve).GET().build();
             },
             invocation -> {
-                String ok = new String(invocation.result().body(), StandardCharsets.UTF_8);
+                var ok = new String(invocation.result().body(), StandardCharsets.UTF_8);
                 responses.add(ok);
                 return invocation.completionFuture(
                     CompletableFuture.completedStage(ok),

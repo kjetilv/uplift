@@ -38,7 +38,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     @Override
     public Bytes spoolString() {
         index = 0;
-        boolean quo = false;
+        var quo = false;
         while (true) {
             if (next1 >> 5 == 0) {
                 if (quo) {
@@ -100,8 +100,8 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
             );
         }
-        byte next3 = nextByte();
-        byte next4 = nextByte();
+        var next3 = nextByte();
+        var next4 = nextByte();
         if (next3 != c3 || next4 != c4) {
             throw new IllegalStateException(
                 "Expected '" + c3 + "'/'" + c4 + "' " +
@@ -119,7 +119,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 "but got '" + (char) next1 + "'/'" + (char) next2 + "'"
             );
         }
-        byte next3 = nextByte();
+        var next3 = nextByte();
         if (next3 != c3) {
             throw new IllegalStateException(
                 "Expected '" + c3 + "' but got '" + (char) next2 + "'"
@@ -154,7 +154,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 case ' ', '\n', '\t', '\r', '\f' -> advance();
                 default -> {
                     add(next1);
-                    byte returned = next1;
+                    var returned = next1;
                     advance();
                     index = 0;
                     return returned;
@@ -197,7 +197,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     private void expand() {
-        byte[] biggerLexeme = new byte[index * 2];
+        var biggerLexeme = new byte[index * 2];
         System.arraycopy(currentLexeme, 0, biggerLexeme, 0, index);
         currentLexeme = biggerLexeme;
     }
@@ -222,8 +222,8 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     @Override
     public String toString() {
-        int tail = Math.min(10, index); // LN
-        int printOffset = index - tail;
+        var tail = Math.min(10, index); // LN
+        var printOffset = index - tail;
         return getClass().getSimpleName() + "[" +
                "<" + new String(currentLexeme, printOffset, tail) + ">" +
                "<" + print(next1) + print(next2) + ">" +

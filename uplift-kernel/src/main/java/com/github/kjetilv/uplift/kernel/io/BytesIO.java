@@ -15,9 +15,9 @@ public final class BytesIO {
 
     public static byte[] readBytesFrom(Object resource, InputStream stream) {
         requireNonNull(stream, "stream");
-        byte[] buf = new byte[ATE_KAY];
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            long l = stream.transferTo(baos);
+        var buf = new byte[ATE_KAY];
+        try (var baos = new ByteArrayOutputStream()) {
+            var l = stream.transferTo(baos);
             return baos.toByteArray();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read" + (resource == null ? "" : " " + resource), e);
@@ -33,8 +33,8 @@ public final class BytesIO {
     }
 
     public static String readString(DataInput input) throws IOException {
-        int userIdLength = readInt(input);
-        byte[] bytes = new byte[userIdLength];
+        var userIdLength = readInt(input);
+        var bytes = new byte[userIdLength];
         input.readFully(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
     }
@@ -52,7 +52,7 @@ public final class BytesIO {
     }
 
     public static List<Uuid> readUuids(DataInput input) {
-        int count = readInt(input);
+        var count = readInt(input);
         return IntStream.range(0, count)
             .mapToObj(i -> readUuid(input))
             .toList();
@@ -82,7 +82,7 @@ public final class BytesIO {
 
     public static int writeString(DataOutput output, String value) {
         try {
-            byte[] bytes = requireNonNull(value, "value")
+            var bytes = requireNonNull(value, "value")
                 .getBytes(StandardCharsets.UTF_8);
             output.writeInt(bytes.length);
             output.write(bytes);
@@ -103,8 +103,8 @@ public final class BytesIO {
     }
 
     public static int writeUuids(DataOutput output, List<? extends Uuid> list) {
-        int length = writeInt(output, requireNonNull(list, "list").size());
-        int data = list.stream()
+        var length = writeInt(output, requireNonNull(list, "list").size());
+        var data = list.stream()
             .mapToInt(track ->
                 writeUuid(output, track))
             .sum();
@@ -115,8 +115,8 @@ public final class BytesIO {
         if (list == null) {
             throw new IllegalArgumentException("Null list");
         }
-        int len = writeInt(output, list.size());
-        int data = list.stream()
+        var len = writeInt(output, list.size());
+        var data = list.stream()
             .mapToInt(idOut ->
                 idOut.writeTo(output))
             .sum();
@@ -168,10 +168,10 @@ public final class BytesIO {
     }
 
     private static byte[] readTo(InputStream stream, byte[] buf, ByteArrayOutputStream baos) {
-        int bytesRead = 0;
+        var bytesRead = 0;
         try {
             while (true) {
-                int read = stream.read(buf);
+                var read = stream.read(buf);
                 if (read < 0) {
                     bytesRead += read;
                     baos.flush();

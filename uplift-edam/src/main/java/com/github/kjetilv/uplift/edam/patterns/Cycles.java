@@ -13,7 +13,7 @@ final class Cycles {
         if (ts == null) {
             throw new IllegalArgumentException("Null list");
         }
-        int len = ts.size();
+        var len = ts.size();
         if (len == 0) {
             throw new IllegalArgumentException("Empty list");
         }
@@ -27,10 +27,10 @@ final class Cycles {
         if (isPrime(len)) { // Prime length, cannot be divided
             return ts;
         }
-        for (int i = 0; SIMPLE_PRIMES[i] <= len / 2; i++) {
-            int subLen = SIMPLE_PRIMES[i];
+        for (var i = 0; SIMPLE_PRIMES[i] <= len / 2; i++) {
+            var subLen = SIMPLE_PRIMES[i];
             if (len % subLen == 0) {
-                List<T> prefix = ts.subList(0, subLen);
+                var prefix = ts.subList(0, subLen);
                 if (multipleOf(prefix, ts)) {
                     return prefix;
                 }
@@ -61,9 +61,9 @@ final class Cycles {
     }
 
     private static <T> boolean multipleOf(List<T> prefix, List<T> ts) {
-        int len = ts.size();
-        int prefixLen = prefix.size();
-        for (int i = 0; i < len; i++) {
+        var len = ts.size();
+        var prefixLen = prefix.size();
+        for (var i = 0; i < len; i++) {
             if (prefix.get(i % prefixLen) != ts.get(i)) {
                 return false;
             }

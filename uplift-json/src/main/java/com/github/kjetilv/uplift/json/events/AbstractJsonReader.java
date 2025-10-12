@@ -16,7 +16,7 @@ abstract class AbstractJsonReader<S, T extends Record> implements JsonReader<S, 
 
     @Override
     public final T read(S source) {
-        AtomicReference<T> reference = new AtomicReference<>();
+        var reference = new AtomicReference<T>();
         read(source, reference::set);
         return reference.get();
     }

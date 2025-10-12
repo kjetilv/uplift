@@ -20,7 +20,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
     public LocalLambda(LocalLambdaSettings settings) {
         this.lambdaHandler = new LocalLambdaHandler(settings.queueLength());
 
-        ServerRunner lambdaServerRunner = ServerRunner.create(
+        var lambdaServerRunner = ServerRunner.create(
             settings.lambdaPort(),
             settings.requestBufferSize()
         );
@@ -30,7 +30,7 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
             settings.time()
         ));
 
-        ServerRunner apiServerRunner = ServerRunner.create(
+        var apiServerRunner = ServerRunner.create(
             settings.apiPort(),
             settings.requestBufferSize()
         );
@@ -40,10 +40,10 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
             settings.time()
         ));
 
-        InetSocketAddress lambdaAddress = lambdaServer.address();
+        var lambdaAddress = lambdaServer.address();
         this.lambdaUri = URI.create(String.format(URL, lambdaAddress.getPort()));
 
-        InetSocketAddress apiAddress = this.apiServer.address();
+        var apiAddress = this.apiServer.address();
         this.apiUri = URI.create(String.format(URL, apiAddress.getPort()));
     }
 

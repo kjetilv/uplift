@@ -58,14 +58,14 @@ record RecordAttribute(
     }
 
     String writeCall(TypeElement te) {
-        Optional<String> listType = listType(element, roots, enums);
-        boolean isEnum = isType(element, enums) || isListType(element, enums);
-        boolean isRoot = isType(element, roots) || isListType(element, roots);
-        boolean isMap = element.asType().toString().startsWith(Map.class.getName());
-        boolean convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
+        var listType = listType(element, roots, enums);
+        var isEnum = isType(element, enums) || isListType(element, enums);
+        var isRoot = isType(element, roots) || isListType(element, roots);
+        var isMap = element.asType().toString().startsWith(Map.class.getName());
+        var convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
             .orElseGet(() -> BaseType.of(element))
             .requiresConversion());
-        String name = isRoot ? "object"
+        var name = isRoot ? "object"
             : isMap ? "map"
                 : isEnum ? "string"
                     : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
@@ -81,8 +81,8 @@ record RecordAttribute(
     }
 
     private String writerClass(String name) {
-        PackageElement packageElement = packageEl(element);
-        String prefix = packageElement.toString();
+        var packageElement = packageEl(element);
+        var prefix = packageElement.toString();
         return name.substring(prefix.length() + 1)
                    .replace('.', '_') + "_Writer";
     }
@@ -112,7 +112,7 @@ record RecordAttribute(
         RecordComponentElement element,
         Collection<? extends Element> roots
     ) {
-        String string = element.asType().toString();
+        var string = element.asType().toString();
         return roots.stream()
             .filter(root ->
                 root instanceof TypeElement te && te.getQualifiedName().toString().equals(string))

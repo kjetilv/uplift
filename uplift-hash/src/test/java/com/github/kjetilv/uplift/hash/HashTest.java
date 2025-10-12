@@ -9,16 +9,16 @@ class HashTest {
 
     @Test
     void string() {
-        String string = HashKind.K128.random().toString();
+        var string = HashKind.K128.random().toString();
         assertEquals(12, string.length());
     }
 
     @Test
     void byteAt128() {
-        Hash<K128> random = HashKind.K128.random();
-        byte[] bytes = random.bytes();
-        for (int i = 0; i < 16; i++) {
-            int finalI = i;
+        var random = HashKind.K128.random();
+        var bytes = random.bytes();
+        for (var i = 0; i < 16; i++) {
+            var finalI = i;
             assertEquals(
                 bytes[i], random.byteAt(i),
                 () -> "Disagree on " + finalI
@@ -28,10 +28,10 @@ class HashTest {
 
     @Test
     void byteAt256() {
-        Hash<HashKind.K256> random = HashKind.K256.random();
-        byte[] bytes = random.bytes();
-        for (int i = 0; i < 32; i++) {
-            int finalI = i;
+        var random = HashKind.K256.random();
+        var bytes = random.bytes();
+        for (var i = 0; i < 32; i++) {
+            var finalI = i;
             assertEquals(
                 bytes[i], random.byteAt(i),
                 () -> "Disagree on " + finalI
@@ -50,8 +50,8 @@ class HashTest {
     }
 
     private static <H extends HashKind<H>> void assertBackAndForth(H kind) {
-        Hash<H> random = kind.random();
-        String digest = random.digest();
+        var random = kind.random();
+        var digest = random.digest();
         Hash<H> hash = Hashes.hash(digest);
         assertEquals(random, hash, "Hashing the same digest twice should produce the same hash");
         assertEquals(digest, hash.digest(), "Hashing the same digest twice should produce the same hash");

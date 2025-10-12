@@ -23,9 +23,9 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     /// @return Unique [digest-length][#digestLength()] string representation
     default String digest() {
-        byte[] bytes = longsToBytes(ls());
-        String base64 = new String(ENCODER.encode(bytes), US_ASCII);
-        String padding = kind().digest().padding();
+        var bytes = longsToBytes(ls());
+        var base64 = new String(ENCODER.encode(bytes), US_ASCII);
+        var padding = kind().digest().padding();
         if (base64.length() == kind().digest().length() + padding.length() && base64.endsWith(padding)) {
             return base64.substring(0, digestLength())
                 .replace(BAD_1, GOOD_1)
@@ -40,10 +40,10 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     /// @return Byte representation of the id
     default byte[] bytes() {
-        long[] ls = ls();
-        byte[] bytes = new byte[ls.length * 8];
-        for (int l = 0; l < ls.length; l++) {
-            for (int i = 0; i < 8; i++) {
+        var ls = ls();
+        var bytes = new byte[ls.length * 8];
+        for (var l = 0; l < ls.length; l++) {
+            for (var i = 0; i < 8; i++) {
                 bytes[l * 8 + i] = (byte) (ls[l] >>> 8 * (7 - i));
             }
         }
@@ -73,7 +73,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         if (this == BLANK_128 || this == BLANK_256) {
             return true;
         }
-        for (long l : ls()) {
+        for (var l : ls()) {
             if (l != 0) {
                 return false;
             }
@@ -96,7 +96,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     default String defaultToString() {
-        int fifth = kind().digest().length() / 5;
+        var fifth = kind().digest().length() / 5;
         return LPAR + digest().substring(0, Math.max(10, fifth)) + RPAR;
     }
 

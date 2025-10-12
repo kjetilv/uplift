@@ -18,13 +18,13 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
             .flatMap(header -> {
                 try {
                     if (header.startsWith(BYTES_PREAMBLE)) {
-                        String range = header.substring(BYTES_PREAMBLE_LENGTH).trim();
-                        int dashIndex = range.indexOf('-');
+                        var range = header.substring(BYTES_PREAMBLE_LENGTH).trim();
+                        var dashIndex = range.indexOf('-');
                         if (dashIndex < 0) {
                             return empty(header);
                         }
-                        Long start = dashIndex == 0 ? null : Long.parseLong(range.substring(0, dashIndex));
-                        Long
+                        var start = dashIndex == 0 ? null : Long.parseLong(range.substring(0, dashIndex));
+                        var
                             exclusiveEnd =
                             range.endsWith("-")
                                 ? null

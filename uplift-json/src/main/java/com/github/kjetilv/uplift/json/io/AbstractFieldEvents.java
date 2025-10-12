@@ -21,8 +21,8 @@ public abstract class AbstractFieldEvents implements FieldEvents {
     }
 
     protected void value(String value) {
-        boolean quoted = value.indexOf('"') >= 0;
-        String formatted = quoted
+        var quoted = value.indexOf('"') >= 0;
+        var formatted = quoted
             ? QUOTE.matcher(value).replaceAll("\\\\\"")
             : value;
         sink.accept("\"%s\"".formatted(formatted));

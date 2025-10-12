@@ -8,12 +8,12 @@ import static java.util.Objects.requireNonNull;
 final class Uuids {
 
     static String digest(UUID uuid) {
-        byte[] bytes = new byte[UUID_BYTES];
-        byte[] most = longToBytes(uuid.getMostSignificantBits());
+        var bytes = new byte[UUID_BYTES];
+        var most = longToBytes(uuid.getMostSignificantBits());
         System.arraycopy(most, 0, bytes, 0, 8);
-        byte[] least = longToBytes(uuid.getLeastSignificantBits());
+        var least = longToBytes(uuid.getLeastSignificantBits());
         System.arraycopy(least, 0, bytes, 8, 8);
-        String hash = new String(ENCODER.encode(bytes), ISO_8859_1);
+        var hash = new String(ENCODER.encode(bytes), ISO_8859_1);
         if (hash.endsWith("==")) {
             return hash
                 .substring(0, hash.length() - 2)
@@ -25,25 +25,25 @@ final class Uuids {
 
     static UUID uuid(String digest) {
         requireNonNull(digest, "digest");
-        int length = digest.length();
+        var length = digest.length();
         if (length < Uuid.DIGEST_LENGTH) {
             throw new IllegalArgumentException("Malformed: " + digest);
         }
-        byte[] digestChars = digest.substring(0, DIGEST_LENGTH).getBytes(ISO_8859_1);
-        byte[] bytes = new byte[Uuid.DIGEST_LENGTH + 2];
+        var digestChars = digest.substring(0, DIGEST_LENGTH).getBytes(ISO_8859_1);
+        var bytes = new byte[Uuid.DIGEST_LENGTH + 2];
         bytes[Uuid.DIGEST_LENGTH] = '=';
         bytes[Uuid.DIGEST_LENGTH + 1] = '=';
-        for (int i = 0; i < Uuid.DIGEST_LENGTH; i++) {
-            byte b = digestChars[i];
+        for (var i = 0; i < Uuid.DIGEST_LENGTH; i++) {
+            var b = digestChars[i];
             bytes[i] = switch (b) {
                 case '-' -> '/';
                 case '_' -> '+';
                 default -> b;
             };
         }
-        byte[] decode = DECODER.decode(bytes);
-        long most = bytesToLong(decode, 0);
-        long least = bytesToLong(decode, 8);
+        var decode = DECODER.decode(bytes);
+        var most = bytesToLong(decode, 0);
+        var least = bytesToLong(decode, 8);
         return new UUID(most, least);
     }
 
@@ -63,9 +63,9 @@ final class Uuids {
 
     @SuppressWarnings("NumericCastThatLosesPrecision")
     private static byte[] longToBytes(long l) {
-        long lw = l;
-        byte[] bytes = new byte[8];
-        for (int i = 7; i >= 0; i--) {
+        var lw = l;
+        var bytes = new byte[8];
+        for (var i = 7; i >= 0; i--) {
             bytes[i] = (byte) (lw & MASK);
             lw >>= 8;
         }
@@ -74,7 +74,7 @@ final class Uuids {
 
     private static long bytesToLong(byte[] bytes, int start) {
         long lw = 0;
-        for (int i = 0; i < 8; i++) {
+        for (var i = 0; i < 8; i++) {
             lw <<= 8;
             lw |= bytes[i + start] & MASK;
         }

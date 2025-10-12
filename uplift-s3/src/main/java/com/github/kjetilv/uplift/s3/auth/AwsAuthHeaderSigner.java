@@ -50,27 +50,27 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
     ) {
         // first get the date and time for the subsequent request, and convert
         // to ISO 8601 format for use in signature generation
-        ZonedDateTime now = now();
-        String dateTimeStamp = formatDateTime(now);
+        var now = now();
+        var dateTimeStamp = formatDateTime(now);
 
         // update the headers with required 'x-amz-date' and 'host' values
         headers.put("x-amz-date", dateTimeStamp);
 
-        int port = getEndpointUrl().getPort();
-        String hostHeader = port > -1
+        var port = getEndpointUrl().getPort();
+        var hostHeader = port > -1
             ? getEndpointUrl().getHost() + ":" + port
             : getEndpointUrl().getHost();
         headers.put("Host", hostHeader);
 
         // canonicalize the headers; we need the set of header names as well as the
         // names and values to go into the signature process
-        String canonicalizedHeaderNames = AwsAuths.getCanonicalizeHeaderNames(headers);
-        String canonicalizedHeaders = AwsAuths.getCanonicalizedHeaderString(headers);
+        var canonicalizedHeaderNames = AwsAuths.getCanonicalizeHeaderNames(headers);
+        var canonicalizedHeaders = AwsAuths.getCanonicalizedHeaderString(headers);
         // if any query string parameters have been supplied, canonicalize them
-        String canonicalizedQueryParameters = AwsAuths.getCanonicalizedQueryString(queryParameters);
+        var canonicalizedQueryParameters = AwsAuths.getCanonicalizedQueryString(queryParameters);
 
         // canonicalize the various components of the request
-        String canonicalRequest = AwsAuths.getCanonicalRequest(
+        var canonicalRequest = AwsAuths.getCanonicalRequest(
             getEndpointUrl(),
             getHttpMethod(),
             canonicalizedQueryParameters,
@@ -83,30 +83,30 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
         log.trace("------------------------------------");
 
         // construct the string to be signed
-        String dateStamp = formatDatestamp(now);
-        String scope = dateStamp + "/" + getRegionName() + "/" + getServiceName() + "/" + AwsAuths.TERMINATOR;
-        String stringToSign = AwsAuths.getStringToSign(dateTimeStamp, scope, canonicalRequest);
+        var dateStamp = formatDatestamp(now);
+        var scope = dateStamp + "/" + getRegionName() + "/" + getServiceName() + "/" + AwsAuths.TERMINATOR;
+        var stringToSign = AwsAuths.getStringToSign(dateTimeStamp, scope, canonicalRequest);
 
         log.trace("--------- String to sign -----------");
         log.trace(stringToSign);
         log.trace("------------------------------------");
 
         // compute the signing key
-        byte[] kSecret = (AwsAuths.SCHEME + awsSecretKey).getBytes(StandardCharsets.UTF_8);
-        byte[] kDate = AwsAuths.sign(dateStamp, kSecret);
-        byte[] kRegion = AwsAuths.sign(getRegionName(), kDate);
-        byte[] kService = AwsAuths.sign(getServiceName(), kRegion);
-        byte[] kSigning = AwsAuths.sign(AwsAuths.TERMINATOR, kService);
-        byte[] signature = AwsAuths.sign(stringToSign, kSigning);
+        var kSecret = (AwsAuths.SCHEME + awsSecretKey).getBytes(StandardCharsets.UTF_8);
+        var kDate = AwsAuths.sign(dateStamp, kSecret);
+        var kRegion = AwsAuths.sign(getRegionName(), kDate);
+        var kService = AwsAuths.sign(getServiceName(), kRegion);
+        var kSigning = AwsAuths.sign(AwsAuths.TERMINATOR, kService);
+        var signature = AwsAuths.sign(stringToSign, kSigning);
 
-        String credentialsAuthorizationHeader = "Credential=" + awsAccessKey + "/" + scope;
-        String signedHeadersAuthorizationHeader = "SignedHeaders=" + canonicalizedHeaderNames;
-        String signatureAuthorizationHeader = "Signature=" + BinaryUtils.toHex(signature);
+        var credentialsAuthorizationHeader = "Credential=" + awsAccessKey + "/" + scope;
+        var signedHeadersAuthorizationHeader = "SignedHeaders=" + canonicalizedHeaderNames;
+        var signatureAuthorizationHeader = "Signature=" + BinaryUtils.toHex(signature);
 
-        String authorizationHeader = AwsAuths.SCHEME + "-" + AwsAuths.ALGORITHM + " "
-                                     + credentialsAuthorizationHeader + ", "
-                                     + signedHeadersAuthorizationHeader + ", "
-                                     + signatureAuthorizationHeader;
+        var authorizationHeader = AwsAuths.SCHEME + "-" + AwsAuths.ALGORITHM + " "
+                                  + credentialsAuthorizationHeader + ", "
+                                  + signedHeadersAuthorizationHeader + ", "
+                                  + signatureAuthorizationHeader;
         headers.remove("Host");
         return authorizationHeader;
     }

@@ -14,7 +14,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 {
@@ -55,7 +55,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimple() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 [1, 2, "a"]
@@ -72,7 +72,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleLong() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 [1, 2, 3, 4, 5, 6, 7, 8]
@@ -94,7 +94,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 [1, 2, []]
@@ -112,7 +112,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrSimpleNest2() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 [1, 2, [3]]
@@ -131,7 +131,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arrObj() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 [1, {}]
@@ -254,7 +254,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void obj() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 {
@@ -279,7 +279,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        MyCallbacks myCallbacks = parse(
+        var myCallbacks = parse(
             //language=json
             """
                 {
@@ -305,7 +305,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parseMap() {
-        MyCallbacks callbacks = (MyCallbacks) callbacks();
+        var callbacks = (MyCallbacks) callbacks();
         Json.instance().parse(
             //language=json
             """

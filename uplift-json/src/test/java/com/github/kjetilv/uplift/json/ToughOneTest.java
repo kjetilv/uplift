@@ -13,7 +13,7 @@ public class ToughOneTest {
 
     @Test
     void sirParseALot() {
-        Map<?, ?> map = Json.instance().jsonMap(
+        var map = Json.instance().jsonMap(
             //language=json
             """
             {

@@ -10,7 +10,7 @@ import static java.net.http.HttpClient.Version.HTTP_1_1;
 public interface S3Accessor {
 
     static S3Accessor fromEnvironment(Env env, Executor executor) {
-        HttpClient client = HttpClient.newBuilder()
+        var client = HttpClient.newBuilder()
             .executor(executor)
             .version(HTTP_1_1)
             .build();
@@ -51,7 +51,7 @@ public interface S3Accessor {
     }
 
     default Optional<RemoteInfo> remoteInfo(String name) {
-        Map<String, RemoteInfo> remoteInfo = remoteInfos(name);
+        var remoteInfo = remoteInfos(name);
         if (remoteInfo == null || remoteInfo.isEmpty()) {
             return Optional.empty();
         }
@@ -80,12 +80,12 @@ public interface S3Accessor {
     Optional<? extends InputStream> stream(String name, Range range);
 
     default void put(String contents, String remoteName) {
-        byte[] bytes = contents.getBytes(StandardCharsets.UTF_8);
+        var bytes = contents.getBytes(StandardCharsets.UTF_8);
         put(remoteName, new ByteArrayInputStream(bytes), bytes.length);
     }
 
     default void put(String remoteName, byte[] bytes) {
-        try (ByteArrayInputStream data = new ByteArrayInputStream(bytes)) {
+        try (var data = new ByteArrayInputStream(bytes)) {
             put(remoteName, data, bytes.length);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to put " + bytes.length + " bytes @ " + remoteName, e);

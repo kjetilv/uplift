@@ -14,7 +14,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     }
 
     default HashBuilder<T, H> hash(List<T> items) {
-        for (T t : items) {
+        for (var t : items) {
             accept(t);
         }
         return this;

@@ -25,7 +25,7 @@ class HelloWebTest extends LambdaTestCase {
 
     @Test
     void helloStranger() {
-        String random = UUID.randomUUID().toString();
+        var random = UUID.randomUUID().toString();
         assertResponse(random, Greeter.greet("/" + random));
     }
 

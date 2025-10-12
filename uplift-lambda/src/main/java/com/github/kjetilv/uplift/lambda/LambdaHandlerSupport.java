@@ -40,7 +40,7 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
         String error,
         Object... args
     ) {
-        LambdaResult result = status(statusCode);
+        var result = status(statusCode);
         log.error(error, args);
         log.debug("Failing lambda request {} with {}", source(lambdaPayload), result);
         return result;

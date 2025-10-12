@@ -21,7 +21,7 @@ record SequenceTracker<K extends HashKind<K>>(Storage<K> storage, Detector detec
     }
 
     Analysis<K> process(Occurrence<K> occurrence) {
-        List<PatternMatch<K>> matches = getPatternMatches(occurrence);
+        var matches = getPatternMatches(occurrence);
         return matches.isEmpty() ? new None<>(occurrence)
             : isSimple(matches) ? new Simple<>(simpleMatches(matches))
                 : new Multiple<>(occurrence, matches);

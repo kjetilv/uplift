@@ -16,7 +16,7 @@ final class OnHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K> {
     OnHeapIndexer(HashFun<Hash<?>> hashFunction, K kind, long count) {
         super(hashFunction, count);
         this.kind = kind;
-        int size = toInt(hashFunction.slotCount(count));
+        var size = toInt(hashFunction.slotCount(count));
         //noinspection unchecked
         this.hashes = new Hash[size];
     }
@@ -39,7 +39,7 @@ final class OnHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K> {
 
         @Override
         public Hash<K> load() {
-            Hash<K> hash = hashes[index];
+            var hash = hashes[index];
             return hash == null ? kind.blank() : hash;
         }
 

@@ -10,7 +10,7 @@ public class JsonLinesTest {
 
     @Test
     void parse() {
-        MyMultiCallbacks parse = (MyMultiCallbacks) Json.instance().parseMulti(
+        var parse = (MyMultiCallbacks) Json.instance().parseMulti(
             //language=jsonl
             """
                 { "foo": "bar", "a": "b" }

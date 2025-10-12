@@ -55,23 +55,23 @@ public final class AwsAuthQueryParamSigner extends AbstractSigner {
         // first get the date and time for the subsequent request, and convert
         // to ISO 8601 format
         // for use in signature generation
-        ZonedDateTime now = now();
-        String dateTimeStamp = formatDateTime(now);
+        var now = now();
+        var dateTimeStamp = formatDateTime(now);
 
         // make sure "Host" header is added
-        String hostHeader = getEndpointUrl().getPort() > -1
+        var hostHeader = getEndpointUrl().getPort() > -1
             ? "%s:%d".formatted(getEndpointUrl().getHost(), getEndpointUrl().getPort())
             : getEndpointUrl().getHost();
         headers.put("Host", hostHeader);
 
         // canonicalized headers need to be expressed in the query
         // parameters processed in the signature
-        String canonicalizedHeaderNames = AwsAuths.getCanonicalizeHeaderNames(headers);
-        String canonicalizedHeaders = AwsAuths.getCanonicalizedHeaderString(headers);
+        var canonicalizedHeaderNames = AwsAuths.getCanonicalizeHeaderNames(headers);
+        var canonicalizedHeaders = AwsAuths.getCanonicalizedHeaderString(headers);
 
         // we need scope as part of the query parameters
-        String dateStamp = formatDatestamp(now);
-        String scope = dateStamp + "/" + getRegionName() + "/" + getServiceName() + "/" + AwsAuths.TERMINATOR;
+        var dateStamp = formatDatestamp(now);
+        var scope = dateStamp + "/" + getRegionName() + "/" + getServiceName() + "/" + AwsAuths.TERMINATOR;
 
         // add the fixed authorization params required by Signature V4
         queryParameters.put("X-Amz-Algorithm", SCHEME + "-" + ALGORITHM);
@@ -84,12 +84,12 @@ public final class AwsAuthQueryParamSigner extends AbstractSigner {
 
         // build the expanded canonical query parameter string that will go into the
         // signature computation
-        String canonicalizedQueryParameters = AwsAuths.getCanonicalizedQueryString(queryParameters);
+        var canonicalizedQueryParameters = AwsAuths.getCanonicalizedQueryString(queryParameters);
 
         // express all the header and query parameter data as a canonical request string
-        URI endpoint = getEndpointUrl();
-        String httpMethod = getHttpMethod();
-        String canonicalRequest = AwsAuths.getCanonicalRequest(
+        var endpoint = getEndpointUrl();
+        var httpMethod = getHttpMethod();
+        var canonicalRequest = AwsAuths.getCanonicalRequest(
             endpoint,
             httpMethod,
             canonicalizedQueryParameters,
@@ -102,20 +102,20 @@ public final class AwsAuthQueryParamSigner extends AbstractSigner {
         log.trace("------------------------------------");
 
         // construct the string to be signed
-        String stringToSign = AwsAuths.getStringToSign(dateTimeStamp, scope, canonicalRequest);
+        var stringToSign = AwsAuths.getStringToSign(dateTimeStamp, scope, canonicalRequest);
         log.trace("--------- String to sign -----------");
         log.trace(stringToSign);
         log.trace("------------------------------------");
 
         // compute the signing key
-        byte[] kSecret = (SCHEME + awsSecretKey).getBytes(StandardCharsets.UTF_8);
-        byte[] kDate = AwsAuths.sign(dateStamp, kSecret);
-        String stringData1 = getRegionName();
-        byte[] kRegion = AwsAuths.sign(stringData1, kDate);
-        String stringData = getServiceName();
-        byte[] kService = AwsAuths.sign(stringData, kRegion);
-        byte[] kSigning = AwsAuths.sign(AwsAuths.TERMINATOR, kService);
-        byte[] signature = AwsAuths.sign(stringToSign, kSigning);
+        var kSecret = (SCHEME + awsSecretKey).getBytes(StandardCharsets.UTF_8);
+        var kDate = AwsAuths.sign(dateStamp, kSecret);
+        var stringData1 = getRegionName();
+        var kRegion = AwsAuths.sign(stringData1, kDate);
+        var stringData = getServiceName();
+        var kService = AwsAuths.sign(stringData, kRegion);
+        var kSigning = AwsAuths.sign(AwsAuths.TERMINATOR, kService);
+        var signature = AwsAuths.sign(stringToSign, kSigning);
 
         // form up the authorization parameters for the caller to place in the query string
 

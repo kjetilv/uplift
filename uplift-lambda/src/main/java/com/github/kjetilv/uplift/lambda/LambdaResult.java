@@ -52,7 +52,7 @@ public record LambdaResult(
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("statusCode", statusCode());
-        byte[] body = body();
+        var body = body();
         if (body != null && body.length > 0) {
             map.put("isBase64Encoded", this.binary());
             map.put("body", encodeResponseBody(body, this.binary()));

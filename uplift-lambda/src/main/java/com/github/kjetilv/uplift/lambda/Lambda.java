@@ -24,7 +24,7 @@ public final class Lambda {
         int parallellism
     ) {
         try (
-            LamdbdaManaged managed = managed(
+            var managed = managed(
                 lambdaHandler,
                 connectTimeout,
                 responseTimeout

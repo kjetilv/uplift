@@ -25,9 +25,9 @@ class OffHeapStorageTest {
     @Test
     void ring() {
         try (
-            Arena arena = Arena.ofConfined()
+            var arena = Arena.ofConfined()
         ) {
-            Storage<K128> storage = OffHeapStorage.create(
+            var storage = OffHeapStorage.create(
                 new Window(Duration.ofDays(1), 3),
                 new OffHeapIndexer128(arena, Object::hashCode, 3),
                 arena
@@ -35,7 +35,7 @@ class OffHeapStorageTest {
             Hash<K128>[] hs = IntStream.range(0, 10)
                 .mapToObj(_ -> K128.random())
                 .toArray(Hash[]::new);
-            AtomicReference<Instant> instant = new AtomicReference<>(Instant.EPOCH);
+            var instant = new AtomicReference<Instant>(Instant.EPOCH);
             Supplier<Instant> now = () -> instant.updateAndGet(i -> i.plusSeconds(1));
 
             Occurrence<K128>[] occs = Arrays.stream(hs)
@@ -84,23 +84,23 @@ class OffHeapStorageTest {
                     .toList()
             );
 
-            List<Occurrence<K128>> o2Time = storage.forward().spool(occs[2].time())
+            var o2Time = storage.forward().spool(occs[2].time())
                 .toList();
             assertEquals(1, o2Time.size());
             assertEquals(occs[1], o2Time.getFirst());
 
-            List<Occurrence<K128>> o3Time = storage.forward().spool(occs[3].time())
+            var o3Time = storage.forward().spool(occs[3].time())
                 .toList();
             assertEquals(2, o3Time.size());
             assertEquals(occs[1], o3Time.getFirst());
             assertEquals(occs[2], o3Time.getLast());
 
-            List<Occurrence<K128>> o3TimeDown = storage.rewind().spool(occs[3].time())
+            var o3TimeDown = storage.rewind().spool(occs[3].time())
                 .toList();
             assertEquals(1, o3TimeDown.size());
             assertEquals(occs[3], o3TimeDown.getFirst());
 
-            List<Occurrence<K128>> o2TimeDown = storage.rewind().spool(occs[2].time())
+            var o2TimeDown = storage.rewind().spool(occs[2].time())
                 .toList();
             assertEquals(2, o2TimeDown.size());
             assertEquals(occs[3], o2TimeDown.getFirst());
@@ -111,15 +111,15 @@ class OffHeapStorageTest {
     @Test
     void store() {
         try (
-            Arena arena = Arena.ofConfined()
+            var arena = Arena.ofConfined()
         ) {
-            Storage<K128> storage = OffHeapStorage.create(
+            var storage = OffHeapStorage.create(
                 new Window(Duration.ofDays(1), 10),
                 new OffHeapIndexer128(arena, Object::hashCode, 10),
                 arena
             );
-            Occurrence<K128> occurrenceA = new Occurrence<>(Instant.now(), HashKind.K128.random());
-            Occurrence<K128> occurrenceB = new Occurrence<>(Instant.now().minusSeconds(1), HashKind.K128.random());
+            var occurrenceA = new Occurrence<K128>(Instant.now(), HashKind.K128.random());
+            var occurrenceB = new Occurrence<K128>(Instant.now().minusSeconds(1), HashKind.K128.random());
             storage.store(occurrenceA);
             assertEquals(occurrenceA, storage.get(0));
 
@@ -127,33 +127,33 @@ class OffHeapStorageTest {
             assertEquals(occurrenceA, storage.get(0));
             assertEquals(occurrenceB, storage.get(1));
 
-            Storage.Cursor<K128> cursor1 = storage.rewind();
+            var cursor1 = storage.rewind();
             assertEquals(occurrenceB, cursor1.next().get());
             assertEquals(occurrenceA, cursor1.next().get());
             assertTrue(cursor1.next().isEmpty());
 
-            Storage.Cursor<K128> cursor2 = storage.forward();
+            var cursor2 = storage.forward();
             assertEquals(occurrenceA, cursor2.next().get());
             assertEquals(occurrenceB, cursor2.next().get());
             assertTrue(cursor2.next().isEmpty());
 
-            Storage.Cursor<K128> aCursor = storage.rewind(occurrenceA.hash());
+            var aCursor = storage.rewind(occurrenceA.hash());
             assertEquals(occurrenceA, aCursor.next().get());
             assertTrue(aCursor.next().isEmpty());
 
-            List<Occurrence<K128>> list = storage.rewind().spool().limit(1)
+            var list = storage.rewind().spool().limit(1)
                 .toList();
             assertEquals(1, list.size());
             assertEquals(occurrenceB, list.getFirst());
 
-            Storage.Cursor<K128> rew = storage.rewind();
-            List<Occurrence<K128>> list2 = rew.spool()
+            var rew = storage.rewind();
+            var list2 = rew.spool()
                 .toList();
             assertEquals(2, list2.size());
             assertEquals(occurrenceB, list2.getFirst());
             assertEquals(occurrenceA, list2.getLast());
 
-            List<Occurrence<K128>> list3 = storage.forward().spool()
+            var list3 = storage.forward().spool()
                 .toList();
             assertEquals(2, list3.size());
             assertEquals(occurrenceA, list3.getFirst());
@@ -162,7 +162,7 @@ class OffHeapStorageTest {
     }
 
     private static <T> List<T> reverse(List<T> hashes) {
-        ArrayList<T> copy = new ArrayList<>(hashes);
+        var copy = new ArrayList<T>(hashes);
         Collections.reverse(copy);
         return List.copyOf(copy);
     }

@@ -15,7 +15,7 @@ final class TrieBuilder {
     }
 
     private static Trie build(Collection<Token.Field> fields, int index) {
-        Token.Field leaf = fields.stream()
+        var leaf = fields.stream()
             .filter(f -> f.length() == index)
             .findFirst()
             .orElse(null);
@@ -23,7 +23,7 @@ final class TrieBuilder {
         if (leaf != null && fields.size() == 1) {
             return node(leaf.length(), leaf, null);
         }
-        Map<Byte, Trie> level = nextLevel(fields, index);
+        var level = nextLevel(fields, index);
         return node(index, leaf, IntMap.from(level));
     }
 
@@ -64,7 +64,7 @@ final class TrieBuilder {
             .min(Comparator.comparing(Token.Field::length))
             .map(Token.Field::length)
             .orElseThrow();
-        for (int i = 0; i < shortest; i++) {
+        for (var i = 0; i < shortest; i++) {
             if (!sameCharAt(i, fields)) {
                 return i;
             }
@@ -73,8 +73,8 @@ final class TrieBuilder {
     }
 
     private static boolean sameCharAt(int index, List<Token.Field> fields) {
-        Token.Field init = fields.getFirst();
-        for (int i = 1; i < fields.size(); i++) {
+        var init = fields.getFirst();
+        for (var i = 1; i < fields.size(); i++) {
             if (fields.get(i).differsAt(init, index)) {
                 return false;
             }

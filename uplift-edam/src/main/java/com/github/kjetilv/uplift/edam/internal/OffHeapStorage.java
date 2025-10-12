@@ -34,9 +34,9 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
 
     @Override
     protected Occurrence<K> retrieveFrom(long index) {
-        MemorySegment slice = slice(index);
-        long i = (long) IH.get(slice, 0);
-        long n = (long) NH.get(slice, 0);
+        var slice = slice(index);
+        var i = (long) IH.get(slice, 0);
+        var n = (long) NH.get(slice, 0);
         return new Occurrence<>(
             START_TIME.plusNanos(n),
             indexer.exchange(i)
@@ -45,12 +45,12 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
 
     @Override
     protected void storeTo(long index, Occurrence<K> occurrence) {
-        long i = indexer.exchange(occurrence.hash());
-        long n = Duration.between(
+        var i = indexer.exchange(occurrence.hash());
+        var n = Duration.between(
             START_TIME,
             occurrence.time()
         ).toNanos();
-        MemorySegment slice = slice(index);
+        var slice = slice(index);
         NH.set(slice, 0, n);
         IH.set(slice, 0, i);
     }

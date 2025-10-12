@@ -38,9 +38,9 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     @Override
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
-            case Node<K, H>(Hash<H> hash, Map<K, HashedTree<K, H>> valueMap) -> {
-                Map<K, CanonicalValue<H>> node = transformValues(valueMap, toCanonical());
-                Collision<H> collision = collision(node.values());
+            case Node<K, H>(var hash, var valueMap) -> {
+                var node = transformValues(valueMap, toCanonical());
+                var collision = collision(node.values());
                 yield collision == null ? canonicalize(
                     transformValues(node, toValue()),
                     hash,
@@ -49,9 +49,9 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                         new CanonicalValue.Node<>(hash, t)
                 ) : collision;
             }
-            case Nodes<K, H>(Hash<H> hash, List<HashedTree<K, H>> values) -> {
-                List<CanonicalValue<H>> nodes = transform(values, toCanonical());
-                Collision<H> collision = collision(nodes);
+            case Nodes<K, H>(var hash, var values) -> {
+                var nodes = transform(values, toCanonical());
+                var collision = collision(nodes);
                 yield collision == null ? canonicalize(
                     transform(nodes, toValue()),
                     hash,
@@ -60,20 +60,20 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                         new CanonicalValue.Nodes<>(hash, t)
                 ) : collision;
             }
-            case HashedTree.Leaf<?, H>(Hash<H> hash, Object value) -> canonicalize(
+            case HashedTree.Leaf<?, H>(var hash, var value) -> canonicalize(
                 value,
                 hash,
                 leaves,
                 t -> new CanonicalValue.Leaf<>(hash, t)
             );
             case HashedTree.Null<?, H>(
-                Hash<H> hash
+                var hash
             ) -> new CanonicalValue.Null<>(hash);
         };
     }
 
     private Collision<H> collision(Iterable<CanonicalValue<H>> values) {
-        for (CanonicalValue<H> value : values) {
+        for (var value : values) {
             if (value instanceof Collision<H> collision) {
                 return collision;
             }
@@ -87,7 +87,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         Map<Hash<H>, T> map,
         Function<T, CanonicalValue<H>> wrap
     ) {
-        T existing = map.putIfAbsent(hash, value);
+        var existing = map.putIfAbsent(hash, value);
         return existing == null || collisionsNeverHappen ? wrap.apply(value)
             : existing.equals(value) ? wrap.apply(existing)
                 : new Collision<>(hash, value);

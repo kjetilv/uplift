@@ -17,7 +17,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
     }
 
     protected String value(String value) {
-        String contents = value.indexOf('"') >= 0
+        var contents = value.indexOf('"') >= 0
             ? QUOTE.matcher(value).replaceAll("\\\\\"")
             : value;
         return "\"%s\"".formatted(contents);

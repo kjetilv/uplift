@@ -49,7 +49,7 @@ public sealed interface HashKind<H extends HashKind<H>> {
 
         @Override
         public Hash<K128> random() {
-            UUID u = UUID.randomUUID();
+            var u = UUID.randomUUID();
             return Hashes.of(
                 u.getMostSignificantBits(),
                 u.getLeastSignificantBits()
@@ -74,8 +74,8 @@ public sealed interface HashKind<H extends HashKind<H>> {
 
         @Override
         public Hash<K256> random() {
-            UUID u0 = UUID.randomUUID();
-            UUID u1 = UUID.randomUUID();
+            var u0 = UUID.randomUUID();
+            var u1 = UUID.randomUUID();
             return Hashes.of(
                 u0.getMostSignificantBits(),
                 u0.getLeastSignificantBits(),

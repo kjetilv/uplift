@@ -42,16 +42,16 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
-        TokenResolver tokenResolver = resolve(callbacks);
+        var tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
         return JSON_PULL_PARSER.pull(tokens, callbacks);
     }
 
     @Override
     public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
-        TokenResolver tokenResolver = resolve(callbacks);
+        var tokenResolver = resolve(callbacks);
         Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
-        Callbacks walker = callbacks;
+        var walker = callbacks;
         while (true) {
             walker = JSON_PULL_PARSER.pull(tokens, walker);
             if (tokens.done()) {
@@ -78,26 +78,26 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public String write(Object object) {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         JsonWrites.write(new StringSink(sb), object);
         return sb.toString();
     }
 
     @Override
     public byte[] writeBytes(Object object) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        var baos = new ByteArrayOutputStream();
         JsonWrites.write(new StreamSink(baos), object);
         return baos.toByteArray();
     }
 
     @Override
     public void write(Object object, OutputStream outputStream) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        var baos = new ByteArrayOutputStream();
         JsonWrites.write(new StreamSink(baos), object);
     }
 
     private Object process(BytesSource bytesSource) {
-        AtomicReference<Object> reference = new AtomicReference<>();
+        var reference = new AtomicReference<Object>();
         parse(bytesSource, jsonSession.callbacks(reference::set));
         return reference.get();
     }

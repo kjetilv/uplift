@@ -20,8 +20,8 @@ final class DefaultHandler<T, P extends Info<T, K>, K extends HashKind<K>>
 
     @Override
     public Handling<T, P, K> handle(T item) {
-        Analysis<K> analysis = analyzer.analyze(item);
-        P metadata = infoProvider.build(item, analysis.trigger());
+        var analysis = analyzer.analyze(item);
+        var metadata = infoProvider.build(item, analysis.trigger());
         return new Handling<>(analysis, metadata);
     }
 }

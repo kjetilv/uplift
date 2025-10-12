@@ -13,14 +13,14 @@ public record Transfer(long totalSize, int bufferSize) {
         BufferingWriter<? super B> writer
     ) {
         long transferred = 0;
-        int turnarounds = 0;
-        int emptyTurnarunds = 0;
-        int emptyTurnarundsTotal = 0;
-        int emptyTurnarundWarnFreq = 2;
+        var turnarounds = 0;
+        var emptyTurnarunds = 0;
+        var emptyTurnarundsTotal = 0;
+        var emptyTurnarundWarnFreq = 2;
         try {
-            B buffer = reader.buffer(bufferSize > 0 ? bufferSize : DEFAULT_BUFFER_SIZE);
+            var buffer = reader.buffer(bufferSize > 0 ? bufferSize : DEFAULT_BUFFER_SIZE);
             while (true) {
-                int bytesRead = reader.read(buffer);
+                var bytesRead = reader.read(buffer);
                 if (bytesRead < 0) {
                     if (transferred == totalSize) {
                         return transferred;
@@ -43,7 +43,7 @@ public record Transfer(long totalSize, int bufferSize) {
                         emptyTurnarundWarnFreq *= 2;
                     }
                 } else {
-                    long bytesMissing = totalSize - transferred;
+                    var bytesMissing = totalSize - transferred;
 
                     if (bytesRead > bytesMissing) {
                         log.warn("Received {} bytes, was missing only {}", bytesRead, bytesMissing);
@@ -53,7 +53,7 @@ public record Transfer(long totalSize, int bufferSize) {
                         log.warn("Received {} bytes after {} empty turnarounds ", bytesRead, emptyTurnarunds);
                     }
 
-                    int writableBytes = min(bytesRead, bytesMissing);
+                    var writableBytes = min(bytesRead, bytesMissing);
 
                     if (transferred + writableBytes > totalSize) {
                         throw new IllegalStateException(

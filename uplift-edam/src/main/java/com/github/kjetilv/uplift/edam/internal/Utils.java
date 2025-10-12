@@ -77,7 +77,7 @@ public final class Utils {
             if (throwable == null) {
                 return Stream.empty();
             }
-            Stream<Throwable> chain = Stream.iterate(
+            var chain = Stream.iterate(
                 throwable,
                 ThrowableUtils::hasNext,
                 Throwable::getCause
@@ -96,31 +96,31 @@ public final class Utils {
 
         private static String print(Throwable throwable, int limit) {
             if (limit > 0) {
-                Stream<Throwable> chain = chain(throwable, true);
-                StringBuilder sb = new StringBuilder();
+                var chain = chain(throwable, true);
+                var sb = new StringBuilder();
                 chain.forEach(t -> {
                     if (!sb.isEmpty()) {
                         sb.append("\n\tCaused by: ");
                     }
                     sb.append(t.toString());
-                    StackTraceElement[] stackTrace = t.getStackTrace();
+                    var stackTrace = t.getStackTrace();
                     Arrays.stream(stackTrace).limit(limit)
                         .forEach(el ->
                             sb.append("\n\t\tat ").append(el));
-                    int hidden = stackTrace.length - limit;
+                    var hidden = stackTrace.length - limit;
                     if (hidden > 0) {
                         sb.append(" (+").append(hidden).append(")");
                     }
                 });
                 return sb.toString();
             }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            var baos = new ByteArrayOutputStream();
             printTo(baos, throwable);
             return baos.toString(UTF_8);
         }
 
         private static void printTo(OutputStream outputStream, Throwable throwable) {
-            try (outputStream; PrintWriter pw = pw(outputStream)) {
+            try (outputStream; var pw = pw(outputStream)) {
                 throwable.printStackTrace(pw);
             } catch (Exception e) {
                 e.addSuppressed(throwable);

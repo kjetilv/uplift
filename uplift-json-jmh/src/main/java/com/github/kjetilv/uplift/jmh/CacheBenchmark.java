@@ -27,11 +27,11 @@ public class CacheBenchmark {
 
     @Benchmark
     public Object readJsonCached() throws Exception {
-        JsonSession jsonSession = CachingJsonSessions.create(K128);
-        Json json = Json.instance(jsonSession);
-        try (Stream<String> lines = Files.lines(tmp)) {
+        var jsonSession = CachingJsonSessions.create(K128);
+        var json = Json.instance(jsonSession);
+        try (var lines = Files.lines(tmp)) {
             List<Object> list = new ArrayList<>();
-            Callbacks callbacks = jsonSession.callbacks(list::add);
+            var callbacks = jsonSession.callbacks(list::add);
             lines.forEach(line ->
                 json.parse(line, callbacks)
             );
@@ -41,8 +41,8 @@ public class CacheBenchmark {
 
     @Benchmark
     public Object readJsonUncached() throws Exception {
-        Json json = Json.instance();
-        try (Stream<String> lines = Files.lines(tmp)) {
+        var json = Json.instance();
+        try (var lines = Files.lines(tmp)) {
             return lines.map(json::read).toList();
         }
     }
@@ -50,8 +50,8 @@ public class CacheBenchmark {
 
     @Benchmark
     public Object readJsonJackson() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try (Stream<String> lines = Files.lines(tmp)) {
+        var objectMapper = new ObjectMapper();
+        try (var lines = Files.lines(tmp)) {
             return lines.map(line -> {
                 try {
                     return objectMapper.readValue(line, Map.class);

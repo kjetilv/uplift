@@ -79,7 +79,7 @@ public final class MyCallbacks implements Callbacks {
 
     private MyCallbacks add(String event) {
         if (called.compareAndSet(false, true)) {
-            ArrayList<String> moreStuff = new ArrayList<>(stuff);
+            var moreStuff = new ArrayList<String>(stuff);
             moreStuff.add(event);
             return new MyCallbacks(moreStuff);
         }

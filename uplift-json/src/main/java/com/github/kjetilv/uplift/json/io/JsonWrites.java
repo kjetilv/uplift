@@ -72,8 +72,8 @@ public final class JsonWrites {
             return;
         }
         sink.accept("{");
-        Sink.Mark mark = sink.mark();
-        for (Map.Entry<?, ?> value : map.entrySet()) {
+        var mark = sink.mark();
+        for (var value : map.entrySet()) {
             if (mark.moved()) {
                 sink.accept(",");
             }
@@ -84,7 +84,7 @@ public final class JsonWrites {
     }
 
     private static void writeIterable(Sink sink, Iterable<?> iterable) {
-        Iterator<?> iterator = iterable.iterator();
+        var iterator = iterable.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
         } else {
@@ -93,7 +93,7 @@ public final class JsonWrites {
     }
 
     private static void writeList(Sink sink, List<?> list) {
-        Iterator<?> iterator = list.iterator();
+        var iterator = list.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
         } else {
@@ -102,7 +102,7 @@ public final class JsonWrites {
     }
 
     private static void writeSet(Sink sink, Set<?> list) {
-        Iterator<?> iterator = list.iterator();
+        var iterator = list.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
         } else {
@@ -111,7 +111,7 @@ public final class JsonWrites {
     }
 
     private static void writeCollection(Sink sink, Collection<?> collection) {
-        Iterator<?> iterator = collection.iterator();
+        var iterator = collection.iterator();
         if (iterator.hasNext()) {
             writeNonEmptyArray(sink, iterator);
         } else {
@@ -121,7 +121,7 @@ public final class JsonWrites {
 
     private static void writeNonEmptyArray(Sink sink, Iterator<?> iterator) {
         sink.accept("[");
-        Sink.Mark mark = sink.mark();
+        var mark = sink.mark();
         while (iterator.hasNext()) {
             if (mark.moved()) {
                 sink.accept(",");

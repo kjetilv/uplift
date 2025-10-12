@@ -16,7 +16,7 @@ class HashTest {
 
     @Test
     void testHash() {
-        Hash<HashKind.K128> hash = Hashes.of(0L, 234L);
+        var hash = Hashes.of(0L, 234L);
         assertEquals("⟨AAAAAAAAAA⟩", hash.toString());
     }
 }

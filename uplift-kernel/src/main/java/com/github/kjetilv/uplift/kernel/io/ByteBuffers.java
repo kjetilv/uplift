@@ -14,8 +14,8 @@ public final class ByteBuffers {
     ) {
         try (
             InputStream inputStream = new ByteArrayInputStream(byteBuffer.array());
-            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-            java.io.BufferedReader lineReader = new BufferedReader(reader)
+            var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            var lineReader = new BufferedReader(reader)
         ) {
             return fun.apply(nextLineSupplier(lineReader));
         } catch (Exception e) {

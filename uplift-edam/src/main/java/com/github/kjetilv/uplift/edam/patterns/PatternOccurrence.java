@@ -35,15 +35,15 @@ public record PatternOccurrence<K extends HashKind<K>>(HashPattern<K> hashPatter
     }
 
     public String toStringBody() {
-        Occurrence<K> firstTime = occurrences.getFirst();
-        Utils.Unit unit = Utils.Unit.of(timespan().duration());
-        String tail = occurrences.stream().skip(1)
+        var firstTime = occurrences.getFirst();
+        var unit = Utils.Unit.of(timespan().duration());
+        var tail = occurrences.stream().skip(1)
             .map(occurrence ->
                 occurrence.hash().toShortString() + "+" +
                 unit.print(Duration.between(firstTime.time(), occurrence.time()))
             )
             .collect(Collectors.joining(" "));
-        String head = firstTime.hash().toShortString() + "@" + print(firstTime.time());
+        var head = firstTime.hash().toShortString() + "@" + print(firstTime.time());
         return "<" + head + " " + tail + ">";
     }
 

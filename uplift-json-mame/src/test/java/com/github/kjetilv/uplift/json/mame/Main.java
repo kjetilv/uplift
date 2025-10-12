@@ -23,17 +23,17 @@ import static com.github.kjetilv.uplift.hash.HashKind.K128;
 public class Main {
 
     static void main(String[] args) {
-        List<Object> list = Collections.synchronizedList(new ArrayList<>());
-        List<Object> unhashed = Collections.synchronizedList(new ArrayList<>());
+        var list = Collections.synchronizedList(new ArrayList<>());
+        var unhashed = Collections.synchronizedList(new ArrayList<>());
 
-        AtomicReference<JsonSession> session = new AtomicReference<>();
+        var session = new AtomicReference<JsonSession>();
         session.set(CachingJsonSessions.create(K128));
         System.out.println("Before go: " + Mem.create());
-        Instant goStart = Instant.now();
-        Callbacks callbacks = session.get().callbacks(list::add);
+        var goStart = Instant.now();
+        var callbacks = session.get().callbacks(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
-        AtomicReference<Callbacks> cachingCallbacks = new AtomicReference<>(callbacks);
-        Json json = Json.instance(CachingJsonSessions.create(K128));
+        var cachingCallbacks = new AtomicReference<Callbacks>(callbacks);
+        var json = Json.instance(CachingJsonSessions.create(K128));
         if (Arrays.stream(args).anyMatch(arg -> arg.endsWith(".jsonl"))) {
             lines(args).forEach(line ->
                 json.parse(line, cachingCallbacks.get())
@@ -48,17 +48,17 @@ public class Main {
                     }
                 });
         }
-        long putTime = Duration.between(goStart, Instant.now()).toMillis();
+        var putTime = Duration.between(goStart, Instant.now()).toMillis();
         System.out.println("After put (" + putTime + "ms): " + Mem.create());
         System.gc();
         System.out.println(list.size());
         System.out.println(unhashed.size());
         System.out.println("After parse: " + Mem.create());
-        Instant gcStart = Instant.now();
+        var gcStart = Instant.now();
         cachingCallbacks.set(null);
         session.set(null);
         System.gc();
-        long gcTime = Duration.between(gcStart, Instant.now()).toMillis();
+        var gcTime = Duration.between(gcStart, Instant.now()).toMillis();
         System.out.println("After GC (" + gcTime + "ms): " + Mem.create());
     }
 
@@ -66,7 +66,7 @@ public class Main {
     }
 
     private static Stream<String> lines(String[] args) {
-        List<Path> paths = Arrays.stream(args)
+        var paths = Arrays.stream(args)
             .parallel()
             .map(Path::of)
             .filter(Files::isRegularFile)

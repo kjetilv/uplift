@@ -31,9 +31,9 @@ final class DefaultPullParser implements PullParser {
     }
 
     private Callbacks processObject(Tokens tokens, Callbacks initial) {
-        Callbacks callbacks = initial.objectStarted();
-        boolean canonical = callbacks.tokenResolver().isPresent();
-        Token next = tokens.nextField(canonical);
+        var callbacks = initial.objectStarted();
+        var canonical = callbacks.tokenResolver().isPresent();
+        var next = tokens.nextField(canonical);
         while (next != Token.END_OBJECT) {
             switch (next) {
                 case Token.Field fieldToken -> callbacks = processField(tokens, fieldToken, callbacks);
@@ -46,8 +46,8 @@ final class DefaultPullParser implements PullParser {
     }
 
     private Callbacks processArray(Tokens tokens, Callbacks initial) {
-        Callbacks callbacks = initial.arrayStarted();
-        Token next = tokens.next();
+        var callbacks = initial.arrayStarted();
+        var next = tokens.next();
         while (next != Token.END_ARRAY) {
             callbacks = processValue(tokens, next, callbacks);
             next = commaOr(tokens, Token.END_ARRAY, false, false);
@@ -57,9 +57,9 @@ final class DefaultPullParser implements PullParser {
 
     private Callbacks processField(Tokens tokens, Token.Field field, Callbacks initial) {
         try {
-            Callbacks callbacks = initial.field(field);
+            var callbacks = initial.field(field);
             tokens.skipNext(Token.COLON);
-            Token valueToken = tokens.next();
+            var valueToken = tokens.next();
             return processValue(tokens, valueToken, callbacks);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set `" + field.value() + "`", e);
@@ -67,7 +67,7 @@ final class DefaultPullParser implements PullParser {
     }
 
     private void skip(Tokens tokens) {
-        Token token = tokens.skipNext(Token.COLON).next();
+        var token = tokens.skipNext(Token.COLON).next();
         if (token == Token.BEGIN_OBJECT) {
             skipStructure(tokens, Token.BEGIN_OBJECT, Token.END_OBJECT);
         } else if (token == Token.BEGIN_ARRAY) {
@@ -78,9 +78,9 @@ final class DefaultPullParser implements PullParser {
     }
 
     private void skipStructure(Tokens tokens, Token opening, Token closing) {
-        int levels = 0;
+        var levels = 0;
         do {
-            Token next = tokens.next();
+            var next = tokens.next();
             if (next == closing) {
                 levels--;
             } else if (next == opening) {
@@ -90,9 +90,9 @@ final class DefaultPullParser implements PullParser {
     }
 
     private Token commaOr(Tokens tokens, Token closing, boolean fieldName, boolean canonical) {
-        Token token = tokens.next(false, false);
+        var token = tokens.next(false, false);
         if (token == Token.COMMA) {
-            Token nextToken = tokens.next(fieldName, canonical);
+            var nextToken = tokens.next(fieldName, canonical);
             return nextToken == closing
                 ? failParse(nextToken, TokenType.valueTokens())
                 : nextToken;

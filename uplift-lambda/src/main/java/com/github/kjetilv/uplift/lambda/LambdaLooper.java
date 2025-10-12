@@ -58,8 +58,8 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     public void run() {
         log.info("Loop started");
         try (
-            Stages<Invocation<Q, R>> stages = new Stages<>(source::next);
-            Stream<CompletionStage<Invocation<Q, R>>> stream = stages.stages()
+            var stages = new Stages<Invocation<Q, R>>(source::next);
+            var stream = stages.stages()
         ) {
             stream.map(this::toFuture)
                 .peek(future ->
@@ -91,7 +91,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
             return;
         }
         if (qr.requestFailure() instanceof CompletionException completionException) {
-            Throwable combined = combine(throwable, completionException.getCause());
+            var combined = combine(throwable, completionException.getCause());
             if (throwable instanceof ConnectException || throwable instanceof HttpConnectTimeoutException) {
                 log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
                 sleep(WAIT_MS);
@@ -105,7 +105,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     private Invocation<Q, R> executeLambda(Invocation<Q, R> invocation) {
         try {
-            LambdaResult result = lambdaHandler.handle(invocation.payload());
+            var result = lambdaHandler.handle(invocation.payload());
             return invocation.result(result, time);
         } catch (Exception e) {
             try {
@@ -142,7 +142,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     }
 
     private void updateTimes(Invocation<Q, R> invocation) {
-        Duration timeSinceLast = Duration.between(lastTime.get(), invocation.created());
+        var timeSinceLast = Duration.between(lastTime.get(), invocation.created());
         if (shouldlog(timeSinceLast, initiated.longValue())) {
             log.info("{} completed {}", this, invocation);
         }
@@ -187,7 +187,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     @Override
     public String toString() {
-        long count = completedOk.longValue() + completedFail.longValue();
+        var count = completedOk.longValue() + completedFail.longValue();
         return "%s[%s@%s: init:%s ok:%s fail:%s avg:%s]".formatted(
             getClass().getSimpleName(),
             lambdaHandler,

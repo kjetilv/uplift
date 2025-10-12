@@ -230,7 +230,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
 
         @Override
         public int count(Hash<K> hash) {
-            Stream<Occurrence<K>> occurrences = matches.stream().flatMap(patternMatch ->
+            var occurrences = matches.stream().flatMap(patternMatch ->
                 patternMatch.occurrences()
                     .stream()
                     .flatMap(patternOccurrence ->
@@ -271,12 +271,12 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         ///
         /// @return Simple analysis
         public Simple<K> simple() {
-            PatternMatch<K> simplePattern = matches().stream()
+            var simplePattern = matches().stream()
                 .filter(PatternMatch::isSimple)
                 .findFirst()
                 .orElseThrow(() ->
                     new IllegalStateException("No simple occurrence found: " + this));
-            List<Occurrence<K>> occurrences = simplePattern.occurrences()
+            var occurrences = simplePattern.occurrences()
                 .stream()
                 .map(PatternOccurrence::occurrences)
                 .flatMap(Collection::stream)

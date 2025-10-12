@@ -51,7 +51,7 @@ public final class InternalFactory {
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
-        TreeHasher<K, H> treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
+        var treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
         Canonicalizer<K, H> canonicalValues = new CanonicalSubstructuresCataloguer<>();
         return new MapsMemoizerImpl<>(treeHasher, canonicalValues);
     }
@@ -82,7 +82,7 @@ public final class InternalFactory {
             keyHandler != null
                 ? keyHandler
                 : KeyHandler.defaultHandler());
-        LeafHasher<H> hasher = leafHasher != null ? leafHasher : leafHasher(kind, pojoBytes);
+        var hasher = leafHasher != null ? leafHasher : leafHasher(kind, pojoBytes);
         return new RecursiveTreeHasher<>(
             () -> Hashes.hashBuilder(kind),
             canonicalKeys,

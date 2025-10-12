@@ -28,10 +28,10 @@ class CanonicalSubstructuresCataloguerTest {
         Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>();
         Supplier<Object> newObject = () -> new BigDecimal("42");
 
-        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
-        if (cv1 instanceof CanonicalValue.Leaf<K128>(Hash<K128> h1, Object o1)) {
-            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
-            if (cv2 instanceof CanonicalValue.Leaf<K128>(Hash<K128> h2, Object o2)) {
+        var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
+        if (cv1 instanceof CanonicalValue.Leaf<K128>(var h1, var o1)) {
+            var cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
+            if (cv2 instanceof CanonicalValue.Leaf<K128>(var h2, var o2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(o1).isSameAs(o2);
             } else {
@@ -53,15 +53,15 @@ class CanonicalSubstructuresCataloguerTest {
         Canonicalizer<K, K128> cataloguer = new CanonicalSubstructuresCataloguer<>(
         );
 
-        Supplier<String> key = supplier("foo");
-        Supplier<String> val = supplier("bar");
+        var key = supplier("foo");
+        var val = supplier("bar");
         Supplier<Object> newObject = () -> Map.of(key.get(), val.get());
 
-        CanonicalValue<K128> cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
-        if (cv1 instanceof CanonicalValue.Node<?, K128>(Hash<K128> h1, Map<?, Object> m1)) {
+        var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
+        if (cv1 instanceof CanonicalValue.Node<?, K128>(var h1, var m1)) {
             assertThat(m1.keySet()).allMatch(K.class::isInstance);
-            CanonicalValue<K128> cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
-            if (cv2 instanceof CanonicalValue.Node<?, K128>(Hash<K128> h2, Map<?, Object> m2)) {
+            var cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
+            if (cv2 instanceof CanonicalValue.Node<?, K128>(var h2, var m2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(m1).isSameAs(m2);
                 assertThat(m2.keySet()).allMatch(K.class::isInstance);

@@ -36,7 +36,7 @@ public final class FLogger implements Logger {
         this.linesWriter = requireNonNull(linesWriter, "linesWriter");
         this.emergencyWriter = emergencyWriter == null ? System.out::println : emergencyWriter;
         this.time = requireNonNull(time, "time");
-        int lastDot = this.sourceName.lastIndexOf('.');
+        var lastDot = this.sourceName.lastIndexOf('.');
         if (lastDot < 0) {
             this.name = sourceName;
         } else {
@@ -57,8 +57,8 @@ public final class FLogger implements Logger {
     @Override
     public void log(LogLevel level, String msg, Object... args) {
         if (this.isEnabled(level)) {
-            LogEntry logEntry = LogEntry.create(time.get(), name, level, msg, args);
-            String logLine = logLine(logEntry);
+            var logEntry = LogEntry.create(time.get(), name, level, msg, args);
+            var logLine = logLine(logEntry);
             write(logLine);
         }
     }
@@ -103,13 +103,13 @@ public final class FLogger implements Logger {
     private static final PrintStream STDERR = System.err;
 
     private static String shorten(String sourceName) {
-        String[] split = sourceName.split("\\.");
-        String className = split[split.length - 1];
-        AtomicInteger count = new AtomicInteger(1);
+        var split = sourceName.split("\\.");
+        var className = split[split.length - 1];
+        var count = new AtomicInteger(1);
         return Arrays.stream(split)
                    .limit(split.length - 1)
                    .map(p -> {
-                       int len = p.length();
+                       var len = p.length();
                        return len < count.get()
                            ? p
                            : p.substring(0, Math.min(len, count.getAndIncrement()));

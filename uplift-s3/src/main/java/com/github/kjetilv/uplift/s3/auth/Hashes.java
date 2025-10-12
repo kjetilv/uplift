@@ -12,7 +12,7 @@ public final class Hashes {
 
     public static byte[] sha256(byte[] bytes) {
         try {
-            MessageDigest md = SHA_256.get();
+            var md = SHA_256.get();
             md.update(bytes);
             return md.digest();
         } catch (Exception e) {
@@ -21,9 +21,9 @@ public final class Hashes {
     }
 
     public static String md5(byte[] body) {
-        MessageDigest md = MD5.get();
+        var md = MD5.get();
         md.update(body);
-        byte[] digest = md.digest();
+        var digest = md.digest();
         return Base64.getEncoder().encodeToString(digest);
     }
 

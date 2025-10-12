@@ -235,7 +235,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         strings = replace(strings, this.tokenTrie);
         objects = replace(objects, this.tokenTrie);
         booleans = replace(booleans, this.tokenTrie);
-        for (PresetCallbacksInitializer<?, ?> sub : subs) {
+        for (var sub : subs) {
             sub.buildTokens(this.tokenTrie);
         }
     }
@@ -274,7 +274,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     }
 
     private static Token.Field canonical(TokenResolver tokenResolver, Token.Field token) {
-        Token.Field resolve = tokenResolver.get(token);
+        var resolve = tokenResolver.get(token);
         if (resolve == null) {
             throw new RuntimeException(
                 "Failed to resolve token " + token + " in " + tokenResolver);

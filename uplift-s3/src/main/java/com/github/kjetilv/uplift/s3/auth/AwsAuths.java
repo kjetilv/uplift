@@ -9,8 +9,8 @@ final class AwsAuths {
 
     static byte[] sign(String stringData, byte[] key) {
         try {
-            byte[] data = stringData.getBytes(StandardCharsets.UTF_8);
-            Mac mac = Mac.getInstance(HMAC_SHA_256);
+            var data = stringData.getBytes(StandardCharsets.UTF_8);
+            var mac = Mac.getInstance(HMAC_SHA_256);
             mac.init(new SecretKeySpec(key, HMAC_SHA_256));
             return mac.doFinal(data);
         } catch (Exception e) {
@@ -34,19 +34,19 @@ final class AwsAuths {
 
         SortedMap<String, String> sorted = new TreeMap<>();
 
-        for (Map.Entry<String, String> pair : parameters.entrySet()) {
-            String key = pair.getKey();
-            String value = pair.getValue();
+        for (var pair : parameters.entrySet()) {
+            var key = pair.getKey();
+            var value = pair.getValue();
             sorted.put(
                 urlEncode(key, false),
                 urlEncode(value, false)
             );
         }
 
-        StringBuilder builder = new StringBuilder();
-        Iterator<Map.Entry<String, String>> entries = sorted.entrySet().iterator();
+        var builder = new StringBuilder();
+        var entries = sorted.entrySet().iterator();
         while (entries.hasNext()) {
-            Map.Entry<String, String> pair = entries.next();
+            var pair = entries.next();
             builder.append(pair.getKey());
             builder.append("=");
             builder.append(pair.getValue());
@@ -86,8 +86,8 @@ final class AwsAuths {
         // step2: form the canonical header:value entries in sorted order.
         // Multiple white spaces in the values should be compressed to a single
         // space.
-        StringBuilder buffer = new StringBuilder();
-        for (String key : sortedHeaders) {
+        var buffer = new StringBuilder();
+        for (var key : sortedHeaders) {
             buffer
                 .append(WS.matcher(key.toLowerCase()).replaceAll(" "))
                 .append(":")
@@ -151,7 +151,7 @@ final class AwsAuths {
     private static final String HMAC_SHA_256 = "HmacSHA256";
 
     private static String urlEncode(String url, boolean keepPathSlash) {
-        String encoded = URLEncoder.encode(url, StandardCharsets.UTF_8);
+        var encoded = URLEncoder.encode(url, StandardCharsets.UTF_8);
         return keepPathSlash
             ? encoded.replace("%2F", "/")
             : encoded;
@@ -162,12 +162,12 @@ final class AwsAuths {
         if (endpoint == null) {
             return "/";
         }
-        String path = endpoint.getPath();
+        var path = endpoint.getPath();
         if (path == null || path.isEmpty()) {
             return "/";
         }
 
-        String encodedPath = urlEncode(path, true);
+        var encodedPath = urlEncode(path, true);
         return encodedPath.startsWith("/")
             ? encodedPath
             : "/" + encodedPath;

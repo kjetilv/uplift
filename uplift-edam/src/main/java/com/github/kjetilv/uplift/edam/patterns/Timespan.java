@@ -54,8 +54,8 @@ public record Timespan(Instant start, Instant end) implements Spanning, Comparab
         if (timespan == null || timespan.equals(NONE)) {
             return this;
         }
-        Instant otherStart = timespan.start;
-        Instant otherEnd = timespan.end;
+        var otherStart = timespan.start;
+        var otherEnd = timespan.end;
         return new Timespan(
             start == null || otherStart.isBefore(start)
                 ? otherStart

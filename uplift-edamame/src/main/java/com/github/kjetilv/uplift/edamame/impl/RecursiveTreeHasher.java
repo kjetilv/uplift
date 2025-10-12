@@ -40,7 +40,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     public HashedTree<K, H> hash(Object value) {
         return switch (value) {
             case Map<?, ?> map -> {
-                Map<K, HashedTree<K, H>> hashedMap =
+                var hashedMap =
                     transformMap(map, keyHandler, this::hash);
                 yield new Node<>(
                     mapHash(hashedMap),
@@ -48,7 +48,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
                 );
             }
             case Iterable<?> iterable -> {
-                List<HashedTree<K, H>> hashedValues =
+                var hashedValues =
                     transform(iterable, this::hash);
                 yield new Nodes<>(
                     listHash(hashedValues),
@@ -58,7 +58,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             case null -> Null.instanceFor(kind);
             default -> {
                 if (value.getClass().isArray()) {
-                    List<HashedTree<K, H>> hashedValues =
+                    var hashedValues =
                         transform(iterable(value), this::hash);
                     yield new Nodes<>(
                         listHash(hashedValues),
@@ -86,9 +86,9 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     private Hash<H> mapHash(Map<K, ? extends HashedTree<K, H>> tree) {
-        HashBuilder<Bytes, H> hb = newBuilder.get();
+        var hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        HashBuilder<K, H> keyHb = hb.map(keyHandler::toBytes);
+        var keyHb = hb.map(keyHandler::toBytes);
         hb.<Integer>map(Hashes::intToBytes).hash(tree.size());
         tree.forEach((key, value) -> {
             keyHb.hash(key);
@@ -98,7 +98,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     private Hash<H> listHash(List<? extends HashedTree<K, H>> trees) {
-        HashBuilder<Bytes, H> hb = newBuilder.get();
+        var hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
         hb.<Integer>map(Hashes::intToBytes).hash(trees.size());
         trees.stream()

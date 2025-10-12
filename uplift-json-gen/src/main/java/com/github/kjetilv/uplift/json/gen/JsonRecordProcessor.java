@@ -12,8 +12,8 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnv) {
         if (containsJsonRecord(typeElements)) {
-            Collection<? extends Element> typeEls = typeEls(roundEnv);
-            Collection<? extends Element> enumEls = enumEls(roundEnv);
+            var typeEls = typeEls(roundEnv);
+            var enumEls = enumEls(roundEnv);
             if (typeEls.isEmpty()) {
                 requireEmptyEnums(enumEls);
                 return true;
@@ -30,12 +30,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         Collection<? extends Element> typeEls,
         Collection<? extends Element> enumEls
     ) {
-        String time = time();
-        for (Element el : typeEls) {
+        var time = time();
+        for (var el : typeEls) {
             if (el instanceof TypeElement te) {
                 try {
-                    PackageElement pe = GenUtils.packageEl(te);
-                    Generator generator = new Generator(pe, te, time, this::file);
+                    var pe = GenUtils.packageEl(te);
+                    var generator = new Generator(pe, te, time, this::file);
                     if (isRoot(te)) {
                         generator.writeRW(te);
                     }
@@ -129,7 +129,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static Collection<? extends Element> typeEls(RoundEnvironment roundEnv) {
-        Stream<? extends Element> annotatedRecords = roundEnv.getRootElements()
+        var annotatedRecords = roundEnv.getRootElements()
             .stream()
             .filter(el ->
                 el.getAnnotation(JsonRecord.class) != null);
@@ -148,7 +148,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     }
 
     private static boolean isRoot(TypeElement typeEl) {
-        JsonRecord annotation = typeEl.getAnnotation(JsonRecord.class);
+        var annotation = typeEl.getAnnotation(JsonRecord.class);
         return annotation != null && annotation.root();
     }
 

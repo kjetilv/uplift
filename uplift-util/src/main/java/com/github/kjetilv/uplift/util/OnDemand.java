@@ -17,7 +17,7 @@ public record OnDemand(Supplier<Instant> clock) {
     }
 
     public void force(Supplier<?>... suppliers) {
-        for (Supplier<?> supplier: suppliers) {
+        for (var supplier: suppliers) {
             if (supplier instanceof BuilderImpl<?>.ResettableSupplier builder) {
                 builder.force();
             }
@@ -61,7 +61,7 @@ public record OnDemand(Supplier<Instant> clock) {
                     if (existing == null) {
                         return supplier.get();
                     }
-                    Instant time = clock.get();
+                    var time = clock.get();
                     if (reset.compareAndSet(true, false) || expiredAt(time)) {
                         lastHolder.set(time);
                         return supplier.get();
@@ -83,8 +83,8 @@ public record OnDemand(Supplier<Instant> clock) {
             }
 
             private boolean expiredAt(Instant time) {
-                Instant last = lastHolder.get();
-                Instant refreshTime = last.plus(refreshInterval);
+                var last = lastHolder.get();
+                var refreshTime = last.plus(refreshInterval);
                 return time.equals(refreshTime) || time.isAfter(refreshTime);
             }
         }

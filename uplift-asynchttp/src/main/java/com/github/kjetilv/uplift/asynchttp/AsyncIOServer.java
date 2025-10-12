@@ -77,11 +77,11 @@ final class AsyncIOServer implements IOServer {
 
     @Override
     public void awaitActive(Duration timeout) {
-        Instant startTime = Instant.now();
+        var startTime = Instant.now();
         activeLock.lock();
         try {
             while (readCount.longValue() == 0) {
-                Duration timeTaken = Duration.between(startTime, Instant.now());
+                var timeTaken = Duration.between(startTime, Instant.now());
                 if (timeTaken.compareTo(timeout) > 0) {
                     return;
                 }
@@ -122,7 +122,7 @@ final class AsyncIOServer implements IOServer {
     }
 
     private boolean terminatedWithin(Duration timeout) throws InterruptedException {
-        boolean limited = !timeout.isZero();
+        var limited = !timeout.isZero();
         return channelGroup.awaitTermination(
             limited ? timeout.toMillis() : MAX_VALUE,
             limited ? MILLISECONDS : DAYS
@@ -218,9 +218,9 @@ final class AsyncIOServer implements IOServer {
         }
 
         private void read(AsynchronousSocketChannel channel) {
-            ChannelHandler<S, C> handler = provider.handler(channel);
-            ByteBuffer buffer = ByteBuffer.allocateDirect(requestBufferSize);
-            S state = handler.channelState(buffer);
+            var handler = provider.handler(channel);
+            var buffer = ByteBuffer.allocateDirect(requestBufferSize);
+            var state = handler.channelState(buffer);
             channel.read(buffer, state, handler);
         }
 

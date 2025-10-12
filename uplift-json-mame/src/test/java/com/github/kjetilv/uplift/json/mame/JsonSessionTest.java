@@ -18,8 +18,8 @@ class JsonSessionTest {
     @SuppressWarnings("unchecked")
     @Test
     void testLists() {
-        AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
+        var reference = new AtomicReference<Object>();
+        var jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json
             """
@@ -34,10 +34,10 @@ class JsonSessionTest {
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
                 .satisfies(JsonSessionTest::sameValues));
 
-        List<Object> objects = (List<Object>) reference.get();
-        Map<String, Object> foobar = (Map<String, Object>) objects.getFirst();
+        var objects = (List<Object>) reference.get();
+        var foobar = (Map<String, Object>) objects.getFirst();
 
-        AtomicReference<Object> reference2 = new AtomicReference<>();
+        var reference2 = new AtomicReference<Object>();
         Json.instance().parse(
             //language=json
             """
@@ -50,8 +50,8 @@ class JsonSessionTest {
                 """,
             jsonSession.callbacks(reference2::set)
         );
-        Map<String, Object> zip = (Map<String, Object>) reference2.get();
-        List<Map<String, Object>> list = (List<Map<String, Object>>) zip.get("zip");
+        var zip = (Map<String, Object>) reference2.get();
+        var list = (List<Map<String, Object>>) zip.get("zip");
         assertThat(list)
             .satisfies(JsonSessionTest::sameValues)
             .allSatisfy(m -> assertThat(m).isSameAs(foobar));
@@ -59,11 +59,11 @@ class JsonSessionTest {
 
     @Test
     void testListsSession() {
-        AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
-        Json json = Json.instance(jsonSession);
+        var reference = new AtomicReference<Object>();
+        var jsonSession = CachingJsonSessions.create(HashKind.K256);
+        var json = Json.instance(jsonSession);
 
-        String string =
+        var string =
             //language=json
             """
                 [
@@ -73,7 +73,7 @@ class JsonSessionTest {
                 """;
         Json.instance().parse(string, jsonSession.callbacks(reference::set));
 
-        List<?> sharedSessionList = json.jsonArray(string);
+        var sharedSessionList = json.jsonArray(string);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
                 .satisfies(list ->
@@ -83,8 +83,8 @@ class JsonSessionTest {
     @SuppressWarnings("unchecked")
     @Test
     void testMaps() {
-        AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
+        var reference = new AtomicReference<Object>();
+        var jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json
             """
@@ -99,9 +99,9 @@ class JsonSessionTest {
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
                 .satisfies(JsonSessionTest::sameValues));
 
-        Object foobar = ((Map<String, Object>) reference.get()).get("zip");
+        var foobar = ((Map<String, Object>) reference.get()).get("zip");
 
-        AtomicReference<Object> reference2 = new AtomicReference<>();
+        var reference2 = new AtomicReference<Object>();
         Json.instance().parse(
             //language=json
             """
@@ -119,7 +119,7 @@ class JsonSessionTest {
                     allSame(map.values(), List.of(foobar));
                 }));
 
-        AtomicReference<Object> reference3 = new AtomicReference<>();
+        var reference3 = new AtomicReference<Object>();
         Json.instance().parse(
             //language=json
             """
@@ -136,9 +136,9 @@ class JsonSessionTest {
 
     @Test
     void testMapsSession() {
-        AtomicReference<Object> reference = new AtomicReference<>();
-        JsonSession jsonSession = CachingJsonSessions.create(HashKind.K256);
-        String json =
+        var reference = new AtomicReference<Object>();
+        var jsonSession = CachingJsonSessions.create(HashKind.K256);
+        var json =
             //language=json
             """
             {
@@ -147,7 +147,7 @@ class JsonSessionTest {
             }
             """;
         Json.instance().parse(json, jsonSession.callbacks(reference::set));
-        Map<?, ?> sharedSessionMap = Json.instance(jsonSession).jsonMap(json);
+        var sharedSessionMap = Json.instance(jsonSession).jsonMap(json);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
                 .satisfies(map ->

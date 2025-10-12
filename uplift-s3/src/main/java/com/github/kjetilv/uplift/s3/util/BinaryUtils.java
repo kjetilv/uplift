@@ -11,9 +11,9 @@ public final class BinaryUtils {
     ///
     /// @return hex-encoded string.
     public static String toHex(byte[] data) {
-        StringBuilder sb = new StringBuilder(data.length * 2);
-        for (byte datum: data) {
-            String hex = Integer.toHexString(datum);
+        var sb = new StringBuilder(data.length * 2);
+        for (var datum: data) {
+            var hex = Integer.toHexString(datum);
             if (hex.length() == 1) {
                 // Append leading zero.
                 sb.append("0");

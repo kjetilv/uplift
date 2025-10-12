@@ -57,11 +57,11 @@ public final class Hashes {
     public static <H extends HashKind<H>> Hash<H> hash(byte[] bytes) {
         requireNonNull(bytes, "bytes");
         if (bytes.length == K128.byteCount()) {
-            long[] ls = toLongs(bytes, new long[K128.longCount()]);
+            var ls = toLongs(bytes, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (bytes.length == K256.byteCount()) {
-            long[] ls = toLongs(bytes, new long[K256.longCount()]);
+            var ls = toLongs(bytes, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
@@ -69,13 +69,13 @@ public final class Hashes {
 
     @SuppressWarnings("unchecked")
     public static <H extends HashKind<H>> Hash<H> hash(String raw) {
-        int length = requireNonNull(raw, "raw").length();
+        var length = requireNonNull(raw, "raw").length();
         if (length == K128.digest().length()) {
-            long[] ls = toLongs(raw, new long[K128.longCount()]);
+            var ls = toLongs(raw, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (length == K256.digest().length()) {
-            long[] ls = toLongs(raw, new long[K256.longCount()]);
+            var ls = toLongs(raw, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
@@ -101,14 +101,14 @@ public final class Hashes {
     }
 
     public static byte[] longBytes(long l0, long l1) {
-        byte[] bytes = new byte[16];
+        var bytes = new byte[16];
         longToBytes(l0, 0, bytes);
         longToBytes(l1, 8, bytes);
         return bytes;
     }
 
     public static byte[] longBytes(long l0, long l1, long l2, long l3) {
-        byte[] bytes = new byte[32];
+        var bytes = new byte[32];
         longToBytes(l0, 0, bytes);
         longToBytes(l1, 8, bytes);
         longToBytes(l2, 16, bytes);
@@ -118,7 +118,7 @@ public final class Hashes {
 
     public static long bytesToLong(byte[] bytes, int start) {
         long lw = 0;
-        for (int i = 0; i < 7; i++) {
+        for (var i = 0; i < 7; i++) {
             lw |= bytes[i + start] & 0xFF;
             lw <<= 8;
         }
@@ -129,7 +129,7 @@ public final class Hashes {
     @SuppressWarnings("SameParameterValue")
     public static byte[] intToBytes(int l, int index, byte[] bytes) {
         long w = l;
-        for (int j = 3; j > 0; j--) {
+        for (var j = 3; j > 0; j--) {
             bytes[index + j] = (byte) (w & 0xFF);
             w >>= 8;
         }
@@ -138,16 +138,16 @@ public final class Hashes {
     }
 
     public static byte[] longsToBytes(long[] ls) {
-        byte[] bytes = new byte[ls.length * Long.BYTES];
-        for (int l = 0; l < ls.length; l++) {
+        var bytes = new byte[ls.length * Long.BYTES];
+        for (var l = 0; l < ls.length; l++) {
             longToBytes(ls[l], l * 8, bytes);
         }
         return bytes;
     }
 
     public static byte[] longToBytes(long i, int index, byte[] bytes) {
-        long w = i;
-        for (int j = 7; j > 0; j--) {
+        var w = i;
+        for (var j = 7; j > 0; j--) {
             bytes[index + j] = (byte) (w & 0xFF);
             w >>= 8;
         }
@@ -187,8 +187,8 @@ public final class Hashes {
     private static final Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
 
     private static long[] toLongs(byte[] bytes, long[] ls) {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < ls.length; j++) {
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < ls.length; j++) {
                 ls[j] <<= 8;
                 ls[j] |= bytes[i + j * 8] & 0xFF;
             }
@@ -197,11 +197,11 @@ public final class Hashes {
     }
 
     private static long[] toLongs(String raw, long[] ls) {
-        String digest = raw
+        var digest = raw
             .replace(GOOD_1, BAD_1)
             .replace(GOOD_2, BAD_2);
-        byte[] decoded = DECODER.decode(digest);
-        for (int l = 0; l < ls.length; l++) {
+        var decoded = DECODER.decode(digest);
+        for (var l = 0; l < ls.length; l++) {
             ls[l] = bytesToLong(decoded, l * 8);
         }
         return ls;
@@ -227,7 +227,7 @@ public final class Hashes {
 
         @Override
         public Bytes next() {
-            Bytes next = new Bytes(buffer, 0, read);
+            var next = new Bytes(buffer, 0, read);
             read = advance();
             return next;
         }

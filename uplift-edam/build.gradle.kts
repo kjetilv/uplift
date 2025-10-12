@@ -7,10 +7,10 @@ dependencies {
     testRuntimeOnly("ch.qos.logback:logback-classic:1.5.18")
 
     testImplementation("org.assertj:assertj-core:3.27.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.0-RC3")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.0-RC3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.0-RC3")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0-RC3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0")
 }
 
 tasks.withType<JavaCompile>().all {

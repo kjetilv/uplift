@@ -5,6 +5,12 @@ import module java.base;
 @SuppressWarnings("unused")
 public final class MainSupport {
 
+    public static final int MAX_REQUEST_SIZE = 0x1000;
+
+    public static final int PORT_80 = 80;
+
+    public static final int PORTS_AVAILABLE = 0xFFFF;
+
     public static boolean boolArg(
         Map<String, String> map,
         String param
@@ -24,14 +30,10 @@ public final class MainSupport {
     }
 
     public static int intArg(Map<String, String> map, String param, int defaultValue) {
-        return possibleIntArg(map, param)
-            .orElse(defaultValue);
+        return possibleIntArg(map, param).orElse(defaultValue);
     }
 
-    public static Optional<Integer> possibleIntArg(
-        Map<String, String> map,
-        String param
-    ) {
+    public static Optional<Integer> possibleIntArg(Map<String, String> map, String param) {
         return Optional.ofNullable(map.get(param))
             .or(() -> caseInsensitiveLookup(param, map))
             .map(Long::parseLong)
@@ -52,12 +54,6 @@ public final class MainSupport {
     private MainSupport() {
     }
 
-    public static final int MAX_REQUEST_SIZE = 0x1000;
-
-    public static final int PORT_80 = 80;
-
-    public static final int PORTS_AVAILABLE = 0xFFFF;
-
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private static final Optional<Map.Entry<String, String>> EMPTY = Optional.empty();
 
@@ -68,8 +64,7 @@ public final class MainSupport {
         return map.entrySet()
             .stream()
             .filter(e ->
-                e.getKey()
-                    .equalsIgnoreCase(param))
+                e.getKey().equalsIgnoreCase(param))
             .findFirst()
             .map(Map.Entry::getValue);
     }
@@ -99,7 +94,7 @@ public final class MainSupport {
         Function<? super String, String> parser,
         String arg
     ) {
-        int idx = arg.indexOf(splitter);
+        var idx = arg.indexOf(splitter);
         return idx > 0
             ? entry(arg, idx, parser)
             : Optional.of(Map.entry(arg, "true"));
@@ -121,7 +116,7 @@ public final class MainSupport {
     }
 
     private static String value(String entry, int index) {
-        int valueIndex = index + 1;
+        var valueIndex = index + 1;
         return valueIndex > entry.length()
             ? ""
             : entry.substring(valueIndex).trim();

@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.util;
 public final class Print {
 
     public static String semiSecret(String semi) {
-        int length = semi.length();
+        var length = semi.length();
         if (length == 0) {
             return "<empty secret>";
         }
@@ -13,7 +13,7 @@ public final class Print {
         if (length < 5) {
             return semi.charAt(0) + "***".substring(0, length - 1);
         }
-        int printable = length / 3;
+        var printable = length / 3;
         return semi.substring(0, printable) + "***" + semi.substring(length - printable);
     }
 

@@ -13,7 +13,7 @@ dependencies {
     testImplementation("com.github.kjetilv.uplift:uplift-flambda:0.1.1-SNAPSHOT")
     testImplementation("com.github.kjetilv.uplift:uplift-asynchttp:0.1.1-SNAPSHOT")
 
-    testImplementation(platform("org.junit:junit-bom:6.0.0-RC3"))
+    testImplementation(platform("org.junit:junit-bom:6.0.0"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter")

@@ -39,7 +39,7 @@ public final class InternalFactory {
         int maxLength,
         boolean messages
     ) {
-        Indexer<Hash<K>> indexer = AbstractOffHeapIndexer.hashBuilder(
+        var indexer = AbstractOffHeapIndexer.hashBuilder(
             Objects.requireNonNull(arena, "arena"),
             Objects.requireNonNull(window, "window"),
             Objects.requireNonNull(hashBuilder, "hashBuilder"),

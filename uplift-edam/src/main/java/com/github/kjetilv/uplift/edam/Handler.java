@@ -15,13 +15,13 @@ public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
     }
 
     default Handling<T, P, K> handle(T item, Consumer<Analysis<K>> processor) {
-        Handling<T, P, K> handling = handle(item);
+        var handling = handle(item);
         processor.accept(handling.analysis());
         return handling;
     }
 
     default Handling<T, P, K> handle(T item, BiConsumer<Analysis<K>, P> processor) {
-        Handling<T, P, K> handling = handle(item);
+        var handling = handle(item);
         processor.accept(handling.analysis(), handling.payload());
         return handling;
     }

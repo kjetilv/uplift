@@ -14,13 +14,12 @@ public record ServerRunner(IOServer server) {
         Integer port,
         int requestBufferSize
     ) {
-        IOServer server = AsyncIOServer.server(
-            port,
-            requestBufferSize
-        );
-        ServerRunner runner = new ServerRunner(server);
-        Runtime.getRuntime().addShutdownHook(new Thread(server::close, "Close"));
-        return runner;
+        var server = AsyncIOServer.server(port, requestBufferSize);
+        try {
+            return new ServerRunner(server);
+        } finally {
+            Runtime.getRuntime().addShutdownHook(new Thread(server::close, "Close"));
+        }
     }
 
     public ServerRunner(IOServer server) {

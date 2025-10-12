@@ -6,11 +6,11 @@ final class Binary {
         if (ints.length == 0) {
             return NOT_FOUND;
         }
-        int lo = 0;
-        int hi = ints.length - 1;
+        var lo = 0;
+        var hi = ints.length - 1;
         while (lo <= hi) {
-            int index = midPoint(hi, lo);
-            int found = ints[index];
+            var index = midPoint(hi, lo);
+            var found = ints[index];
             if (found == target) {
                 // Found it
                 return index;
@@ -32,7 +32,7 @@ final class Binary {
     private static final int NOT_FOUND = -1;
 
     private static int midPoint(int hi, int lo) {
-        int r = hi - lo;
+        var r = hi - lo;
         return lo + r / 2 + r % 2;
     }
 }

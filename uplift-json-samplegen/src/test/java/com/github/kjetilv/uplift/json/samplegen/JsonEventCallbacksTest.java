@@ -18,7 +18,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void arr() {
-        String source =
+        var source =
             //language=json
             """
                 {
@@ -29,7 +29,7 @@ public class JsonEventCallbacksTest {
                 """;
 
         BytesSource bytesSource = new ByteArrayIntsBytesSource(source.getBytes());
-        Callbacks myCallbacks = Json.instance().parse(bytesSource, callbacks());
+        var myCallbacks = Json.instance().parse(bytesSource, callbacks());
         assertThat(((MyCallbacks) myCallbacks).getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:els arrayStarted
@@ -61,7 +61,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void obj() {
-        String json =
+        var json =
             //language=json
             """
             {
@@ -73,7 +73,7 @@ public class JsonEventCallbacksTest {
             }
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
-        MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
+        var myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines("""
             objectStarted
               field:foo str:bar
@@ -88,7 +88,7 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parse() {
-        String json =
+        var json =
             //language=json
             """
             {
@@ -100,7 +100,7 @@ public class JsonEventCallbacksTest {
             }
             """;
         BytesSource bytesSource = new ByteArrayIntsBytesSource(json.getBytes());
-        MyCallbacks myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
+        var myCallbacks = (MyCallbacks) Json.instance().parse(bytesSource, callbacks());
         assertThat(myCallbacks.getStuff()).containsExactlyElementsOf(lines(
             """
                 objectStarted
@@ -116,8 +116,8 @@ public class JsonEventCallbacksTest {
 
     @Test
     void parseMap() {
-        MyCallbacks callbacks = (MyCallbacks) callbacks();
-        String json =
+        var callbacks = (MyCallbacks) callbacks();
+        var json =
             //language=json
             """
             {

@@ -45,7 +45,7 @@ final class CursorImpl<K extends HashKind<K>> implements Storage.Cursor<K> {
                 return Optional.empty();
             }
             try {
-                Occurrence<K> occurrence = getter.apply(index);
+                var occurrence = getter.apply(index);
                 if (occurrence.matches(hash) && occurrence.onOrAfter(cutoffTime)) {
                     return Optional.of(occurrence);
                 }

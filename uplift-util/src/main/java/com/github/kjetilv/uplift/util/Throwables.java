@@ -12,7 +12,7 @@ public final class Throwables {
     }
 
     private static Throwable next(Throwable walker) {
-        Throwable cause = walker.getCause();
+        var cause = walker.getCause();
         return cause == walker ? null : cause;
     }
 

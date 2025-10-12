@@ -18,13 +18,13 @@ class OffHeapHashIndexerTest {
     @Test
     void exchange() {
         try (
-            Arena arena = Arena.ofConfined()
+            var arena = Arena.ofConfined()
         ) {
-            OffHeapIndexer128 indexer = new OffHeapIndexer128(
+            var indexer = new OffHeapIndexer128(
                 arena, InternalFactory.JAVA, 10
             );
-            Hash<K128> h0 = HashKind.K128.random();
-            Hash<K128> h1 = HashKind.K128.random();
+            var h0 = HashKind.K128.random();
+            var h1 = HashKind.K128.random();
 
             assertEquals(indexer.exchange(h0), indexer.exchange(h0));
             assertEquals(indexer.exchange(h1), indexer.exchange(h1));
@@ -37,15 +37,15 @@ class OffHeapHashIndexerTest {
     @Test
     void fill() {
         try (
-            Arena arena = Arena.ofConfined()
+            var arena = Arena.ofConfined()
         ) {
-            OffHeapIndexer128 indexer = new OffHeapIndexer128(
+            var indexer = new OffHeapIndexer128(
                 arena, InternalFactory.JAVA, 64_000
             );
             Set<Long> ls = new HashSet<>();
-            for (int i = 0; i < 64_000; i++) {
+            for (var i = 0; i < 64_000; i++) {
                 try {
-                    Hash<K128> hash = HashKind.K128.random();
+                    var hash = HashKind.K128.random();
                     long index;
                     try {
                         index = indexer.exchange(hash);

@@ -10,8 +10,8 @@ public final class HelloWeb implements LambdaHandler {
 
     @Override
     public LambdaResult handle(LambdaPayload lambdaPayload) {
-        String name = path(lambdaPayload);
-        String greeting = Greeter.greet(name);
+        var name = path(lambdaPayload);
+        var greeting = Greeter.greet(name);
         return LambdaResult.json(greeting);
     }
 

@@ -25,10 +25,10 @@ record LogEntry(
         String msg,
         Object[] args
     ) {
-        Thread thread = Thread.currentThread();
-        Throwable argumentThrowable = argumentThrowable(args);
-        long id = thread.getId();
-        LogEntry logEntry = new LogEntry(
+        var thread = Thread.currentThread();
+        var argumentThrowable = argumentThrowable(args);
+        var id = thread.getId();
+        var logEntry = new LogEntry(
             time,
             name,
             level,

@@ -8,9 +8,9 @@ public record Mem(
 ) {
 
     public static Mem create() {
-        Runtime runtime = Runtime.getRuntime();
-        long free = runtime.freeMemory();
-        long total = runtime.totalMemory();
+        var runtime = Runtime.getRuntime();
+        var free = runtime.freeMemory();
+        var total = runtime.totalMemory();
         return new Mem(
             (total - free) / M,
             free / M,

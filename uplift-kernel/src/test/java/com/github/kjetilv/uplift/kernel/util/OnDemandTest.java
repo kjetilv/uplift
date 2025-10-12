@@ -17,8 +17,8 @@ class OnDemandTest {
     @SuppressWarnings("MagicNumber")
     @Test
     void test() {
-        Instant epo = Instant.EPOCH;
-        Iterator<Instant> times = Arrays.asList(
+        var epo = Instant.EPOCH;
+        var times = Arrays.asList(
             epo,
             epo.plusSeconds(10),
             epo.plusSeconds(20),
@@ -35,10 +35,10 @@ class OnDemandTest {
             epo.plusSeconds(8000)
         ).iterator();
 
-        OnDemand onDemand = new OnDemand(times::next);
+        var onDemand = new OnDemand(times::next);
 
         Supplier<Long> nextLong = new AtomicLong()::getAndIncrement;
-        Supplier<Long> ls = onDemand.<Long>after(Duration.ofSeconds(15)).get(nextLong);
+        var ls = onDemand.<Long>after(Duration.ofSeconds(15)).get(nextLong);
 
         assertEquals(0L, ls.get()); // init
         assertEquals(0L, ls.get()); // 0

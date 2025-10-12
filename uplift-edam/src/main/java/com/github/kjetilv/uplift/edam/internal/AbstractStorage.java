@@ -28,7 +28,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     @Override
     public final Storage<K> store(Collection<Occurrence<K>> occurrences) {
-        for (Occurrence<K> occurrence : occurrences) {
+        for (var occurrence : occurrences) {
             try {
                 storeTo(index, occurrence);
             } finally {
@@ -66,7 +66,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     @Override
     public final Cursor<K> rewind(Hash<K> hash) {
-        long count = count();
+        var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
             count - 1,
@@ -78,7 +78,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
 
     @Override
     public final Cursor<K> forward(Hash<K> hash) {
-        long count = count();
+        var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
             0,

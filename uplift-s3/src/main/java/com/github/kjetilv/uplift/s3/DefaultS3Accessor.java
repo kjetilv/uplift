@@ -50,22 +50,22 @@ final class DefaultS3Accessor implements S3Accessor {
     @Override
     public Optional<URI> presign(String name, Duration timeToLive) {
 
-        URI endpointUrl = URI.create("https://s3-%s.amazonaws.com/%s/%s".formatted(region, bucket, name));
+        var endpointUrl = URI.create("https://s3-%s.amazonaws.com/%s/%s".formatted(region, bucket, name));
 
         // construct the query parameter string to accompany the url
         Map<String, String> queryParams = new HashMap<>();
 
         // for SignatureV4, the max expiry for a presigned url is 7 days,
         // expressed in seconds
-        int expiresIn = Math.toIntExact(timeToLive.toSeconds());
+        var expiresIn = Math.toIntExact(timeToLive.toSeconds());
         queryParams.put("X-Amz-Expires", String.valueOf(expiresIn));
 
         // we have no headers for this sample, but the signer will add 'host'
         Map<String, String> headers = new HashMap<>();
 
-        AwsAuthQueryParamSigner signer = new AwsAuthQueryParamSigner(
+        var signer = new AwsAuthQueryParamSigner(
             endpointUrl, "GET", "s3", region);
-        String authorizationQueryParameters = signer.computeSignature(
+        var authorizationQueryParameters = signer.computeSignature(
             headers,
             queryParams,
             UNSIGNED_PAYLOAD,
@@ -74,7 +74,7 @@ final class DefaultS3Accessor implements S3Accessor {
         );
 
         // build the presigned url to incorporate the authorization elements as query parameters
-        String presignedUrl = endpointUrl + "?" + authorizationQueryParameters;
+        var presignedUrl = endpointUrl + "?" + authorizationQueryParameters;
         log.trace("--------- Computed presigned url ---------");
         log.trace(presignedUrl);
         log.trace("------------------------------------------");
@@ -135,7 +135,7 @@ final class DefaultS3Accessor implements S3Accessor {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Failed to query for " + request, e);
         } catch (Exception e) {
-            String message = e.getMessage();
+            var message = e.getMessage();
             if (message != null && message.startsWith("HTTP/1.1 header parser received no bytes") && retriesLeft > 0) {
                 if (failure != null) {
                     e.addSuppressed(failure);
@@ -175,7 +175,7 @@ final class DefaultS3Accessor implements S3Accessor {
     }
 
     private HttpRequest deleteObjectRequest(Collection<String> objects) {
-        String deletes = deletes(objects);
+        var deletes = deletes(objects);
         return buildRequest(
             HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(deletes)),
             "POST",
@@ -187,7 +187,7 @@ final class DefaultS3Accessor implements S3Accessor {
     }
 
     private HttpRequest getObjectRequest(String name, Range range) {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().GET();
+        var requestBuilder = HttpRequest.newBuilder().GET();
         return buildRequest(
             requestBuilder,
             "GET",
@@ -207,10 +207,10 @@ final class DefaultS3Accessor implements S3Accessor {
         byte[] body
     ) {
         try {
-            URI endpointUri =
+            var endpointUri =
                 URI.create("https://" + bucket + ".s3." + region + ".amazonaws.com/" + name + qp(queryPars));
             requestBuilder.uri(endpointUri);
-            AwsAuthHeaderSigner signer = new AwsAuthHeaderSigner(endpointUri, method, "s3", region);
+            var signer = new AwsAuthHeaderSigner(endpointUri, method, "s3", region);
             Map<String, String> headers = new HashMap<>();
             if (sessionToken != null) {
                 headers.put("x-amz-security-token", sessionToken);
@@ -229,7 +229,7 @@ final class DefaultS3Accessor implements S3Accessor {
             if (method.equals("POST")) {
                 headers.put("Content-MD5", md5(body));
             }
-            String authorization =
+            var authorization =
                 signer.computeSignature(headers, queryPars, bodyHash, accessKey, secretKey);
             headers.remove("content-length");
             headers.forEach(requestBuilder::header);
@@ -247,7 +247,7 @@ final class DefaultS3Accessor implements S3Accessor {
     private static final String EMPTY_BODY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     private static RemoteInfo parse(String contents) {
-        Map<String, String> fields = Maps.fromEntries(
+        var fields = Maps.fromEntries(
             Xml.objectFields(contents, "Key", "LastModified", "Size")
         );
         return new RemoteInfo(

@@ -13,7 +13,7 @@ abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<
 
     @Override
     public final R write(T t) {
-        B out = builder();
+        var out = builder();
         write(t, out);
         return result(out);
     }

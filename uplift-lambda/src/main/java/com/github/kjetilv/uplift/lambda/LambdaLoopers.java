@@ -35,10 +35,10 @@ final class LambdaLoopers {
 
     private static LambdaLooper.ResponseResolver<HttpRequest, HttpResponse<InputStream>> toResponsePost() {
         return invocation -> {
-            URI uri = invocation.request().uri()
+            var uri = invocation.request().uri()
                 .resolve("/2018-06-01/runtime/invocation/" + invocation.id() + "/response");
-            Map<String, Object> result = invocation.toResult();
-            String jsonResult = Json.instance().write(result);
+            var result = invocation.toResult();
+            var jsonResult = Json.instance().write(result);
             return HttpRequest.newBuilder()
                 .uri(uri)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonResult))
@@ -58,12 +58,12 @@ final class LambdaLoopers {
                 log.warn("Empty invocation, no id resolved");
                 return false;
             }
-            HttpResponse<InputStream> completion =
+            var completion =
                 ((Invocation<?, ? extends HttpResponse<InputStream>>) invocation).completionResponse();
             if (completion == null) {
                 return false;
             }
-            int statusCode = completion.statusCode();
+            var statusCode = completion.statusCode();
             if (statusCode >= 500) {
                 log.error("Failed: {} ", invocation);
                 return false;

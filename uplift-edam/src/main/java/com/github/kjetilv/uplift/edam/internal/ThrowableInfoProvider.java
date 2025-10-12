@@ -43,7 +43,7 @@ record ThrowableInfoProvider<K extends HashKind<K>>(int briefCount)
             case UnsupportedOperationException _ -> "UOE";
             case null -> "null";
             default -> {
-                Class<? extends Throwable> tc = throwable.getClass();
+                var tc = throwable.getClass();
                 yield tc.getModule().getName().equals("java.base")
                     ? tc.getSimpleName()
                     : tc.getName();

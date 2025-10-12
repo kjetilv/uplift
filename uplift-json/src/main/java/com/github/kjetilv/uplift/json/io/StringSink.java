@@ -16,8 +16,8 @@ public record StringSink(StringBuilder sb) implements Sink {
 
     @Override
     public Mark mark() {
-        int length = sb.length();
-        AtomicReference<Boolean> moved = new AtomicReference<>();
+        var length = sb.length();
+        var moved = new AtomicReference<Boolean>();
         return () ->
             moved.updateAndGet(alreadyMoved ->
                 alreadyMoved != null && alreadyMoved || sb.length() > length);

@@ -10,24 +10,24 @@ class TokenTrieTest {
 
     @Test
     public void test() {
-        Token.Field q = tok("q");
-        Token.Field singular = tok("singular");
+        var q = tok("q");
+        var singular = tok("singular");
 
-        Token.Field qoz = tok("qoz");
-        Token.Field foo = tok("foo");
-        Token.Field bar = tok("bar");
-        Token.Field baz = tok("baz");
-        Token.Field biz = tok("biz");
-        Token.Field bizz = tok("bizz");
+        var qoz = tok("qoz");
+        var foo = tok("foo");
+        var bar = tok("bar");
+        var baz = tok("baz");
+        var biz = tok("biz");
+        var bizz = tok("bizz");
 
-        Token.Field goobarzot = tok("goobarzot");
-        Token.Field goobarzip = tok("goobarzip");
+        var goobarzot = tok("goobarzot");
+        var goobarzip = tok("goobarzip");
 
-        Token.Field goozotzot = tok("goozotzot");
-        Token.Field goozotzip = tok("goozotzip");
-        Token.Field goozotzix = tok("goozotzix");
+        var goozotzot = tok("goozotzot");
+        var goozotzip = tok("goozotzip");
+        var goozotzix = tok("goozotzix");
 
-        TokenTrie ct = new TokenTrie(
+        var ct = new TokenTrie(
             q,
             singular,
             qoz,
@@ -58,9 +58,9 @@ class TokenTrieTest {
     }
 
     private static Token.Field tok(String qoz) {
-        String pre = "foo: \"";
-        byte[] c = c(pre + qoz + "\"");
-        byte[] slice = new byte[qoz.length()];
+        var pre = "foo: \"";
+        var c = c(pre + qoz + "\"");
+        var slice = new byte[qoz.length()];
         System.arraycopy(c, pre.length(), slice, 0, qoz.length());
         return new Token.Field(slice);
     }

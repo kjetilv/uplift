@@ -25,7 +25,7 @@ record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> cor
         if (req.isCORS()) {
             return new HttpRes(OK, corsHeaders, null, req.id());
         }
-        LambdaResponse lambdaResponse = handler.lambdaResponse(new LambdaRequest(req));
+        var lambdaResponse = handler.lambdaResponse(new LambdaRequest(req));
         return lambdaResponse.toHttpResponse().updateHeaders(this::withCors);
     }
 

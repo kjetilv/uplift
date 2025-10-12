@@ -46,7 +46,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
             try {
                 return Hashes.hash(messageDigest.digest());
             } finally {
-                MessageDigest unset = messageDigest;
+                var unset = messageDigest;
                 messageDigest = null;
                 queue(kind).offer(unset);
             }
@@ -62,7 +62,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
         digestLock.lock();
         try {
             if (messageDigest == null) {
-                MessageDigest pooled = queue(kind).pollFirst();
+                var pooled = queue(kind).pollFirst();
                 messageDigest = pooled == null ? createDigest(kind) : pooled;
             }
             return messageDigest;

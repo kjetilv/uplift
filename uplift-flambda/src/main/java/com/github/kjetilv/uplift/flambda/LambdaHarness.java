@@ -97,12 +97,12 @@ public class LambdaHarness implements Closeable {
         this.name = Objects.requireNonNull(name, "name");
         Objects.requireNonNull(lambdaHandler, "lambdaHandler");
 
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        var executor = Executors.newVirtualThreadPerTaskExecutor();
         this.serverExec = executor;
         this.lambdaExec = executor;
         this.testExec = executor;
 
-        LocalLambdaSettings settings = localLambdaSettings == null
+        var settings = localLambdaSettings == null
             ? settings(localLambdaSettings, corsSettings, time)
             : localLambdaSettings;
 

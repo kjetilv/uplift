@@ -10,7 +10,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParse() {
-        LambdaPayload payload = LambdaPayload.parse(SAMPLE);
+        var payload = LambdaPayload.parse(SAMPLE);
         assertThat(payload.path("/audio/")).isEqualTo("QT59MOx-O_yKtqj1GXOQwpg.m4a");
         assertThat(payload.queryParam("t")).isEqualTo("ZDd-nVQrS9Ci4nujv1fuHw");
         assertThat(payload.pathParam("/audio/{path}.m4a", "path")).hasValue("QT59MOx-O_yKtqj1GXOQwpg");
@@ -19,7 +19,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParse2() {
-        LambdaPayload payload = LambdaPayload.parse(SAMPLE);
+        var payload = LambdaPayload.parse(SAMPLE);
         assertThat(payload.path("/audio/")).isEqualTo("QT59MOx-O_yKtqj1GXOQwpg.m4a");
         assertThat(payload.queryParam("t")).isEqualTo("ZDd-nVQrS9Ci4nujv1fuHw");
         assertThat(payload.pathParam("/audio/{path}.m4a", "path")).hasValue("QT59MOx-O_yKtqj1GXOQwpg");
@@ -28,7 +28,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParseVer1() {
-        LambdaPayload payload = LambdaPayload.parse(VER_1);
+        var payload = LambdaPayload.parse(VER_1);
         assertThat(payload.path()).isEqualTo("/my/path");
         assertThat(payload.method()).isEqualTo("GET");
         assertThat(payload.body()).isEqualTo("Hello from Lambda!");
@@ -44,7 +44,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParseVer2() {
-        LambdaPayload payload = LambdaPayload.parse(VER_2);
+        var payload = LambdaPayload.parse(VER_2);
         assertThat(payload.path()).isEqualTo("/my/path");
         assertThat(payload.method()).isEqualTo("POST");
         assertThat(payload.body()).isEqualTo("Hello from Lambda");
@@ -63,7 +63,7 @@ class LambdaPayloadTest {
 
     @Test
     void canParseVer2a() {
-        LambdaPayload payload = LambdaPayload.parse(VER_2_A);
+        var payload = LambdaPayload.parse(VER_2_A);
         assertThat(payload.headers()).containsExactlyInAnyOrderEntriesOf(Map.of(
             "header1", "value1",
             "header2", "value2"

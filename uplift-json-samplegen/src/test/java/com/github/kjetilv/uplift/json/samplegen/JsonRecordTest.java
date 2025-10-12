@@ -21,7 +21,7 @@ public class JsonRecordTest {
 
     @Test
     void parseShortUser() {
-        String json =
+        var json =
             //language=json
             """
             {
@@ -33,7 +33,7 @@ public class JsonRecordTest {
               }
             }
             """;
-        User readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
+        var readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
         System.out.println(readUser);
 
 //        assertThat(readUser.tags()).containsEntry("good", "evil");
@@ -46,9 +46,9 @@ public class JsonRecordTest {
 
     @Test
     void parseUser() {
-        UUID uuid = UUID.randomUUID();
+        var uuid = UUID.randomUUID();
         //language=json
-        String json =
+        var json =
             """
                 {
                   "name": "Kjetil",
@@ -94,8 +94,8 @@ public class JsonRecordTest {
                   }
                 }
                 """.formatted(uuid);
-        User readUser = STRING_READER.read(json);
-        User expectedUser = new User(
+        var readUser = STRING_READER.read(json);
+        var expectedUser = new User(
             "Kjetil",
             1973,
             Instant.ofEpochMilli(100L),
@@ -135,11 +135,11 @@ public class JsonRecordTest {
                 )),
             new BigDecimal("123.23")
         );
-        User genUser = Users.INSTANCE.stringReader().read(json);
+        var genUser = Users.INSTANCE.stringReader().read(json);
         assertThat(genUser).isEqualTo(expectedUser);
 
         assertThat(readUser.toString()).isEqualTo(expectedUser.toString());
-        String addressJson =
+        var addressJson =
             //language=json
             """
                 { "address":
@@ -166,7 +166,7 @@ public class JsonRecordTest {
                 )
             );
 
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 //        Callbacks callbacks = JsonWriter.writer(user, new StringSink(sb));
 //        callbacks.objectStarted()
 //            .field("name").string(user.name())
@@ -177,7 +177,7 @@ public class JsonRecordTest {
 
         WRITER.write(readUser, sb);
 
-        User read2 = STRING_READER.read(sb.toString());
+        var read2 = STRING_READER.read(sb.toString());
 
         assertThat(readUser).isEqualTo(read2);
     }

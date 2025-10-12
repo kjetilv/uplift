@@ -47,9 +47,9 @@ public record LambdaRequest(String id, HttpReq request) {
     }
 
     private static String cat(List<String> values, int size) {
-        StringBuilder stringBuilder = new StringBuilder();
-        boolean firstDone = false;
-        for (int i = 0; i < size; i++) {
+        var stringBuilder = new StringBuilder();
+        var firstDone = false;
+        for (var i = 0; i < size; i++) {
             if (firstDone) {
                 stringBuilder.append(",");
             } else {

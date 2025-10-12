@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.json.anno.Field;
 final class GenUtils {
 
     static String fieldName(RecordComponentElement el) {
-        Field field = el.getAnnotation(Field.class);
+        var field = el.getAnnotation(Field.class);
         return field == null ? el.getSimpleName().toString()
             : field.value();
     }
@@ -19,17 +19,17 @@ final class GenUtils {
         Collection<? extends Element> rootElements,
         Collection<? extends Element> enums
     ) {
-        Optional<Class<?>> primitiveListType = primitiveListType(element);
+        var primitiveListType = primitiveListType(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType
                 .map(Class::getName);
         }
-        Optional<? extends Element> enumListType = enumListType(element, enums);
+        var enumListType = enumListType(element, enums);
         if (enumListType.isPresent()) {
             return enumListType
                 .map(el -> el.asType().toString());
         }
-        Optional<? extends Element> generatedListType = rootElements.stream()
+        var generatedListType = rootElements.stream()
             .filter(rootElement ->
                 element.asType().toString().equals(listType(rootElement)))
             .findFirst();
@@ -45,7 +45,7 @@ final class GenUtils {
                 rootElements.stream()
                     .filter(element -> element.getKind() == ElementKind.ENUM),
                 rootElements.stream().flatMap(el -> {
-                    List<? extends Element> enclosedElements = el.getEnclosedElements();
+                    var enclosedElements = el.getEnclosedElements();
                     return enums(new HashSet<>(enclosedElements));
                 })
             )
@@ -57,17 +57,17 @@ final class GenUtils {
     }
 
     static boolean isListType(RecordComponentElement element, Collection<? extends Element> candidates) {
-        TypeMirror elementType = element.asType();
+        var elementType = element.asType();
         return isListType(elementType, candidates);
     }
 
     static String variableName(TypeElement typeElement) {
-        String name = typeElement.getSimpleName().toString();
+        var name = typeElement.getSimpleName().toString();
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     static PackageElement packageEl(Element te) {
-        Element enclosingElement = te.getEnclosingElement();
+        var enclosingElement = te.getEnclosingElement();
         return enclosingElement instanceof PackageElement pe
             ? pe
             : packageEl(enclosingElement);
@@ -139,22 +139,22 @@ final class GenUtils {
     }
 
     static String unq(PackageElement packageElement, Name name) {
-        String prefix = packageElement.getQualifiedName().toString();
-        String fullName = name.toString();
+        var prefix = packageElement.getQualifiedName().toString();
+        var fullName = name.toString();
         return fullName.startsWith(prefix) ? fullName.substring(prefix.length() + 1) : fullName;
     }
 
     static String factoryClass(TypeElement te) {
-        JsonRecord annotation = te.getAnnotation(JsonRecord.class);
-        String name = te.getSimpleName().toString();
+        var annotation = te.getAnnotation(JsonRecord.class);
+        var name = te.getSimpleName().toString();
         return annotation == null || annotation.factoryClass().isBlank()
             ? name + DEFAULT_SUFFIX
             : annotation.factoryClass();
     }
 
     static String singularVariableName(RecordComponentElement el) {
-        Singular annotation = el.getAnnotation(Singular.class);
-        String plural = fieldName(el);
+        var annotation = el.getAnnotation(Singular.class);
+        var plural = fieldName(el);
         return annotation != null ? annotation.value()
             : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
                 : plural;
@@ -192,7 +192,7 @@ final class GenUtils {
     }
 
     private static String canonicalClassName(TypeElement te, boolean fq) {
-        String packageName = packageEl(te).toString();
+        var packageName = packageEl(te).toString();
         return (fq ? packageName + "." : "") + te.getQualifiedName().toString()
             .substring(packageName.length() + 1)
             .replace('.', '_');

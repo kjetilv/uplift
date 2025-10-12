@@ -22,7 +22,7 @@ public final class EnvLookup {
         String environmentVariable,
         boolean required
     ) {
-        Optional<String> value = cache.computeIfAbsent(
+        var value = cache.computeIfAbsent(
             systemProperty + environmentVariable + required,
             _ ->
                 resolve(systemProperty, environmentVariable, required)
@@ -39,7 +39,7 @@ public final class EnvLookup {
     private static final Map<String, Optional<String>> cache = new ConcurrentHashMap<>();
 
     private static Optional<String> resolve(String systemProperty, String environmentVariable, boolean required) {
-        Optional<String> property = systemProperty(systemProperty)
+        var property = systemProperty(systemProperty)
             .or(() ->
                 systemProperty(environmentVariable))
             .or(() ->
@@ -75,8 +75,8 @@ public final class EnvLookup {
     }
 
     private static void log(String systemProperty, String environmentVariable, String s) {
-        int length = s.length();
-        int section = Math.min(10, length / 3);
+        var length = s.length();
+        var section = Math.min(10, length / 3);
         log.debug(
             "{}/{} -> {}...{} ({} chars)",
             systemProperty,

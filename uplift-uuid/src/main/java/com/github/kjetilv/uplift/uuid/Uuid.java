@@ -30,7 +30,7 @@ public interface Uuid {
     }
 
     static Uuid from(String spec) {
-        int length = spec.length();
+        var length = spec.length();
         if (length < DIGEST_LENGTH) {
             throw new IllegalStateException("Malformed: " + spec);
         }
@@ -58,7 +58,7 @@ public interface Uuid {
     }
 
     private static boolean isUuid(String spec) {
-        for (int i = 0; i < spec.length(); i++) {
+        for (var i = 0; i < spec.length(); i++) {
             if (!isUuidChar(spec.charAt(i))) {
                 return false;
             }

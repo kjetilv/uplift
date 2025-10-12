@@ -11,19 +11,19 @@ class UuidTest {
 
     @Test
     void should_be_22_chars() {
-        Uuid random = Uuid.random();
+        var random = Uuid.random();
         assertEquals(22, random.digest().length());
         assertEquals(36, random.uuid().toString().length());
     }
 
     @Test
     void should_convert_back_and_forth() {
-        for (int i = 0; i < 100_000; i++) {
+        for (var i = 0; i < 100_000; i++) {
 
-            UUID uuid = UUID.randomUUID();
+            var uuid = UUID.randomUUID();
 
-            Uuid uuidFromUuid = Uuid.from(uuid);
-            Uuid uuidFromString = Uuid.from(uuidFromUuid.digest());
+            var uuidFromUuid = Uuid.from(uuid);
+            var uuidFromString = Uuid.from(uuidFromUuid.digest());
 
             assertEquals(uuidFromUuid, uuidFromString);
 

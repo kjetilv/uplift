@@ -42,10 +42,10 @@ class BinaryTest {
         new int[] {0, 2, 4, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 21, 234234, 13123};
 
     private static void assertAllFound(int[] is) {
-        for (int j : is) {
+        for (var j : is) {
             assertFound(is, j);
         }
-        for (int j : NIS) {
+        for (var j : NIS) {
             assertNotFound(j);
         }
     }
@@ -55,14 +55,14 @@ class BinaryTest {
     }
 
     private static void assertFound(int[] is, int toFind) {
-        int expectedIndex = -1;
-        for (int i = 0; i < is.length; i++) {
+        var expectedIndex = -1;
+        for (var i = 0; i < is.length; i++) {
             if (is[i] == toFind) {
                 expectedIndex = i;
             }
         }
         assertThat(expectedIndex).isNotNegative();
-        int search = Binary.search(is, toFind);
+        var search = Binary.search(is, toFind);
         assertThat(search).isEqualTo(expectedIndex);
     }
 

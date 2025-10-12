@@ -16,7 +16,7 @@ record DefaultUuid(UUID uuid) implements Uuid {
 
     @Override
     public String toString() {
-        String sub = digest();
+        var sub = digest();
         return "⎨" + sub.substring(0, 5) + "⋯" + sub.substring(DIGEST_LENGTH - 3, DIGEST_LENGTH) + "⎬";
     }
 }

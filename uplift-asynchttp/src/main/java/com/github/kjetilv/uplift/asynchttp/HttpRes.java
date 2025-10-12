@@ -44,7 +44,7 @@ public record HttpRes(
 
     @Override
     public String toString() {
-        StringBuilder base = new StringBuilder().append(getClass().getSimpleName())
+        var base = new StringBuilder().append(getClass().getSimpleName())
             .append("[")
             .append(reqId)
             .append(" ")
@@ -61,7 +61,7 @@ public record HttpRes(
     }
 
     String toResponseHeader() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         sb.append("HTTP/1.1 ").append(status).append(" ").append(readable(status)).append('\n');
         headers().forEach((key, value) -> {
             if (!("Content-Length".equalsIgnoreCase(key) || value.isEmpty())) {

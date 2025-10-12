@@ -6,7 +6,7 @@ sealed interface IntMap<T> extends IntFunction<T> {
 
     @SuppressWarnings("unchecked")
     static <T> IntMap<T> from(Map<? extends Number, T> map) {
-        int size = map.size();
+        var size = map.size();
         if (size == 0) {
             return (IntMap<T>) None.NONE;
         }
@@ -17,11 +17,11 @@ sealed interface IntMap<T> extends IntFunction<T> {
             .stream()
             .sorted(Comparator.comparing(IntMap::intKey))
             .toList();
-        int[] keys = list
+        var keys = list
             .stream()
             .mapToInt(IntMap::intKey)
             .toArray();
-        Object[] values = list.stream()
+        var values = list.stream()
             .map(Map.Entry::getValue).toArray();
 
         return size == 2
@@ -43,7 +43,7 @@ sealed interface IntMap<T> extends IntFunction<T> {
         @SuppressWarnings("unchecked")
         @Override
         public T apply(int value) {
-            int index = Binary.search(keys, value);
+            var index = Binary.search(keys, value);
             return index < 0 ? null : (T) values[index];
         }
 

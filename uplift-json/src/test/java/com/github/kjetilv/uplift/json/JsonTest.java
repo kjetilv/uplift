@@ -55,7 +55,7 @@ class JsonTest {
     }
 
     static void assertParseException(ParseException e, TokenType unexpected, TokenType... expected) {
-        List<TokenType> set = Arrays.asList(expected);
+        var set = Arrays.asList(expected);
         assertEquals(unexpected, e.getToken().tokenType());
         assertEquals(
             set.size(), e.getExpected().size(),
@@ -67,33 +67,33 @@ class JsonTest {
     @Test
     void singleValueTrue() {
         //language=json
-        Object read = JSON.read("true");
+        var read = JSON.read("true");
         assertThat(read).isEqualTo(true);
     }
 
     @Test
     void singleValueString() {
         //language=json
-        Object read = JSON.read("\"foo\"");
+        var read = JSON.read("\"foo\"");
         assertThat(read).isEqualTo("foo");
     }
 
     @Test
     void singleValueStringmoji() {
         //language=json
-        Object read = JSON.read("\"🃑\"");
+        var read = JSON.read("\"🃑\"");
         assertThat(read).isEqualTo("🃑");
     }
 
     @Test
     void singleValueDec() {
-        Object read = JSON.read("0.42");
+        var read = JSON.read("0.42");
         assertThat(read).isEqualTo(new BigDecimal("0.42"));
     }
 
     @Test
     void singleValueField() {
-        Object read = JSON.read("""
+        var read = JSON.read("""
             {
               "foo": 234.234,
               "bar": -54.32
@@ -108,7 +108,7 @@ class JsonTest {
 
     @Test
     void numberValue() {
-        Object read = JSON.read("""
+        var read = JSON.read("""
             { "foo": 0.42 }
             """);
         assertThat(read).asInstanceOf(MAP).containsEntry("foo", new BigDecimal("0.42"));
@@ -117,10 +117,10 @@ class JsonTest {
     @Test
     void emptyArray() {
         //language=json
-        Object read1 = JSON.read("[]");
+        var read1 = JSON.read("[]");
         assertThat(read1).asInstanceOf(LIST).isEmpty();
         //language=json
-        Object read2 = JSON.read(
+        var read2 = JSON.read(
             """
                 { "foo": [] }
                 """);
@@ -173,10 +173,10 @@ class JsonTest {
     @Test
     void readLineBreak() {
         //language=json
-        String bytesSource = """
+        var bytesSource = """
             { "foo":  "\\x"}
             """.replace('x', '\n');
-        Object json = JSON.read(bytesSource);
+        var json = JSON.read(bytesSource);
         assertThat(json).asInstanceOf(MAP).containsEntry("foo", "\n");
     }
 
@@ -489,7 +489,7 @@ class JsonTest {
     @Test
     void testAws() {
         //language=JSON
-        Object roundtrip = roundtrip(
+        var roundtrip = roundtrip(
             """
                 {
                   "foo": {},
@@ -506,7 +506,7 @@ class JsonTest {
     @Test
     void testUnicode() {
         //language=JSON
-        Object roundtrip = roundtrip(
+        var roundtrip = roundtrip(
             """
                 {
                   "♥︎": "♣︎"
@@ -521,7 +521,7 @@ class JsonTest {
     @Test
     void test48jso() {
         //language=JSON
-        Object roundtrip = roundtrip(
+        var roundtrip = roundtrip(
             """
                 {
                   "in_reply_to_status_id":                 null,
@@ -544,7 +544,7 @@ class JsonTest {
 
     @Test
     void testNills() {
-        Object roundtrip = roundtrip(
+        var roundtrip = roundtrip(
             //language=JSON
             """
                 { "bar": [{
@@ -622,13 +622,13 @@ class JsonTest {
         written.put("whatever", Enum.ENUM);
         written.put("oops", null);
         //language=json
-        String bytesSource = """
+        var bytesSource = """
             {"uri":"https://www.vg.no","url":"https://www.db.no","whatever":"ENUM","oops":null}
             """.trim();
-        Map<?, ?> parsed = JSON.jsonMap(bytesSource);
-        String expected = JSON.write(parsed);
+        var parsed = JSON.jsonMap(bytesSource);
+        var expected = JSON.write(parsed);
         assertThat(expected).isEqualTo(bytesSource);
-        String actual = JSON.write(written);
+        var actual = JSON.write(written);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -671,10 +671,10 @@ class JsonTest {
         //language=json
         String bytesSource
     ) {
-        Object json = JSON.read(bytesSource);
-        String source2 = JSON.write(json);
-        byte[] bytes = bytesSource.getBytes(StandardCharsets.UTF_8);
-        Object json2 =
+        var json = JSON.read(bytesSource);
+        var source2 = JSON.write(json);
+        var bytes = bytesSource.getBytes(StandardCharsets.UTF_8);
+        var json2 =
             JSON.read(new ByteArrayInputStream(bytes));
         assertEquals(json, JSON.read(source2));
         assertEquals(json2, JSON.read(source2));

@@ -20,14 +20,14 @@ final class EntrySpliterator extends Spliterators.AbstractSpliterator<Map.Entry<
 
     @Override
     public boolean tryAdvance(Consumer<? super Map.Entry<String, String>> action) {
-        String field = fields[index];
-        String start = "<" + field + ">";
-        String end = "</" + field + ">";
-        int startPosition = xml.indexOf(start, position) + start.length();
+        var field = fields[index];
+        var start = "<" + field + ">";
+        var end = "</" + field + ">";
+        var startPosition = xml.indexOf(start, position) + start.length();
         if (startPosition < 0) {
             return false;
         }
-        int endPosition = xml.indexOf(end, position);
+        var endPosition = xml.indexOf(end, position);
         if (endPosition < 0) {
             return false;
         }

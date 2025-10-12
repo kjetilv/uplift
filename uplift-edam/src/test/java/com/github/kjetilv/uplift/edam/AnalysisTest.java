@@ -24,14 +24,14 @@ class AnalysisTest {
 
     @Test
     void counts() {
-        Occurrence<K128> occ0 = new Occurrence<>(ep(0), H0);
-        Occurrence<K128> occ1 = new Occurrence<>(ep(1), H2);
-        Occurrence<K128> occ2 = new Occurrence<>(ep(2), H2);
-        Occurrence<K128> occ3 = new Occurrence<>(ep(3), H0);
-        Occurrence<K128> occ4 = new Occurrence<>(ep(4), H2);
-        HashPattern<K128> hashPattern1 = new HashPattern<>(H0, H2, H0, H2);
-        HashPattern<K128> hashPattern2 = new HashPattern<>(H2);
-        Analysis.Multiple<K128> multiple = new Analysis.Multiple<>(
+        var occ0 = new Occurrence<K128>(ep(0), H0);
+        var occ1 = new Occurrence<K128>(ep(1), H2);
+        var occ2 = new Occurrence<K128>(ep(2), H2);
+        var occ3 = new Occurrence<K128>(ep(3), H0);
+        var occ4 = new Occurrence<K128>(ep(4), H2);
+        var hashPattern1 = new HashPattern<K128>(H0, H2, H0, H2);
+        var hashPattern2 = new HashPattern<K128>(H2);
+        var multiple = new Analysis.Multiple<K128>(
             occ4,
             List.of(
                 new PatternMatch<>(

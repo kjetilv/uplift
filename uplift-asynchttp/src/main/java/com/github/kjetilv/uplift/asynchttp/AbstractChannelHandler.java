@@ -124,7 +124,7 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
     }
 
     private Processing writeResponse(ByteBuffer headerBuffer, Object... values) {
-        try (BufferingWriter<ByteBuffer> writer = responseWriter()) {
+        try (var writer = responseWriter()) {
             writer.write(new WritableBuffer<>(headerBuffer, headerBuffer.capacity()));
         }
         return Processing.OK;

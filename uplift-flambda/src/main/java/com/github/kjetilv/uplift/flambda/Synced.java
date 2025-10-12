@@ -31,7 +31,7 @@ final class Synced<K, V> {
         lock.lock();
         try {
             while (true) {
-                V value = map.get(key);
+                var value = map.get(key);
                 if (value != null) {
                     return value;
                 }

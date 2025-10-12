@@ -17,29 +17,29 @@ class SequenceOccurrenceOccTest {
 
     @Test
     void shouldProgress() {
-        Hash<K128> h1 = K128.random();
-        Hash<K128> h2 = K128.random();
-        Hash<K128> h3 = K128.random();
-        HashPattern<K128> hashPattern = new HashPattern<>(h1, h2, h3);
-        PatternOccurrence<K128> occ1 = new PatternOccurrence<>(hashPattern);
+        var h1 = K128.random();
+        var h2 = K128.random();
+        var h3 = K128.random();
+        var hashPattern = new HashPattern<K128>(h1, h2, h3);
+        var occ1 = new PatternOccurrence<K128>(hashPattern);
         assertTrue(occ1.matchesNext(h1));
         assertFalse(occ1.matchesNext(h2));
         assertFalse(occ1.matchesNext(h3));
 
-        Occurrence<K128> to1 = new Occurrence<>(Instant.now(), h1);
-        Occurrence<K128> to2 = new Occurrence<>(Instant.now(), h2);
-        Occurrence<K128> to3 = new Occurrence<>(Instant.now(), h3);
+        var to1 = new Occurrence<K128>(Instant.now(), h1);
+        var to2 = new Occurrence<K128>(Instant.now(), h2);
+        var to3 = new Occurrence<K128>(Instant.now(), h3);
 
         assertTrue(occ1.matchingOccurrence(to1).isPresent());
         assertTrue(occ1.matchingOccurrence(to2).isEmpty());
         assertTrue(occ1.matchingOccurrence(to3).isEmpty());
 
-        PatternOccurrence<K128> occ2 = occ1.matchingOccurrence(to1).get();
+        var occ2 = occ1.matchingOccurrence(to1).get();
         assertFalse(occ2.matchesNext(h1));
         assertTrue(occ2.matchesNext(h2));
         assertFalse(occ2.matchesNext(h3));
 
-        PatternOccurrence<K128> done = occ2.matchingOccurrence(to2)
+        var done = occ2.matchingOccurrence(to2)
             .flatMap(o ->
                 o.matchingOccurrence(to3)).get();
 

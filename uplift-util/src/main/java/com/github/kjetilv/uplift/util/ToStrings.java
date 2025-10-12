@@ -11,18 +11,18 @@ public final class ToStrings {
 
     public static void print(StringBuilder base, Map<String, List<String>> headers) {
         base.append(" headers:[");
-        int count = 0;
-        for (Map.Entry<String, List<String>> entry: headers.entrySet()) {
+        var count = 0;
+        for (var entry: headers.entrySet()) {
             if (count > 0) {
                 base.append(" ");
             }
-            String key = entry.getKey();
-            List<String> value = entry.getValue();
-            int size = value.size();
+            var key = entry.getKey();
+            var value = entry.getValue();
+            var size = value.size();
             if (size > 1) {
                 base.append(key).append("=");
                 base.append("[");
-                for (int i = 0; i < size; i++) {
+                for (var i = 0; i < size; i++) {
                     if (i > 0) {
                         base.append(" ");
                     }
@@ -39,7 +39,7 @@ public final class ToStrings {
     }
 
     public static void print(StringBuilder base, byte[] body) {
-        int length = body.length;
+        var length = body.length;
         if (length > 50) {
             base.append(" body:").append(length);
         } else {

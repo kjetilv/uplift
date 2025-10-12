@@ -38,13 +38,13 @@ abstract sealed class StructureClimber<H extends HashKind<H>>
     }
 
     protected Callbacks close() {
-        Hash<H> hash = builder.build();
+        var hash = builder.build();
         onDone.accept(hashedTree(hash));
         return parent;
     }
 
     protected final Token.Field hashedField(Token.Field key) {
-        Token.Field field = normalized(key);
+        var field = normalized(key);
         builder.hash(fieldBytes(field));
         return field;
     }

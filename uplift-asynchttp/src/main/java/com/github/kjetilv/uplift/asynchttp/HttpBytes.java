@@ -5,7 +5,7 @@ import module java.base;
 record HttpBytes(byte[] req, byte[] headers, byte[] body) {
 
     static Optional<HttpBytes> read(ByteBuffer buffer) {
-        OptionalInt lineEnd = IntStream.range(0, buffer.position())
+        var lineEnd = IntStream.range(0, buffer.position())
             .filter(oneLinebreak(buffer))
             .findFirst();
 
@@ -13,9 +13,9 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
             return Optional.empty();
         }
 
-        byte[] req = extractRequestLine(buffer, lineEnd.getAsInt());
+        var req = extractRequestLine(buffer, lineEnd.getAsInt());
 
-        OptionalInt headerEnd = IntStream.range(
+        var headerEnd = IntStream.range(
                 lineEnd.getAsInt() + 2,
                 buffer.position() - 1
             )
@@ -24,7 +24,7 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
             .findFirst();
 
         if (headerEnd.isEmpty()) {
-            byte[] headers = extractHeaders(
+            var headers = extractHeaders(
                 buffer,
                 lineEnd.getAsInt(),
                 buffer.position()
@@ -52,7 +52,7 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
     }
 
     private static byte[] extractRequestLine(ByteBuffer buffer, int lineEnd) {
-        byte[] req = new byte[lineEnd];
+        var req = new byte[lineEnd];
         buffer.get(0, req, 0, lineEnd);
         return req;
     }
@@ -66,7 +66,7 @@ record HttpBytes(byte[] req, byte[] headers, byte[] body) {
     }
 
     private static byte[] fill(ByteBuffer buffer, int start, int length) {
-        byte[] body = new byte[length];
+        var body = new byte[length];
         buffer.get(start, body, 0, length);
         return body;
     }

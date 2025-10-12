@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":uplift-util"))
     implementation(project(":uplift-uuid"))
 
-    implementation("org.junit.jupiter:junit-jupiter-api:6.0.0-RC3")
+    implementation("org.junit.jupiter:junit-jupiter-api:6.0.0")
 }
 
 tasks.register<Copy>("copy-libs") {

@@ -52,7 +52,7 @@ final class OffHeapIndexer256 extends AbstractOffHeapIndexer<K256> {
 
         @Override
         public void store(Hash<K256> hash) {
-            long[] ls = hash.ls();
+            var ls = hash.ls();
             H0.set(slice, 0, ls[0]);
             H1.set(slice, 0, ls[1]);
             H2.set(slice, 0, ls[2]);

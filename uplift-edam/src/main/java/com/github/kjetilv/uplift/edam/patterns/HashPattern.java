@@ -25,7 +25,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     public String toShortString(String delimiter) {
-        int len = length();
+        var len = length();
         return len == 1
             ? shortHashes().getFirst()
             : "[" + len + "/" + String.join(delimiter == null ? "" : delimiter, shortHashes()) + "]";
@@ -39,13 +39,13 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
 
     @Override
     public int compareTo(HashPattern<K> hashPattern) {
-        int length = length();
-        int lengthCompare = Integer.compare(length, hashPattern.length());
+        var length = length();
+        var lengthCompare = Integer.compare(length, hashPattern.length());
         if (lengthCompare != 0) {
             return lengthCompare;
         }
-        for (int i = 0; i < length; i++) {
-            int compared = hash(i).compareTo(hashPattern.hash(i));
+        for (var i = 0; i < length; i++) {
+            var compared = hash(i).compareTo(hashPattern.hash(i));
             if (compared != 0) {
                 return compared;
             }
@@ -67,7 +67,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     public HashPattern<K> cyclicSubPattern() {
-        List<Hash<K>> base = Cycles.find(hashes);
+        var base = Cycles.find(hashes);
         return base.size() == hashes.size()
             ? this
             : new HashPattern<>(base);
@@ -96,8 +96,8 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     public boolean validOccurrences(List<Occurrence<K>> occurrences) {
-        Iterator<Occurrence<K>> iterator = occurrences.iterator();
-        for (Hash<K> hash : this) {
+        var iterator = occurrences.iterator();
+        for (var hash : this) {
             if (!iterator.hasNext()) {
                 return true;
             }
@@ -137,8 +137,8 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     private static <T1, T2, R> List<R> zip(Iterable<T1> t1, Iterable<T2> t2, BiFunction<T1, T2, R> f) {
-        Iterator<T1> i1 = requireNonNull(t1, "t1").iterator();
-        Iterator<T2> i2 = requireNonNull(t2, "t2").iterator();
+        var i1 = requireNonNull(t1, "t1").iterator();
+        var i2 = requireNonNull(t2, "t2").iterator();
         requireNonNull(f, "f");
         List<R> rs = new ArrayList<>();
         while (i1.hasNext() && i2.hasNext()) {
@@ -149,7 +149,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
 
     @Override
     public String toString() {
-        int size = hashes.size();
+        var size = hashes.size();
         Function<Hash<K>, String> toString = size > 3 ? Hash::toShortString : Hash::toString;
         return toStringCustom(toString);
     }

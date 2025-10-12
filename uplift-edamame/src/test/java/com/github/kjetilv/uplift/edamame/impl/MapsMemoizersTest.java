@@ -27,7 +27,7 @@ class MapsMemoizersTest {
     }
 
     static Hash<HashKind.K128> random() {
-        UUID randomUUID = UUID.randomUUID();
+        var randomUUID = UUID.randomUUID();
         return Hashes.of(
             randomUUID.getMostSignificantBits(),
             randomUUID.getLeastSignificantBits()
@@ -38,7 +38,7 @@ class MapsMemoizersTest {
     void shouldHandleLeafCollisions() {
         Object bd = new BigDecimal("123.234");
         Object bi = new BigInteger("424242");
-        LeafHasher<HashKind.K128> leafHasher = collidingLeafHasher();
+        var leafHasher = collidingLeafHasher();
 
         MapsMemoizer<Long, String> mapsMemoizer = create(null, leafHasher, HashKind.K128, null);
 
@@ -48,24 +48,24 @@ class MapsMemoizersTest {
                 "zot1", bi
             )
         );
-        BigDecimal bdCopy = new BigDecimal("123.234");
-        BigInteger biCopy = new BigInteger("424242");
+        var bdCopy = new BigDecimal("123.234");
+        var biCopy = new BigInteger("424242");
         mapsMemoizer.put(
             43L, Map.of(
                 "zot2", bdCopy,
                 "zot1", biCopy
             )
         );
-        MemoizedMaps<Long, String> access = mapsMemoizer.complete();
+        var access = mapsMemoizer.complete();
 
-        Map<String, ?> map42 = access.get(42L);
-        Map<String, ?> map43 = access.get(43L);
+        var map42 = access.get(42L);
+        var map43 = access.get(43L);
 
-        Object bi42 = map42.get("zot1");
-        Object bd42 = map42.get("zot2");
+        var bi42 = map42.get("zot1");
+        var bd42 = map42.get("zot2");
 
-        Object bi43 = map43.get("zot1");
-        Object bd43 = map43.get("zot2");
+        var bi43 = map43.get("zot1");
+        var bd43 = map43.get("zot2");
 
         assertSame(bi, bi42);
         assertEquals(bi, bi42);
@@ -104,16 +104,16 @@ class MapsMemoizersTest {
                 "zot1", l2Copy
             )
         );
-        MemoizedMaps<Long, String> access = mapsMemoizer.complete();
+        var access = mapsMemoizer.complete();
 
-        Map<String, ?> map42 = access.get(42L);
-        Map<String, ?> map43 = access.get(43L);
+        var map42 = access.get(42L);
+        var map43 = access.get(43L);
 
-        Object bi42 = map42.get("zot1");
-        Object bd42 = map42.get("zot2");
+        var bi42 = map42.get("zot1");
+        var bd42 = map42.get("zot2");
 
-        Object bi43 = map43.get("zot1");
-        Object bd43 = map43.get("zot2");
+        var bi43 = map43.get("zot1");
+        var bd43 = map43.get("zot2");
 
         assertSame(l2, bi42);
         assertEquals(l2, bi42);
@@ -129,7 +129,7 @@ class MapsMemoizersTest {
 
     @Test
     void shouldHandleCollisions() {
-        Hash<HashKind.K128> collider = random();
+        var collider = random();
         LeafHasher<HashKind.K128> leafHasher = leaf ->
             leaf.equals("3") || leaf.equals("7")
                 ? collider
@@ -139,12 +139,12 @@ class MapsMemoizersTest {
                 ).hash(leaf);
         MapsMemoizer<Long, String> cache = create(null, leafHasher, HashKind.K128, null);
 
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
             cache.put((long) i, Map.of("foo", String.valueOf(i)));
         }
-        MemoizedMaps<Long, String> access = cache.complete();
-        for (int i = 0; i < 10; i++) {
-            Map<String, String> reconstructed = Map.of("foo", String.valueOf(i));
+        var access = cache.complete();
+        for (var i = 0; i < 10; i++) {
+            var reconstructed = Map.of("foo", String.valueOf(i));
             assertEquals(reconstructed, access.get((long) i));
         }
     }
@@ -154,17 +154,17 @@ class MapsMemoizersTest {
         KeyHandler<CaKe> caKeKeyHandler = s -> CaKe.get(s.toString());
         MapsMemoizer<Long, CaKe> cache = create(caKeKeyHandler, HashKind.K128);
 
-        Map<String, Object> in42 = build42(zot1Zot2());
-        Map<String, ? extends Number> hh0hh1 = hh0hh1();
+        var in42 = build42(zot1Zot2());
+        var hh0hh1 = hh0hh1();
 
-        Map<String, Object> in43 = Map.of(
+        var in43 = Map.of(
             "fooTop", "zot",
             "zot", zot1Zot2(),
             "a", hh0hh1
         );
 
-        Map<String, ? extends Number> hh0hh2 = hh0hh1();
-        Map<String, Object> in44 = Map.of(
+        var hh0hh2 = hh0hh1();
+        var in44 = Map.of(
             "fooTop", "zot",
             "zot", zot1Zot2(),
             "a", Map.of(
@@ -172,12 +172,12 @@ class MapsMemoizersTest {
                 "2", hh0hh2
             )
         );
-        Map<String, Object> in48 = build42(zot1Zot2());
+        var in48 = build42(zot1Zot2());
 
         cache.put(42L, in42);
         cache.put(48L, in48);
-        Map<CaKe, ?> out42 = cache.get(42L);
-        Map<CaKe, ?> out42as48 = cache.get(48L);
+        var out42 = cache.get(42L);
+        var out42as48 = cache.get(48L);
         assertSame(
             cache.get(42L),
             out42as48,
@@ -186,9 +186,9 @@ class MapsMemoizersTest {
         cache.put(43L, in43);
         cache.put(44L, in44);
 
-        MemoizedMaps<Long, CaKe> access = cache.complete();
-        Map<CaKe, ?> cake43 = access.get(43L);
-        Map<CaKe, ?> cake44 = access.get(44L);
+        var access = cache.complete();
+        var cake43 = access.get(43L);
+        var cake44 = access.get(44L);
 
         assertSame(
             getKey(cake43, "zot"),
@@ -231,21 +231,21 @@ class MapsMemoizersTest {
             out42.get(CaKe.get("zot"))
         );
 
-        Map<CaKe, ?> stringMap42 = access.get(42L);
-        Map<CaKe, ?> stringMap43 = access.get(43L);
-        Map<CaKe, ?> stringMap44 = access.get(44L);
-        Map<CaKe, ?> stringMap44a = access.get(44L);
+        var stringMap42 = access.get(42L);
+        var stringMap43 = access.get(43L);
+        var stringMap44 = access.get(44L);
+        var stringMap44a = access.get(44L);
 
         assertSame(stringMap44, stringMap44a);
 
-        Object inner42 = stringMap42.get(CaKe.get("zotCopy"));
-        Object inner43 = stringMap43.get(CaKe.get("zot"));
+        var inner42 = stringMap42.get(CaKe.get("zotCopy"));
+        var inner43 = stringMap43.get(CaKe.get("zot"));
         assertSame(inner42, inner43);
     }
 
     @Test
     void shouldStripBlankData() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
         cache.put(
             42L,
@@ -263,7 +263,7 @@ class MapsMemoizersTest {
                 "zot", Collections.emptyList()
             )
         );
-        MemoizedMaps<Long, String> access = cache.complete();
+        var access = cache.complete();
 
         assertEquals(
             Map.of("foo", "bar"),
@@ -291,9 +291,9 @@ class MapsMemoizersTest {
                 true, Collections.emptyList()
             )
         );
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> out42 = access.get(42L);
-        Map<String, ?> out45 = access.get(45L);
+        var access = cache.complete();
+        var out42 = access.get(42L);
+        var out45 = access.get(45L);
         assertEquals(
             Map.of("1", "bar"),
             access.get(42L)
@@ -315,7 +315,7 @@ class MapsMemoizersTest {
 
     @Test
     void shouldIgnoreKeyOrder() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
         cache.put(
             42L,
@@ -326,16 +326,16 @@ class MapsMemoizersTest {
             map(IntStream.range(0, 10)
                 .map(i -> 9 - i))
         );
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> canon42 = access.get(42L);
-        Map<String, ?> canon43 = access.get(43L);
+        var access = cache.complete();
+        var canon42 = access.get(42L);
+        var canon43 = access.get(43L);
         assertEquals(canon42, canon43);
         assertSame(canon42, canon43);
     }
 
     @Test
     void shouldPreserveListOrder() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
         cache.put(
             42L,
@@ -352,15 +352,15 @@ class MapsMemoizersTest {
                     .toList()
             )
         );
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> canon42 = access.get(42L);
-        Map<String, ?> canon43 = access.get(43L);
+        var access = cache.complete();
+        var canon42 = access.get(42L);
+        var canon43 = access.get(43L);
         assertNotEquals(canon42, canon43);
     }
 
     @Test
     void shouldPreserveArrayOrder() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
         cache.put(
             42L,
@@ -377,25 +377,25 @@ class MapsMemoizersTest {
                     .toArray()
             )
         );
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> canon42 = access.get(42L);
-        Map<String, ?> canon43 = access.get(43L);
+        var access = cache.complete();
+        var canon42 = access.get(42L);
+        var canon43 = access.get(43L);
         assertNotEquals(canon42, canon43);
     }
 
     @SuppressWarnings({"TextBlockMigration", "unchecked", "StringOperationCanBeSimplified"})
     @Test
     void shouldGrudginglyAcceptNullsInLists() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
-        List<String> canonicalList = Arrays.asList("1", null, "a");
+        var canonicalList = Arrays.asList("1", null, "a");
         cache.put(
             42L,
             Map.of(
                 "foo", canonicalList
             )
         );
-        List<String> otherList = Arrays.asList(new String("1"), null, new String("a"));
+        var otherList = Arrays.asList(new String("1"), null, new String("a"));
         cache.put(
             43L,
             Map.of(
@@ -405,13 +405,13 @@ class MapsMemoizersTest {
         assertNotSame(otherList.get(0), canonicalList.get(0));
         assertNotSame(otherList.get(2), canonicalList.get(2));
 
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> canon42 = access.get(42L);
-        Map<String, ?> canon43 = access.get(43L);
+        var access = cache.complete();
+        var canon42 = access.get(42L);
+        var canon43 = access.get(43L);
         assertEquals(canon42, canon43);
 
-        List<String> list42 = (List<String>) canon42.get("foo");
-        List<String> list43 = (List<String>) canon43.get("foo");
+        var list42 = (List<String>) canon42.get("foo");
+        var list43 = (List<String>) canon43.get("foo");
 
         assertEquals(Arrays.asList("1", null, "a"), list42);
         assertEquals(Arrays.asList("1", null, "a"), list43);
@@ -424,16 +424,16 @@ class MapsMemoizersTest {
 
     @Test
     void shouldPreserveIdentities() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
-        Map<String, Object> in42 = build42(zot1Zot2());
-        Map<String, ? extends Number> hh0hh1 = hh0hh1();
-        Map<String, Object> in43 = Map.of(
+        var cache = mapsMemoizer();
+        var in42 = build42(zot1Zot2());
+        var hh0hh1 = hh0hh1();
+        var in43 = Map.of(
             "fooTop", "zot",
             "zot", zot1Zot2(),
             "a", hh0hh1
         );
-        Map<String, ? extends Number> hh0hh2 = hh0hh1();
-        Map<String, Object> in44 = Map.of(
+        var hh0hh2 = hh0hh1();
+        var in44 = Map.of(
             "fooTop", "zot",
             "zot", zot1Zot2(),
             "a", Map.of(
@@ -447,16 +447,16 @@ class MapsMemoizersTest {
         cache.put(43L, in43);
         cache.put(44L, in44);
 
-        MemoizedMaps<Long, String> access = cache.complete();
-        Map<String, ?> out42as48 = access.get(48L);
-        Map<String, ?> out42 = access.get(42L);
+        var access = cache.complete();
+        var out42as48 = access.get(48L);
+        var out42 = access.get(42L);
 
         assertSame(
             out42,
             out42as48,
             "Same structure should return same identity"
         );
-        Map<String, ?> out43 = access.get(43L);
+        var out43 = access.get(43L);
         assertEquals(
             hh0hh1(),
             in43.get("a")
@@ -489,10 +489,10 @@ class MapsMemoizersTest {
             out42.get("zot")
         );
 
-        Map<String, ?> stringMap42 = access.get(42L);
-        Map<String, ?> stringMap43 = access.get(43L);
-        Map<String, ?> stringMap44 = access.get(44L);
-        Map<String, ?> stringMap44a = access.get(44L);
+        var stringMap42 = access.get(42L);
+        var stringMap43 = access.get(43L);
+        var stringMap44 = access.get(44L);
+        var stringMap44a = access.get(44L);
 
         assertSame(stringMap44, stringMap44a);
 
@@ -512,10 +512,10 @@ class MapsMemoizersTest {
 
     @Test
     void shouldCanonicalizeLeaves() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
-        BigDecimal bd = new BigDecimal("123.234");
-        BigInteger bi = new BigInteger("424242");
+        var bd = new BigDecimal("123.234");
+        var bi = new BigInteger("424242");
 
         cache.put(
             42L, Map.of(
@@ -529,7 +529,7 @@ class MapsMemoizersTest {
                 "zot1", new BigInteger("424242")
             )
         );
-        MemoizedMaps<Long, String> access = cache.complete();
+        var access = cache.complete();
 
         assertSame(bd, access.get(42L).get("zot2"));
         assertSame(bi, access.get(42L).get("zot1"));
@@ -560,7 +560,7 @@ class MapsMemoizersTest {
             entry("zdt", Instant.now().atZone(ZoneId.systemDefault()))
         );
 
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
         cache.put(42L, map);
         assertEquals(map, cache.get(42L));
@@ -568,9 +568,9 @@ class MapsMemoizersTest {
 
     @Test
     void shouldPutIfAbsent() {
-        MapsMemoizer<Long, String> cache = mapsMemoizer();
+        var cache = mapsMemoizer();
 
-        Map<String, String> foo = Map.of("foo", "bar");
+        var foo = Map.of("foo", "bar");
         assertTrue(cache.putIfAbsent(42L, foo));
         assertEquals(1, cache.size());
         assertFalse(cache.putIfAbsent(42L, Map.of("zip", "zot")));
@@ -584,7 +584,7 @@ class MapsMemoizersTest {
     }
 
     private static LeafHasher<HashKind.K128> collidingLeafHasher() {
-        Hash<HashKind.K128> collider = HashKind.K128.random();
+        var collider = HashKind.K128.random();
         return _ -> collider;
     }
 

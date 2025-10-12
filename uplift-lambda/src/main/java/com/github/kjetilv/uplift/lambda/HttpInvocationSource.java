@@ -34,11 +34,11 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         this.fetch = requireNonNull(fetch, "fetch");
         this.endpoint = requireNonNull(endpoint, "api");
         this.time = () -> {
-            Instant instant = time.get();
+            var instant = time.get();
             return instant == null ? Instant.now() : instant;
         };
         try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder().uri(endpoint);
+            var builder = HttpRequest.newBuilder().uri(endpoint);
             if (timeout.compareTo(Duration.ZERO) > 0) {
                 builder.timeout(timeout);
             }
@@ -63,7 +63,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         if (closed.get()) {
             return Optional.empty();
         }
-        CompletionStage<Invocation<HttpRequest, HttpResponse<InputStream>>> stage = fetch.apply(request)
+        var stage = fetch.apply(request)
             .thenApply(response ->
                 invocationId(response)
                     .map(invocationId ->
@@ -84,7 +84,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
     private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
         String id, HttpResponse<InputStream> response
     ) {
-        LambdaPayload payload = LambdaPayload.parse(response.body());
+        var payload = LambdaPayload.parse(response.body());
         return Invocation.create(id, request, payload, this.time.get());
     }
 

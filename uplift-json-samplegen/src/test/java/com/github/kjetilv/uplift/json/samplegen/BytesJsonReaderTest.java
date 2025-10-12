@@ -15,8 +15,8 @@ public class BytesJsonReaderTest {
 
     @Test
     void testJsonReader() {
-        UUID uuid = UUID.randomUUID();
-        String json =
+        var uuid = UUID.randomUUID();
+        var json =
             //language=json
             """
                 {
@@ -56,17 +56,17 @@ public class BytesJsonReaderTest {
                 }
                 """.formatted(uuid);
 
-        BytesJsonReader<User> reader = new BytesJsonReader<>(Users.INSTANCE.callbacks());
-        User user = reader.read(json.getBytes(StandardCharsets.UTF_8));
+        var reader = new BytesJsonReader<User>(Users.INSTANCE.callbacks());
+        var user = reader.read(json.getBytes(StandardCharsets.UTF_8));
         System.out.println(user);
 
-        User rwRead = Users.INSTANCE.bytesReader().read(json.getBytes());
+        var rwRead = Users.INSTANCE.bytesReader().read(json.getBytes());
         assertThat(rwRead.name()).isEqualTo("Kjetil");
 
-        String written = Users.INSTANCE.stringWriter().write(user);
+        var written = Users.INSTANCE.stringWriter().write(user);
 //        User read = reader.read(LineSegments.of(written));
 //        assertThat(read).isEqualTo(user);
-        User expected = new User(
+        var expected = new User(
             "Kjetil",
             1973,
             null,

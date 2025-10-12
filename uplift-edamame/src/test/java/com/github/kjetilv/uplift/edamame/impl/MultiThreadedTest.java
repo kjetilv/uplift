@@ -18,12 +18,12 @@ public class MultiThreadedTest {
     @SuppressWarnings("unchecked")
     @Test
     void test() {
-        MapsMemoizer<Object, CaKe> mapsMemoizer = create(key -> CaKe.get(key.toString()), HashKind.K128, null);
-        AtomicBoolean complete = new AtomicBoolean();
-        CompletableFuture<Void> voider = CompletableFuture.runAsync(() -> {
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 100; j++) {
-                    Map<CaKe, Object> caKeMap = map(i, j);
+        var mapsMemoizer = create(key -> CaKe.get(key.toString()), HashKind.K128, null);
+        var complete = new AtomicBoolean();
+        var voider = CompletableFuture.runAsync(() -> {
+            for (var i = 0; i < 10; i++) {
+                for (var j = 0; j < 100; j++) {
+                    var caKeMap = map(i, j);
                     zz();
                     mapsMemoizer.putIfAbsent(i * 100 + j, caKeMap);
                 }
@@ -32,19 +32,19 @@ public class MultiThreadedTest {
             complete.set(true);
         });
 
-        int comparisons = 0;
-        for (int x = 0; x < 5 && !complete.get(); x++) {
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 100; j++) {
+        var comparisons = 0;
+        for (var x = 0; x < 5 && !complete.get(); x++) {
+            for (var i = 0; i < 10; i++) {
+                for (var j = 0; j < 100; j++) {
                     zz();
-                    Map<CaKe, ?> map = mapsMemoizer.get(i * 100 + j);
+                    var map = mapsMemoizer.get(i * 100 + j);
                     if (map != null) {
                         comparisons++;
-                        Map<CaKe, Object> cake = map(i, j);
+                        var cake = map(i, j);
                         assertEquals(cake.keySet(), map.keySet());
                         cake.keySet().forEach(key -> {
-                            Map<CaKe, ?> cakeValue = (Map<CaKe, ?>) cake.get(key);
-                            Map<CaKe, ?> mapValue = (Map<CaKe, ?>) map.get(key);
+                            var cakeValue = (Map<CaKe, ?>) cake.get(key);
+                            var mapValue = (Map<CaKe, ?>) map.get(key);
                             assertEquals(
                                 new TreeMap<>(cakeValue).toString(),
                                 new TreeMap<>(mapValue).toString(),

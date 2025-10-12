@@ -6,17 +6,17 @@ import module uplift.util;
 final class AwsLookup {
 
     static Optional<AwsAuth> get(String profile) {
-        Path credentials = Path.of(System.getProperty("user.home"))
+        var credentials = Path.of(System.getProperty("user.home"))
             .resolve(".aws")
             .resolve("credentials");
         try (
-            Stream<String> lines = Files.lines(credentials)
+            var lines = Files.lines(credentials)
                 .map(String::trim)
                 .dropWhile(notStartOf(profile))
                 .skip(1)
                 .takeWhile(AwsLookup::isProfile)
         ) {
-            Map<String, String> auths = Maps.indexBy(
+            var auths = Maps.indexBy(
                 lines.toList(),
                 line ->
                     line.substring(0, line.lastIndexOf(' '))
@@ -44,7 +44,7 @@ final class AwsLookup {
     }
 
     private static Predicate<String> notStartOf(String profile) {
-        String prefix = profile == null || profile.isBlank() ? "[default]" : "[" + profile + "]";
+        var prefix = profile == null || profile.isBlank() ? "[default]" : "[" + profile + "]";
         return line -> !line.startsWith(prefix);
     }
 

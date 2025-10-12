@@ -10,19 +10,19 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
     @SuppressWarnings("DuplicatedCode")
     @Override
     String loggableLine(LogEntry entry) {
-        ZonedDateTime dateTime = entry.zuluTime();
-        String formattedMessage = formatMessage(
+        var dateTime = entry.zuluTime();
+        var formattedMessage = formatMessage(
             entry.msg(),
             entry.args(),
             entry.lastArgThrowable() ? 1 : 0
         );
-        int year = dateTime.getYear();
-        int mon = dateTime.getMonthValue();
-        int day = dateTime.getDayOfMonth();
-        int hr = dateTime.getHour();
-        int min = dateTime.getMinute();
-        int sec = dateTime.getSecond();
-        StringBuilder sb = new StringBuilder()
+        var year = dateTime.getYear();
+        var mon = dateTime.getMonthValue();
+        var day = dateTime.getDayOfMonth();
+        var hr = dateTime.getHour();
+        var min = dateTime.getMinute();
+        var sec = dateTime.getSecond();
+        var sb = new StringBuilder()
             .append(year)
             .append("-")
             .append(pad(mon)).append(mon)

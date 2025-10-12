@@ -31,7 +31,7 @@ record ReqsImpl(URI uri) implements Reqs {
     ) {
         Objects.requireNonNull(method, "method");
         try {
-            HttpRequest.Builder base = HttpRequest.newBuilder(resolve(uri));
+            var base = HttpRequest.newBuilder(resolve(uri));
             if (headers != null) {
                 headers.forEach(base::header);
             }
@@ -43,7 +43,7 @@ record ReqsImpl(URI uri) implements Reqs {
             if (body != null && json) {
                 base.header("Content-Type", "application/json");
             }
-            try (HttpClient build = HttpClient.newBuilder().build()) {
+            try (var build = HttpClient.newBuilder().build()) {
                 return build.sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
             }
         } catch (Exception e) {

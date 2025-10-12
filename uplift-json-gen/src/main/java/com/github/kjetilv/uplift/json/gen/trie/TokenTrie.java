@@ -20,12 +20,12 @@ public class TokenTrie implements TokenResolver {
 
     @Override
     public Token.Field get(byte[] bytes) {
-        Trie t = this.root;
+        var t = this.root;
         do {
             if (t == null) {
                 return null;
             }
-            int pos = t.pos();
+            var pos = t.pos();
             if (bytes.length == pos) {
                 return t.field();
             }
@@ -39,12 +39,12 @@ public class TokenTrie implements TokenResolver {
 
     @Override
     public Token.Field get(byte[] bytes, int offset, int length) {
-        Trie t = this.root;
+        var t = this.root;
         do {
             if (t == null) {
                 return null;
             }
-            int pos = t.pos();
+            var pos = t.pos();
             if (length == pos) {
                 return t.field();
             }
@@ -58,19 +58,19 @@ public class TokenTrie implements TokenResolver {
 
     @Override
     public Token.Field get(IntUnaryOperator bytes, int offset, int length) {
-        Trie t = this.root;
+        var t = this.root;
         do {
             if (t == null) {
                 return null;
             }
-            int pos = t.pos();
+            var pos = t.pos();
             if (length == pos) {
                 return t.field();
             }
             if (length < pos) {
                 return null;
             }
-            int b = bytes.applyAsInt(offset + pos);
+            var b = bytes.applyAsInt(offset + pos);
             t = t.descend(b);
         } while (true);
     }

@@ -17,7 +17,7 @@ public interface Tokens {
     }
 
     default Tokens skipNext(Token expected) {
-        Token token = next();
+        var token = next();
         if (token == expected) {
             return this;
         }

@@ -26,7 +26,7 @@ public record LambdaPayload(
     }
 
     private static LambdaPayload payload(Object json, RequestIn req) {
-        String version = req.version();
+        var version = req.version();
         if (version == null) {
             return lambda10(req);
         }
@@ -133,7 +133,7 @@ public record LambdaPayload(
     }
 
     private static <V> String stringVal(Map<?, ? super V> map, String key) {
-        Object value = map.get(key);
+        var value = map.get(key);
         if (value != null) {
             return value.toString().trim();
         }

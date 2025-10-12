@@ -26,16 +26,16 @@ public final class Main {
     public static final Set<Integer> NO_DIVS = Set.of(3, 7, 9, 11, 13, 17, 19, 21, 23);
 
     static void main() {
-        Window window = new Window(Duration.ofMinutes(1), 128);
-        try (Arena arena = Arena.ofConfined()) {
-            Handler<Throwable, ThrowableInfo<K256>, K256> handler = Throwables.offHeap(
+        var window = new Window(Duration.ofMinutes(1), 128);
+        try (var arena = Arena.ofConfined()) {
+            var handler = Throwables.offHeap(
                 arena,
                 window,
                 K256,
                 4,
                 true
             );
-            IntConsumer intConsumer = intConsumer();
+            var intConsumer = intConsumer();
             Stream.of(
                     1,
                     2,
@@ -123,8 +123,8 @@ public final class Main {
     }
 
     private static void logSimple(Analysis<?> analysis, ThrowableInfo<K256> info) {
-        boolean brief = analysis.triggerHashCount() > 2;
-        Hash<?> hash = analysis.triggerHash();
+        var brief = analysis.triggerHashCount() > 2;
+        var hash = analysis.triggerHash();
         log.warn(
             "{} {}\n {} {}",
             info.causeChain(),
@@ -145,7 +145,7 @@ public final class Main {
     }
 
     private static IntConsumer intConsumer() {
-        DoubleAdder da = new DoubleAdder();
+        var da = new DoubleAdder();
         return i -> {
             log.info("Processing {}", i);
             if (i == 0) {

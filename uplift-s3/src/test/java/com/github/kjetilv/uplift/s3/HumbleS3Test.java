@@ -24,19 +24,19 @@ class HumbleS3Test {
             Env.actual(), HttpClient.newHttpClient(), "taninim-water", null);
 
         //        humbleS3Accessor.stream("ids.json").map(BytesIO::readUTF8).ifPresent(System.out::println);
-        Map<String, S3Accessor.RemoteInfo> abc = defaultS3Accessor.remoteInfos("abc");
+        var abc = defaultS3Accessor.remoteInfos("abc");
         assertThat(abc).isNotEmpty().allSatisfy((s, remoteInfo) ->
             assertThat(s).startsWith("abc"));
         System.out.println(abc);
 
-        String contents = UUID.randomUUID().toString();
+        var contents = UUID.randomUUID().toString();
         defaultS3Accessor.put(contents, "foobar.txt");
 
-        Optional<String> readFoobar = defaultS3Accessor.stream("foobar.txt")
+        var readFoobar = defaultS3Accessor.stream("foobar.txt")
             .map(BytesIO::readUTF8);
         assertThat(readFoobar).hasValue(contents);
 
-        Optional<String> rangedFoobar = defaultS3Accessor
+        var rangedFoobar = defaultS3Accessor
             .stream("foobar.txt", new Range(2L, 10L, 9L))
             .map(BytesIO::readUTF8);
         assertThat(rangedFoobar)

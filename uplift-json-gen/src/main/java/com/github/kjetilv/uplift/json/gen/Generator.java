@@ -14,9 +14,9 @@ record Generator(
 ) {
 
     void writeRW(TypeElement te) {
-        Name name = te.getQualifiedName();
-        JavaFileObject file = factoryFile(pe, te);
-        try (BufferedWriter bw = writer(file)) {
+        var name = te.getQualifiedName();
+        var file = factoryFile(pe, te);
+        try (var bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
@@ -70,9 +70,9 @@ record Generator(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
-        JavaFileObject file = writerFile(te);
-        try (BufferedWriter bw = writer(file)) {
-            Name name = te.getQualifiedName();
+        var file = writerFile(te);
+        try (var bw = writer(file)) {
+            var name = te.getQualifiedName();
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
@@ -125,9 +125,9 @@ record Generator(
         Collection<? extends Element> enums,
         boolean root
     ) {
-        Name name = te.getQualifiedName();
-        JavaFileObject file = callbackFile(te);
-        try (BufferedWriter bw = writer(file)) {
+        var name = te.getQualifiedName();
+        var file = callbackFile(te);
+        try (var bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
@@ -199,7 +199,7 @@ record Generator(
                     .toList()
             );
 
-            List<RecordAttribute> recordAttributes = te.getRecordComponents()
+            var recordAttributes = te.getRecordComponents()
                 .stream()
                 .filter(recordComponentElement ->
                     recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
@@ -229,12 +229,12 @@ record Generator(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
-        Name name = te.getQualifiedName();
-        JavaFileObject file = builderFile(te);
-        List<String> setters = te.getRecordComponents()
+        var name = te.getQualifiedName();
+        var file = builderFile(te);
+        var setters = te.getRecordComponents()
             .stream().flatMap(el ->
             {
-                TypeMirror type = el.asType();
+                var type = el.asType();
                 return Stream.of(
                     "    private " + print(type) + " " + fieldName(el) + ";",
                     "",
@@ -246,7 +246,7 @@ record Generator(
             })
             .toList();
 
-        List<String> adders = te.getRecordComponents()
+        var adders = te.getRecordComponents()
             .stream()
             .flatMap(element ->
                 listType(element, roots, enums)
@@ -264,7 +264,7 @@ record Generator(
             )
             .toList();
 
-        List<String> creatorStart = List.of(
+        var creatorStart = List.of(
             "    @Override",
             "    public " + unq(pe, name) + " get() {",
             "        return new " + unq(pe, name) + "("
@@ -275,15 +275,15 @@ record Generator(
             .map(el ->
                 "            " + fieldName(el) + ",")
             .collect(Collectors.toCollection(LinkedList::new));
-        String last = creatorMeat.removeLast();
+        var last = creatorMeat.removeLast();
         creatorMeat.addLast(last.substring(0, last.length() - 1));
 
-        List<String> creatorEnd = List.of(
+        var creatorEnd = List.of(
             "        );",
             "    }"
         );
 
-        try (BufferedWriter bw = writer(file)) {
+        try (var bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",

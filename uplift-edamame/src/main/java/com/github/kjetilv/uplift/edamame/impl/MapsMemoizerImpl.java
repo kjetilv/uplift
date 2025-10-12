@@ -53,7 +53,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     public Map<K, ?> get(I identifier) {
         requireNonNull(identifier, "identifier");
         return canonicalRead(() -> {
-            Hash<H> hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
+            var hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
             return hash != null ? canonicalObjects.get(hash)
                 : overflowReadLocked(() -> !overflowObjects.isEmpty()
                     ? overflowObjects.get(identifier)
@@ -86,8 +86,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private boolean put(I identifier, Map<?, ?> value, boolean requireAbsent) {
         requireNonNull(identifier, "identifier");
         requireNonNull(value, "value");
-        HashedTree<K, H> hashedTree = treeHasher.hash(value);
-        CanonicalValue<H> canonical = canonicalValues.canonical(hashedTree);
+        var hashedTree = treeHasher.hash(value);
+        var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
             case CanonicalValue.Node<?, H> node -> canonicalWrite(() ->
                 putCanonical(identifier, node, requireAbsent)
@@ -103,10 +103,10 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         if (complete.get()) {
             return fail(this + " is complete, cannot put " + identifier);
         }
-        Hash<H> existingHash = memoizedHashes.putIfAbsent(identifier, valueNode.hash());
+        var existingHash = memoizedHashes.putIfAbsent(identifier, valueNode.hash());
         if (existingHash == null) {
-            Map<K, Object> value = (Map<K, Object>) valueNode.value();
-            Map<K, Object> existingValue = canonicalObjects.putIfAbsent(valueNode.hash(), value);
+            var value = (Map<K, Object>) valueNode.value();
+            var existingValue = canonicalObjects.putIfAbsent(valueNode.hash(), value);
             if (existingValue == null || existingValue.equals(value)) {
                 return true;
             }
@@ -125,8 +125,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private String doDescribe() {
         int overflowsCount = overflowReadLocked(overflowObjects::size);
         return canonicalRead(() -> {
-            int count = memoizedHashes.size();
-            int canonicalsSize = canonicalObjects.size();
+            var count = memoizedHashes.size();
+            var canonicalsSize = canonicalObjects.size();
             return (count + overflowsCount) +
                    " items" +
                    (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +

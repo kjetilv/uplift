@@ -41,34 +41,34 @@ public class ReadBenchmark {
     static void main() throws IOException {
         System.out.println("OK");
 
-        List<String> lines = Files.readAllLines(PATH_L, UTF_8);
+        var lines = Files.readAllLines(PATH_L, UTF_8);
 
-        Instant initTime = Instant.now();
+        var initTime = Instant.now();
         System.out.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
             .toMillis());
 
-        LongAdder longAdder = new LongAdder();
+        var longAdder = new LongAdder();
         doUplift(lines, longAdder, 4);
         doJackson(lines, longAdder, 4);
 
         System.out.println("Warmed up");
         System.gc();
 
-        Instant jacksonNow = Instant.now();
+        var jacksonNow = Instant.now();
 
         doJackson(lines, longAdder, 1);
-        Duration jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
+        var jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
 
-        Instant upliftNow = Instant.now();
+        var upliftNow = Instant.now();
         doUplift(lines, longAdder, 1);
-        Duration upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
+        var upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
         System.out.println("Uplift:" + longAdder + ": " + upliftTime);
         System.gc();
 
-        String perc = perc(jacksonTime, upliftTime);
+        var perc = perc(jacksonTime, upliftTime);
         System.out.println("Jackson spent " + perc + "% of the time uplift did");
-        String perc2 = perc(upliftTime, upliftTime.plus(jacksonTime));
+        var perc2 = perc(upliftTime, upliftTime.plus(jacksonTime));
         System.out.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
     }
 
@@ -102,9 +102,9 @@ public class ReadBenchmark {
 
     static {
         try (
-            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            var out = new ByteArrayOutputStream()
         ) {
-            try (InputStream inputStream = RESOURCE.openStream()) {
+            try (var inputStream = RESOURCE.openStream()) {
                 inputStream.transferTo(out);
             }
             data = out.toByteArray();
@@ -112,12 +112,12 @@ public class ReadBenchmark {
             throw new RuntimeException(e);
         }
         try (
-            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            var out = new ByteArrayOutputStream()
         ) {
-            try (InputStream inputStream = RESOURCE_L.openStream()) {
+            try (var inputStream = RESOURCE_L.openStream()) {
                 inputStream.transferTo(out);
             }
-            List<String> stream = Arrays.stream(new String(out.toByteArray(), UTF_8)
+            var stream = Arrays.stream(new String(out.toByteArray(), UTF_8)
                     .split("\n"))
                 .toList();
             datas = stream.stream()
@@ -131,9 +131,9 @@ public class ReadBenchmark {
     }
 
     private static void doUplift(List<String> lines, LongAdder longAdder, int split) {
-        for (int i = 0; i < X / split; i++) {
-            for (String line : lines) {
-                Tweet tweet = reader.read(line);
+        for (var i = 0; i < X / split; i++) {
+            for (var line : lines) {
+                var tweet = reader.read(line);
                 longAdder.add(tweet == null ? 0 : 1);
             }
         }
@@ -141,9 +141,9 @@ public class ReadBenchmark {
 
     private static void doJackson(List<String> lines, LongAdder longAdder, int split) {
         try {
-            for (int i = 0; i < X / split; i++) {
-                for (String line : lines) {
-                    Tweet tweet = objectMapper.readValue(line, Tweet.class);
+            for (var i = 0; i < X / split; i++) {
+                for (var line : lines) {
+                    var tweet = objectMapper.readValue(line, Tweet.class);
                     longAdder.add(tweet == null ? 0 : 1);
                 }
             }

@@ -65,7 +65,7 @@ public interface Json {
     }
 
     default String write(Object object) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (var baos = new ByteArrayOutputStream()) {
             write(object, baos);
             return baos.toString(UTF_8);
         } catch (Exception e) {
