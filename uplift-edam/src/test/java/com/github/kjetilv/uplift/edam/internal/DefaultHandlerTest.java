@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.edam.internal;
 
 import com.github.kjetilv.uplift.edam.*;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;

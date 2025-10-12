@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.Hashes;
 import org.junit.jupiter.api.Test;
 

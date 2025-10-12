@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.kernel.util;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.*;
-import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.hash.Hashes;

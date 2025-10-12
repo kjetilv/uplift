@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.hash;
 
-import com.github.kjetilv.uplift.hash.HashKind.K128;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -1,11 +1,9 @@
 package com.github.kjetilv.uplift.edam.ex;
 
 import com.github.kjetilv.uplift.edam.Analysis;
-import com.github.kjetilv.uplift.edam.Handler;
 import com.github.kjetilv.uplift.edam.Window;
 import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 import com.github.kjetilv.uplift.edam.throwables.Throwables;
-import com.github.kjetilv.uplift.hash.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

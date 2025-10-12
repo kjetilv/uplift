@@ -5,15 +5,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.JsonReader;
-import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
 

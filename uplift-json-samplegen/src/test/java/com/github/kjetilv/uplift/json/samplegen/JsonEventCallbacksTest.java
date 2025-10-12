@@ -6,8 +6,6 @@ import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;

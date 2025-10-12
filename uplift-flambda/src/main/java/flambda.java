@@ -2,8 +2,6 @@ import module java.base;
 import module uplift.flambda;
 import module uplift.flogs;
 
-import org.slf4j.Logger;
-
 import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 
 @SuppressWarnings("MagicNumber")

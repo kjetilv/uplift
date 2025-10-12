@@ -11,7 +11,6 @@ import org.openjdk.jmh.annotations.Warmup;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;

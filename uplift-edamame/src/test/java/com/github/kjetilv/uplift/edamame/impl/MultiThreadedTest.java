@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import com.github.kjetilv.uplift.edamame.MapsMemoizer;
 import com.github.kjetilv.uplift.hash.HashKind;
 import org.junit.jupiter.api.Test;
 

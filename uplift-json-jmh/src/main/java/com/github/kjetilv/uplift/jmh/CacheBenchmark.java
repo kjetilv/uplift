@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.jmh;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.JsonSession;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import com.github.kjetilv.uplift.util.Gunzip;
 import org.openjdk.jmh.annotations.*;
@@ -13,7 +11,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 

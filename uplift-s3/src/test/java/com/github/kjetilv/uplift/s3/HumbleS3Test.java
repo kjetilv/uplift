@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpClient;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;

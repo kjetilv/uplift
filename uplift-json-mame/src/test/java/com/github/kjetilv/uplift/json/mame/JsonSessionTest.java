@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.json.mame;
 
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
-import com.github.kjetilv.uplift.json.JsonSession;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
