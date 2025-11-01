@@ -121,8 +121,8 @@ class OffHeapStorageTest {
                 new OffHeapIndexer128(arena, Object::hashCode, 10),
                 arena
             );
-            var occurrenceA = new Occurrence<>(Instant.now(), HashKind.K128.random());
-            var occurrenceB = new Occurrence<>(Instant.now().minusSeconds(1), HashKind.K128.random());
+            var occurrenceA = new Occurrence<>(Instant.now(), K128.random());
+            var occurrenceB = new Occurrence<>(Instant.now().minusSeconds(1), K128.random());
             storage.store(occurrenceA);
             assertEquals(occurrenceA, storage.get(0));
 

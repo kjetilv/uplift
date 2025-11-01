@@ -10,7 +10,7 @@ public final class Gunzip {
         if (url == null) {
             throw new IllegalArgumentException("Could not find resource: " + resource);
         }
-        Path source = sourcePath(resource, url);
+        var source = sourcePath(resource, url);
         return to(source, tempVersion(source));
     }
 
