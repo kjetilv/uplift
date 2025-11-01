@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
@@ -144,7 +145,9 @@ public record Invocation<Q, R>(
     }
 
     Map<String, Object> toResult() {
-        return result().toMap();
+        return Optional.ofNullable(result())
+            .map(LambdaResult::toMap)
+            .orElseGet(Map::of);
     }
 
     Duration timeTaken() {

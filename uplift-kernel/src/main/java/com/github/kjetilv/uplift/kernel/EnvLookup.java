@@ -13,36 +13,46 @@ public final class EnvLookup {
     private static final Logger log = LoggerFactory.getLogger(EnvLookup.class);
 
     @SuppressWarnings("SameParameterValue")
-    public static String getRequired(String property) {
-        return get(property, property, true);
+    public static String get(String property) {
+        return getOptional(property, property, true)
+            .orElseThrow(missing(property, property));
+    }
+
+    public static Optional<String> maybeGet(String property) {
+        return getOptional(property, property, false);
     }
 
     public static String get(String systemProperty, String environmentVariable) {
-        return get(systemProperty, environmentVariable, false);
-    }
-
-    public static String get(
-        String systemProperty,
-        String environmentVariable,
-        boolean required
-    ) {
-        var value = cache.computeIfAbsent(
-            systemProperty + environmentVariable + required,
-            _ ->
-                resolve(systemProperty, environmentVariable, required)
-        );
-        return required
-            ? value.orElseThrow(missing(systemProperty, environmentVariable))
-            : value.orElse(null);
+        return getOptional(systemProperty, environmentVariable, false).orElse(null);
     }
 
     private EnvLookup() {
-
     }
 
     private static final Map<String, Optional<String>> cache = new ConcurrentHashMap<>();
 
-    private static Optional<String> resolve(String systemProperty, String environmentVariable, boolean required) {
+    private static Optional<String> getOptional(
+        String systemProperty,
+        String environmentVariable,
+        boolean required
+    ) {
+        return cache.computeIfAbsent(
+            String.join(
+                "-",
+                systemProperty,
+                environmentVariable,
+                required ? "required" : "optional"
+            ),
+            _ ->
+                resolve(systemProperty, environmentVariable, required)
+        );
+    }
+
+    private static Optional<String> resolve(
+        String systemProperty,
+        String environmentVariable,
+        boolean required
+    ) {
         var property = systemProperty(systemProperty)
             .or(() ->
                 systemProperty(environmentVariable))
@@ -66,16 +76,18 @@ public final class EnvLookup {
         if (required) {
             log.error("Missing: {}/{}", systemProperty, environmentVariable);
         } else {
-            log.warn("Missing: {}/{}", systemProperty, environmentVariable);
+            log.debug("Not found in environment {}/{}", systemProperty, environmentVariable);
         }
     }
 
     private static Optional<String> systemProperty(String systemProperty) {
-        return Optional.ofNullable(systemProperty).map(System::getProperty);
+        return Optional.ofNullable(systemProperty)
+            .map(System::getProperty);
     }
 
     private static Optional<String> environmentVariable(String environmentVariable) {
-        return Optional.ofNullable(environmentVariable).map(System::getenv);
+        return Optional.ofNullable(environmentVariable)
+            .map(System::getenv);
     }
 
     private static void log(String systemProperty, String environmentVariable, String s) {

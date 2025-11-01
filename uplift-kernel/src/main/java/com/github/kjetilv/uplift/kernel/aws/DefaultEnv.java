@@ -16,7 +16,7 @@ public final class DefaultEnv implements Env {
 
     @Override
     public String awsLambdaRuntimeApi() {
-        return EnvLookup.getRequired("AWS_LAMBDA_RUNTIME_API");
+        return EnvLookup.maybeGet("AWS_LAMBDA_RUNTIME_API").orElse("localhost:9001");
     }
 
     @Override

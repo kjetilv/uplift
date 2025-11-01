@@ -45,6 +45,8 @@ final class DefaultS3Accessor implements S3Accessor {
         this.sessionToken = env.sessionToken();
         this.bucket = requireNonNull(bucket, "bucket");
         this.region = region == null || region.isBlank() ? "eu-north-1" : region;
+
+        log.info("{}} created", this);
     }
 
     @Override

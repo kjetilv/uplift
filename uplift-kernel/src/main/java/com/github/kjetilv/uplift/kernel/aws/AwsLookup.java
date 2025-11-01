@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 final class AwsLookup {
 
@@ -38,13 +39,23 @@ final class AwsLookup {
                         )
                         .findFirst()
                         .map(value ->
-                            new AwsAuth(key, value)));
+                            new AwsAuth(valueOf(key), valueOf(value))));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private AwsLookup() {
+    }
+
+    private static final Pattern SPLIT = Pattern.compile("\\s*=\\s*");
+
+    private static String valueOf(String value) {
+        String[] pair = SPLIT.split(value, 2);
+        if (pair.length == 2) {
+            return pair[1];
+        }
+        throw new IllegalArgumentException("Not a good pair: " + value);
     }
 
     private static Predicate<String> notStartOf(String profile) {

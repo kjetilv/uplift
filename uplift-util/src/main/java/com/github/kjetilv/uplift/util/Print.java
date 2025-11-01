@@ -13,7 +13,7 @@ public final class Print {
         if (length < 5) {
             return semi.charAt(0) + "***".substring(0, length - 1);
         }
-        var printable = length / 3;
+        var printable = Math.min(5, length / 4);
         return semi.substring(0, printable) + "***" + semi.substring(length - printable);
     }
 
