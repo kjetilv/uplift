@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
 import com.github.kjetilv.uplift.json.io.ReadException;
-import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
