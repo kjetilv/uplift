@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import module uplift.util;
+import com.github.kjetilv.uplift.util.Bytes;
 
 /// Strategy interface for key handling.  [Normalizes][#normalize(Object)] arbitrary objects into keys,
 /// and provides a way to [byte-encode][#bytes(Object)] keys for hashing purposes.

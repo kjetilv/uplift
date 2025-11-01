@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.hash;
 
 import module java.base;
-import module uplift.util;
+
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.hash.Hash.H128;
 import static com.github.kjetilv.uplift.hash.Hash.H256;

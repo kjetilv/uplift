@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.s3.auth;
 
-import module java.base;
+import java.net.URI;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAccessor;
 
 class AbstractSigner {
 

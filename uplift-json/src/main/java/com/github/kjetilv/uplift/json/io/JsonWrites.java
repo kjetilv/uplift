@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
-import module uplift.json;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 public final class JsonWrites {
 

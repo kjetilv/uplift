@@ -1,9 +1,11 @@
 package com.github.kjetilv.uplift.json.mame;
 
 import module java.base;
-import module uplift.edamame;
-import module uplift.hash;
-import module uplift.json;
+import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
 

@@ -1,7 +1,12 @@
 package com.github.kjetilv.uplift.lambda;
 
-import module java.base;
-import module java.net.http;
+import java.io.InputStream;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 

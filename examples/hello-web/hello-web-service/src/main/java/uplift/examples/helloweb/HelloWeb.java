@@ -1,10 +1,10 @@
 package uplift.examples.helloweb;
 
-import java.util.Optional;
-
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaPayload;
 import com.github.kjetilv.uplift.lambda.LambdaResult;
+
+import java.util.Optional;
 
 public final class HelloWeb implements LambdaHandler {
 

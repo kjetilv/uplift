@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
 
-public record StreamSink(ByteArrayOutputStream baos) implements Sink {
+record StreamSink(ByteArrayOutputStream baos) implements Sink {
 
-    public StreamSink {
+    StreamSink {
         Objects.requireNonNull(baos, "baos");
     }
 

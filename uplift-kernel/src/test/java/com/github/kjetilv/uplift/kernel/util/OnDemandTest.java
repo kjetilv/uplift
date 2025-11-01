@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.kernel.util;
 
+import com.github.kjetilv.uplift.util.OnDemand;
+import org.junit.jupiter.api.Test;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
-
-import com.github.kjetilv.uplift.util.OnDemand;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

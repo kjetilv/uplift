@@ -1,9 +1,19 @@
 package com.github.kjetilv.uplift.lambda;
 
-import module java.base;
-import module java.net.http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.net.ConnectException;
+import java.net.http.HttpConnectTimeoutException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -58,7 +68,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     public void run() {
         log.info("Loop started");
         try (
-            var stages = new Stages<Invocation<Q, R>>(source::next);
+            var stages = new Stages<>(source::next);
             var stream = stages.stages()
         ) {
             stream.map(this::toFuture)

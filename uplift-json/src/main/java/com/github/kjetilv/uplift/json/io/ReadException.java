@@ -9,5 +9,4 @@ public final class ReadException extends RuntimeException {
     public ReadException(String msg, String details) {
         super(msg + ": " + details);
     }
-
 }

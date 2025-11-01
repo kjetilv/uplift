@@ -1,8 +1,11 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
-import module uplift.json;
-import module uplift.util;
+import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.Tokens;
+import com.github.kjetilv.uplift.json.io.ReadException;
 
 public final class BytesSourceTokens implements Tokens {
 

@@ -1,6 +1,11 @@
 package com.github.kjetilv.uplift.flambda;
 
-import module java.base;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 final class Synced<K, V> {
 

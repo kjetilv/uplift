@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.edamame;
 
 import module java.base;
-import module uplift.hash;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import static com.github.kjetilv.uplift.util.Collectioons.transform;
 import static com.github.kjetilv.uplift.util.Maps.transformValues;

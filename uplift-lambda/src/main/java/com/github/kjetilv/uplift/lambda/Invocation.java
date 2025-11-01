@@ -1,6 +1,12 @@
 package com.github.kjetilv.uplift.lambda;
 
-import module java.base;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 public record Invocation<Q, R>(
     Instant created,

@@ -1,7 +1,10 @@
 package com.github.kjetilv.uplift.json.events;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.JsonWriter;
+import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
+import com.github.kjetilv.uplift.json.io.Sink;
 
 abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<R, T, B> {
 

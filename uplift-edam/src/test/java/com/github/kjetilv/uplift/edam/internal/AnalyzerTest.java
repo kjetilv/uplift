@@ -2,10 +2,10 @@ package com.github.kjetilv.uplift.edam.internal;
 
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Window;
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.Hashes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

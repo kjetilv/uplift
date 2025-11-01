@@ -1,16 +1,14 @@
 package com.github.kjetilv.uplift.jmh;
 
+import module java.base;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import com.github.kjetilv.uplift.util.Gunzip;
-import org.openjdk.jmh.annotations.*;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Warmup;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 

@@ -1,8 +1,11 @@
 package com.github.kjetilv.uplift.s3;
 
 import module java.base;
-import module java.net.http;
-import module uplift.kernel;
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.EnvLookup;
+import com.github.kjetilv.uplift.kernel.io.Range;
+
+import java.net.http.HttpClient;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 

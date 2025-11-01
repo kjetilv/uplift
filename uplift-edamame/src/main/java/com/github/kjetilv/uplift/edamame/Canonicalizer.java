@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import module uplift.hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 @FunctionalInterface
 public interface Canonicalizer<K, H extends HashKind<H>> {

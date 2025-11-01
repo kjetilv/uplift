@@ -6,11 +6,11 @@ import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonEventCallbacksTest {
 

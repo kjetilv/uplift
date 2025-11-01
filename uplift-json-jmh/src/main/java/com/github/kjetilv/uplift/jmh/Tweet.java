@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.jmh;
 
+import module java.base;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
-
-import java.net.URI;
-import java.util.List;
 
 @JsonRecord
 public record Tweet(

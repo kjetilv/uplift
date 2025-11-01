@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edam.Handler;
+import com.github.kjetilv.uplift.edam.Handling;
+import com.github.kjetilv.uplift.edam.Info;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import static java.util.Objects.requireNonNull;
 

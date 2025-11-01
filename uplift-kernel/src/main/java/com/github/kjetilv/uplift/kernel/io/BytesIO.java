@@ -1,7 +1,15 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import module java.base;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.uuid.Uuid;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
@@ -32,10 +40,14 @@ public final class BytesIO {
         );
     }
 
-    public static String readString(DataInput input) throws IOException {
+    public static String readString(DataInput input) {
         var userIdLength = readInt(input);
         var bytes = new byte[userIdLength];
-        input.readFully(bytes);
+        try {
+            input.readFully(bytes);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read string", e);
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 

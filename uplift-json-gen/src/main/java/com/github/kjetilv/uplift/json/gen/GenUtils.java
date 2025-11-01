@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import module uplift.json;
-import module uplift.json.anno;
 import com.github.kjetilv.uplift.json.anno.Field;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.anno.Singular;
 
 final class GenUtils {
 

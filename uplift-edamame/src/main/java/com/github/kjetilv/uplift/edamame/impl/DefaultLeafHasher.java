@@ -1,8 +1,12 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
-import module uplift.edamame;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edamame.LeafHasher;
+import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 /// This default [leaf hasher][LeafHasher] supports typical Java classes, often
 /// found in trees.

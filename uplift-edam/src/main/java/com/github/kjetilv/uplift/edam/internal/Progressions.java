@@ -1,8 +1,12 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edam.patterns.HashPattern;
+import com.github.kjetilv.uplift.edam.patterns.Occurrence;
+import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
+import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 record Progressions<K extends HashKind<K>>(
     Occurrence<K> current,

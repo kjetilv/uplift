@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import module uplift.json;
+import com.github.kjetilv.uplift.json.io.ReadException;
 
 public interface Tokens {
 

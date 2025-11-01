@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.edam.throwables;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edam.Info;
+import com.github.kjetilv.uplift.edam.patterns.Occurrence;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 public record ThrowableInfo<K extends HashKind<K>>(
     Throwable source,

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
-import module uplift.asynchttp;
 
 import static java.util.Objects.requireNonNull;
 

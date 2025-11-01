@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edam.HashFun;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<Hash<K>>
     permits AbstractOffHeapIndexer, OnHeapIndexer {

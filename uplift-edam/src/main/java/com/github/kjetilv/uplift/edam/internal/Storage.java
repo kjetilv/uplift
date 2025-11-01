@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edam.patterns.Occurrence;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 interface Storage<K extends HashKind<K>> extends LongFunction<Occurrence<K>> {
 

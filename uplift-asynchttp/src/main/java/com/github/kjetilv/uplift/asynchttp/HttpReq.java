@@ -1,10 +1,12 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
-import module uplift.kernel;
-import module uplift.util;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.kernel.http.QueryParams;
+import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.util.ToStrings;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
+import static com.github.kjetilv.uplift.kernel.io.BytesIO.nonNull;
 import static com.github.kjetilv.uplift.util.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -41,7 +43,7 @@ public record HttpReq(
         this.path = requireNonNull(path, "path");
         this.queryParams = CaseInsensitiveHashMap.wrap(queryParams);
         this.headers = CaseInsensitiveHashMap.wrap(headers);
-        this.body = BytesIO.nonNull(body);
+        this.body = nonNull(body);
         this.id = requireNonNull(id, "id");
     }
 

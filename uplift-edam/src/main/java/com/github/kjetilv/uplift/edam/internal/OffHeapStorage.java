@@ -2,9 +2,10 @@ package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
 import module jdk.incubator.vector;
-import module uplift.edam;
-import module uplift.hash;
-import module uplift.util;
+import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.edam.patterns.Occurrence;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.sequenceLayout;

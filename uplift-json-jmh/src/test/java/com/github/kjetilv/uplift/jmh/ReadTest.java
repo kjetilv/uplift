@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.jmh;
 
+import module java.base;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,11 +9,6 @@ import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -10,13 +10,7 @@ public final class Gunzip {
         if (url == null) {
             throw new IllegalArgumentException("Could not find resource: " + resource);
         }
-        Path source;
-        try {
-            var uri = url.toURI();
-            source = Paths.get(uri);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Could not resolve path for resource: " + resource, e);
-        }
+        Path source = sourcePath(resource, url);
         return to(source, tempVersion(source));
     }
 
@@ -26,7 +20,7 @@ public final class Gunzip {
 
     public static Path to(Path source, Path target) {
         try (
-            InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(source)));
+            var is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(source)));
             var os = new BufferedOutputStream(Files.newOutputStream(target))
         ) {
             is.transferTo(os);
@@ -37,7 +31,14 @@ public final class Gunzip {
     }
 
     private Gunzip() {
+    }
 
+    private static Path sourcePath(String resource, URL url) {
+        try {
+            return Paths.get(url.toURI());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not resolve path for resource: " + resource, e);
+        }
     }
 
     private static Path tempVersion(Path source) {

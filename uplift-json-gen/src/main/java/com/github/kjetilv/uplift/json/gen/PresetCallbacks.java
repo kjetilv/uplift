@@ -1,7 +1,10 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.callbacks.NullCallbacks;
 
 public final class PresetCallbacks<B extends Supplier<T>, T extends Record> implements Callbacks {
 

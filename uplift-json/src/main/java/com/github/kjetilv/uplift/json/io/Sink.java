@@ -1,6 +1,16 @@
 package com.github.kjetilv.uplift.json.io;
 
+import java.io.ByteArrayOutputStream;
+
 public sealed interface Sink permits StreamSink, StringSink {
+
+    static Sink stream(ByteArrayOutputStream baos) {
+        return new StreamSink(baos);
+    }
+
+    static Sink stream(StringBuilder stringBuilder) {
+        return new StringSink(stringBuilder);
+    }
 
     default Sink accept(Object obj) {
         return accept(obj.toString());

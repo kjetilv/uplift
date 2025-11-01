@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.s3;
 
-import module java.base;
-import module uplift.kernel;
+import com.github.kjetilv.uplift.kernel.Env;
 
 @FunctionalInterface
 public interface S3AccessorFactory {

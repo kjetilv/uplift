@@ -1,11 +1,26 @@
 package com.github.kjetilv.uplift.flambda;
 
-import module java.base;
-import module uplift.asynchttp;
-import module uplift.lambda;
-import module uplift.util;
+import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
+import com.github.kjetilv.uplift.asynchttp.HttpReq;
+import com.github.kjetilv.uplift.asynchttp.HttpRes;
+import com.github.kjetilv.uplift.lambda.RequestOut;
+import com.github.kjetilv.uplift.lambda.ResponseIn;
+import com.github.kjetilv.uplift.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 

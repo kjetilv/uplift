@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.edam;
 
 import com.github.kjetilv.uplift.edam.patterns.HashPattern;
-import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
+import com.github.kjetilv.uplift.hash.Hash;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
-import module uplift.edamame;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import static java.util.Objects.requireNonNull;
 
@@ -38,7 +39,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private Canonicalizer<K, H> canonicalValues;
 
     /// @param canonicalValues Not null
-    /// @see MapsMemoizers#create(KeyHandler, HashKind)
+    /// @see MapsMemoizers#create(com.github.kjetilv.uplift.edamame.KeyHandler, HashKind)
     MapsMemoizerImpl(TreeHasher<K, H> treeHasher, Canonicalizer<K, H> canonicalValues) {
         this.treeHasher = requireNonNull(treeHasher, "mapHasher");
         this.canonicalValues = requireNonNull(canonicalValues, "canonicalValues");

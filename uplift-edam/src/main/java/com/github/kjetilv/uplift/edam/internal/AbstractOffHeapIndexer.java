@@ -1,9 +1,12 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
-import module uplift.util;
+import com.github.kjetilv.uplift.edam.HashFun;
+import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;

@@ -1,19 +1,12 @@
 package com.github.kjetilv.uplift.edam.ex;
 
+import module java.base;
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Window;
 import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 import com.github.kjetilv.uplift.edam.throwables.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.foreign.Arena;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Set;
-import java.util.concurrent.atomic.DoubleAdder;
-import java.util.function.IntConsumer;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
 
@@ -118,6 +111,9 @@ public final class Main {
                     }
                 });
         }
+    }
+
+    private Main() {
     }
 
     private static void logSimple(Analysis<?> analysis, ThrowableInfo<K256> info) {

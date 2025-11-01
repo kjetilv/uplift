@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.json.mame;
 
 import module java.base;
-import module uplift.hash;
-import module uplift.json;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.json.JsonSession;
 
 @SuppressWarnings("unused")
 public final class CachingJsonSessions {

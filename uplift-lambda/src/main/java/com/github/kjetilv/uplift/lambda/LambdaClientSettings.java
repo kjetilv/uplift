@@ -1,7 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
-import module java.base;
-import module uplift.kernel;
+import com.github.kjetilv.uplift.kernel.Env;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 

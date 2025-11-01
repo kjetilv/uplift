@@ -2,7 +2,9 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 

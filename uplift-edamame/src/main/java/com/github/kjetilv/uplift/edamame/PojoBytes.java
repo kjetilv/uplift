@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.edamame;
 
-import module uplift.hash;
-import module uplift.util;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 /// Say you have a Java object.  How do you turn it into a byte array for hashing?  This interface knows how.
 ///

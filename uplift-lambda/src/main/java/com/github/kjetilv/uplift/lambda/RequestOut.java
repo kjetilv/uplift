@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
-import module java.base;
-import module uplift.json.anno;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
+
+import java.util.Map;
 
 @JsonRecord
 public record RequestOut(

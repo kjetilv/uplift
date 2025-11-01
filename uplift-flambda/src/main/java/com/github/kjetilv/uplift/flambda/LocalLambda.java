@@ -1,7 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
-import module java.base;
-import module uplift.asynchttp;
+import com.github.kjetilv.uplift.asynchttp.*;
+
+import java.io.Closeable;
+import java.net.URI;
+import java.time.Duration;
 
 /// Emulates AWS lambda service.
 @SuppressWarnings("unused")

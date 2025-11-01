@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json.callbacks;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 public final class ListCallbacks implements Callbacks {
 

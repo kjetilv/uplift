@@ -1,16 +1,21 @@
 package com.github.kjetilv.uplift.s3;
 
 import module java.base;
-import module java.net.http;
-import module uplift.kernel;
-import module uplift.s3;
-import module uplift.util;
+import com.github.kjetilv.uplift.kernel.Env;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.kernel.io.Range;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthHeaderSigner;
 import com.github.kjetilv.uplift.s3.auth.AwsAuthQueryParamSigner;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import com.github.kjetilv.uplift.s3.util.Xml;
+import com.github.kjetilv.uplift.util.Maps;
+import com.github.kjetilv.uplift.util.Print;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;

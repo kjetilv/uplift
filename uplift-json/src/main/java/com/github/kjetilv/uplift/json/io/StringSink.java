@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
 
-public record StringSink(StringBuilder sb) implements Sink {
+record StringSink(StringBuilder sb) implements Sink {
 
-    public StringSink {
+    StringSink {
         Objects.requireNonNull(sb, "sb");
     }
 

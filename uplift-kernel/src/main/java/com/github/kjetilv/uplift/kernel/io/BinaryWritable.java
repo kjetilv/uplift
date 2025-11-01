@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import module java.base;
+import java.io.DataOutput;
 
 @FunctionalInterface
 public interface BinaryWritable {

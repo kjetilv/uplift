@@ -1,7 +1,12 @@
 package com.github.kjetilv.uplift.json;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
+import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
+import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
+import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
+import com.github.kjetilv.uplift.json.io.JsonWrites;
+import com.github.kjetilv.uplift.json.io.Sink;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -79,21 +84,21 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public String write(Object object) {
         var sb = new StringBuilder();
-        JsonWrites.write(new StringSink(sb), object);
+        JsonWrites.write(Sink.stream(sb), object);
         return sb.toString();
     }
 
     @Override
     public byte[] writeBytes(Object object) {
         var baos = new ByteArrayOutputStream();
-        JsonWrites.write(new StreamSink(baos), object);
+        JsonWrites.write(Sink.stream(baos), object);
         return baos.toByteArray();
     }
 
     @Override
     public void write(Object object, OutputStream outputStream) {
         var baos = new ByteArrayOutputStream();
-        JsonWrites.write(new StreamSink(baos), object);
+        JsonWrites.write(Sink.stream(baos), object);
     }
 
     private Object process(BytesSource bytesSource) {

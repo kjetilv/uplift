@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json.events;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.io.Sink;
 
 public final class BytesJsonWriter<T extends Record> extends AbstractJsonWriter<T, ByteArrayOutputStream, byte[]> {
 
@@ -16,7 +17,7 @@ public final class BytesJsonWriter<T extends Record> extends AbstractJsonWriter<
 
     @Override
     protected Sink output(ByteArrayOutputStream out) {
-        return new StreamSink(out);
+        return Sink.stream(out);
     }
 
     @Override

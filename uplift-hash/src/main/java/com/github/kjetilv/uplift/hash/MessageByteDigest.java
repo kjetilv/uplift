@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
 import module java.base;
-import module uplift.util;
+import com.github.kjetilv.uplift.util.Bytes;
 
 /// Maintains a simple pool of non-trivially-created instances of [MessageDigest], in the form of a queue.
 /// On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.

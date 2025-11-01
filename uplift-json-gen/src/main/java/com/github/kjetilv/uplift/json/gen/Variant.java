@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 

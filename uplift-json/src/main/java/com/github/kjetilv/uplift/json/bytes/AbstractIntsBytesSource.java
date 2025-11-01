@@ -1,8 +1,9 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
-import module uplift.json;
-import module uplift.util;
+import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.io.ReadException;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static java.lang.Character.isDigit;
 
@@ -206,7 +207,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return isDigit(peek) || peek == '.';
     }
 
-    private void fail(String msg) throws ReadException {
+    private void fail(String msg) {
         throw new ReadException(msg, "`" + lexeme().string() + "`");
     }
 

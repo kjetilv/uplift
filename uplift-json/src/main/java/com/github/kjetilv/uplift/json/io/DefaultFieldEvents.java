@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 
 public class DefaultFieldEvents extends AbstractFieldEvents {
 

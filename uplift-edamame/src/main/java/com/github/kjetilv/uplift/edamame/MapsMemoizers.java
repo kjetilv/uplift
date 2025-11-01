@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.edamame;
 
 import module java.base;
-import module uplift.hash;
 import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 /// Factory methods for [MapsMemoizer]s.
 public final class MapsMemoizers {

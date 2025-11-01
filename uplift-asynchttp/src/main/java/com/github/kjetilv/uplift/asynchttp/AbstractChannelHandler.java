@@ -44,21 +44,17 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
         log.warn("Failed to read: {}", state, exc);
     }
 
-    protected Processing handlePreflight(Object request, boolean post) {
+    protected Processing handlePreflight(boolean post) {
         return writeResponse(
             post
                 ? PREFLIGHT_HEADERS_POST
-                : PREFLIGHT_HEADERS,
-            "Preflight handled: {}",
-            request
+                : PREFLIGHT_HEADERS
         );
     }
 
-    protected Processing handleHealth(Object request) {
+    protected Processing handleHealth() {
         return writeResponse(
-            HEALTH_HEADERS,
-            "Health handled: {}",
-            request
+            HEALTH_HEADERS
         );
     }
 
@@ -123,7 +119,7 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
         return true;
     }
 
-    private Processing writeResponse(ByteBuffer headerBuffer, Object... values) {
+    private Processing writeResponse(ByteBuffer headerBuffer) {
         try (var writer = responseWriter()) {
             writer.write(new WritableBuffer<>(headerBuffer, headerBuffer.capacity()));
         }

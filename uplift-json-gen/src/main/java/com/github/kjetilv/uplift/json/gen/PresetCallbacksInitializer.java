@@ -2,9 +2,11 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import module uplift.json;
-import module uplift.json.gen;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
+import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -273,6 +275,8 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         }
     }
 
+    private static final Pattern BACKSLASHES = Pattern.compile("\\\\");
+
     private static Token.Field canonical(TokenResolver tokenResolver, Token.Field token) {
         var resolve = tokenResolver.get(token);
         if (resolve == null) {
@@ -296,7 +300,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         if (str.indexOf('\\') == -1) {
             return URI.create(str);
         }
-        return URI.create(str.replaceAll("\\\\", ""));
+        return URI.create(BACKSLASHES.matcher(str).replaceAll(""));
     }
 
     @Override

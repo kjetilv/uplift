@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
 import module java.base;
-import module uplift.util;
+import com.github.kjetilv.uplift.util.Bytes;
 
 record DigestiveHashBuilder<T, H extends HashKind<H>>(
     ByteDigest<H> byteDigest,

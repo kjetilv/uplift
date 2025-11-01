@@ -1,13 +1,13 @@
 package uplift.examples.helloweb.test;
 
-import java.net.http.HttpResponse;
-import java.util.UUID;
-
 import com.github.kjetilv.uplift.flambda.LambdaTestCase;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import org.junit.jupiter.api.Test;
 import uplift.examples.helloweb.Greeter;
 import uplift.examples.helloweb.HelloWeb;
+
+import java.net.http.HttpResponse;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,9 +1,12 @@
 package com.github.kjetilv.uplift.s3.auth;
 
-import module java.base;
 import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /// Common methods and properties for all AWS4 signer variants
 public final class AwsAuthHeaderSigner extends AbstractSigner {

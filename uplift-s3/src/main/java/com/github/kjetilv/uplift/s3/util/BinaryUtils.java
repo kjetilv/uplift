@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.s3.util;
 
-import module java.base;
+import java.util.Locale;
 
 /// Utilities for encoding and decoding binary data to and from different forms.
 public final class BinaryUtils {

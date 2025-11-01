@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import module uplift.edamame;
-import module uplift.hash;
+import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
 
 import static java.util.Objects.requireNonNull;
 
@@ -52,7 +53,7 @@ public final class InternalFactory {
     ) {
         requireNonNull(kind, "kind");
         var treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
-        var canonicalValues = CanonicalSubstructuresCataloguer.<K, H>create();
+        Canonicalizer<K, H> canonicalValues = CanonicalSubstructuresCataloguer.create();
         return new MapsMemoizerImpl<>(treeHasher, canonicalValues);
     }
 

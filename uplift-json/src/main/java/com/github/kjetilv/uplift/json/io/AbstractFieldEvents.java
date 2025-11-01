@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
-import module uplift.json;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 @SuppressWarnings("unused")
 public abstract class AbstractFieldEvents implements FieldEvents {

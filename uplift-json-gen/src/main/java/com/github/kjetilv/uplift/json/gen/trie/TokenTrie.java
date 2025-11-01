@@ -1,7 +1,8 @@
 package com.github.kjetilv.uplift.json.gen.trie;
 
 import module java.base;
-import module uplift.json;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
 
 public class TokenTrie implements TokenResolver {
 

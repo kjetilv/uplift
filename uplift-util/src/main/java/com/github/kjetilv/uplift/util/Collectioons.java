@@ -18,8 +18,7 @@ public final class Collectioons {
         Iterable<? extends T> list,
         Function<T, R> transform
     ) {
-        var stream = stream(list);
-        return stream
+        return stream(list)
             .map(transform)
             .toList();
     }

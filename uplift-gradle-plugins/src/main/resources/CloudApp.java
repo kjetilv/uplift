@@ -1,5 +1,10 @@
 package lambda.uplift.app;
 
+import software.amazon.awscdk.App;
+import software.amazon.awscdk.Environment;
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.StackProps;
+
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -11,11 +16,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
-
-import software.amazon.awscdk.App;
-import software.amazon.awscdk.Environment;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
 
 public final class CloudApp {
 

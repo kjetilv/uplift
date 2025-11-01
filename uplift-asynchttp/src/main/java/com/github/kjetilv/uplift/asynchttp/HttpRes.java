@@ -1,9 +1,10 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
-import module uplift.kernel;
-import module uplift.util;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.util.ToStrings;
+import com.github.kjetilv.uplift.uuid.Uuid;
 
 @SuppressWarnings("unused")
 public record HttpRes(

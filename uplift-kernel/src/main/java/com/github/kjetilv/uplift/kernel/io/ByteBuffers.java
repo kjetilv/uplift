@@ -1,8 +1,17 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import module java.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class ByteBuffers {
 
@@ -32,7 +41,7 @@ public final class ByteBuffers {
         return () -> {
             try {
                 return Optional.ofNullable(lineReader.readLine()).map(String::trim);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new IllegalStateException("Failed to read line", e);
             }
         };

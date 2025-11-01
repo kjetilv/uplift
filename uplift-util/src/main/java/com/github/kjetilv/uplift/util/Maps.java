@@ -32,10 +32,7 @@ public final class Maps {
         Function<? super T, ? extends K> key,
         Function<? super T, ? extends V> val
     ) {
-        if (c == null) {
-            return Collections.emptyMap();
-        }
-        return c.stream()
+        return c == null ? Collections.emptyMap() : c.stream()
             .collect(Collectors.toMap(
                 key,
                 val,
@@ -49,10 +46,7 @@ public final class Maps {
     }
 
     public static <K, T, V> Map<K, V> mapValues(Map<K, T> map, Function<T, V> tv) {
-        if (map == null) {
-            return Collections.emptyMap();
-        }
-        return map.entrySet()
+        return map == null ? Collections.emptyMap() : map.entrySet()
             .stream()
             .collect(Collectors.toMap(
                 Map.Entry::getKey,

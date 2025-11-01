@@ -1,10 +1,13 @@
 package com.github.kjetilv.uplift.flambda;
 
-import module java.base;
-import module uplift.asynchttp;
-import module uplift.kernel;
-import module uplift.util;
-import module uplift.uuid;
+import com.github.kjetilv.uplift.asynchttp.HttpRes;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
+import com.github.kjetilv.uplift.util.Maps;
+import com.github.kjetilv.uplift.uuid.Uuid;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
 
 record LambdaResponse(
     int statusCode,

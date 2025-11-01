@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
-import module java.base;
+import java.time.Instant;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 

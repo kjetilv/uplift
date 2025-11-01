@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.s3;
 
 import module java.base;
-import module uplift.kernel;
+import com.github.kjetilv.uplift.kernel.Env;
 
 final class DefaultS3AccessorFactory implements S3AccessorFactory {
 

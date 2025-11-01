@@ -1,9 +1,11 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
-import module uplift.edam;
-import module uplift.hash;
-import module uplift.util;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashBuilder;
+import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
