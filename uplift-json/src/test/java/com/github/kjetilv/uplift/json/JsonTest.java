@@ -127,7 +127,7 @@ class JsonTest {
             """
                 { "foo": [] }
                 """);
-        assertThat(read2).asInstanceOf(InstanceOfAssertFactories.MAP)
+        assertThat(read2).asInstanceOf(MAP)
             .hasEntrySatisfying(
                 "foo", entry ->
                     assertThat(entry).asInstanceOf(LIST).isEmpty()
@@ -200,7 +200,7 @@ class JsonTest {
             """
                 { "foo": "" }
                 """
-        )).asInstanceOf(InstanceOfAssertFactories.MAP).containsEntry("foo", "");
+        )).asInstanceOf(MAP).containsEntry("foo", "");
     }
 
     @Test
@@ -501,7 +501,7 @@ class JsonTest {
                 """
         );
         assertThat(roundtrip)
-            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .asInstanceOf(MAP)
             .hasSize(2);
     }
 
@@ -517,7 +517,7 @@ class JsonTest {
                 """
         );
         assertThat(roundtrip)
-            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .asInstanceOf(MAP)
             .hasSize(2);
     }
 
@@ -541,7 +541,7 @@ class JsonTest {
                 """
         );
         assertThat(roundtrip)
-            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .asInstanceOf(MAP)
             .hasSize(3);
     }
 
@@ -561,7 +561,7 @@ class JsonTest {
                 """
         );
         assertThat(roundtrip)
-            .asInstanceOf(InstanceOfAssertFactories.MAP)
+            .asInstanceOf(MAP)
             .hasSize(1)
             .hasEntrySatisfying(
                 "bar", v ->

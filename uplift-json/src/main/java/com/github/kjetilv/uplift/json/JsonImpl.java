@@ -102,7 +102,7 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     }
 
     private Object process(BytesSource bytesSource) {
-        var reference = new AtomicReference<Object>();
+        var reference = new AtomicReference<>();
         parse(bytesSource, jsonSession.callbacks(reference::set));
         return reference.get();
     }

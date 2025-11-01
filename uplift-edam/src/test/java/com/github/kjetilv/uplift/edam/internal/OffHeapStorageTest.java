@@ -38,7 +38,7 @@ class OffHeapStorageTest {
             Hash<K128>[] hs = IntStream.range(0, 10)
                 .mapToObj(_ -> K128.random())
                 .toArray(Hash[]::new);
-            var instant = new AtomicReference<Instant>(Instant.EPOCH);
+            var instant = new AtomicReference<>(Instant.EPOCH);
             Supplier<Instant> now = () -> instant.updateAndGet(i -> i.plusSeconds(1));
 
             Occurrence<K128>[] occs = Arrays.stream(hs)
@@ -121,8 +121,8 @@ class OffHeapStorageTest {
                 new OffHeapIndexer128(arena, Object::hashCode, 10),
                 arena
             );
-            var occurrenceA = new Occurrence<K128>(Instant.now(), HashKind.K128.random());
-            var occurrenceB = new Occurrence<K128>(Instant.now().minusSeconds(1), HashKind.K128.random());
+            var occurrenceA = new Occurrence<>(Instant.now(), HashKind.K128.random());
+            var occurrenceB = new Occurrence<>(Instant.now().minusSeconds(1), HashKind.K128.random());
             storage.store(occurrenceA);
             assertEquals(occurrenceA, storage.get(0));
 
@@ -165,7 +165,7 @@ class OffHeapStorageTest {
     }
 
     private static <T> List<T> reverse(List<T> hashes) {
-        var copy = new ArrayList<T>(hashes);
+        var copy = new ArrayList<>(hashes);
         Collections.reverse(copy);
         return List.copyOf(copy);
     }

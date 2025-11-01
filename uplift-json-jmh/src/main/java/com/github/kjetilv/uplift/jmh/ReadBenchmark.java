@@ -101,7 +101,7 @@ public class ReadBenchmark {
             try (var inputStream = RESOURCE_L.openStream()) {
                 inputStream.transferTo(out);
             }
-            var stream = Arrays.stream(new String(out.toByteArray(), UTF_8)
+            var stream = Arrays.stream(out.toString(UTF_8)
                     .split("\n"))
                 .toList();
             datas = stream.stream()

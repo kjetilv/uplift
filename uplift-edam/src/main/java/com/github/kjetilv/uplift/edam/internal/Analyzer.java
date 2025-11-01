@@ -24,7 +24,7 @@ final class Analyzer<T, K extends HashKind<K>> {
     Analysis<K> analyze(T item) {
         var now = this.now.get();
         var hash = hasher.hash(item);
-        var occurrence = new Occurrence<K>(now, hash);
+        var occurrence = new Occurrence<>(now, hash);
         return updatedState(occurrence).process(occurrence);
     }
 

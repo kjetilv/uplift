@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.jmh;
 
-public class BenchmarkRunner {
+public final class BenchmarkRunner {
 
     static void main(String[] args) throws Exception {
         org.openjdk.jmh.Main.main(args);

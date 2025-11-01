@@ -23,7 +23,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     implements Canonicalizer<K, H> {
 
     static <K, H extends HashKind<H>> Canonicalizer<K, H> create() {
-        return new CanonicalSubstructuresCataloguer<K, H>();
+        return new CanonicalSubstructuresCataloguer<>();
     }
 
     private final Map<Hash<H>, Map<K, Object>> maps = new ConcurrentHashMap<>();
