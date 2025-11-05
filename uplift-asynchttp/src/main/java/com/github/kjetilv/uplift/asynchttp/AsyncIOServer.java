@@ -49,7 +49,7 @@ final class AsyncIOServer implements IOServer {
                 .open(channelGroup)
                 .bind(address);
             this.localAddress = this.serverSocketChannel.getLocalAddress();
-            log.info("{} bound", this.toString());
+            log.debug("{} bound", this.toString());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to open at " + address, e);
         }
@@ -175,7 +175,7 @@ final class AsyncIOServer implements IOServer {
         }
 
         @Override
-        public void completed(AsynchronousSocketChannel channel, Object __) {
+        public void completed(AsynchronousSocketChannel channel, Object attachment) {
             requireNonNull(channel, "channel");
             if (closed.get()) {
                 handleClosed(channel, null);
@@ -236,6 +236,11 @@ final class AsyncIOServer implements IOServer {
                 }
                 log.error("Processing failed, failed to close {}", channel, e == null ? ex : e);
             }
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[in:" + AsyncIOServer.this + "]";
         }
     }
 

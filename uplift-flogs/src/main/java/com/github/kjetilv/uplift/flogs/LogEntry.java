@@ -59,7 +59,7 @@ record LogEntry(
     }
 
     boolean hasLevel() {
-        return logLevel != LogLevel.INFO;
+        return logLevel != null;
     }
 
     private static final ZoneId Z = ZoneId.of("Z");

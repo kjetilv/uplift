@@ -1,26 +1,15 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
+import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
 import com.github.kjetilv.uplift.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -31,25 +20,67 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
 
     private final BlockingQueue<LambdaRequest> lambdaRequestQueue;
 
-    private final Synced<String, LambdaRequest> requestsFetched = new Synced<>(new ConcurrentHashMap<>());
+    private final Synced<String, LambdaRequest> requestsFetched = new Synced<>();
 
-    private final Synced<String, LambdaResponse> responsesReceived = new Synced<>(new ConcurrentHashMap<>());
+    private final Synced<String, LambdaResponse> responsesReceived = new Synced<>();
 
     private final AtomicLong id = new AtomicLong();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    LocalLambdaHandler(int queueLength) {
-        lambdaRequestQueue = new ArrayBlockingQueue<>(queueLength);
+    private final Map<String, List<String>> corsHeaders;
+
+    LocalLambdaHandler(LocalLambdaSettings settings) {
+        Objects.requireNonNull(settings, "settings");
+        this.lambdaRequestQueue = new ArrayBlockingQueue<>(settings.queueLength());
+
+        var cors = settings.cors();
+        this.corsHeaders = CaseInsensitiveHashMap.wrap(Map.of(
+            "Access-Control-Allow-Origin", List.of(cors.originValue()),
+            "Access-Control-Allow-Methods", List.of(cors.methodsValue()),
+            "Access-Control-Allow-Headers", List.of(cors.headersValue()),
+            "Access-Control-Max-Age", List.of("86400"),
+            "Access-Control-Allow-Credentials", List.of(cors.credentialsValue())
+        ));
     }
 
     @Override
     public HttpRes handle(HttpReq req) {
         if (req.isGet()) {
-            return nextRequestResponse();
+            LambdaRequest nextRequest = null;
+            while (nextRequest == null) {
+                try {
+                    nextRequest = lambdaRequestQueue.poll(1, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Interrupted", e);
+                    return INTERNAL_ERROR;
+                }
+                if (nextRequest == null && closed.get()) {
+                    log.info("Server closed");
+                    return SERVICE_UNAVAILABLE;
+                }
+            }
+            requestsFetched.put(nextRequest.id(), nextRequest);
+            var body = lambdaRequest(nextRequest);
+            var headers = requestHeaders(nextRequest);
+            return new HttpRes(
+                OK,
+                headers,
+                body,
+                nextRequest.request().id()
+            );
         }
         if (req.isPost()) {
-            return passResponse(req);
+            var response = lambdaResponse(req.body());
+            responsesReceived.put(id(req.path()), response);
+            return new HttpRes(
+                204,
+                req.id()
+            );
+        }
+        if (req.isCORS()) {
+            return new HttpRes(OK, corsHeaders, req.id());
         }
         return new HttpRes(400, req.id());
     }
@@ -59,11 +90,6 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         if (closed.compareAndSet(false, true)) {
             log.info("{} closed", this);
         }
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[id@" + id + "]";
     }
 
     LambdaResponse lambdaResponse(LambdaRequest request) {
@@ -76,33 +102,6 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
         }
         var fetched = requestsFetched.get(id);
         return responsesReceived.get(fetched.id());
-    }
-
-    private HttpRes nextRequestResponse() {
-        LambdaRequest nextRequest = null;
-        while (nextRequest == null) {
-            try {
-                nextRequest = lambdaRequestQueue.poll(1, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.warn("Interrupted", e);
-                return INTERNAL_ERROR;
-            }
-            if (nextRequest == null && closed.get()) {
-                log.info("Server closed");
-                return SERVICE_UNAVAILABLE;
-            }
-        }
-        requestsFetched.put(nextRequest.id(), nextRequest);
-        var body = lambdaRequest(nextRequest);
-        var headers = requestHeaders(nextRequest);
-        return new HttpRes(OK, headers, body, nextRequest.request().id());
-    }
-
-    private HttpRes passResponse(HttpReq req) {
-        var response = lambdaResponse(req.body());
-        responsesReceived.put(id(req.path()), response);
-        return new HttpRes(204, req.id());
     }
 
     private void doPut(LambdaRequest request) {
@@ -163,5 +162,12 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
     private static String id(String uri) {
         var parts = uri.split("/");
         return parts[parts.length - 2];
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" +
+               "id@" + id + " r/r:" + requestsFetched.size() + "/" + responsesReceived.size() +
+               "]";
     }
 }

@@ -27,7 +27,9 @@ record HttpInvocationSink(
     public Invocation<HttpRequest, HttpResponse<InputStream>> receive(
         Invocation<HttpRequest, HttpResponse<InputStream>> invocation
     ) {
-        var completionStage = send.apply(invocation.completionRequest());
-        return invocation.completionFuture(completionStage, time);
+        return invocation.completionFuture(
+            () -> send.apply(invocation.completionRequest()),
+            time
+        );
     }
 }

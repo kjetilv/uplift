@@ -16,28 +16,22 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
             entry.args(),
             entry.lastArgThrowable() ? 1 : 0
         );
-        var year = dateTime.getYear();
         var mon = dateTime.getMonthValue();
         var day = dateTime.getDayOfMonth();
         var hr = dateTime.getHour();
         var min = dateTime.getMinute();
         var sec = dateTime.getSecond();
         var sb = new StringBuilder()
-            .append(year)
-            .append("-")
-            .append(pad(mon)).append(mon)
-            .append("-")
-            .append(pad(day)).append(day)
-            .append("T")
-            .append(pad(hr)).append(hr)
-            .append(':')
-            .append(pad(min)).append(min)
-            .append(':')
-            .append(pad(sec)).append(sec);
-        if (entry.hasLevel()) {
-            sb.append(' ')
-                .append(entry.logLevel().name());
-        }
+            .append(dateTime.getYear())
+            .append('-').append(padding(mon)).append(mon)
+            .append('-').append(padding(day)).append(day)
+            .append('T').append(padding(hr)).append(hr)
+            .append(':').append(padding(min)).append(min)
+            .append(':').append(padding(sec)).append(sec);
+        String logLevel = entry.logLevel().name();
+        sb.append(' ')
+            .append(SPACES, 0, 5 - logLevel.length())
+            .append(logLevel);
         sb.append(' ')
             .append(entry.name())
             .append(": ")
@@ -57,7 +51,11 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
 
     static final LogFormatter<LogEntry> INSTANCE = new LogEntryFormatter();
 
-    private static String pad(int i) {
+    private static final String SPACES = IntStream.range(0, 64)
+        .mapToObj(_ -> " ")
+        .collect(Collectors.joining());
+
+    private static String padding(int i) {
         return i < 10 ? "0" : "";
     }
 }

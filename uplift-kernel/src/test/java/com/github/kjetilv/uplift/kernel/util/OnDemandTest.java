@@ -43,7 +43,7 @@ class OnDemandTest {
         assertEquals(0L, ls.get()); // 0
         assertEquals(0L, ls.get()); // 10
         assertEquals(1L, ls.get()); // 20
-        onDemand.force(ls);
+        onDemand.reset(ls);
         assertEquals(2L, ls.get()); // 30
         assertEquals(2L, ls.get()); // 40
         assertEquals(3L, ls.get()); // 50
@@ -51,7 +51,7 @@ class OnDemandTest {
         assertEquals(4L, ls.get()); // 70
         assertEquals(5L, ls.get()); // 700
         assertEquals(6L, ls.get()); // 7000
-        onDemand.force(ls);
+        onDemand.reset(ls);
         assertEquals(7L, ls.get()); // 7001
         onDemand.force(ls, 100L); // 7002
         assertEquals(100L, ls.get()); // 7003

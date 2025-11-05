@@ -22,11 +22,13 @@ public record ServerRunner(IOServer server) {
         }
     }
 
-    public ServerRunner(IOServer server) {
-        this.server = requireNonNull(server, "server");
+    public ServerRunner {
+        requireNonNull(server, "server");
     }
 
-    public <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(ChannelHandler<S, C> handler) {
+    public <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(
+        ChannelHandler<S, C> handler
+    ) {
         try {
             return server.run(handler::bind);
         } finally {
@@ -36,5 +38,10 @@ public record ServerRunner(IOServer server) {
 
     private static long uptimeMillis() {
         return ManagementFactory.getRuntimeMXBean().getUptime();
+    }
+
+    @Override
+    public String toString() {
+        return getClass() + "[]";
     }
 }

@@ -72,11 +72,13 @@ public final class EnvLookup {
             new IllegalStateException("Incomplete environment: " + systemProperty + "/" + environmentVariable);
     }
 
-    private static void logMissing(String systemProperty, String environmentVariable, boolean required) {
+    private static void logMissing(
+        String systemProperty,
+        String environmentVariable,
+        boolean required
+    ) {
         if (required) {
-            log.error("Missing: {}/{}", systemProperty, environmentVariable);
-        } else {
-            log.debug("Not found in environment {}/{}", systemProperty, environmentVariable);
+            log.warn("Missing: {}/{}", systemProperty, environmentVariable);
         }
     }
 

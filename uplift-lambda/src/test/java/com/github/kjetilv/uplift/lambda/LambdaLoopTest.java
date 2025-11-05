@@ -30,7 +30,7 @@ class LambdaLoopTest {
                             LambdaPayload.parse(REQ), Instant.now()
                         )
                     )),
-            httpPayload ->
+            _ ->
                 new LambdaResult(
                     200,
                     Collections.emptyMap(),
@@ -46,7 +46,7 @@ class LambdaLoopTest {
                 var ok = new String(invocation.result().body(), StandardCharsets.UTF_8);
                 responses.add(ok);
                 return invocation.completionFuture(
-                    CompletableFuture.completedStage(ok),
+                    () -> CompletableFuture.completedStage(ok),
                     Instant::now
                 );
             },

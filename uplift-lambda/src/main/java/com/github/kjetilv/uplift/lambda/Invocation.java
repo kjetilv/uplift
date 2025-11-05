@@ -45,7 +45,8 @@ public record Invocation<Q, R>(
         return new Invocation<>(
             created,
             initRequest,
-            null, false,
+            null,
+            false,
             null,
             id,
             payload,
@@ -110,24 +111,11 @@ public record Invocation<Q, R>(
         this.responseFailure = responseFailure;
     }
 
-    Invocation<Q, R> result(LambdaResult result, Supplier<Instant> time) {
-        return empty() ? this : new Invocation<>(
-            created,
-            request,
-            requestFailure,
-            aborted,
-            time.get(),
-            id,
-            this.payload,
-            result,
-            completionRequest,
-            completionStage,
-            completionResponse,
-            responseFailure
-        );
-    }
-
-    public Invocation<Q, R> result(LambdaResult result, Throwable requestFailure, Supplier<Instant> time) {
+    public Invocation<Q, R> result(
+        Supplier<LambdaResult> result,
+        Throwable requestFailure,
+        Supplier<Instant> time
+    ) {
         return empty() ? this : new Invocation<>(
             created,
             request,
@@ -136,7 +124,24 @@ public record Invocation<Q, R>(
             time.get(),
             id,
             payload,
-            result,
+            result.get(),
+            completionRequest,
+            completionStage,
+            completionResponse,
+            responseFailure
+        );
+    }
+
+    Invocation<Q, R> result(Supplier<LambdaResult> result, Supplier<Instant> time) {
+        return empty() ? this : new Invocation<>(
+            created,
+            request,
+            requestFailure,
+            aborted,
+            time.get(),
+            id,
+            this.payload,
+            result.get(),
             completionRequest,
             completionStage,
             completionResponse,
@@ -154,24 +159,7 @@ public record Invocation<Q, R>(
         return Duration.between(created, updated);
     }
 
-    Invocation<Q, R> completed(Q completionRequest, Supplier<Instant> time) {
-        return empty() ? this : new Invocation<>(
-            created,
-            this.request,
-            requestFailure,
-            aborted,
-            time.get(),
-            id,
-            payload,
-            result,
-            completionRequest,
-            completionStage,
-            completionResponse,
-            responseFailure
-        );
-    }
-
-    Invocation<Q, R> completionFuture(CompletionStage<R> completionStage, Supplier<Instant> time) {
+    Invocation<Q, R> completed(Supplier<Q> completionRequest, Supplier<Instant> time) {
         return empty() ? this : new Invocation<>(
             created,
             request,
@@ -181,15 +169,32 @@ public record Invocation<Q, R>(
             id,
             payload,
             result,
-            completionRequest,
+            empty() ? null : completionRequest.get(),
             completionStage,
             completionResponse,
             responseFailure
         );
     }
 
-    CompletionStage<Invocation<Q, R>> completedAt(Instant time) {
-        return empty()
+    Invocation<Q, R> completionFuture(Supplier<CompletionStage<R>> completionStage, Supplier<Instant> time) {
+        return new Invocation<>(
+            created,
+            request,
+            requestFailure,
+            aborted,
+            time.get(),
+            id,
+            payload,
+            result,
+            completionRequest,
+            empty() ? null : completionStage.get(),
+            completionResponse,
+            responseFailure
+        );
+    }
+
+    CompletionStage<Invocation<Q, R>> completedAt(Supplier<Instant> time) {
+        return completionStage == null
             ? CompletableFuture.completedFuture(this)
             : completionStage.thenApply(completion ->
                 new Invocation<>(
@@ -197,7 +202,7 @@ public record Invocation<Q, R>(
                     request,
                     requestFailure,
                     aborted,
-                    time,
+                    time.get(),
                     id,
                     payload,
                     result,

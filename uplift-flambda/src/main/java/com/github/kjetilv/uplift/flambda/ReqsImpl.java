@@ -1,12 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.net.URI;
+import module java.base;
+
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 record ReqsImpl(URI uri) implements Reqs {
@@ -23,7 +21,11 @@ record ReqsImpl(URI uri) implements Reqs {
 
     @Override
     public CompletableFuture<HttpResponse<String>> execute(String method, String body) {
-        return execute(method, body, walksLikeADuck(body.trim()));
+        return execute(
+            method,
+            body,
+            looksJsony(body.trim())
+        );
     }
 
     @Override
@@ -36,20 +38,25 @@ record ReqsImpl(URI uri) implements Reqs {
     ) {
         Objects.requireNonNull(method, "method");
         try {
-            var base = HttpRequest.newBuilder(resolve(uri));
+            var builder = HttpRequest.newBuilder(resolve(uri));
             if (headers != null) {
-                headers.forEach(base::header);
+                headers.forEach(builder::header);
             }
-            base.method(
-                method, body == null || body.isBlank() ?
-                    HttpRequest.BodyPublishers.noBody()
-                    : HttpRequest.BodyPublishers.ofString(body)
-            );
+
+            var bodyPublisher = body == null || body.isBlank()
+                ? HttpRequest.BodyPublishers.noBody()
+                : HttpRequest.BodyPublishers.ofString(body);
+
+            builder.method(method, bodyPublisher);
             if (body != null && json) {
-                base.header("Content-Type", "application/json");
+                builder.header("Content-Type", "application/json");
             }
+
             try (var build = HttpClient.newBuilder().build()) {
-                return build.sendAsync(base.build(), HttpResponse.BodyHandlers.ofString());
+                return build.sendAsync(
+                    builder.build(),
+                    HttpResponse.BodyHandlers.ofString()
+                );
             }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to execute " + method + " " + uri, e);
@@ -60,7 +67,7 @@ record ReqsImpl(URI uri) implements Reqs {
         return uri == null ? uri() : uri().resolve(uri);
     }
 
-    private static boolean walksLikeADuck(String body) {
+    private static boolean looksJsony(String body) {
         return contained("{", body, "}") || contained("[", body, "]");
     }
 

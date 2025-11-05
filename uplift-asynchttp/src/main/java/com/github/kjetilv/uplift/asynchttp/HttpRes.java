@@ -23,7 +23,11 @@ public record HttpRes(
     }
 
     public HttpRes(int status, Uuid reqId) {
-        this(status, Collections.emptyMap(), NO_BODY, reqId);
+        this(status, null, null, reqId);
+    }
+
+    public HttpRes(int status, Map<String, List<String>> headers, Uuid reqId) {
+        this(status, headers, null, reqId);
     }
 
     public HttpRes(int status, Map<String, List<String>> headers, byte[] body, Uuid reqId) {

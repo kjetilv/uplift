@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
-import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
 public record LambdaPayload(
@@ -102,7 +101,7 @@ public record LambdaPayload(
 
     @SuppressWarnings("SameParameterValue")
     private boolean isMethod(String method) {
-        return requireNonNull(method, "method").equalsIgnoreCase(this.method);
+        return method != null && method.equalsIgnoreCase(this.method);
     }
 
     private static final String BLANK = "";

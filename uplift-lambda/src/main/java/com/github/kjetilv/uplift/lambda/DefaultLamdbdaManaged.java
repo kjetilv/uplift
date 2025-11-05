@@ -31,6 +31,11 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     }
 
     @Override
+    public URI lambdaUri() {
+        return lambdaUri;
+    }
+
+    @Override
     public LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper() {
         Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch = request ->
             this.client.sendAsync(
@@ -58,7 +63,7 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         client.close();
     }
 
-    private static final ExecutorService VIRTUAL_THREADS = Executors.newSingleThreadExecutor();
+    private static final ExecutorService VIRTUAL_THREADS = Executors.newVirtualThreadPerTaskExecutor();
 
     private static HttpClient.Builder httpClient(LambdaClientSettings settings) {
         return settings.hasConnectTimeout()
@@ -67,7 +72,8 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     }
 
     private static HttpClient.Builder builder() {
-        return HttpClient.newBuilder().version(HTTP_1_1).executor(VIRTUAL_THREADS);
+        return HttpClient.newBuilder().version(HTTP_1_1)
+            .executor(VIRTUAL_THREADS);
     }
 
     @Override

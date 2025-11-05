@@ -64,9 +64,9 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
     private static HttpRes response(HttpReq req, Server server, Consumer<? super HttpRes> writer) {
         HttpRes res = null;
         try {
-            log.info("Handling {}", req);
+            log.info("Handling {} @ {}", req, server);
             res = server.handle(req);
-            log.info("Handled {} -> {}", req.id(), res);
+            log.info("Handled {} -> {} @ {}", req.id(), res, server);
             return res;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to process: " + req, e);

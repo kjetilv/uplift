@@ -10,30 +10,28 @@ import java.util.List;
 
 import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 
-@SuppressWarnings("MagicNumber")
 void main(String[] args) {
     Flogs.initialize(LogLevel.DEBUG);
+
     int lambdaPort = Arrays.stream(args)
         .map(Integer::parseInt)
-        .findFirst().orElse(8081);
-    int apiPort = Arrays.stream(args).skip(1)
+        .findFirst().orElse(LAMBDA_PORT);
+
+    int apiPort = Arrays.stream(args)
+        .skip(1)
         .map(Integer::parseInt)
-        .findFirst().orElse(9001);
+        .findFirst().orElse(API_PORT);
+
+    LocalLambdaSettings settings = new LocalLambdaSettings(
+        lambdaPort,
+        apiPort,
+        REQUEST_BUFFER_SIZE,
+        QUEUE_LENGTH,
+        new CorsSettings(ORIGINS, METHODS, HEADERS),
+        UTC_CLOCK::instant
+    );
     try (
-        var localLambda = new LocalLambda(
-            new LocalLambdaSettings(
-                lambdaPort,
-                apiPort,
-                8 * 8192,
-                10,
-                new CorsSettings(
-                    List.of("*"),
-                    List.of("GET", "POST", "PUT", "DELETE"),
-                    List.of()
-                ),
-                UTC_CLOCK::instant
-            )
-        )
+        var localLambda = new LocalLambda(settings)
     ) {
         var logger = LoggerFactory.getLogger("flambda");
         logger.info("Lambda: {}", localLambda);
@@ -41,3 +39,17 @@ void main(String[] args) {
         logger.info("Done: {}", localLambda);
     }
 }
+
+private static final int LAMBDA_PORT = 8081;
+
+private static final int API_PORT = 9001;
+
+private static final int REQUEST_BUFFER_SIZE = 8 * 8192;
+
+private static final int QUEUE_LENGTH = 10;
+
+private static final List<String> METHODS = List.of("GET", "POST", "PUT", "DELETE");
+
+private static final List<String> ORIGINS = List.of("*");
+
+private static final List<String> HEADERS = List.of();

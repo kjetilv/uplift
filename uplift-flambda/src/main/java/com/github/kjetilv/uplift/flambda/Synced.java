@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -13,21 +13,20 @@ final class Synced<K, V> {
 
     private final Condition updated = lock.newCondition();
 
-    private final Map<? super K, V> map;
+    private final Map<? super K, V> map = new ConcurrentHashMap<>();
 
     private final AtomicLong waiters = new AtomicLong();
-
-    Synced(Map<? super K, V> map) {
-        this.map = Objects.requireNonNull(map, "map");
-    }
 
     void put(K key, V value) {
         lock.lock();
         try {
             map.put(key, value);
         } finally {
-            updated.signalAll();
-            lock.unlock();
+            try {
+                updated.signalAll();
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -48,7 +47,19 @@ final class Synced<K, V> {
                 }
             }
         } finally {
-            waiters.decrementAndGet();
+            try {
+                waiters.decrementAndGet();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    int size() {
+        lock.lock();
+        try {
+            return map.size();
+        } finally {
             lock.unlock();
         }
     }

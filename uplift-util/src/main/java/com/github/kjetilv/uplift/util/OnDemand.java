@@ -4,22 +4,20 @@ import module java.base;
 
 public record OnDemand(Supplier<Instant> clock) {
 
-    @FunctionalInterface
-    public interface Builder<T> {
-
-        Supplier<T> get(Supplier<? extends T> supplier);
-    }
-
     public <T> void force(Supplier<T> supplier, T t) {
         if (supplier instanceof BuilderImpl<T>.ResettableSupplier resettableSupplier) {
             resettableSupplier.force(t);
+        } else {
+            throw new IllegalArgumentException("Not a resettable supplier: " + supplier);
         }
     }
 
-    public void force(Supplier<?>... suppliers) {
-        for (var supplier: suppliers) {
+    public void reset(Supplier<?>... suppliers) {
+        for (var supplier : suppliers) {
             if (supplier instanceof BuilderImpl<?>.ResettableSupplier builder) {
-                builder.force();
+                builder.reset();
+            } else {
+                throw new IllegalArgumentException("Not a resettable supplier: " + supplier);
             }
         }
     }
@@ -70,15 +68,15 @@ public record OnDemand(Supplier<Instant> clock) {
                 });
             }
 
-            private void force(T t) {
+            private void force(T newValue) {
                 holder.updateAndGet(_ -> {
                     lastHolder.set(clock.get());
                     reset.set(false);
-                    return t;
+                    return newValue;
                 });
             }
 
-            private void force() {
+            private void reset() {
                 reset.compareAndSet(false, true);
             }
 
@@ -88,5 +86,11 @@ public record OnDemand(Supplier<Instant> clock) {
                 return time.equals(refreshTime) || time.isAfter(refreshTime);
             }
         }
+    }
+
+    @FunctionalInterface
+    public interface Builder<T> {
+
+        Supplier<T> get(Supplier<? extends T> supplier);
     }
 }

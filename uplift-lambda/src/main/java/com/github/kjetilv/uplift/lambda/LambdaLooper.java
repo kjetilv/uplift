@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
+import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -46,6 +48,8 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     private final AtomicReference<Instant> lastTime = new AtomicReference<>(Instant.EPOCH);
 
     private final AtomicReference<Duration> duration = new AtomicReference<>(Duration.ZERO);
+
+    private final AtomicReference<Throwable> lastException = new AtomicReference<>();
 
     LambdaLooper(
         InvocationSource<Q, R> source,
@@ -97,29 +101,43 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
 
     private void handleOutcome(Invocation<Q, R> qr, Throwable throwable) {
         if (qr.requestFailure() == null && throwable == null) {
-            log.debug("Completed: {}", qr, throwable);
+            if (lastException.get() != null) {
+                Throwable last = lastException.getAndSet(null);
+                log.info("Service restored, last exception: {}", last.toString());
+            } else {
+                log.debug("Completed: {}", qr, throwable);
+            }
             return;
         }
         if (qr.requestFailure() instanceof CompletionException completionException) {
             var combined = combine(throwable, completionException.getCause());
-            if (throwable instanceof ConnectException || throwable instanceof HttpConnectTimeoutException) {
+            lastException.set(combined);
+            if (connectOrTimeout(combined)) {
                 log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
                 sleep(WAIT_MS);
             } else {
                 log.warn("Request failed: {}", qr, combined);
             }
         } else {
-            log.warn("Request failed: {}", qr, combine(throwable, qr.requestFailure()));
+            Throwable combined = combine(throwable, qr.requestFailure());
+            lastException.set(combined);
+            log.warn("Request failed: {}", qr, combined);
         }
     }
 
     private Invocation<Q, R> executeLambda(Invocation<Q, R> invocation) {
         try {
-            var result = lambdaHandler.handle(invocation.payload());
-            return invocation.result(result, time);
+            return invocation.result(
+                () -> lambdaHandler.handle(invocation.payload()),
+                time
+            );
         } catch (Exception e) {
             try {
-                return invocation.result(LambdaResult.internalError(), e, time);
+                return invocation.result(
+                    LambdaResult::internalError,
+                    e,
+                    time
+                );
             } finally {
                 initiatedFail.increment();
             }
@@ -133,11 +151,14 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     }
 
     private Invocation<Q, R> prepareResponse(Invocation<Q, R> invocation) {
-        return invocation.completed(responseResolver.resolve(invocation), time);
+        return invocation.completed(
+            () -> responseResolver.resolve(invocation),
+            time
+        );
     }
 
     private CompletionStage<Invocation<Q, R>> markComplete(Invocation<Q, R> invocation) {
-        return invocation.completedAt(time.get());
+        return invocation.completedAt(time);
     }
 
     private void updateStats(Invocation<Q, R> invocation, Throwable throwable) {
@@ -166,7 +187,13 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
             : completedFail;
     }
 
-    private static final int WAIT_MS = 100;
+    private static final long WAIT_MS = Duration.ofSeconds(1).toMillis();
+
+    private static boolean connectOrTimeout(Throwable throwable) {
+        return Stream.of(ConnectException.class, HttpConnectTimeoutException.class)
+            .anyMatch(type ->
+                Throwables.chain(throwable).anyMatch(type::isInstance));
+    }
 
     private static Throwable combine(Throwable throwable, Throwable failure) {
         if (throwable == null) {
@@ -186,7 +213,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static void sleep(int ms) {
+    private static void sleep(long ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {

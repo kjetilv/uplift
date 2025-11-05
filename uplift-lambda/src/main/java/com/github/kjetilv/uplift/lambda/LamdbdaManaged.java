@@ -25,5 +25,7 @@ public interface LamdbdaManaged
         }
     }
 
+    URI lambdaUri();
+
     LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper();
 }

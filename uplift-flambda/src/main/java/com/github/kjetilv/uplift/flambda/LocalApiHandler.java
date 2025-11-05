@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> corsHeaders)
     implements HttpChannelHandler.Server {
@@ -23,7 +19,8 @@ record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> cor
                 "Access-Control-Allow-Headers", List.of(corsHeaders.headersValue()),
                 "Access-Control-Max-Age", List.of("86400"),
                 "Access-Control-Allow-Credentials", List.of(corsHeaders.credentialsValue())
-            )));
+            ))
+        );
     }
 
     @Override
@@ -48,6 +45,6 @@ record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> cor
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + handler + ", cors=" + corsHeaders + "]";
+        return getClass().getSimpleName() + "[" + handler + "]";
     }
 }

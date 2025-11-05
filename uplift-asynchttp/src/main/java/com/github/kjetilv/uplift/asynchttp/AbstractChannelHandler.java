@@ -138,11 +138,11 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
     private void log(S state, Processing processing) {
         if (processing == null) {
             log.error("No processing: {}", state);
-        }
-        if (processing == Processing.FAIL) {
+        } else if (processing == Processing.FAIL) {
             log.warn("Failed: {}", state);
+        } else {
+            log.debug("{}: {}", processing, state);
         }
-        log.debug("{}: {}", processing, state);
     }
 
     private boolean exceedsSize(S state) {

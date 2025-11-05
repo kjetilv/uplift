@@ -1,12 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.util.Maps;
-
-import java.util.List;
-import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 

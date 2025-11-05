@@ -40,15 +40,10 @@ final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<Comp
             return false;
         }
         return getNext()
-            .map(next ->
-                next.whenComplete((_, throwable) -> {
-                    completed.increment();
-                    if (throwable != null) {
-                        failedComplete.increment();
-                    }
-                }))
-            .map(stage ->
-                accepted(action, stage))
+            .map(next -> {
+                action.accept(countOnComplete(next));
+                return true;
+            })
             .orElse(false);
     }
 
@@ -74,9 +69,13 @@ final class SupplierSpliterator<T> extends Spliterators.AbstractSpliterator<Comp
         }
     }
 
-    private static <T> boolean accepted(Consumer<? super CompletionStage<T>> action, CompletionStage<T> stage) {
-        action.accept(stage);
-        return true;
+    private CompletionStage<T> countOnComplete(CompletionStage<T> stage) {
+        return stage.whenComplete((_, throwable) -> {
+            completed.increment();
+            if (throwable != null) {
+                failedComplete.increment();
+            }
+        });
     }
 
     @Override

@@ -1,23 +1,13 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaLooper;
 import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
 
-import java.io.Closeable;
-import java.io.InputStream;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class LambdaHarness implements Closeable {
@@ -42,7 +32,10 @@ public class LambdaHarness implements Closeable {
 
     private final Reqs reqs;
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
+    public LambdaHarness(
+        String name,
+        LambdaHandler lambdaHandler
+    ) {
         this(
             name,
             lambdaHandler,
@@ -53,7 +46,11 @@ public class LambdaHarness implements Closeable {
         );
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, Supplier<Instant> time) {
+    public LambdaHarness(
+        String name,
+        LambdaHandler lambdaHandler,
+        Supplier<Instant> time
+    ) {
         this(
             name,
             lambdaHandler,
@@ -64,7 +61,12 @@ public class LambdaHarness implements Closeable {
         );
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, CorsSettings cors, Supplier<Instant> time) {
+    public LambdaHarness(
+        String name,
+        LambdaHandler lambdaHandler,
+        CorsSettings cors,
+        Supplier<Instant> time
+    ) {
         this(
             name,
             lambdaHandler,
@@ -75,7 +77,11 @@ public class LambdaHarness implements Closeable {
         );
     }
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler, LocalLambdaSettings localLambdaSettings) {
+    public LambdaHarness(
+        String name,
+        LambdaHandler lambdaHandler,
+        LocalLambdaSettings localLambdaSettings
+    ) {
         this(
             name,
             lambdaHandler,
