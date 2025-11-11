@@ -3,12 +3,11 @@ package com.github.kjetilv.uplift.edam.patterns;
 import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashed;
 
 import static java.util.Objects.requireNonNull;
 
 public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long sn)
-    implements Comparable<Occurrence<K>>, Hashed<K>, Spanning {
+    implements Comparable<Occurrence<K>>, Supplier<Hash<K>>, Spanning {
 
     public Occurrence(Instant time, Hash<K> hash) {
         this(time, hash, Sns.next());
@@ -39,6 +38,11 @@ public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long
 
     public boolean matches(Hash<K> hash) {
         return hash == null || this.hash.equals(hash);
+    }
+
+    @Override
+    public Hash<K> get() {
+        return hash();
     }
 
     private static final class Sns {
