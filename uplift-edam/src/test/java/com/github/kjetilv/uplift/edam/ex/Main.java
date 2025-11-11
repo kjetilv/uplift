@@ -82,34 +82,34 @@ public final class Main {
                     try {
                         process(i, intConsumer);
                     } catch (Exception e) {
-                        handler.handle(
-                            e, (analysis, info) -> {
-                                log.info(
-                                    "Handled {} lines, {} chars: {}",
-                                    info.lines(),
-                                    info.volume(),
-                                    info.source().toString()
-                                );
-                                if (analysis instanceof Analysis.Multiple<?> multiple) {
-                                    log.info(
-                                        "{} {}\n  {} time{} in {} pattern{} in the last {}: {}",
-                                        info.causeChain(),
-                                        analysis.triggerHash(),
-                                        analysis.triggerHashCount(),
-                                        analysis.triggerHashCount() > 1 ? "s" : "",
-                                        analysis.distinctPatternsCount(),
-                                        analysis.distinctPatternsCount() > 1 ? "s" : "",
-                                        analysis.duration().truncatedTo(ChronoUnit.MILLIS),
-                                        analysis.toPatternMatchesString()
-                                    );
-                                    logSimple(multiple.simple(), info);
-                                } else {
-                                    logSimple(analysis, info);
-                                }
-                            }
-                        );
+                        handler.handle(e).with(Main::handler);
                     }
                 });
+        }
+    }
+
+    private static void handler(Analysis<K256> analysis, ThrowableInfo<K256> info) {
+        log.info(
+            "Handled {} lines, {} chars: {}",
+            info.lines(),
+            info.volume(),
+            info.source().toString()
+        );
+        if (analysis instanceof Analysis.Multiple<?> multiple) {
+            log.info(
+                "{} {}\n  {} time{} in {} pattern{} in the last {}: {}",
+                info.causeChain(),
+                analysis.triggerHash(),
+                analysis.triggerHashCount(),
+                analysis.triggerHashCount() > 1 ? "s" : "",
+                analysis.distinctPatternsCount(),
+                analysis.distinctPatternsCount() > 1 ? "s" : "",
+                analysis.duration().truncatedTo(ChronoUnit.MILLIS),
+                analysis.toPatternMatchesString()
+            );
+            logSimple(multiple.simple(), info);
+        } else {
+            logSimple(analysis, info);
         }
     }
 

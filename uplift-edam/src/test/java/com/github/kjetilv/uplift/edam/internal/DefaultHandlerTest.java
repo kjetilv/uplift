@@ -176,7 +176,7 @@ class DefaultHandlerTest {
         }
 
         tick(300);
-        var handleX = handler.handle(re0); // a
+        var handleX = handler.handling(re0); // a
         assertInstanceOf(
             Analysis.None.class,
             handleX.analysis(),
@@ -187,7 +187,7 @@ class DefaultHandlerTest {
     private Handling<Throwable, ThrowableInfo<K128>, K128> result(RuntimeException e) {
         tick();
         // a
-        return handler.handle(e);
+        return handler.handling(e);
     }
 
     private void tick() {

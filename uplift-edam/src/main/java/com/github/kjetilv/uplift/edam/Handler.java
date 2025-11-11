@@ -12,22 +12,21 @@ import static com.github.kjetilv.uplift.edam.Analysis.Multiple;
 public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
 
     default <R> R map(T item, Function<Handling<T, P, K>, R> action) {
-        return action.apply(handle(item));
+        return action.apply(handling(item));
     }
 
-    default Handling<T, P, K> handle(T item, Consumer<Analysis<K>> processor) {
-        var handling = handle(item);
-        processor.accept(handling.analysis());
-        return handling;
+    default Handler.With<T, P, K> handle(T item) {
+        return new With<>() {
+
+            @Override
+            public <R> R with(BiFunction<Analysis<K>, P, R> processor) {
+                var handling = handling(item);
+                return processor.apply(handling.analysis(), handling.payload());
+            }
+        };
     }
 
-    default Handling<T, P, K> handle(T item, BiConsumer<Analysis<K>, P> processor) {
-        var handling = handle(item);
-        processor.accept(handling.analysis(), handling.payload());
-        return handling;
-    }
-
-    Handling<T, P, K> handle(T item);
+    Handling<T, P, K> handling(T item);
 
     private static <T, P extends Info<T, K>, K extends HashKind<K>> void none(
         Results<T, K> results,
@@ -65,6 +64,31 @@ public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
         multiple.combinedMatches()
             .forEach(match ->
                 results.patternOccurred(handling.payload().source(), match.occurrences()));
+    }
+
+    @FunctionalInterface
+    interface With<T, P extends Info<T, K>, K extends HashKind<K>> {
+
+        default void with(Consumer<Analysis<K>> consumer) {
+            with((an, p) -> {
+                consumer.accept(an);
+            });
+        }
+
+        default void with(BiConsumer<Analysis<K>, P> processor) {
+            with((kAnalysis, p) -> {
+                processor.accept(kAnalysis, p);
+                return null;
+            });
+        }
+
+        default <R> R with(Function<Analysis<K>, R> processor) {
+            return with((analysis, p) -> {
+                return processor.apply(analysis);
+            });
+        }
+
+        <R> R with(BiFunction<Analysis<K>, P, R> processor);
     }
 
     interface Results<T, K extends HashKind<K>> {
