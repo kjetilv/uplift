@@ -13,6 +13,7 @@ public final class Main {
             hash(builder, System.in);
         } else {
             Arrays.stream(args)
+                .map(Main::homeIn)
                 .map(Main::inputStream)
                 .forEach(hashTo(builder));
         }
@@ -22,16 +23,8 @@ public final class Main {
     private Main() {
     }
 
-    private static Consumer<InputStream> hashTo(HashBuilder<InputStream, K256> builder) {
-        return in -> hash(builder, in);
-    }
-
-    private static void hash(HashBuilder<InputStream, K256> builder, InputStream in) {
-        try (in) {
-            builder.hash(in);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read", e);
-        }
+    private static String homeIn(String path) {
+        return path.replace("~", System.getProperty("user.home"));
     }
 
     private static InputStream inputStream(String arg) {
@@ -45,4 +38,15 @@ public final class Main {
         }
     }
 
+    private static Consumer<InputStream> hashTo(HashBuilder<InputStream, K256> builder) {
+        return in -> hash(builder, in);
+    }
+
+    private static void hash(HashBuilder<InputStream, K256> builder, InputStream in) {
+        try (in) {
+            builder.hash(in);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read", e);
+        }
+    }
 }

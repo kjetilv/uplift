@@ -109,11 +109,11 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     /// @return Longs
     long[] ls();
 
-    record H128(long l0, long l1) implements Hash<K128> {
+    record H128(long long0, long long1) implements Hash<K128> {
 
         @Override
         public long[] ls() {
-            return new long[] {l0, l1};
+            return new long[] {long0, long1};
         }
 
         @Override
@@ -132,7 +132,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         }
     }
 
-    record H256(long l0, long l1, long l2, long l3) implements Hash<K256> {
+    record H256(long long0, long long1, long long2, long long3) implements Hash<K256> {
 
         @Override
         public K256 kind() {
@@ -146,7 +146,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
         @Override
         public long[] ls() {
-            return new long[] {l0, l1, l2, l3};
+            return new long[] {long0, long1, long2, long3};
         }
 
         @Override

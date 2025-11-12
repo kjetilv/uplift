@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.hash;
 
 import module java.base;
-
 import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.hash.Hash.H128;
@@ -34,24 +33,24 @@ public final class Hashes {
             );
     }
 
-    public static Hash<K128> ofNullable(long l0, long l1) {
-        return l0 == 0 && l1 == 0
+    public static Hash<K128> ofNullable(long long0, long long1) {
+        return long0 == 0 && long1 == 0
             ? BLANK_128
-            : of(l0, l1);
+            : of(long0, long1);
     }
 
-    public static Hash<K256> ofNullable(long l0, long l1, long l2, long l3) {
-        return l0 == 0 && l1 == 0 && l2 == 0 && l3 == 0
+    public static Hash<K256> ofNullable(long long0, long long1, long long2, long long3) {
+        return long0 == 0 && long1 == 0 && long2 == 0 && long3 == 0
             ? BLANK_256
-            : of(l0, l1, l2, l3);
+            : of(long0, long1, long2, long3);
     }
 
-    public static Hash<K128> of(long l0, long l1) {
-        return new H128(l0, l1);
+    public static Hash<K128> of(long long0, long long1) {
+        return new H128(long0, long1);
     }
 
-    public static Hash<K256> of(long l0, long l1, long l2, long l3) {
-        return new H256(l0, l1, l2, l3);
+    public static Hash<K256> of(long long0, long long1, long long2, long long3) {
+        return new H256(long0, long1, long2, long3);
     }
 
     @SuppressWarnings("unchecked")
@@ -94,26 +93,26 @@ public final class Hashes {
         return longToBytes(l, 0, new byte[Long.BYTES]);
     }
 
-    public static int bytesToInt(byte[] bs) {
-        return (bs[0] & 0xFF) << 28 |
-               (bs[1] & 0xFF) << 16 |
-               (bs[2] & 0xFF) << 8 |
-               bs[3] & 0xFF;
+    public static int bytesToInt(byte[] bytes) {
+        return (bytes[0] & 0xFF) << 28 |
+               (bytes[1] & 0xFF) << 16 |
+               (bytes[2] & 0xFF) << 8 |
+               bytes[3] & 0xFF;
     }
 
-    public static byte[] longBytes(long l0, long l1) {
+    public static byte[] longBytes(long long0, long long1) {
         var bytes = new byte[16];
-        longToBytes(l0, 0, bytes);
-        longToBytes(l1, 8, bytes);
+        longToBytes(long0, 0, bytes);
+        longToBytes(long1, 8, bytes);
         return bytes;
     }
 
-    public static byte[] longBytes(long l0, long l1, long l2, long l3) {
+    public static byte[] longBytes(long long0, long long1, long long2, long long3) {
         var bytes = new byte[32];
-        longToBytes(l0, 0, bytes);
-        longToBytes(l1, 8, bytes);
-        longToBytes(l2, 16, bytes);
-        longToBytes(l3, 24, bytes);
+        longToBytes(long0, 0, bytes);
+        longToBytes(long1, 8, bytes);
+        longToBytes(long2, 16, bytes);
+        longToBytes(long3, 24, bytes);
         return bytes;
     }
 
@@ -138,10 +137,10 @@ public final class Hashes {
         return bytes;
     }
 
-    public static byte[] longsToBytes(long[] ls) {
-        var bytes = new byte[ls.length * Long.BYTES];
-        for (var l = 0; l < ls.length; l++) {
-            longToBytes(ls[l], l * 8, bytes);
+    public static byte[] longsToBytes(long[] longs) {
+        var bytes = new byte[longs.length * Long.BYTES];
+        for (var l = 0; l < longs.length; l++) {
+            longToBytes(longs[l], l * 8, bytes);
         }
         return bytes;
     }
@@ -214,10 +213,10 @@ public final class Hashes {
 
         private int read;
 
-        private final InputStream is;
+        private final InputStream inputStream;
 
-        private BytesIterator(InputStream is) {
-            this.is = requireNonNull(is, "is");
+        private BytesIterator(InputStream inputStream) {
+            this.inputStream = requireNonNull(inputStream, "is");
             this.read = advance();
         }
 
@@ -235,7 +234,7 @@ public final class Hashes {
 
         private int advance() {
             try {
-                return is.read(buffer);
+                return inputStream.read(buffer);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
