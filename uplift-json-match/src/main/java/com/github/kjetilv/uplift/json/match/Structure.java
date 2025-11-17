@@ -19,7 +19,11 @@ public interface Structure<T> {
 
     Optional<T> get(T object, String field);
 
+    Optional<T> get(T array, int index);
+
     Stream<T> arrayElements(T array);
+
+    boolean isEmpty(T array);
 
     default List<T> listElements(T array) {
         return arrayElements(array).toList();

@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -204,7 +201,8 @@ final class Paths {
         @Override
         public Stream<Probe<T>> probe(T main, List<String> trace) {
             return Optional.ofNullable(main)
-                .filter(expected::equals)
+                .filter(v ->
+                    Objects.equals(v, expected))
                 .map(_ ->
                     found(expected, trace))
                 .or(() ->

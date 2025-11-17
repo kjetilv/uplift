@@ -21,13 +21,12 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
             .collect(Collectors.joining("—"));
     }
 
-    /// @return Unique [digest-length][#digestLength()] string representation
+    /// @return Unique string representation
     default String digest() {
         var bytes = longsToBytes(ls());
         var base64 = new String(ENCODER.encode(bytes), US_ASCII);
-        var padding = kind().digest().padding();
-        if (base64.length() == kind().digest().length() + padding.length() && base64.endsWith(padding)) {
-            return base64.substring(0, digestLength())
+        if (kind().isDigest(base64)) {
+            return base64.substring(0, kind().digestLength())
                 .replace(BAD_1, GOOD_1)
                 .replace(BAD_2, GOOD_2);
         }
@@ -89,20 +88,18 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         if (length < 3) {
             throw new IllegalArgumentException(this + ": Invalid length: " + length + ", should be >= 2");
         }
-        if (length > digestLength() + 2) {
-            throw new IllegalArgumentException(this + ": Invalid length: " + length + ", should <= " + digestLength() + 2);
+        if (length > kind().digestLength() + 2) {
+            throw new IllegalArgumentException(this + ": Invalid length: " + length + ", should <= " + kind().digestLength() + 2);
         }
         return LPAR + digest().substring(0, length - 2) + RPAR;
     }
 
     default String defaultToString() {
-        var fifth = kind().digest().length() / 5;
+        var fifth = kind().digestLength() / 5;
         return LPAR + digest().substring(0, Math.max(10, fifth)) + RPAR;
     }
 
     H kind();
-
-    int digestLength();
 
     /// The longs,
     ///
@@ -122,11 +119,6 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         }
 
         @Override
-        public int digestLength() {
-            return 22;
-        }
-
-        @Override
         public String toString() {
             return defaultToString();
         }
@@ -137,11 +129,6 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         @Override
         public K256 kind() {
             return K256;
-        }
-
-        @Override
-        public int digestLength() {
-            return 43;
         }
 
         @Override

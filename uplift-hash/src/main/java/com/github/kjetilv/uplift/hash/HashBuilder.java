@@ -6,7 +6,8 @@ import module java.base;
 ///
 /// When done, [#build()] can be called to get the final hash, and reset the underlying hasher.
 ///
-/// @param <T>
+/// @param <T> Hashed type
+/// @param <H> Hash kind
 public interface HashBuilder<T, H extends HashKind<H>> {
 
     default void accept(T item) {
@@ -14,9 +15,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     }
 
     default HashBuilder<T, H> hash(List<T> items) {
-        for (var t : items) {
-            accept(t);
-        }
+        items.forEach(this::accept);
         return this;
     }
 
@@ -25,8 +24,11 @@ public interface HashBuilder<T, H extends HashKind<H>> {
         return this;
     }
 
+    /// @return Hash kind
     H kind();
 
+    /// Add to the hash
+    ///
     HashBuilder<T, H> hash(T item);
 
     /// Get the id, reset the underlying hasher.

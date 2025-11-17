@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -33,8 +31,27 @@ final class MapsStructure implements Structure<Object> {
     }
 
     @Override
+    public Optional<Object> get(Object array, int index) {
+        if (array instanceof Iterable<?> iterable) {
+            Iterator<?> iterator = iterable.iterator();
+            for (int i = 0; i < index; i++) {
+                iterator.next();
+            }
+            return Optional.of(iterator).filter(Iterator::hasNext).map(Iterator::next);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Stream<Object> arrayElements(Object array) {
-        return array instanceof Iterable<?> iterable ? stream(iterable) : Stream.empty();
+        return array instanceof Iterable<?> iterable
+            ? stream(iterable)
+            : Stream.empty();
+    }
+
+    @Override
+    public boolean isEmpty(Object array) {
+        return array instanceof Iterable<?> iterable && !iterable.iterator().hasNext();
     }
 
     @SuppressWarnings("unchecked")

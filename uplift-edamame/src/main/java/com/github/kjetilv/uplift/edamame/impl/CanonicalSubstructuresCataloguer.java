@@ -10,8 +10,8 @@ import com.github.kjetilv.uplift.edamame.HashedTree.Nodes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-import static com.github.kjetilv.uplift.util.Collectioons.transform;
-import static com.github.kjetilv.uplift.util.Maps.transformValues;
+import static com.github.kjetilv.uplift.util.Collectioons.transformList;
+import static com.github.kjetilv.uplift.util.Maps.transformMap;
 
 /// Canonicalizes [hashed trees][HashedTree], progressively storing and resolving shared substructures
 /// as they appear.
@@ -34,22 +34,23 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final boolean collisionsNeverHappen;
 
-    private CanonicalSubstructuresCataloguer() {
-        this(false);
-    }
-
     CanonicalSubstructuresCataloguer(boolean collisionsNeverHappen) {
         this.collisionsNeverHappen = collisionsNeverHappen;
+    }
+
+    private CanonicalSubstructuresCataloguer() {
+        this(false);
     }
 
     @Override
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
             case Node<K, H>(var hash, var valueMap) -> {
-                var node = transformValues(valueMap, this::canonical);
+                var node =
+                    transformMap(valueMap, this::canonical);
                 var collision = collision(node.values());
                 yield collision == null ? canonicalize(
-                    transformValues(node, CanonicalValue::value),
+                    transformMap(node, CanonicalValue::value),
                     hash,
                     maps,
                     t ->
@@ -57,10 +58,11 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 ) : collision;
             }
             case Nodes<K, H>(var hash, var values) -> {
-                var nodes = transform(values, this::canonical);
+                var nodes =
+                    transformList(values, this::canonical);
                 var collision = collision(nodes);
                 yield collision == null ? canonicalize(
-                    transform(nodes, CanonicalValue::value),
+                    transformList(nodes, CanonicalValue::value),
                     hash,
                     lists,
                     t ->

@@ -76,7 +76,7 @@ record DefaultStructureMatcher<T>(T main, Structure<T> str, Structures.ArrayStra
             );
         }
         if (str.isArray(part)) {
-            if (str.arrayElements(part).findAny().isEmpty()) {
+            if (str.isEmpty(part)) {
                 return empty();
             }
             var index = new AtomicInteger();

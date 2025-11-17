@@ -53,8 +53,7 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
 
         @Override
         public Optional<T> get(T main) {
-            return structure.arrayElements(main).skip(index)
-                .findFirst().flatMap(elem::get);
+            return structure.get(main, index);
         }
 
         @Override

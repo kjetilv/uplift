@@ -64,7 +64,7 @@ public final class Maps {
         return Collections.unmodifiableMap(sizedMap);
     }
 
-    public static <K, V, R> Map<K, R> transformValues(
+    public static <K, V, R> Map<K, R> transformMap(
         Map<K, V> map,
         Function<V, R> transform
     ) {
@@ -84,7 +84,7 @@ public final class Maps {
         };
     }
 
-    static <K, T, V, R> Map<K, R> transformValues(
+    static <K, T, V, R> Map<K, R> transformMap(
         Map<T, V> map,
         Function<T, K> keyNormalizer,
         Function<V, R> transform

@@ -17,7 +17,7 @@ class JsonSessionTest {
     @SuppressWarnings("unchecked")
     @Test
     void testLists() {
-        var reference = new AtomicReference<Object>();
+        var reference = new AtomicReference<>();
         var jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json

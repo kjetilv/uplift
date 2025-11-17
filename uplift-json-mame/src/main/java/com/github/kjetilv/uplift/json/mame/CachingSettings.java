@@ -4,4 +4,8 @@ public record CachingSettings(
     boolean preserveNulls,
     boolean collisionsNeverHappen
 ) {
+
+    boolean collisionsHappen() {
+        return !collisionsNeverHappen;
+    }
 }

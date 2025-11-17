@@ -3,9 +3,10 @@ package com.github.kjetilv.uplift.edamame;
 import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Collectioons;
 
-import static com.github.kjetilv.uplift.util.Collectioons.transform;
-import static com.github.kjetilv.uplift.util.Maps.transformValues;
+import static com.github.kjetilv.uplift.util.Collectioons.transformList;
+import static com.github.kjetilv.uplift.util.Maps.transformMap;
 
 /// A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
 /// [hash][#hash()].
@@ -30,7 +31,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
 
         @Override
         public Object unwrap() {
-            return transformValues(map, HashedTree::unwrap);
+            return transformMap(map, HashedTree::unwrap);
         }
     }
 
@@ -45,7 +46,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
 
         @Override
         public Object unwrap() {
-            return transform(values, HashedTree::unwrap);
+            return Collectioons.transformList(values, HashedTree::unwrap);
         }
     }
 

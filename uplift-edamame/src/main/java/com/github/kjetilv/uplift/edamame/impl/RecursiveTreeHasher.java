@@ -55,7 +55,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             }
             case Iterable<?> iterable -> {
                 var hashedValues =
-                    transform(iterable, this::hash);
+                    transformList(iterable, this::hash);
                 yield new Nodes<>(
                     listHash(hashedValues),
                     hashedValues
@@ -65,7 +65,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
             default -> {
                 if (value.getClass().isArray()) {
                     var hashedValues =
-                        transform(iterable(value), this::hash);
+                        transformList(iterable(value), this::hash);
                     yield new Nodes<>(
                         listHash(hashedValues),
                         hashedValues

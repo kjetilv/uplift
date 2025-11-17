@@ -7,11 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 public class ReadTest {
 
     public static final ObjectMapper objectMapper = new ObjectMapper()

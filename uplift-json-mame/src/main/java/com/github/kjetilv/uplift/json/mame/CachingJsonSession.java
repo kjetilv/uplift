@@ -51,13 +51,10 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
         CachingSettings settings,
         BiConsumer<Hash<H>, Object> handler
     ) {
-        var collisionsHappen = settings == null || !settings.collisionsNeverHappen();
-        var collisionsDontHappen = settings != null && settings.collisionsNeverHappen();
-        if (collisionsHappen && handler == null) {
-            throw new IllegalStateException("Got no collisionHandler, settings:" + settings);
-        }
-        if (collisionsDontHappen && handler != null) {
-            throw new IllegalStateException("Got a collisionHandler in conflict with " + settings + ": " + handler);
+        if ((settings == null || settings.collisionsHappen()) && handler == null) {
+            return (hash, object) -> {
+                throw new IllegalStateException(object + " collided with hash: " + hash);
+            };
         }
         return handler;
     }

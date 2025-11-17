@@ -5,7 +5,7 @@ import module java.base;
 /// Some collection-related nitty-gritty bits.
 public final class Collectioons {
 
-    public static <T, L extends Collection<T>, R> List<R> transform(
+    public static <T, L extends Collection<T>, R> List<R> transformList(
         L list,
         Function<T, R> transform
     ) {
@@ -14,7 +14,7 @@ public final class Collectioons {
             .toList();
     }
 
-    public static <T, R> List<R> transform(
+    public static <T, R> List<R> transformList(
         Iterable<? extends T> list,
         Function<T, R> transform
     ) {
