@@ -75,7 +75,7 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                 leaves,
                 t -> new CanonicalValue.Leaf<>(hash, t)
             );
-            case HashedTree.Null<?, H>(var hash) -> new CanonicalValue.Null<>(hash);
+            case HashedTree.Null<?, H>(var kind) -> CanonicalValue.Null.instanceFor(kind);
         };
     }
 

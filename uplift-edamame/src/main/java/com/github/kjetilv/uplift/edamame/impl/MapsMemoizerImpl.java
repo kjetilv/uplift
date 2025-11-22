@@ -79,7 +79,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private boolean put(I identifier, Map<?, ?> value, boolean requireAbsent) {
         requireNonNull(identifier, "identifier");
         requireNonNull(value, "value");
-        var hashedTree = treeHasher.hash(value);
+        var hashedTree = treeHasher.tree(value);
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
             case CanonicalValue.Node<?, H> node -> write(() ->

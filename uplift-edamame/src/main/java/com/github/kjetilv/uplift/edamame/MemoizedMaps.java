@@ -11,7 +11,7 @@ public interface MemoizedMaps<I, K> {
     /// @return The number of maps memoized
     int size();
 
-    /// @param identifier Identifier
+    /// @param id Id
     /// @return Stored map, or null of the identifier was unknown
-    Map<K, ?> get(I identifier);
+    Map<K, ?> get(I id);
 }

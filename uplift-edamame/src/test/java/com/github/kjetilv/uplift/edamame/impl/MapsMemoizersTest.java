@@ -320,15 +320,13 @@ class MapsMemoizersTest {
     void shouldIgnoreKeyOrder() {
         var cache = mapsMemoizer();
 
-        cache.put(
-            42L,
-            map(IntStream.range(0, 10))
-        );
-        cache.put(
-            43L,
-            map(IntStream.range(0, 10)
-                .map(i -> 9 - i))
-        );
+        var map1 = map(IntStream.range(0, 10));
+        var map2 = map(IntStream.range(0, 10)
+            .map(i -> 9 - i));
+
+        cache.put(42L, map1);
+        cache.put(43L, map2);
+
         var access = cache.maps();
         var canon42 = access.get(42L);
         var canon43 = access.get(43L);

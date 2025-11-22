@@ -31,9 +31,9 @@ class CanonicalSubstructuresCataloguerTest {
         var cataloguer = CanonicalSubstructuresCataloguer.<K, K128>create();
         Supplier<Object> newObject = () -> new BigDecimal("42");
 
-        var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
+        var cv1 = cataloguer.canonical(hasher.tree(newObject.get()));
         if (cv1 instanceof CanonicalValue.Leaf<K128>(var h1, var o1)) {
-            var cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
+            var cv2 = cataloguer.canonical(hasher.tree(newObject.get()));
             if (cv2 instanceof CanonicalValue.Leaf<K128>(var h2, var o2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(o1).isSameAs(o2);
@@ -59,10 +59,10 @@ class CanonicalSubstructuresCataloguerTest {
         var val = copySupplier("bar");
         Supplier<Object> newObject = () -> Map.of(key.get(), val.get());
 
-        var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
+        var cv1 = cataloguer.canonical(hasher.tree(newObject.get()));
         if (cv1 instanceof CanonicalValue.Node<?, K128>(var h1, var m1)) {
             assertThat(m1.keySet()).allMatch(isK());
-            var cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
+            var cv2 = cataloguer.canonical(hasher.tree(newObject.get()));
             if (cv2 instanceof CanonicalValue.Node<?, K128>(var h2, var m2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(m1).isSameAs(m2);

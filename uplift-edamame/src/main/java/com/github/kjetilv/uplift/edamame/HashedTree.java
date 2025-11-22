@@ -36,7 +36,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
 
     /// A list in the tree
     ///
-    /// @param hash   Hash
+    /// @param hash Hash
     /// @param list List
     record Nodes<K, H extends HashKind<H>>(
         Hash<H> hash,
@@ -65,16 +65,20 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     }
 
     /// Null value, which may occur in a list. Has the [null][HashKind#blank()] hash.
-    record Null<K, H extends HashKind<H>>(Hash<H> hash)
+    record Null<K, H extends HashKind<H>>(HashKind<H> kind)
         implements HashedTree<K, H> {
 
         @SuppressWarnings("unchecked")
         public static <K, H extends HashKind<H>> Null<K, H> instanceFor(H kind) {
-            return (Null<K, H>) NULLS.computeIfAbsent(
-                kind,
-                _ ->
-                    new Null<>(kind.blank())
-            );
+            return switch (kind) {
+                case HashKind.K128 _ -> (Null<K, H>) NULL_K128;
+                case HashKind.K256 _ -> (Null<K, H>) NULL_K256;
+            };
+        }
+
+        @Override
+        public Hash<H> hash() {
+            return kind.blank();
         }
 
         /// @return null
@@ -83,7 +87,8 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
             return null;
         }
 
-        /// Cache of null values
-        private static final Map<HashKind<?>, Null<?, ?>> NULLS = new ConcurrentHashMap<>();
+        private static final Null<?, ?> NULL_K128 = new Null<>(HashKind.K128);
+
+        private static final Null<?, ?> NULL_K256 = new Null<>(HashKind.K256);
     }
 }
