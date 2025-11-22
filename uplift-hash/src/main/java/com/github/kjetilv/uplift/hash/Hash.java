@@ -8,7 +8,10 @@ import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static com.github.kjetilv.uplift.hash.Hashes.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
-/// A 256-bit hash, exposed as four longs.
+/// A hash, of a certain {@link HashKind}.
+///
+/// Can provide {@link #digest() digest}, which is a compact string representation. These can be parsed
+/// back to hash instances with a factory method in {@link Hashes#hash(String) Hashes}.
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> permits Hash.H128, Hash.H256 {
 
     String LPAR = "⟨";

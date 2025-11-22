@@ -7,6 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HashTest {
 
     @Test
+    void testNull() {
+        assertEquals(HashKind.K128.blank(), Hashes.of(0L, 0L));
+    }
+
+    @Test
+    void testHash() {
+        var hash = Hashes.of(0L, 234L);
+        assertEquals("⟨AAAAAAAAAA⟩", hash.toString());
+    }
+
+    @Test
     void string() {
         var string = HashKind.K128.random().toString();
         assertEquals(12, string.length());

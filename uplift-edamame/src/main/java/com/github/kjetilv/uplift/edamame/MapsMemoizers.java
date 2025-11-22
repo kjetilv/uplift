@@ -7,9 +7,9 @@ import com.github.kjetilv.uplift.hash.HashKind;
 /// Factory methods for [MapsMemoizer]s.
 public final class MapsMemoizers {
 
-    /// strings via regular [toString][#toString()]
+    /// This method returns a memoizer using strings for keys, via regular [toString][#toString()]
     ///
-    /// @param <I> Type of id's
+    /// @param <I> Top-level id type
     /// @return [MapsMemoizer] for String-keyed maps
     public static <I, H extends HashKind<H>> MapsMemoizer<I, String> create(H kind) {
         return create(null, null, kind);

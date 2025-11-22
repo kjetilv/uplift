@@ -79,16 +79,17 @@ public final class InternalFactory {
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
-        KeyHandler<K> canonicalKeys = new CanonicalKeysCataloguer<>(
-            keyHandler != null
-                ? keyHandler
-                : KeyHandler.defaultHandler());
-        var hasher = leafHasher != null ? leafHasher : leafHasher(kind, pojoBytes);
         return new RecursiveTreeHasher<>(
             () -> Hashes.hashBuilder(kind),
-            canonicalKeys,
-            requireNonNull(hasher, "leafHasher"),
+            getCanonicalKeys(keyHandler),
+            leafHasher == null ? leafHasher(kind, pojoBytes) : leafHasher,
             kind
+        );
+    }
+
+    private static <K> KeyHandler<K> getCanonicalKeys(KeyHandler<K> handler) {
+        return new CanonicalKeysCataloguer<>(
+            handler == null ? KeyHandler.defaultHandler() : handler
         );
     }
 }

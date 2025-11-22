@@ -45,29 +45,29 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     @Override
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
-            case Node<K, H>(var hash, var valueMap) -> {
-                var node =
-                    transformMap(valueMap, this::canonical);
+            case Node<K, H>(var hash, var map) -> {
+                var node = transformMap(map, this::canonical);
                 var collision = collision(node.values());
-                yield collision == null ? canonicalize(
-                    transformMap(node, CanonicalValue::value),
-                    hash,
-                    maps,
-                    t ->
-                        new CanonicalValue.Node<>(hash, t)
-                ) : collision;
+                yield collision != null ? collision
+                    : canonicalize(
+                        transformMap(node, CanonicalValue::value),
+                        hash,
+                        maps,
+                        t ->
+                            new CanonicalValue.Node<>(hash, t)
+                    );
             }
-            case Nodes<K, H>(var hash, var values) -> {
-                var nodes =
-                    transformList(values, this::canonical);
+            case Nodes<K, H>(var hash, var list) -> {
+                var nodes = transformList(list, this::canonical);
                 var collision = collision(nodes);
-                yield collision == null ? canonicalize(
-                    transformList(nodes, CanonicalValue::value),
-                    hash,
-                    lists,
-                    t ->
-                        new CanonicalValue.Nodes<>(hash, t)
-                ) : collision;
+                yield collision != null ? collision
+                    : canonicalize(
+                        transformList(nodes, CanonicalValue::value),
+                        hash,
+                        lists,
+                        t ->
+                            new CanonicalValue.Nodes<>(hash, t)
+                    );
             }
             case HashedTree.Leaf<?, H>(var hash, var value) -> canonicalize(
                 value,

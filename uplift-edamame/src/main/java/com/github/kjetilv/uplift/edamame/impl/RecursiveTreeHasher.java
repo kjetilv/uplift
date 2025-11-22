@@ -46,49 +46,25 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     public HashedTree<K, H> hash(Object value) {
         return switch (value) {
             case Map<?, ?> map -> {
-                var hashedMap =
-                    transformMap(map, keyHandler, this::hash);
-                yield new Node<>(
-                    mapHash(hashedMap),
-                    hashedMap
-                );
+                var hashedMap = transformMap(map, keyHandler, this::hash);
+                var hash = mapHash(hashedMap);
+                yield new Node<>(hash, hashedMap);
             }
             case Iterable<?> iterable -> {
-                var hashedValues =
-                    transformList(iterable, this::hash);
-                yield new Nodes<>(
-                    listHash(hashedValues),
-                    hashedValues
-                );
+                var hashedValues = transformList(iterable, this::hash);
+                var hash = listHash(hashedValues);
+                yield new Nodes<>(hash, hashedValues);
             }
             case null -> Null.instanceFor(kind);
             default -> {
                 if (value.getClass().isArray()) {
-                    var hashedValues =
-                        transformList(iterable(value), this::hash);
-                    yield new Nodes<>(
-                        listHash(hashedValues),
-                        hashedValues
-                    );
-                } else {
-                    yield new Leaf<>(leafHash(value), value);
+                    var hashedValues = transformList(iterable(value), this::hash);
+                    var hash = listHash(hashedValues);
+                    yield new Nodes<>(hash, hashedValues);
                 }
+                yield new Leaf<>(leafHash(value), value);
             }
         };
-    }
-
-    private static <K, H extends HashKind<H>> Map<K, HashedTree<K, H>> transformMap(
-        Map<?, ?> value,
-        KeyHandler<K> keyHandler,
-        Function<Object, HashedTree<K, H>> transform
-    ) {
-        return sizedMap(value.entrySet()
-            .stream()
-            .filter(empty().negate())
-            .collect(Collectors.toMap(
-                entry -> keyHandler.normalize(entry.getKey()),
-                entry -> transform.apply(entry.getValue())
-            )));
     }
 
     private Hash<H> mapHash(Map<K, ? extends HashedTree<K, H>> tree) {
@@ -115,6 +91,20 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
 
     private Hash<H> leafHash(Object value) {
         return leafHasher.hash(value);
+    }
+
+    private static <K, H extends HashKind<H>> Map<K, HashedTree<K, H>> transformMap(
+        Map<?, ?> value,
+        KeyHandler<K> keyHandler,
+        Function<Object, HashedTree<K, H>> transform
+    ) {
+        return sizedMap(value.entrySet()
+            .stream()
+            .filter(empty().negate())
+            .collect(Collectors.toMap(
+                entry -> keyHandler.normalize(entry.getKey()),
+                entry -> transform.apply(entry.getValue())
+            )));
     }
 
     private static Predicate<Map.Entry<?, ?>> empty() {

@@ -30,13 +30,11 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     private final AtomicBoolean complete = new AtomicBoolean();
 
-    private final ReadWriteLock canonicalLock = new ReentrantReadWriteLock();
-
-    private final ReadWriteLock overflowLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final TreeHasher<K, H> treeHasher;
 
-    private Canonicalizer<K, H> canonicalValues;
+    private final Canonicalizer<K, H> canonicalValues;
 
     /// @param canonicalValues Not null
     /// @see MapsMemoizers#create(com.github.kjetilv.uplift.edamame.KeyHandler, HashKind)
@@ -47,18 +45,17 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public int size() {
-        return canonicalRead(memoizedHashes::size) + overflowReadLocked(overflowObjects::size);
+        return read(() -> memoizedHashes.size() + overflowObjects.size());
     }
 
     @Override
     public Map<K, ?> get(I identifier) {
         requireNonNull(identifier, "identifier");
-        return canonicalRead(() -> {
+        return read(() -> {
             var hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
-            return hash != null ? canonicalObjects.get(hash)
-                : overflowReadLocked(() -> !overflowObjects.isEmpty()
-                    ? overflowObjects.get(identifier)
-                    : null);
+            return hash == null
+                ? overflowObjects.get(identifier)
+                : canonicalObjects.get(hash);
         });
     }
 
@@ -73,14 +70,9 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     @Override
-    public MemoizedMaps<I, K> complete() {
-        return canonicalWrite(() -> {
-            if (complete.compareAndSet(false, true)) {
-                // Shed working data
-                this.canonicalValues = null;
-            }
-            return this;
-        });
+    public MemoizedMaps<I, K> maps() {
+        return read(() ->
+            new MemoizedMapsImpl<>(memoizedHashes, canonicalObjects, overflowObjects));
     }
 
     @SuppressWarnings({"unused"})
@@ -90,10 +82,10 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         var hashedTree = treeHasher.hash(value);
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
-            case CanonicalValue.Node<?, H> node -> canonicalWrite(() ->
+            case CanonicalValue.Node<?, H> node -> write(() ->
                 putCanonical(identifier, node, requireAbsent)
             );
-            case CanonicalValue.Collision<H> _ -> overflowWrite(() ->
+            case CanonicalValue.Collision<H> _ -> write(() ->
                 putOverflow(identifier, (Map<K, Object>) value)
             );
             case CanonicalValue<H> other -> fail("Unexpected canonical value: " + other);
@@ -123,32 +115,22 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         return overflowObjects.putIfAbsent(identifier, value) == null;
     }
 
-    private String doDescribe() {
-        int overflowsCount = overflowReadLocked(overflowObjects::size);
-        return canonicalRead(() -> {
-            var count = memoizedHashes.size();
-            var canonicalsSize = canonicalObjects.size();
-            return (count + overflowsCount) +
-                   " items" +
-                   (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +
-                   (complete.get() ? "completed" : "working maps:" + canonicalsSize);
-        });
+    private <T> T read(Supplier<T> action) {
+        return withLock(lock.readLock(), action);
     }
 
-    private <T> T canonicalRead(Supplier<T> action) {
-        return withLock(canonicalLock.readLock(), action);
+    private <T> T write(Supplier<T> action) {
+        return withLock(lock.writeLock(), action);
     }
 
-    private <T> T canonicalWrite(Supplier<T> action) {
-        return withLock(canonicalLock.writeLock(), action);
-    }
-
-    private <T> T overflowReadLocked(Supplier<T> action) {
-        return withLock(overflowLock.readLock(), action);
-    }
-
-    private <T> T overflowWrite(Supplier<T> action) {
-        return withLock(overflowLock.writeLock(), action);
+    private String describe() {
+        var count = memoizedHashes.size();
+        var canonicalsSize = canonicalObjects.size();
+        int overflowsCount = overflowObjects.size();
+        return (count + overflowsCount) +
+               " items" +
+               (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +
+               (complete.get() ? "completed" : "working maps:" + canonicalsSize);
     }
 
     private static <T> T withLock(Lock lock, Supplier<T> action) {
@@ -166,9 +148,6 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" +
-               overflowReadLocked(() ->
-                   canonicalRead(this::doDescribe)) +
-               "]";
+        return getClass().getSimpleName() + "[" + read(this::describe) + "]";
     }
 }

@@ -17,7 +17,7 @@ public class MultiThreadedTest {
     @SuppressWarnings("unchecked")
     @Test
     void test() {
-        var mapsMemoizer = create(key -> CaKe.get(key.toString()), HashKind.K128, null);
+        var mapsMemoizer = create(key -> CanKey.get(key.toString()), HashKind.K128, null);
         var complete = new AtomicBoolean();
         var voider = CompletableFuture.runAsync(() -> {
             for (var i = 0; i < 10; i++) {
@@ -27,7 +27,7 @@ public class MultiThreadedTest {
                     mapsMemoizer.putIfAbsent(i * 100 + j, caKeMap);
                 }
             }
-            mapsMemoizer.complete();
+            mapsMemoizer.maps();
             complete.set(true);
         });
 
@@ -42,8 +42,8 @@ public class MultiThreadedTest {
                         var cake = map(i, j);
                         assertEquals(cake.keySet(), map.keySet());
                         cake.keySet().forEach(key -> {
-                            var cakeValue = (Map<CaKe, ?>) cake.get(key);
-                            var mapValue = (Map<CaKe, ?>) map.get(key);
+                            var cakeValue = (Map<CanKey, ?>) cake.get(key);
+                            var mapValue = (Map<CanKey, ?>) map.get(key);
                             assertEquals(
                                 new TreeMap<>(cakeValue).toString(),
                                 new TreeMap<>(mapValue).toString(),
@@ -67,14 +67,14 @@ public class MultiThreadedTest {
         }
     }
 
-    private static Map<CaKe, Object> map(int i, int j) {
+    private static Map<CanKey, Object> map(int i, int j) {
         return Map.of(
-            CaKe.get("foo-" + i + "-" + j),
+            CanKey.get("foo-" + i + "-" + j),
             Map.of(
                 "fooi", i,
                 "fooj", j
             ),
-            CaKe.get("foo-" + (i + j)),
+            CanKey.get("foo-" + (i + j)),
             Map.of(
                 "bar", i,
                 "zot", j

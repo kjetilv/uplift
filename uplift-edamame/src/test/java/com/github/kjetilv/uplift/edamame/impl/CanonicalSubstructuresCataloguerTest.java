@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +49,7 @@ class CanonicalSubstructuresCataloguerTest {
     void testMap() {
         TreeHasher<K, K128> hasher = new RecursiveTreeHasher<>(
             () -> Hashes.hashBuilder(HashKind.K128),
-            key -> new K(key.toString()),
+            K::ey,
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
             HashKind.K128
         );
@@ -60,14 +61,14 @@ class CanonicalSubstructuresCataloguerTest {
 
         var cv1 = cataloguer.canonical(hasher.hash(newObject.get()));
         if (cv1 instanceof CanonicalValue.Node<?, K128>(var h1, var m1)) {
-            assertThat(m1.keySet()).allMatch(K.class::isInstance);
+            assertThat(m1.keySet()).allMatch(isK());
             var cv2 = cataloguer.canonical(hasher.hash(newObject.get()));
             if (cv2 instanceof CanonicalValue.Node<?, K128>(var h2, var m2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(m1).isSameAs(m2);
-                assertThat(m2.keySet()).allMatch(K.class::isInstance);
-                assertThat(m1.keySet().iterator().next()).isSameAs(m2.keySet().iterator().next());
-                assertThat(m1.values().iterator().next()).isSameAs(m2.values().iterator().next());
+                assertThat(m2.keySet()).allMatch(isK());
+                assertThat(firstKey(m1)).isSameAs(firstKey(m2));
+                assertThat(firstKey(m1)).isSameAs(firstKey(m2));
             } else {
                 fail("Unexpected value: " + cv2);
             }
@@ -76,11 +77,23 @@ class CanonicalSubstructuresCataloguerTest {
         }
     }
 
+    private static <T> Predicate<T> isK() {
+        return K.class::isInstance;
+    }
+
+    private static Object firstKey(Map<?, Object> m1) {
+        return m1.keySet().iterator().next();
+    }
+
     @SuppressWarnings("StringOperationCanBeSimplified")
     private static Supplier<String> copySupplier(String original) {
         return () -> new String(original);
     }
 
     public record K(String k) {
+
+        static K ey(Object o) {
+            return new K(o.toString());
+        }
     }
 }

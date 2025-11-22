@@ -93,13 +93,6 @@ public final class Hashes {
         return longToBytes(l, 0, new byte[Long.BYTES]);
     }
 
-    public static int bytesToInt(byte[] bytes) {
-        return (bytes[0] & 0xFF) << 28 |
-               (bytes[1] & 0xFF) << 16 |
-               (bytes[2] & 0xFF) << 8 |
-               bytes[3] & 0xFF;
-    }
-
     public static byte[] longBytes(long long0, long long1) {
         var bytes = new byte[16];
         longToBytes(long0, 0, bytes);

@@ -59,7 +59,7 @@ class MapsMemoizersTest {
                 "zot1", biCopy
             )
         );
-        var access = mapsMemoizer.complete();
+        var access = mapsMemoizer.maps();
 
         var map42 = access.get(42L);
         var map43 = access.get(43L);
@@ -83,8 +83,8 @@ class MapsMemoizersTest {
 
     @Test
     void shouldHandlePojos() {
-        Object l1 = new Leaf(42L, "123.234");
-        Object l2 = new Leaf(34L, "424242");
+        Object l1 = new TestLeaf(42L, "123.234");
+        Object l2 = new TestLeaf(34L, "424242");
 
         MapsMemoizer<Long, String> mapsMemoizer = create(
             null,
@@ -98,8 +98,8 @@ class MapsMemoizersTest {
                 "zot1", l2
             )
         );
-        var l1Copy = new Leaf(42L, "123.234");
-        var l2Copy = new Leaf(34L, "424242");
+        var l1Copy = new TestLeaf(42L, "123.234");
+        var l2Copy = new TestLeaf(34L, "424242");
 
         mapsMemoizer.put(
             43L, Map.of(
@@ -107,7 +107,7 @@ class MapsMemoizersTest {
                 "zot1", l2Copy
             )
         );
-        var access = mapsMemoizer.complete();
+        var access = mapsMemoizer.maps();
 
         var map42 = access.get(42L);
         var map43 = access.get(43L);
@@ -145,7 +145,7 @@ class MapsMemoizersTest {
         for (var i = 0; i < 10; i++) {
             cache.put((long) i, Map.of("foo", String.valueOf(i)));
         }
-        var access = cache.complete();
+        var access = cache.maps();
         for (var i = 0; i < 10; i++) {
             var reconstructed = Map.of("foo", String.valueOf(i));
             assertEquals(reconstructed, access.get((long) i));
@@ -154,42 +154,42 @@ class MapsMemoizersTest {
 
     @Test
     void shouldRespectCanonicalKeys() {
-        KeyHandler<CaKe> caKeKeyHandler = s -> CaKe.get(s.toString());
-        MapsMemoizer<Long, CaKe> cache = create(caKeKeyHandler, HashKind.K128);
+        KeyHandler<CanKey> caKeKeyHandler = s -> CanKey.get(s.toString());
+        MapsMemoizer<Long, CanKey> cache = create(caKeKeyHandler, HashKind.K128);
 
-        var in42 = build42(zot1Zot2());
-        var hh0hh1 = hh0hh1();
+        var in42 = mapFoo(mapZot());
+        var hh0hh1 = mapHh();
 
         var in43 = Map.of(
             "fooTop", "zot",
-            "zot", zot1Zot2(),
+            "zot", mapZot(),
             "a", hh0hh1
         );
 
-        var hh0hh2 = hh0hh1();
+        var hh0hh2 = mapHh();
         var in44 = Map.of(
             "fooTop", "zot",
-            "zot", zot1Zot2(),
+            "zot", mapZot(),
             "a", Map.of(
                 "e1", 2,
                 "2", hh0hh2
             )
         );
-        var in48 = build42(zot1Zot2());
+
+        var in48 = mapFoo(mapZot());
 
         cache.put(42L, in42);
         cache.put(48L, in48);
         var out42 = cache.get(42L);
-        var out42as48 = cache.get(48L);
         assertSame(
             cache.get(42L),
-            out42as48,
-            "Same structure should return same identity"
+            cache.get(48L),
+            "Same identity should return same structure"
         );
         cache.put(43L, in43);
         cache.put(44L, in44);
 
-        var access = cache.complete();
+        var access = cache.maps();
         var cake43 = access.get(43L);
         var cake44 = access.get(44L);
 
@@ -203,20 +203,20 @@ class MapsMemoizersTest {
         );
 
         assertEquals(
-            hh0hh1(),
+            mapHh(),
             in43.get("a")
         );
         assertEquals(
             in44.get("a"),
             Map.of(
                 "e1", 2,
-                "2", hh0hh1()
+                "2", mapHh()
             )
         );
 
         assertEquals(
             getDeep(in44, "a", "2"),
-            hh0hh1()
+            mapHh()
         );
 
         assertNotSame(
@@ -225,13 +225,13 @@ class MapsMemoizersTest {
         );
 
         assertSame(
-            out42.get(CaKe.get("zot")),
-            cake43.get(CaKe.get("zotCopy"))
+            out42.get(CanKey.get("zot")),
+            cake43.get(CanKey.get("zotCopy"))
         );
 
         assertSame(
-            cake43.get(CaKe.get("zotCopy")),
-            out42.get(CaKe.get("zot"))
+            cake43.get(CanKey.get("zotCopy")),
+            out42.get(CanKey.get("zot"))
         );
 
         var stringMap42 = access.get(42L);
@@ -241,8 +241,8 @@ class MapsMemoizersTest {
 
         assertSame(stringMap44, stringMap44a);
 
-        var inner42 = stringMap42.get(CaKe.get("zotCopy"));
-        var inner43 = stringMap43.get(CaKe.get("zot"));
+        var inner42 = stringMap42.get(CanKey.get("zotCopy"));
+        var inner43 = stringMap43.get(CanKey.get("zot"));
         assertSame(inner42, inner43);
     }
 
@@ -266,7 +266,7 @@ class MapsMemoizersTest {
                 "zot", Collections.emptyList()
             )
         );
-        var access = cache.complete();
+        var access = cache.maps();
 
         assertEquals(
             Map.of("foo", "bar"),
@@ -294,7 +294,7 @@ class MapsMemoizersTest {
                 true, Collections.emptyList()
             )
         );
-        var access = cache.complete();
+        var access = cache.maps();
         var out42 = access.get(42L);
         var out45 = access.get(45L);
         assertEquals(
@@ -329,7 +329,7 @@ class MapsMemoizersTest {
             map(IntStream.range(0, 10)
                 .map(i -> 9 - i))
         );
-        var access = cache.complete();
+        var access = cache.maps();
         var canon42 = access.get(42L);
         var canon43 = access.get(43L);
         assertEquals(canon42, canon43);
@@ -355,7 +355,7 @@ class MapsMemoizersTest {
                     .toList()
             )
         );
-        var access = cache.complete();
+        var access = cache.maps();
         var canon42 = access.get(42L);
         var canon43 = access.get(43L);
         assertNotEquals(canon42, canon43);
@@ -380,7 +380,7 @@ class MapsMemoizersTest {
                     .toArray()
             )
         );
-        var access = cache.complete();
+        var access = cache.maps();
         var canon42 = access.get(42L);
         var canon43 = access.get(43L);
         assertNotEquals(canon42, canon43);
@@ -408,7 +408,7 @@ class MapsMemoizersTest {
         assertNotSame(otherList.get(0), canonicalList.get(0));
         assertNotSame(otherList.get(2), canonicalList.get(2));
 
-        var access = cache.complete();
+        var access = cache.maps();
         var canon42 = access.get(42L);
         var canon43 = access.get(43L);
         assertEquals(canon42, canon43);
@@ -428,17 +428,17 @@ class MapsMemoizersTest {
     @Test
     void shouldPreserveIdentities() {
         var cache = mapsMemoizer();
-        var in42 = build42(zot1Zot2());
-        var hh0hh1 = hh0hh1();
+        var in42 = mapFoo(mapZot());
+        var hh0hh1 = mapHh();
         var in43 = Map.of(
             "fooTop", "zot",
-            "zot", zot1Zot2(),
+            "zot", mapZot(),
             "a", hh0hh1
         );
-        var hh0hh2 = hh0hh1();
+        var hh0hh2 = mapHh();
         var in44 = Map.of(
             "fooTop", "zot",
-            "zot", zot1Zot2(),
+            "zot", mapZot(),
             "a", Map.of(
                 "e1", 2,
                 "2", hh0hh2
@@ -446,11 +446,11 @@ class MapsMemoizersTest {
         );
 
         cache.put(42L, in42);
-        cache.put(48L, build42(zot1Zot2()));
+        cache.put(48L, mapFoo(mapZot()));
         cache.put(43L, in43);
         cache.put(44L, in44);
 
-        var access = cache.complete();
+        var access = cache.maps();
         var out42as48 = access.get(48L);
         var out42 = access.get(42L);
 
@@ -461,20 +461,20 @@ class MapsMemoizersTest {
         );
         var out43 = access.get(43L);
         assertEquals(
-            hh0hh1(),
+            mapHh(),
             in43.get("a")
         );
         assertEquals(
             in44.get("a"),
             Map.of(
                 "e1", 2,
-                "2", hh0hh1()
+                "2", mapHh()
             )
         );
 
         assertEquals(
             getDeep(in44, "a", "2"),
-            hh0hh1()
+            mapHh()
         );
 
         assertNotSame(
@@ -504,7 +504,7 @@ class MapsMemoizersTest {
             stringMap43.get("zot")
         );
         assertEquals(
-            hh0hh1(),
+            mapHh(),
             getDeep(stringMap44, "a", "2")
         );
         assertSame(
@@ -532,7 +532,7 @@ class MapsMemoizersTest {
                 "zot1", new BigInteger("424242")
             )
         );
-        var access = cache.complete();
+        var access = cache.maps();
 
         assertSame(bd, access.get(42L).get("zot2"));
         assertSame(bi, access.get(42L).get("zot1"));
@@ -598,21 +598,21 @@ class MapsMemoizersTest {
                 Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private static Map<String, Object> build42(Map<String, ? extends Serializable> zot1Zot2) {
+    private static Map<String, Object> mapFoo(Map<String, ? extends Serializable> zot1Zot2) {
         return Map.of(
             "fooTop", "bar",
             "zotCopy", zot1Zot2
         );
     }
 
-    private static Map<String, ? extends Number> hh0hh1() {
+    private static Map<String, ? extends Number> mapHh() {
         return Map.of(
             "hh0", 1,
             "hh1", new BigDecimal("5.25")
         );
     }
 
-    private static Map<String, ? extends Serializable> zot1Zot2() {
+    private static Map<String, ? extends Serializable> mapZot() {
         return Map.of(
             "zot2", true,
             "zot1", 5
@@ -620,7 +620,7 @@ class MapsMemoizersTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static CaKe getKey(Map<CaKe, ?> map, String key) {
+    private static CanKey getKey(Map<CanKey, ?> map, String key) {
         return map.keySet()
             .stream()
             .filter(k -> k.key().equals(key))

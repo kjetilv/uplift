@@ -2,19 +2,21 @@ package com.github.kjetilv.uplift.edamame;
 
 import module java.base;
 
-/// Behold the memoizer! Maps will be stored in canonical form, avoiding memory wasted on identical
-/// trees.
+/// Maps memoizer. Use {@link MapsMemoizers} to build instances.
 ///
-/// In cases where the set of maps is known (and finite), the [complete][#complete()] method can
-/// be invoked after all data are inserted. This allows further savings by throwing away internal
-/// book-keeping state and locking down the memoizer for further puts.
+/// Stores maps will be stored in canonical forms, avoiding memory wasted on identical trees.
+/// Extends {@link MemoizedMaps} and supports combined store/lookup behaviour.
 ///
-/// Use the [MapsMemoizers] factory class to create instances.
+/// Note that keeping track of known hashes and shared structures requires internal structures
+/// that will also consume some memory. These are required as long as there is still data to be
+/// inserted.
 ///
-/// Note: Extends [MemoizedMaps] to enable lookup of stored maps even before [completion][#complete()].
+/// However, once all known data is in, it is possible to call the [maps][#maps()] method, producing a
+/// dedicated lookup instance which holds only the canonical data. The original
+/// {@link MapsMemoizer} may then be discarded, leaving these internal structures to be GC-ed.
 ///
-/// @param <I> Id type, used to identify maps
-/// @param <K> Key type, used as keys in stored maps
+/// @param <I> Top-level id type, used to lookup maps
+/// @param <K> Key type, used as the key type in stored maps
 /// @see MapsMemoizers
 @SuppressWarnings("unused")
 public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
@@ -24,7 +26,6 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
     /// @param identifier Identifier
     /// @param value      Map
     /// @throws IllegalArgumentException If the identifier is already stored
-    /// @throws IllegalStateException    If this instance is [completed][#complete()]
     void put(I identifier, Map<?, ?> value);
 
     /// Store one map, unless it's already stored
@@ -32,12 +33,8 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
     /// @param identifier Identifier
     /// @param value      Map
     /// @return true iff the map was added.  If false, the memoizer was unchanged
-    /// @throws IllegalStateException If this instance is [completed][#complete()]
     boolean putIfAbsent(I identifier, Map<?, ?> value);
 
-    /// Signals the end of [putting][#put(Object,Map)] activities.  Locks down this instance
-    /// for further calls to [put][#put(Object, Map)], allowing it to free up memory used for working data.
-    ///
-    /// @return This instance, typed to [MemoizedMaps] in order to discourage futher putting
-    MemoizedMaps<I, K> complete();
+    /// @return Lookup of canonical maps
+    MemoizedMaps<I, K> maps();
 }

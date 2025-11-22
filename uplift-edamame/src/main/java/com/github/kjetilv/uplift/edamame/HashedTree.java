@@ -5,7 +5,6 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Collectioons;
 
-import static com.github.kjetilv.uplift.util.Collectioons.transformList;
 import static com.github.kjetilv.uplift.util.Maps.transformMap;
 
 /// A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
@@ -38,15 +37,15 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     /// A list in the tree
     ///
     /// @param hash   Hash
-    /// @param values List
+    /// @param list List
     record Nodes<K, H extends HashKind<H>>(
         Hash<H> hash,
-        List<HashedTree<K, H>> values
+        List<HashedTree<K, H>> list
     ) implements HashedTree<K, H> {
 
         @Override
         public Object unwrap() {
-            return Collectioons.transformList(values, HashedTree::unwrap);
+            return Collectioons.transformList(list, HashedTree::unwrap);
         }
     }
 

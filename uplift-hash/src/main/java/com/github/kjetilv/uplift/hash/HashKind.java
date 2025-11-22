@@ -2,13 +2,10 @@ package com.github.kjetilv.uplift.hash;
 
 import module java.base;
 
-import static com.github.kjetilv.uplift.hash.Hashes.*;
-import static com.github.kjetilv.uplift.hash.Hashes.GOOD_2;
-
 /// A hash kind is either
 ///
-/// * [#K128], 16-byte hash, or
-/// * [#K256], a 32 byte one
+/// * [#K128], a 16-byte hash using {@link HashKind.K128#ALGORITHM MD5} hashing, or
+/// * [#K256], a 32 byte one using {@link HashKind.K256#ALGORITHM SHA-256} hashing
 ///
 public sealed interface HashKind<H extends HashKind<H>> {
 
@@ -28,16 +25,20 @@ public sealed interface HashKind<H extends HashKind<H>> {
         return bits() / 64;
     }
 
+    /// @return True iff the provided base64 string matches this kind's {@link Hash#digest() digest} format
     default boolean isDigest(String base64) {
         return base64.length() == digestLength() + paddingLength() && base64.endsWith(digestPadding());
     }
 
+    /// @return Length of padding in {@link Hash#digest() digests}
     default int paddingLength() {
         return digestPadding().length();
     }
 
+    /// @return Length of {@link Hash#digest() digests}, not including padding
     int digestLength();
 
+    /// @return Padding string for {@link Hash#digest() digests}
     String digestPadding();
 
     /// @return Name of algorithm used for hashing
@@ -46,8 +47,10 @@ public sealed interface HashKind<H extends HashKind<H>> {
     /// @return The number of bits in the hash
     int bits();
 
+    /// @return The canonical all-zeroes instance
     Hash<H> blank();
 
+    /// @return A random hash
     Hash<H> random();
 
     record K128(
