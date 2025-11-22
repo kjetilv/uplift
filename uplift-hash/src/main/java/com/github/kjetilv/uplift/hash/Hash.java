@@ -26,8 +26,8 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     /// @return Unique string representation
     default String digest() {
-        var bytes = longsToBytes(ls());
-        var base64 = new String(ENCODER.encode(bytes), US_ASCII);
+        var bytes = ByteUtils.longsToBytes(ls());
+        var base64 = new String(Base64.getEncoder().encode(bytes), US_ASCII);
         if (kind().isDigest(base64)) {
             return base64.substring(0, kind().digestLength())
                 .replace(BAD_1, GOOD_1)

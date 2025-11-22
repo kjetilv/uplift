@@ -18,10 +18,6 @@ public final class Hashes {
 
     public static final Hash<K256> BLANK_256 = of(0L, 0L, 0L, 0L);
 
-    public static final Base64.Encoder ENCODER = Base64.getEncoder();
-
-    public static final Base64.Decoder DECODER = Base64.getDecoder();
-
     public static Function<InputStream, Stream<Bytes>> inputStream2Bytes() {
         return is ->
             StreamSupport.stream(
@@ -57,11 +53,11 @@ public final class Hashes {
     public static <H extends HashKind<H>> Hash<H> hash(byte[] bytes) {
         requireNonNull(bytes, "bytes");
         if (bytes.length == K128.byteCount()) {
-            var ls = toLongs(bytes, new long[K128.longCount()]);
+            var ls = ByteUtils.toLongs(bytes, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (bytes.length == K256.byteCount()) {
-            var ls = toLongs(bytes, new long[K256.longCount()]);
+            var ls = ByteUtils.toLongs(bytes, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
@@ -71,11 +67,11 @@ public final class Hashes {
     public static <H extends HashKind<H>> Hash<H> hash(String raw) {
         var length = requireNonNull(raw, "raw").length();
         if (length == K128.digestLength()) {
-            var ls = toLongs(raw, new long[K128.longCount()]);
+            var ls = ByteUtils.toLongs(raw, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (length == K256.digestLength()) {
-            var ls = toLongs(raw, new long[K256.longCount()]);
+            var ls = ByteUtils.toLongs(raw, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
@@ -86,66 +82,11 @@ public final class Hashes {
     }
 
     public static byte[] intBytes(int i) {
-        return intToBytes(i, 0, new byte[Integer.BYTES]);
+        return ByteUtils.intToBytes(i, 0, new byte[Integer.BYTES]);
     }
 
     public static byte[] longBytes(long l) {
-        return longToBytes(l, 0, new byte[Long.BYTES]);
-    }
-
-    public static byte[] longBytes(long long0, long long1) {
-        var bytes = new byte[16];
-        longToBytes(long0, 0, bytes);
-        longToBytes(long1, 8, bytes);
-        return bytes;
-    }
-
-    public static byte[] longBytes(long long0, long long1, long long2, long long3) {
-        var bytes = new byte[32];
-        longToBytes(long0, 0, bytes);
-        longToBytes(long1, 8, bytes);
-        longToBytes(long2, 16, bytes);
-        longToBytes(long3, 24, bytes);
-        return bytes;
-    }
-
-    public static long bytesToLong(byte[] bytes, int start) {
-        long lw = 0;
-        for (var i = 0; i < 7; i++) {
-            lw |= bytes[i + start] & 0xFF;
-            lw <<= 8;
-        }
-        lw |= bytes[7 + start] & 0xFF;
-        return lw;
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    public static byte[] intToBytes(int l, int index, byte[] bytes) {
-        long w = l;
-        for (var j = 3; j > 0; j--) {
-            bytes[index + j] = (byte) (w & 0xFF);
-            w >>= 8;
-        }
-        bytes[index] = (byte) (w & 0xFF);
-        return bytes;
-    }
-
-    public static byte[] longsToBytes(long[] longs) {
-        var bytes = new byte[longs.length * Long.BYTES];
-        for (var l = 0; l < longs.length; l++) {
-            longToBytes(longs[l], l * 8, bytes);
-        }
-        return bytes;
-    }
-
-    public static byte[] longToBytes(long i, int index, byte[] bytes) {
-        var w = i;
-        for (var j = 7; j > 0; j--) {
-            bytes[index + j] = (byte) (w & 0xFF);
-            w >>= 8;
-        }
-        bytes[index] = (byte) (w & 0xFF);
-        return bytes;
+        return ByteUtils.longToBytes(l, 0, new byte[Long.BYTES]);
     }
 
     public static <H extends HashKind<H>> HashBuilder<byte[], H> bytesBuilder(H kind) {
@@ -178,27 +119,6 @@ public final class Hashes {
     static final String PADDING = "==";
 
     private static final Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
-
-    private static long[] toLongs(byte[] bytes, long[] ls) {
-        for (var i = 0; i < 8; i++) {
-            for (var j = 0; j < ls.length; j++) {
-                ls[j] <<= 8;
-                ls[j] |= bytes[i + j * 8] & 0xFF;
-            }
-        }
-        return ls;
-    }
-
-    private static long[] toLongs(String raw, long[] ls) {
-        var digest = raw
-            .replace(GOOD_1, BAD_1)
-            .replace(GOOD_2, BAD_2);
-        var decoded = DECODER.decode(digest);
-        for (var l = 0; l < ls.length; l++) {
-            ls[l] = bytesToLong(decoded, l * 8);
-        }
-        return ls;
-    }
 
     private static final class BytesIterator implements Iterator<Bytes> {
 

@@ -141,7 +141,7 @@ public final class BytesIO {
 
     public static byte[] fromBase64(String base64) {
         try {
-            return DECODER.decode(base64);
+            return Base64.getDecoder().decode(base64);
         } catch (Exception e) {
             throw new IllegalStateException("Could not decode `" + base64 + "`", e);
         }
@@ -149,7 +149,7 @@ public final class BytesIO {
 
     public static String toBase64(byte[] body) {
         try {
-            return new String(ENCODER.encode(body), ISO_8859_1);
+            return new String(Base64.getEncoder().encode(body), ISO_8859_1);
         } catch (Exception e) {
             throw new IllegalStateException("Could not encode " + body.length + " bytes", e);
         }
@@ -166,10 +166,6 @@ public final class BytesIO {
     private static final byte[] NOBODY = {};
 
     private static final int ATE_KAY = 8192;
-
-    private static final Base64.Encoder ENCODER = Base64.getEncoder();
-
-    private static final Base64.Decoder DECODER = Base64.getDecoder();
 
     private static int readInt(DataInput input) {
         try {
