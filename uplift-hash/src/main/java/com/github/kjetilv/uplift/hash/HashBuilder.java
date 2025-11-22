@@ -2,25 +2,28 @@ package com.github.kjetilv.uplift.hash;
 
 import module java.base;
 
-/// Stateful interface for building ids.  Maintains an underlying hasher which can be [#hash(Object)] added to.
+/// Stateful interface for building hashes.  Maintains an underlying hasher which can be progressively
+/// [#hash(Object)] added to.
 ///
-/// When done, [#build()] can be called to get the final hash, and reset the underlying hasher.
+/// When done, [#build()] returns the final hash, and resets the underlying hasher.
 ///
 /// @param <T> Hashed type
 /// @param <H> Hash kind
 public interface HashBuilder<T, H extends HashKind<H>> {
 
-    default void accept(T item) {
-        hash(item);
-    }
-
+    /// Hash items
+    /// @param items Items
+    /// @return This builder
     default HashBuilder<T, H> hash(List<T> items) {
-        items.forEach(this::accept);
+        items.forEach(this::hash);
         return this;
     }
 
+    /// Hash items
+    /// @param items Items
+    /// @return This builder
     default HashBuilder<T, H> hash(Stream<T> items) {
-        items.forEach(this::accept);
+        items.forEach(this::hash);
         return this;
     }
 
@@ -31,7 +34,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     ///
     HashBuilder<T, H> hash(T item);
 
-    /// Get the id, reset the underlying hasher.
+    /// Get the hash, reset the underlying hasher.
     ///
     /// @return Hash
     Hash<H> build();

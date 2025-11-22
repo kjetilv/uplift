@@ -17,20 +17,21 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
 
     private final Lock lock = new ReentrantLock();
 
-    private final HashBuilder<String, K> shb;
+    private final HashBuilder<String, K> strings;
 
-    private final HashBuilder<Integer, K> ihb;
+    private final HashBuilder<Integer, K> ints;
 
     ThrowableHasher(boolean messages, HashBuilder<Bytes, K> hashBuilder) {
         this.hashBuilder = Objects.requireNonNull(hashBuilder, "idBuilder");
-        this.shb = this.hashBuilder.map(ThrowableHasher::bytes);
-        this.ihb = this.hashBuilder.map(Hashes.intToBytes().andThen(Bytes::from));
+        this.strings = this.hashBuilder.map(ThrowableHasher::bytes);
+        this.ints = this.hashBuilder.map(Hashes.intToBytes().andThen(Bytes::from));
         this.messages = messages;
     }
 
     @Override
     public Hash<K> hash(Throwable throwable) {
-        var chain = chain(throwable);
+        Objects.requireNonNull(throwable, "throwable");
+        var chain = Utils.ThrowableUtils.chain(throwable).toList();
         lock.lock();
         try {
             return hash(chain);
@@ -45,20 +46,16 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
     }
 
     private void hashSingle(Throwable t) {
-        shb.accept(t.getClass().getName());
+        strings.hash(t.getClass().getName());
         if (messages) {
-            shb.accept(t.getMessage());
+            strings.hash(t.getMessage());
         }
         var st = t.getStackTrace();
-        ihb.hash(st.length);
+        ints.hash(st.length);
         for (var el : st) {
-            hashElement(el);
+            strings(el).forEach(strings::hash);
+            ints.hash(el.getLineNumber());
         }
-    }
-
-    private void hashElement(StackTraceElement el) {
-        strings(el).forEach(shb::hash);
-        ihb.hash(el.getLineNumber());
     }
 
     private static Stream<String> strings(StackTraceElement el) {
@@ -68,13 +65,9 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
             el.getFileName(),
             el.getModuleName(),
             el.getModuleVersion(),
-            el.getClassLoaderName()
+            el.getClassLoaderName(),
+            String.valueOf(el.getLineNumber())
         );
-    }
-
-    private static List<Throwable> chain(Throwable throwable) {
-        return Utils.ThrowableUtils.chain(Objects.requireNonNull(throwable, "throwable"))
-            .toList();
     }
 
     private static Bytes bytes(String string) {
