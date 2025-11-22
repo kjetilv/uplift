@@ -44,5 +44,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     /// @return New hasher that accepts and transforms its input to T
     <R> HashBuilder<R, H> map(Function<R, T> transform);
 
+    /// @param transform Transformer for R to Stream<T>
+    /// @return New hasher that accepts and transforms its input to Stream<T>
     <R> HashBuilder<R, H> flatMap(Function<R, Stream<T>> transform);
 }

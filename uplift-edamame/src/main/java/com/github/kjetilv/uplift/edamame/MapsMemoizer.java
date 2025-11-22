@@ -21,6 +21,18 @@ import module java.base;
 @SuppressWarnings("unused")
 public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
 
+    /// Returns a read-only access for canonical maps.  This memoizer should not be invoked with further
+    /// calls to {@link #put(Object, Map) put}/{@link #putIfAbsent(Object, Map) putIfAbsent}, as it carries
+    /// a risk of concurrent modifications.
+    ///
+    /// To get thread-safe copy, invoke {@link #maps(boolean) maps}
+    /// with the copy flag.
+    ///
+    /// @return Lookup of canonical maps
+    default MemoizedMaps<I, K> maps() {
+        return maps(false);
+    }
+
     /// Store one map
     ///
     /// @param identifier Identifier
@@ -35,6 +47,10 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
     /// @return true iff the map was added.  If false, the memoizer was unchanged
     boolean putIfAbsent(I identifier, Map<?, ?> value);
 
+    /// Returns a lookup interface for canonical maps
+    ///
+    /// @param copy If true, return a copy of the stored maps and leave this memoizer able to accept further
+    ///             calls to {@link #put(Object, Map) put}/{@link #putIfAbsent(Object, Map) putIfAbsent}.
     /// @return Lookup of canonical maps
-    MemoizedMaps<I, K> maps();
+    MemoizedMaps<I, K> maps(boolean copy);
 }

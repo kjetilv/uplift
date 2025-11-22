@@ -5,6 +5,8 @@ import com.github.kjetilv.uplift.edamame.*;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Map.copyOf;
 import static java.util.Objects.requireNonNull;
 
 /// Works by hashing nodes and leaves and storing them under their hashes. When structures and/or values
@@ -22,13 +24,11 @@ import static java.util.Objects.requireNonNull;
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     implements MapsMemoizer<I, K> {
 
-    private final Map<I, Hash<H>> memoizedHashes = new HashMap<>();
+    private final Map<I, Hash<H>> hashes = new HashMap<>();
 
-    private final Map<Hash<H>, Map<K, Object>> canonicalObjects = new HashMap<>();
+    private final Map<Hash<H>, Map<K, Object>> objects = new HashMap<>();
 
-    private final Map<I, Map<K, Object>> overflowObjects = new HashMap<>();
-
-    private final AtomicBoolean complete = new AtomicBoolean();
+    private final Map<I, Map<K, Object>> overflow = new HashMap<>();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -45,17 +45,16 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public int size() {
-        return read(() -> memoizedHashes.size() + overflowObjects.size());
+        return read(() -> hashes.size() + overflow.size());
     }
 
     @Override
-    public Map<K, ?> get(I identifier) {
-        requireNonNull(identifier, "identifier");
+    public Map<K, ?> get(I id) {
+        requireNonNull(id, "id");
         return read(() -> {
-            var hash = memoizedHashes.get(requireNonNull(identifier, "identifier"));
-            return hash == null
-                ? overflowObjects.get(identifier)
-                : canonicalObjects.get(hash);
+            var hash = hashes.get(id);
+            return hash != null ? objects.get(hash)
+                : overflow.get(id);
         });
     }
 
@@ -70,9 +69,15 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     @Override
-    public MemoizedMaps<I, K> maps() {
+    public MemoizedMaps<I, K> maps(boolean copy) {
         return read(() ->
-            new MemoizedMapsImpl<>(memoizedHashes, canonicalObjects, overflowObjects));
+            new MemoizedMapsImpl<>(
+                copy ? copyOf(hashes) : unmodifiableMap(hashes),
+                copy ? copyOf(objects) : unmodifiableMap(objects),
+                overflow.isEmpty() ? Map.of()
+                    : copy ? copyOf(overflow)
+                        : unmodifiableMap(overflow)
+            ));
     }
 
     @SuppressWarnings({"unused"})
@@ -93,26 +98,26 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     private boolean putCanonical(I identifier, CanonicalValue.Node<?, H> valueNode, boolean requireAbsent) {
-        if (complete.get()) {
-            return fail(this + " is complete, cannot put " + identifier);
-        }
-        var existingHash = memoizedHashes.putIfAbsent(identifier, valueNode.hash());
-        if (existingHash == null) {
-            var value = (Map<K, Object>) valueNode.value();
-            var existingValue = canonicalObjects.putIfAbsent(valueNode.hash(), value);
-            if (existingValue == null || existingValue.equals(value)) {
-                return true;
+        return write(() -> {
+            var existingHash = hashes.putIfAbsent(identifier, valueNode.hash());
+            if (existingHash == null) {
+                var value = (Map<K, Object>) valueNode.value();
+                var existingValue = objects.putIfAbsent(valueNode.hash(), value);
+                if (existingValue == null || existingValue.equals(value)) {
+                    return true;
+                }
+                return fail("Illegal state: " + existingValue + " != " + value);
             }
-            return fail("Illegal state: " + existingValue + " != " + value);
-        }
-        if (requireAbsent) {
-            throw new IllegalArgumentException("Identifier " + identifier + " was: " + get(identifier));
-        }
-        return false;
+            if (requireAbsent) {
+                throw new IllegalArgumentException("Identifier " + identifier + " was: " + get(identifier));
+            }
+            return false;
+        });
     }
 
     private boolean putOverflow(I identifier, Map<K, Object> value) {
-        return overflowObjects.putIfAbsent(identifier, value) == null;
+        return write(() ->
+            overflow.putIfAbsent(identifier, value) == null);
     }
 
     private <T> T read(Supplier<T> action) {
@@ -124,16 +129,19 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     private String describe() {
-        var count = memoizedHashes.size();
-        var canonicalsSize = canonicalObjects.size();
-        int overflowsCount = overflowObjects.size();
+        var count = hashes.size();
+        var canonicalsSize = objects.size();
+        int overflowsCount = overflow.size();
         return (count + overflowsCount) +
                " items" +
                (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +
-               (complete.get() ? "completed" : "working maps:" + canonicalsSize);
+               "working maps:" + canonicalsSize;
     }
 
-    private static <T> T withLock(Lock lock, Supplier<T> action) {
+    private static <T> T withLock(
+        Lock lock,
+        Supplier<T> action
+    ) {
         lock.lock();
         try {
             return action.get();

@@ -6,25 +6,25 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
 
-class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMaps<I, K> {
+final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMaps<I, K> {
 
-    private final Map<I, Hash<H>> memoizedHashes;
+    private final Map<I, Hash<H>> hashes;
 
-    private final Map<Hash<H>, Map<K, Object>> canonicalObjects;
+    private final Map<Hash<H>, Map<K, Object>> objects;
 
-    private final Map<I, Map<K, Object>> overflowObjects;
+    private final Map<I, Map<K, Object>> overflow;
 
     private final int size;
 
-    public MemoizedMapsImpl(
-        Map<I, Hash<H>> memoizedHashes,
-        Map<Hash<H>, Map<K, Object>> canonicalObjects,
-        Map<I, Map<K, Object>> overflowObjects
+    MemoizedMapsImpl(
+        Map<I, Hash<H>> hashes,
+        Map<Hash<H>, Map<K, Object>> objects,
+        Map<I, Map<K, Object>> overflow
     ) {
-        this.memoizedHashes = memoizedHashes;
-        this.canonicalObjects = canonicalObjects;
-        this.overflowObjects = overflowObjects;
-        this.size = memoizedHashes.size() + overflowObjects.size();
+        this.hashes = hashes;
+        this.objects = objects;
+        this.overflow = overflow;
+        this.size = hashes.size() + overflow.size();
     }
 
     @Override
@@ -33,10 +33,9 @@ class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMaps<I, K
     }
 
     @Override
-    public Map<K, ?> get(I identifier) {
-        var hash = memoizedHashes.get(identifier);
-        return hash == null
-            ? overflowObjects.get(identifier)
-            : canonicalObjects.get(hash);
+    public Map<K, ?> get(I id) {
+        var hash = hashes.get(id);
+        return hash != null ? objects.get(hash)
+            : overflow.get(id);
     }
 }
