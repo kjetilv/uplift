@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
-import com.github.kjetilv.uplift.lambda.LambdaHandler;
-import com.github.kjetilv.uplift.lambda.LambdaLooper;
-import com.github.kjetilv.uplift.lambda.LamdbdaManaged;
+import com.github.kjetilv.uplift.lambda.*;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -130,7 +127,7 @@ public class LambdaHarness implements Closeable {
         this.localLambda = new LocalLambda(settings);
         this.testExec.submit(localLambda);
         this.localLambda.awaitStarted(Duration.ofMinutes(1));
-        this.looper = LamdbdaManaged.create(
+        this.looper = Lambda.managed(
             this.localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
             lambdaHandler

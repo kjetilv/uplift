@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
+import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.ObjectWriter;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 @SuppressWarnings({"MethodMayBeStatic", "unused"})
 public abstract class AbstractObjectWriter<T extends Record> implements ObjectWriter<T> {
@@ -52,7 +52,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
         return value.toString();
     }
 
-    protected String value(Uuid value) {
+    protected String value(Hash<?> value) {
         return value.digest();
     }
 

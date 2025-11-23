@@ -4,7 +4,6 @@ import module java.base;
 import module jdk.incubator.vector;
 import com.github.kjetilv.uplift.edam.HashFun;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.Hashes;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
@@ -38,7 +37,7 @@ final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
 
         @Override
         public Hash<K128> load() {
-            return Hashes.ofNullable(
+            return Hash.of(
                 (long) H0.get(slice, 0),
                 (long) H1.get(slice, 0)
             );

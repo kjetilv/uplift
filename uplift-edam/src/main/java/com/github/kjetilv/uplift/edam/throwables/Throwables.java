@@ -9,7 +9,6 @@ import com.github.kjetilv.uplift.edam.internal.Utils;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.util.Bytes;
 
 @SuppressWarnings("unused")
@@ -53,7 +52,7 @@ public final class Throwables {
         return InternalFactory.createVerifiedOnHeap(
             now == null ? Utils.Time.UTC_NOW : now,
             window == null ? DEFAULT_WINDOW : window,
-            hashBuilder == null ? Hashes.hashBuilder(kind) : hashBuilder,
+            hashBuilder == null ? HashBuilder.forKind(kind) : hashBuilder,
             maxLength < 0 ? DEFAULT_LENGTH : maxLength,
             messages
         );
@@ -108,7 +107,7 @@ public final class Throwables {
             Objects.requireNonNull(arena, "arena"),
             now == null ? Utils.Time.UTC_NOW : now,
             window == null ? DEFAULT_WINDOW : window,
-            hashBuilder == null ? Hashes.hashBuilder(kind) : hashBuilder,
+            hashBuilder == null ? HashBuilder.forKind(kind) : hashBuilder,
             hashFun == null ? InternalFactory.JAVA : hashFun,
             maxLength < 0 ? DEFAULT_LENGTH : maxLength,
             messages

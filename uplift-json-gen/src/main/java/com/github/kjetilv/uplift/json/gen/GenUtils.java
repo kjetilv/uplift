@@ -19,7 +19,7 @@ final class GenUtils {
         Collection<? extends Element> rootElements,
         Collection<? extends Element> enums
     ) {
-        var primitiveListType = primitiveListType(element);
+        var primitiveListType = primitiveListEvent(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType
                 .map(Class::getName);
@@ -94,7 +94,7 @@ final class GenUtils {
             .map(TypeElement.class::cast);
     }
 
-    static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
+    static Optional<Class<?>> primitiveListEvent(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(el ->
                 el.fieldTypes()

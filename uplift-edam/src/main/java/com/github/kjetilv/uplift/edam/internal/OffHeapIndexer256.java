@@ -5,7 +5,6 @@ import module jdk.incubator.vector;
 import com.github.kjetilv.uplift.edam.HashFun;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind.K256;
-import com.github.kjetilv.uplift.hash.Hashes;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.sequenceLayout;
@@ -42,7 +41,7 @@ final class OffHeapIndexer256 extends AbstractOffHeapIndexer<K256> {
 
         @Override
         public Hash<K256> load() {
-            return Hashes.ofNullable(
+            return Hash.of(
                 (long) H0.get(slice, 0),
                 (long) H1.get(slice, 0),
                 (long) H2.get(slice, 0),

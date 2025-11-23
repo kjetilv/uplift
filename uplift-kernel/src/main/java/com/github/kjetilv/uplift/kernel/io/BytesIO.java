@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.kernel.io;
 
-import com.github.kjetilv.uplift.uuid.Uuid;
+import com.github.kjetilv.uplift.hash.Hash;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -8,9 +8,9 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.IntStream;
 
+import static com.github.kjetilv.uplift.hash.HashKind.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
 
@@ -63,20 +63,11 @@ public final class BytesIO {
         return writeLong(output, instant.getEpochSecond());
     }
 
-    public static List<Uuid> readUuids(DataInput input) {
+    public static List<Hash<K128>> readHashes128(DataInput input) {
         var count = readInt(input);
         return IntStream.range(0, count)
-            .mapToObj(i -> readUuid(input))
+            .mapToObj(i -> Hash.of(input, K128))
             .toList();
-    }
-
-    public static Uuid readUuid(DataInput input) {
-        try {
-            requireNonNull(input, "input");
-            return Uuid.from(input.readLong(), input.readLong());
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     public static int writeLong(DataOutput output, Long value) {
@@ -104,23 +95,27 @@ public final class BytesIO {
         }
     }
 
-    public static int writeUuid(DataOutput output, Uuid uuid) {
-        return writeUuid(output, requireNonNull(uuid, "uuid").uuid());
+    public static int writeHash128(DataOutput output, Hash<K128> hash) {
+        requireNonNull(hash, "hash");
+        return writeLong(output, hash.ls()[1]) +
+               writeLong(output, hash.ls()[0]);
     }
 
-    public static int writeUuid(DataOutput output, UUID uuid) {
-        requireNonNull(uuid, "uuid");
-        return writeLong(output, uuid.getMostSignificantBits()) +
-               writeLong(output, uuid.getLeastSignificantBits());
-    }
-
-    public static int writeUuids(DataOutput output, List<? extends Uuid> list) {
+    public static int writeHashes128(DataOutput output, List<? extends Hash<K128>> list) {
         var length = writeInt(output, requireNonNull(list, "list").size());
         var data = list.stream()
-            .mapToInt(track ->
-                writeUuid(output, track))
+            .mapToInt(hash ->
+                writeHash128(output, hash))
             .sum();
         return length + data;
+    }
+
+    public static int writeHash256(DataOutput output, Hash<K256> hash) {
+        requireNonNull(hash, "hash");
+        return writeLong(output, hash.ls()[3]) +
+               writeLong(output, hash.ls()[2]) +
+               writeLong(output, hash.ls()[1]) +
+               writeLong(output, hash.ls()[0]);
     }
 
     public static int writeWritables(DataOutput output, Collection<? extends BinaryWritable> list) {

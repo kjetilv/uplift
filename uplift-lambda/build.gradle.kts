@@ -6,7 +6,7 @@ dependencies {
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-s3"))
     implementation(project(":uplift-util"))
-    implementation(project(":uplift-uuid"))
+    implementation(project(":uplift-hash"))
 
     annotationProcessor(project(":uplift-json-gen"))
 }

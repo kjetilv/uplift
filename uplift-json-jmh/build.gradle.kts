@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":uplift-json-gen"))
     implementation(project(":uplift-json-mame"))
     implementation(project(":uplift-util"))
-    implementation(project(":uplift-uuid"))
 
     annotationProcessor(project(":uplift-json-gen"))
 

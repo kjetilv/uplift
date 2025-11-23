@@ -5,25 +5,24 @@ import module java.compiler;
 
 enum BaseType {
 
-    STRING(String.class),
-    BOOLEAN(List.of(Boolean.class, Boolean.TYPE), Boolean.class),
-    INTEGER(List.of(Integer.class, Integer.TYPE), Number.class),
-    LONG(List.of(Long.class, Long.TYPE), Number.class),
-    DOUBLE(List.of(Double.class, Double.TYPE), Number.class),
-    FLOAT(List.of(Float.class, Float.TYPE), Number.class),
-    SHORT(List.of(Short.class, Short.TYPE), Number.class),
-    BYTE(List.of(Byte.class, Byte.TYPE), Number.class),
-    BIG_DECIMAL(BigDecimal.class, Number.class),
-    BIG_INTEGER(BigInteger.class, Number.class),
-    UUID(java.util.UUID.class, String.class),
-    URI(java.net.URI.class, String.class),
-    URL(java.net.URL.class, String.class),
-    Uuid(com.github.kjetilv.uplift.uuid.Uuid.class, String.class),
-    INSTANT(Instant.class, Number.class),
-    DURATION(Duration.class, String.class),
-    LOCALDATE(LocalDate.class, String.class),
-    LOCALDATETIME(LocalDateTime.class, String.class),
-    OFFSETDATETIME(OffsetDateTime.class, String.class),
+    STRING(String.class, String.class),
+    BOOLEAN(Boolean.class, Boolean.class, Boolean.TYPE),
+    INTEGER(Number.class, Integer.class, Integer.TYPE),
+    LONG(Number.class, Long.class, Long.TYPE),
+    DOUBLE(Number.class, Double.class, Double.TYPE),
+    FLOAT(Number.class, Float.class, Float.TYPE),
+    SHORT(Number.class, Short.class, Short.TYPE),
+    BYTE(Number.class, Byte.class, Byte.TYPE),
+    BIG_DECIMAL(Number.class, BigDecimal.class),
+    BIG_INTEGER(Number.class, BigInteger.class),
+    UUID(String.class, UUID.class),
+    URI(String.class, URI.class),
+    URL(String.class, URL.class),
+    INSTANT(Number.class, Instant.class),
+    DURATION(String.class, Duration.class),
+    LOCALDATE(String.class, LocalDate.class),
+    LOCALDATETIME(String.class, LocalDateTime.class),
+    OFFSETDATETIME(String.class, OffsetDateTime.class),
     MAP(Map.class, Map.class);
 
     static BaseType of(RecordComponentElement typeElement) {
@@ -46,17 +45,12 @@ enum BaseType {
 
     private final Class<?> jsonType;
 
-    BaseType(Class<?> fieldType) {
-        this(fieldType, fieldType);
-    }
-
-    BaseType(Class<?> fieldType, Class<?> jsonType) {
-        this(List.of(fieldType), jsonType);
-    }
-
-    BaseType(List<Class<?>> fieldTypes, Class<?> jsonType) {
-        this.fieldTypes = fieldTypes;
-        this.jsonType = jsonType;
+    BaseType(Class<?> jsonType, Class<?>... fieldTypes) {
+        this.jsonType = Objects.requireNonNull(jsonType, "jsonType");
+        this.fieldTypes = List.of(fieldTypes);
+        if (this.fieldTypes.isEmpty()) {
+            throw new IllegalStateException("Execpted 1+ field types");
+        }
     }
 
     public List<Class<?>> fieldTypes() {
@@ -77,9 +71,11 @@ enum BaseType {
     }
 
     public boolean requiresConversion() {
-        return !fieldTypes.contains(String.class) &&
-               !fieldTypes.contains(Boolean.class) &&
-               !canBeNumberic();
+        return !(
+            fieldTypes.contains(String.class) ||
+            fieldTypes.contains(Boolean.class) ||
+            canBeNumberic()
+        );
     }
 
     private boolean canBeNumberic() {
@@ -100,6 +96,8 @@ enum BaseType {
     }
 
     private static boolean isFor(BaseType type, String string) {
-        return type.fieldTypes.stream().anyMatch(fieldType -> fieldType.getName().equals(string));
+        return type.fieldTypes.stream()
+            .anyMatch(fieldType ->
+                fieldType.getName().equals(string));
     }
 }

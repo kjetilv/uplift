@@ -30,6 +30,10 @@ public sealed interface HashKind<H extends HashKind<H>> {
         return base64.length() == digestLength() + paddingLength() && base64.endsWith(digestPadding());
     }
 
+    default int totalDigestLength() {
+        return digestLength() + paddingLength();
+    }
+
     /// @return Length of padding in {@link Hash#digest() digests}
     default int paddingLength() {
         return digestPadding().length();
@@ -68,13 +72,13 @@ public sealed interface HashKind<H extends HashKind<H>> {
         @Override
         public Hash<K128> random() {
             var u = UUID.randomUUID();
-            return Hashes.of(
+            return Hash.of(
                 u.getMostSignificantBits(),
                 u.getLeastSignificantBits()
             );
         }
 
-        private static final Hash<K128> BLANK_128 = Hashes.of(0L, 0L);
+        private static final Hash<K128> BLANK_128 = Hash.of(0L, 0L);
 
         private static final String ALGORITHM = "MD5";
     }
@@ -95,7 +99,7 @@ public sealed interface HashKind<H extends HashKind<H>> {
         public Hash<K256> random() {
             var u0 = UUID.randomUUID();
             var u1 = UUID.randomUUID();
-            return Hashes.of(
+            return Hash.of(
                 u0.getMostSignificantBits(),
                 u0.getLeastSignificantBits(),
                 u1.getMostSignificantBits(),
@@ -103,7 +107,7 @@ public sealed interface HashKind<H extends HashKind<H>> {
             );
         }
 
-        private static final Hash<K256> BLANK_256 = Hashes.of(0L, 0L, 0L, 0L);
+        private static final Hash<K256> BLANK_256 = Hash.of(0L, 0L, 0L, 0L);
 
         private static final String ALGORITHM = "SHA3-256";
     }

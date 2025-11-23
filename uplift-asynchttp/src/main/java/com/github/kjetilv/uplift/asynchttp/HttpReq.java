@@ -1,11 +1,12 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
+import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.kernel.http.QueryParams;
 import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
 import com.github.kjetilv.uplift.util.ToStrings;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
+import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.kernel.io.BytesIO.nonNull;
 import static com.github.kjetilv.uplift.util.CaseInsensitiveHashMap.caseInsensitive;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -17,7 +18,7 @@ public record HttpReq(
     Map<String, List<String>> queryParams,
     Map<String, List<String>> headers,
     byte[] body,
-    Uuid id
+    Hash<K128> id
 ) {
 
     static HttpReq readRequest(HttpBytes bytes) {
@@ -28,7 +29,7 @@ public record HttpReq(
         var queryParams = queryParams(reqLine, methodMark + 1);
         var headersPart = new String(bytes.headers(), UTF_8);
         var headers = headers(headersPart);
-        return new HttpReq(method, url, queryParams, headers, bytes.body(), Uuid.random());
+        return new HttpReq(method, url, queryParams, headers, bytes.body(), K128.random());
     }
 
     public HttpReq(
@@ -37,7 +38,7 @@ public record HttpReq(
         Map<String, List<String>> queryParams,
         Map<String, List<String>> headers,
         byte[] body,
-        Uuid id
+        Hash<K128> id
     ) {
         this.method = requireNonNull(method, "method");
         this.path = requireNonNull(path, "path");

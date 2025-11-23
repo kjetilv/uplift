@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.edamame.*;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
 
 import static java.util.Objects.requireNonNull;
 
@@ -80,7 +80,7 @@ public final class InternalFactory {
     ) {
         requireNonNull(kind, "kind");
         return new RecursiveTreeHasher<>(
-            () -> Hashes.hashBuilder(kind),
+            () -> HashBuilder.forKind(kind),
             getCanonicalKeys(keyHandler),
             leafHasher == null ? leafHasher(kind, pojoBytes) : leafHasher,
             kind

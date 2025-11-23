@@ -5,18 +5,15 @@ import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
-import static com.github.kjetilv.uplift.hash.Hashes.*;
+import static com.github.kjetilv.uplift.hash.StrUtils.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Objects.requireNonNull;
 
 /// A hash, of a certain {@link HashKind}.
 ///
 /// Can provide {@link #digest() digest}, which is a compact string representation. These can be parsed
-/// back to hash instances with a factory method in {@link Hashes#hash(String) Hashes}.
-public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> permits Hash.H128, Hash.H256 {
-
-    String LPAR = "⟨";
-
-    String RPAR = "⟩";
+/// back to hash instances with a factory method in {@link Hash#from(String) Hashes}.
+public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
     static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
         return hashes.stream()
@@ -24,16 +21,83 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
             .collect(Collectors.joining("—"));
     }
 
+    static Hash<K128> of(long long0, long long1) {
+        return new H128(long0, long1);
+    }
+
+    static Hash<K256> of(long long0, long long1, long long2, long long3) {
+        return new H256(long0, long1, long2, long3);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <H extends HashKind<H>> Hash<H> from(byte[] bytes) {
+        requireNonNull(bytes, "bytes");
+        if (bytes.length == K128.byteCount()) {
+            var ls = Bytes.toLongs(bytes, new long[K128.longCount()]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
+        }
+        if (bytes.length == K256.byteCount()) {
+            var ls = Bytes.toLongs(bytes, new long[K256.longCount()]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
+        }
+        throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
+    }
+
+    static Hash<K128> fromUUID(String uuidString) {
+        var uuid = UUID.fromString(uuidString);
+        return of(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+    }
+
+    @SuppressWarnings("unchecked")
+    static <H extends HashKind<H>> Hash<H> from(String raw) {
+        var length = requireNonNull(raw, "raw").length();
+        if (length == K128.digestLength()) {
+            var ls = toLongs(raw, new long[K128.longCount()]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
+        }
+        if (length == K256.digestLength()) {
+            var ls = toLongs(raw, new long[K256.longCount()]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
+        }
+        throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <H extends HashKind<H>> Optional<Hash<H>> maybe(String raw) {
+        var length = requireNonNull(raw, "raw").length();
+        if (length == K128.digestLength()) {
+            var ls = toLongs(raw, new long[K128.longCount()]);
+            return Optional.of((Hash<H>) new H128(ls[0], ls[1]));
+        }
+        if (length == K256.digestLength()) {
+            var ls = toLongs(raw, new long[K256.longCount()]);
+            return Optional.of((Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]));
+        }
+        return Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    static <H extends HashKind<H>> Hash<H> of(DataInput input, H kind) {
+        try {
+            return (Hash<H>) switch (kind) {
+                case K128 _ -> of(input.readLong(), input.readLong());
+                case K256 _ -> of(
+                    input.readLong(),
+                    input.readLong(),
+                    input.readLong(),
+                    input.readLong()
+                );
+            };
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read from " + input, e);
+        }
+    }
+
     /// @return Unique string representation
     default String digest() {
-        var bytes = ByteUtils.longsToBytes(ls());
+        var bytes = Bytes.longsToBytes(ls());
         var base64 = new String(Base64.getEncoder().encode(bytes), US_ASCII);
-        if (kind().isDigest(base64)) {
-            return base64.substring(0, kind().digestLength())
-                .replace(BAD_1, GOOD_1)
-                .replace(BAD_2, GOOD_2);
-        }
-        throw new IllegalStateException("Unusual hash: " + base64);
+        return normalize(base64, kind().digestLength());
     }
 
     default Bytes toBytes() {
@@ -53,11 +117,11 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     default String toShortString() {
-        return LPAR + digest().substring(0, 6) + RPAR;
+        return par(digest().substring(0, 6));
     }
 
     default String toLongString() {
-        return LPAR + digest() + RPAR;
+        return par(digest());
     }
 
     @Override
@@ -72,9 +136,6 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     default boolean isBlank() {
-        if (this == BLANK_128 || this == BLANK_256) {
-            return true;
-        }
         for (var l : ls()) {
             if (l != 0) {
                 return false;
@@ -94,20 +155,42 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         if (length > kind().digestLength() + 2) {
             throw new IllegalArgumentException(this + ": Invalid length: " + length + ", should <= " + kind().digestLength() + 2);
         }
-        return LPAR + digest().substring(0, length - 2) + RPAR;
+        return par(digest().substring(0, length - 2));
     }
 
     default String defaultToString() {
-        var fifth = kind().digestLength() / 5;
-        return LPAR + digest().substring(0, Math.max(10, fifth)) + RPAR;
+        return par(digest().substring(0, Math.max(10, kind().digestLength() / 5)));
     }
 
-    H kind();
+    /// @return Standard Java {@link UUID#toString() UUID}, or fails if this is not a {@link H128 128-bit} hash
+    /// @throws IllegalStateException If this is not a {@link H128 128-bit} hash
+    default UUID asUuid() {
+        return switch (this) {
+            case H128(long l0, long l1) -> new UUID(l0, l1);
+            case H256 _ -> throw new IllegalStateException("Not a valid UUID: " + this);
+        };
+    }
 
-    /// The longs,
+    default H kind() {
+        return (H) switch (this) {
+            case H128 _ -> K128;
+            case H256 _ -> K256;
+        };
+    }
+
+    /// The longs
     ///
     /// @return Longs
     long[] ls();
+
+    private static long[] toLongs(String raw, long[] ls) {
+        var digest = denormalize(raw);
+        var decoded = Base64.getDecoder().decode(digest);
+        for (var l = 0; l < ls.length; l++) {
+            ls[l] = Bytes.bytesToLong(decoded, l * 8);
+        }
+        return ls;
+    }
 
     record H128(long long0, long long1) implements Hash<K128> {
 
@@ -117,22 +200,12 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         }
 
         @Override
-        public K128 kind() {
-            return K128;
-        }
-
-        @Override
         public String toString() {
             return defaultToString();
         }
     }
 
     record H256(long long0, long long1, long long2, long long3) implements Hash<K256> {
-
-        @Override
-        public K256 kind() {
-            return K256;
-        }
 
         @Override
         public long[] ls() {

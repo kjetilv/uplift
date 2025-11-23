@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.edam.Window;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class AnalyzerTest {
 
     private final AtomicReference<Instant> now = new AtomicReference<>(Instant.ofEpochMilli(0));
 
-    private final Hasher<Throwable, K128> throwableHasher = new ThrowableHasher<>(false, Hashes.hashBuilder(
+    private final Hasher<Throwable, K128> throwableHasher = new ThrowableHasher<>(false, HashBuilder.forKind(
         K128));
 
     private Analyzer<Throwable, K128> repeatAnalyzer;
@@ -54,7 +54,7 @@ class AnalyzerTest {
         var storage = OffHeapStorage.create(window, indexer, arena);
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
         repeatAnalyzer = new Analyzer<>(hasher, storage, now::get, 0);
     }

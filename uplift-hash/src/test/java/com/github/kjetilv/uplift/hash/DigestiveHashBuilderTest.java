@@ -16,7 +16,7 @@ class DigestiveHashBuilderTest {
 
     @Test
     void test() {
-        var builder = Hashes.hashBuilder(K128);
+        var builder = HashBuilder.forKind(K128);
 
         builder.hash(Bytes.from("foo".getBytes(UTF_8)));
         builder.hash(Bytes.from("bar".getBytes(StandardCharsets.UTF_8)));
@@ -44,10 +44,10 @@ class DigestiveHashBuilderTest {
         Function<String, Bytes> ssb = s ->
             Bytes.from(s.getBytes(UTF_8));
 
-        var map = Hashes.hashBuilder(K128)
+        var map = HashBuilder.forKind(K128)
             .map(ssb);
 
-        var flatMap = Hashes.hashBuilder(K128)
+        var flatMap = HashBuilder.forKind(K128)
             .map(ssb).flatMap(sss);
 
         var mapHash = map.hash("foo").build();

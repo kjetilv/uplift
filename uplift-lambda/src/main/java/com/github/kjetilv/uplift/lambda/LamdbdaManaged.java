@@ -10,14 +10,6 @@ import java.net.http.HttpResponse;
 public interface LamdbdaManaged
     extends Runnable, Closeable {
 
-    static LamdbdaManaged create(
-        URI uri,
-        LambdaClientSettings settings,
-        LambdaHandler handler
-    ) {
-        return new DefaultLamdbdaManaged(uri, settings, handler);
-    }
-
     @Override
     default void run() {
         try (var looper = looper()) {

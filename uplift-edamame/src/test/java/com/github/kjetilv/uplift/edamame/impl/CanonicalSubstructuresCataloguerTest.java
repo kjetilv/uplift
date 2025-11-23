@@ -4,9 +4,9 @@ import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
-import com.github.kjetilv.uplift.hash.Hashes;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -23,7 +23,7 @@ class CanonicalSubstructuresCataloguerTest {
     @Test
     void testLeaf() {
         TreeHasher<K, K128> hasher = new RecursiveTreeHasher<>(
-            () -> Hashes.hashBuilder(HashKind.K128),
+            () -> HashBuilder.forKind(HashKind.K128),
             KeyHandler.defaultHandler(),
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
             HashKind.K128
@@ -48,7 +48,7 @@ class CanonicalSubstructuresCataloguerTest {
     @Test
     void testMap() {
         TreeHasher<K, K128> hasher = new RecursiveTreeHasher<>(
-            () -> Hashes.hashBuilder(HashKind.K128),
+            () -> HashBuilder.forKind(HashKind.K128),
             K::ey,
             LeafHasher.create(HashKind.K128, PojoBytes.HASHCODE),
             HashKind.K128

@@ -2,16 +2,17 @@ package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.util.Maps;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 record LambdaResponse(
     int statusCode,
     Map<String, String> headers,
     String body,
     boolean isBase64Encoded,
-    Uuid reqId
+    Hash<K128> reqId
 ) {
 
     HttpRes toHttpResponse() {

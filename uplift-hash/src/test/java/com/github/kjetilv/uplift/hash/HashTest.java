@@ -2,18 +2,24 @@ package com.github.kjetilv.uplift.hash;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HashTest {
 
     @Test
     void testNull() {
-        assertEquals(HashKind.K128.blank(), Hashes.of(0L, 0L));
+        assertEquals(HashKind.K128.blank(), Hash.of(0L, 0L));
     }
 
     @Test
     void testHash() {
-        var hash = Hashes.of(0L, 234L);
+        var hash = Hash.of(0L, 234L);
         assertEquals("⟨AAAAAAAAAA⟩", hash.toString());
     }
 
@@ -59,10 +65,36 @@ class HashTest {
         assertBackAndForth(HashKind.K256);
     }
 
+    @Test
+    void uuidsAsString() {
+        var string = UUID.randomUUID().toString();
+        var hash = Hash.fromUUID(string);
+        assertEquals(string, hash.asUuid().toString());
+    }
+
+    @Test
+    void uuidsAsDigests() {
+        var string = UUID.randomUUID().toString();
+        var hash = Hash.fromUUID(string);
+
+        var digest = hash.digest();
+        var hash1 = Hash.from(digest);
+
+        assertEquals(string,hash1.asUuid().toString());
+    }
+
+    @Test
+    void io() {
+        Hash<HashKind.K256> hash = HashKind.K256.random();
+        DataInput dataInput = new DataInputStream(new ByteArrayInputStream(hash.bytes()));
+        var hash1 = Hash.of(dataInput, HashKind.K256);
+        assertEquals(hash, hash1);
+    }
+
     private static <H extends HashKind<H>> void assertBackAndForth(H kind) {
         var random = kind.random();
         var digest = random.digest();
-        Hash<H> hash = Hashes.hash(digest);
+        Hash<H> hash = Hash.from(digest);
         assertEquals(random, hash, "Hashing the same digest twice should produce the same hash");
         assertEquals(digest, hash.digest(), "Hashing the same digest twice should produce the same hash");
     }

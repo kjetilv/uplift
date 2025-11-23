@@ -1,36 +1,37 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
 import com.github.kjetilv.uplift.util.ToStrings;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 @SuppressWarnings("unused")
 public record HttpRes(
     int status,
     Map<String, List<String>> headers,
     byte[] body,
-    Uuid reqId
+    Hash<K128> reqId
 ) {
 
-    public HttpRes(byte[] body, Uuid reqId) {
+    public HttpRes(byte[] body, Hash<K128> reqId) {
         this(0, body, reqId);
     }
 
-    public HttpRes(int status, byte[] body, Uuid reqId) {
+    public HttpRes(int status, byte[] body, Hash<K128> reqId) {
         this(status, null, body, reqId);
     }
 
-    public HttpRes(int status, Uuid reqId) {
+    public HttpRes(int status, Hash<K128> reqId) {
         this(status, null, null, reqId);
     }
 
-    public HttpRes(int status, Map<String, List<String>> headers, Uuid reqId) {
+    public HttpRes(int status, Map<String, List<String>> headers, Hash<K128> reqId) {
         this(status, headers, null, reqId);
     }
 
-    public HttpRes(int status, Map<String, List<String>> headers, byte[] body, Uuid reqId) {
+    public HttpRes(int status, Map<String, List<String>> headers, byte[] body, Hash<K128> reqId) {
         this.status = httpStatus(status);
         this.headers = CaseInsensitiveHashMap.wrap(headers);
         this.body = BytesIO.nonNull(body);

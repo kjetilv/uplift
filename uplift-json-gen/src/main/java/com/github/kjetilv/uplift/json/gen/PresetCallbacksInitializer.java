@@ -6,11 +6,10 @@ import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@SuppressWarnings({"SameParameterValue", "unused"})
+@SuppressWarnings({"SameParameterValue", "unused", "rawtypes"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
 
     private Map<Token.Field, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
@@ -151,14 +150,6 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
             new Token.Field(name.getBytes(UTF_8)),
             (builder, str) ->
                 build(builder, set, OffsetDateTime.parse(str))
-        );
-    }
-
-    public void onUuid(String name, BiConsumer<B, Uuid> set) {
-        strings.put(
-            new Token.Field(name.getBytes(UTF_8)),
-            (builder, str) ->
-                build(builder, set, Uuid.from(str))
         );
     }
 

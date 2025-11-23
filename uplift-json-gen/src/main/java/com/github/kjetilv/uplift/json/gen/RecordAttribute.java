@@ -44,11 +44,11 @@ record RecordAttribute(
     }
 
     String callbackHandler(TypeElement builderType) {
-        return "on" + callbackEvent + "(\"" + fieldName(element) + "\", " + variant.midTerm(
-                element,
-                internalType
-            )
-            .map(term -> term + ", ").orElse("") +
+        return " on" + callbackEvent + "(" +
+               quote(fieldName(element)) +
+               ", " + variant.midTerm(element, internalType)
+                   .map(term -> term + ", ")
+                   .orElse("") +
                variant.callbackHandler(builderType, element, internalType) +
                ")";
     }
@@ -71,13 +71,18 @@ record RecordAttribute(
                     : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
         return name +
                listType.map(_ -> "Array").orElse("") +
-               "(\"" + element.getSimpleName() + "\", " +
+               "(" +
+               quote(element.getSimpleName()) +
+               ", " +
                variableName(te) + "." + element.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(() -> writerClass(element.asType()
-                       .toString())) + "())"
+                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(this::writerClass) + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
+    }
+
+    private String writerClass() {
+        return writerClass(element.asType().toString());
     }
 
     private String writerClass(String name) {
@@ -85,6 +90,12 @@ record RecordAttribute(
         var prefix = packageElement.toString();
         return name.substring(prefix.length() + 1)
                    .replace('.', '_') + "_Writer";
+    }
+
+    private static final String QUO = "\"";
+
+    private static String quote(Object string) {
+        return QUO + string + QUO;
     }
 
     private static Optional<Class<?>> primitiveEvent(RecordComponentElement element) {
@@ -103,9 +114,9 @@ record RecordAttribute(
         RecordComponentElement element,
         Collection<? extends Element> enums
     ) {
-        return isType(element, enums)
-            ? Optional.of(element)
-            : Optional.empty();
+        return Optional.of(element)
+            .filter(_ ->
+                isType(element, enums));
     }
 
     private static Optional<TypeElement> generatedEvent(
@@ -166,7 +177,7 @@ record RecordAttribute(
                         enums
                     )
                 ))
-            .or(() -> primitiveListType(element)
+            .or(() -> primitiveListEvent(element)
                 .map(primtiveType ->
                     new RecordAttribute(
                         primtiveType.getSimpleName(),

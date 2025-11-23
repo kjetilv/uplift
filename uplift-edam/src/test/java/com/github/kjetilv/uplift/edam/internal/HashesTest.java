@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.edam.internal;
 
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import org.junit.jupiter.api.Test;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
@@ -12,7 +12,7 @@ class HashesTest {
     void testBasicFunctionality() {
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
         var exception = new RuntimeException("Test exception");
         var hash = hasher.hash(exception);
@@ -24,7 +24,7 @@ class HashesTest {
     void testConsistency() {
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
         var exception = new RuntimeException("Test exception");
 
@@ -44,7 +44,7 @@ class HashesTest {
         // Different exceptions should produce different hashes when messages are included
         Hasher<Throwable, K128> hasherWithMessages = new ThrowableHasher<>(
             true,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
         var hash1WithMessages = hasherWithMessages.hash(exception1);
         var hash2WithMessages = hasherWithMessages.hash(exception2);
@@ -64,21 +64,21 @@ class HashesTest {
         // Without messages
         var hash1WithoutMessages = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         ).hash(exception1);
         var hash2WithoutMessages = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         ).hash(exception2);
 
         // With messages
         var hash1WithMessages = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         ).hash(exception1);
         var hash2WithMessages = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         ).hash(exception2);
 
         // Same exception type with different messages should produce the same hash when messages are not included
@@ -99,7 +99,7 @@ class HashesTest {
     void testCauseHandling() {
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
 
         // Exception without cause
@@ -121,7 +121,7 @@ class HashesTest {
     void testSuppressedExceptions() {
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             false,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
 
         // Exception without suppressed
@@ -143,7 +143,7 @@ class HashesTest {
     void testComplexExceptionHierarchy() {
         Hasher<Throwable, K128> hasher = new ThrowableHasher<>(
             true,
-            Hashes.hashBuilder(K128)
+            HashBuilder.forKind(K128)
         );
 
         // Create a complex exception hierarchy

@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
+import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.uuid.Uuid;
 
 @SuppressWarnings("unused")
 public abstract class AbstractFieldEvents implements FieldEvents {
@@ -62,7 +62,7 @@ public abstract class AbstractFieldEvents implements FieldEvents {
         return value.toString();
     }
 
-    protected static String uuidValue(Uuid value) {
+    protected static String hashValue(Hash<?> value) {
         return value.digest();
     }
 

@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":uplift-kernel"))
     implementation(project(":uplift-lambda"))
     implementation(project(":uplift-util"))
-    implementation(project(":uplift-uuid"))
+    implementation(project(":uplift-hash"))
 
     implementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
 }

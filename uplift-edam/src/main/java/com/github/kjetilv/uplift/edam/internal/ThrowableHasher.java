@@ -4,7 +4,6 @@ import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
 import com.github.kjetilv.uplift.util.Bytes;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -24,7 +23,7 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
     ThrowableHasher(boolean messages, HashBuilder<Bytes, K> hashBuilder) {
         this.hashBuilder = Objects.requireNonNull(hashBuilder, "idBuilder");
         this.strings = this.hashBuilder.map(ThrowableHasher::bytes);
-        this.ints = this.hashBuilder.map(Hashes.intToBytes().andThen(Bytes::from));
+        this.ints = this.hashBuilder.map(Bytes.intToBytes().andThen(Bytes::from));
         this.messages = messages;
     }
 

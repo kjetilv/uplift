@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
+import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
@@ -143,7 +144,7 @@ final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
                 Maps.mapValues(responseIn.headers(), String::valueOf),
                 responseIn.body(),
                 responseIn.isBase64Encoded(),
-                responseIn.reqId()
+                Hash.from(responseIn.reqId())
             );
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read response: " + response.length + " bytes", e);

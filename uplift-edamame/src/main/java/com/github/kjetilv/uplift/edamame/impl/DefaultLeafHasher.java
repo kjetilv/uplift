@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.edamame.impl.Tag.*;
 
@@ -45,11 +45,11 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         Number n
     ) {
         return switch (n) {
-            case Long l -> LONG.tag(hb).hash(Hashes.longBytes(l));
-            case Integer i -> INT.tag(hb).hash(Hashes.intBytes(i));
-            case Double d -> DOUBLE.tag(hb).hash(Hashes.longBytes(Double.doubleToRawLongBits(d)));
-            case Float f -> FLOAT.tag(hb).hash(Hashes.intBytes(Float.floatToRawIntBits(f)));
-            case Short s -> SHORT.tag(hb).hash(Hashes.intBytes(s));
+            case Long l -> LONG.tag(hb).hash(Bytes.longBytes(l));
+            case Integer i -> INT.tag(hb).hash(Bytes.intBytes(i));
+            case Double d -> DOUBLE.tag(hb).hash(Bytes.longBytes(Double.doubleToRawLongBits(d)));
+            case Float f -> FLOAT.tag(hb).hash(Bytes.intBytes(Float.floatToRawIntBits(f)));
+            case Short s -> SHORT.tag(hb).hash(Bytes.intBytes(s));
             case Byte b -> BYTE.tag(hb).hash(new byte[] {(byte) (int) b});
             default -> hashString(OTHER_NUMERIC.tag(hb), n.toString());
         };
@@ -97,7 +97,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         HashBuilder<byte[], H> hb,
         Instant instant
     ) {
-        hb.map(Hashes::longBytes)
+        hb.map(Bytes::longBytes)
             .hash(instant.getEpochSecond())
             .hash((long) instant.getNano());
         return hb;
@@ -107,7 +107,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         HashBuilder<byte[], H> hb,
         UUID uuid
     ) {
-        hb.map(Hashes::longBytes)
+        hb.map(Bytes::longBytes)
             .hash(uuid.getMostSignificantBits())
             .hash(uuid.getLeastSignificantBits());
         return hb;
@@ -118,7 +118,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<byte
         BigDecimal bigDecimal
     ) {
         return hb.hash(bigDecimal.unscaledValue().toByteArray())
-            .hash(Hashes.intBytes(bigDecimal.scale()));
+            .hash(Bytes.intBytes(bigDecimal.scale()));
     }
 
     private static <H extends HashKind<H>> HashBuilder<byte[], H> hashBigInteger(

@@ -22,17 +22,17 @@ These can be used by lambdas you want to deploy, but they are not required:
 * [`uplift-util`](uplift-util) contains various utilities
 * [`uplift-hash`](uplift-hash) hashes stuff
 * [`uplift-flogs`](uplift-flogs) contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces.
-  libraries needed, These will forward to the Java logging library. No other logging
+  These will forward to the Java logging library. No other logging
   libraries needed,
 * [`uplift-kernel`](./uplift-kernel) contains various utilities
 * [`uplift-edam`](uplift-edam) logs exceptions, sparingly
 * [`uplift-edamame`](uplift-edamame) creates canonical trees
 * [`uplift-json`](./uplift-json) contains a minimal JSON parser. Why not, right? It can read and write `Map` and `List`
-* [`uplift-json-mame`](./uplift-json-mame) reads json trees with mame
-* [`uplift-json-gen`](./uplift-json-gen) generates JSON r/w code from annotated records, not we can read and write
+* [`uplift-json-mame`](./uplift-json-mame) reads json trees with edamame
+* [`uplift-json-gen`](./uplift-json-gen) generates JSON r/w code from annotated records, now we can read and write
   records
-* [`uplift-json-anno`](./uplift-json-anno) the annotations
-* [`uplift-s3`](./uplift-s3) contains home-made, artisan code to talk to S3. No need for AWS libraries, for most use
+* [`uplift-json-anno`](./uplift-json-anno) the annotations for the above
+* [`uplift-s3`](./uplift-s3) home-made, artisan code to talk to S3. No need for AWS libraries, for most use
   cases.
 * [`uplift-lambda`](./uplift-lambda) handles setup of the infrastructure between AWS Lambda and your application,
   providing a simple functional hook which receives a lambda

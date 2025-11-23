@@ -234,8 +234,7 @@ record Generator(
         var name = te.getQualifiedName();
         var file = builderFile(te);
         var setters = te.getRecordComponents()
-            .stream().flatMap(el ->
-            {
+            .stream().flatMap(el -> {
                 var type = el.asType();
                 return Stream.of(
                     "    private " + print(type) + " " + fieldName(el) + ";",

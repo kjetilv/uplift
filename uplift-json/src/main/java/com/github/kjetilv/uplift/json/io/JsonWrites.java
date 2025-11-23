@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
-import com.github.kjetilv.uplift.uuid.Uuid;
+import com.github.kjetilv.uplift.hash.Hash;
 
 public final class JsonWrites {
 
@@ -20,7 +20,7 @@ public final class JsonWrites {
             );
             case URI uri -> writeString(sink, uri.toASCIIString());
             case URL url -> writeString(sink, url.toExternalForm());
-            case Uuid uuid -> writeString(sink, uuid.digest());
+            case Hash<?> hash -> writeString(sink, hash.digest());
             case UUID uuid -> writeString(sink, uuid.toString());
             case Instant instant -> writeInteger(sink, BigInteger.valueOf(instant.toEpochMilli()));
             case Duration duration -> writeString(sink, duration.toString());

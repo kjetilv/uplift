@@ -32,7 +32,6 @@ include("uplift-kernel")
 include("uplift-lambda")
 include("uplift-s3")
 include("uplift-util")
-include("uplift-uuid")
 
 include("uplift-hash")
 include("uplift-edamame")

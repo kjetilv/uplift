@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.util.Time;
 
+import java.net.URI;
 import java.time.Duration;
 
 @SuppressWarnings("unused")
@@ -19,49 +20,47 @@ public final class Lambda {
     }
 
     public static void simply(
-        LambdaHandler lambdaHandler,
+        LambdaHandler handler,
         Duration connectTimeout,
         Duration responseTimeout,
         int parallellism
     ) {
         try (
-            var managed = managed(
-                lambdaHandler,
-                connectTimeout,
-                responseTimeout
-            )
+            var managed = managed(handler, connectTimeout, responseTimeout)
         ) {
             managed.run();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to run lambda: " + lambdaHandler, e);
+            throw new IllegalStateException("Failed to run lambda: " + handler, e);
         }
     }
 
     public static LamdbdaManaged managed(
-        LambdaHandler lambdaHandler,
+        LambdaHandler handler,
         Duration connectTimeout,
         Duration responseTimeout
     ) {
-        return LamdbdaManaged.create(
-            Env.actual().awsLambdaUri(),
-            settings(Env.actual(), connectTimeout, responseTimeout),
-            lambdaHandler
+        Env env = Env.actual();
+        return managed(
+            env.awsLambdaUri(),
+            new LambdaClientSettings(
+                env,
+                connectTimeout,
+                responseTimeout,
+                Time.utcSupplier()
+            ),
+            handler
         );
+    }
+
+    public static LamdbdaManaged managed(
+        URI uri,
+        LambdaClientSettings settings,
+        LambdaHandler handler
+    ) {
+        return new DefaultLamdbdaManaged(uri, settings, handler);
     }
 
     private Lambda() {
     }
 
-    private static LambdaClientSettings settings(
-        Env env,
-        Duration connectTimeout,
-        Duration responseTimeout
-    ) {
-        return new LambdaClientSettings(
-            env,
-            connectTimeout,
-            responseTimeout,
-            Time.utcSupplier()
-        );
-    }
 }

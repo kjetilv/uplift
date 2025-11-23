@@ -48,9 +48,9 @@ public record ThrowableInfo<K extends HashKind<K>>(
 
     private static final String END = " ⟘ ";
 
-    private static final String PREFIX = Hash.LPAR;
+    private static final String PREFIX = "⟨";
 
-    private static final String SUFFIX = Hash.RPAR;
+    private static final String SUFFIX = "⟩";
 
     @Override
     public String toString() {

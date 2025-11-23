@@ -44,7 +44,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
                 return kind.blank();
             }
             try {
-                return Hashes.hash(messageDigest.digest());
+                return Hash.from(messageDigest.digest());
             } finally {
                 var unset = messageDigest;
                 messageDigest = null;

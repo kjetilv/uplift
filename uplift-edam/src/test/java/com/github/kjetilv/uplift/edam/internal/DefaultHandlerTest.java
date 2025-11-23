@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 import com.github.kjetilv.uplift.edam.throwables.Throwables;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.Hashes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class DefaultHandlerTest {
 
     private final Hasher<Throwable, K128> throwableHasher = new ThrowableHasher<>(
         false,
-        Hashes.hashBuilder(K128)
+        HashBuilder.forKind(K128)
     );
 
     private Handler<Throwable, ThrowableInfo<K128>, K128> handler;
