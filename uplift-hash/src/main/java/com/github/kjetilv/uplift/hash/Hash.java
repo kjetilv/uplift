@@ -9,10 +9,11 @@ import static com.github.kjetilv.uplift.hash.StrUtils.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
-/// A hash, of a certain {@link HashKind}.
+/// A hash, of a certain {@link HashKind}.  Can be created with {@link #of(long, long) 128} bits or
+/// {@link #of(long, long, long, long) 256}.
 ///
-/// Can provide {@link #digest() digest}, which is a compact string representation. These can be parsed
-/// back to hash instances with a factory method in {@link Hash#from(String) Hashes}.
+/// Instances can provide {@link #digest() digest}, which is a compact string representation.
+/// These can be parsed back to hash instances with other {@link Hash#from(String) factory methods}.
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
     static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
@@ -48,35 +49,30 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         return of(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
     }
 
+    /// Parse a digest
+    ///
+    /// @param digest Digest
+    /// @return Hash
+    /// @throws IllegalArgumentException If the digest was not valid
     @SuppressWarnings("unchecked")
-    static <H extends HashKind<H>> Hash<H> from(String raw) {
-        var length = requireNonNull(raw, "raw").length();
+    static <H extends HashKind<H>> Hash<H> from(String digest) {
+        var length = requireNonNull(digest, "digest").length();
         if (length == K128.digestLength()) {
-            var ls = toLongs(raw, new long[K128.longCount()]);
+            var ls = toLongs(digest, new long[K128.longCount()]);
             return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (length == K256.digestLength()) {
-            var ls = toLongs(raw, new long[K256.longCount()]);
+            var ls = toLongs(digest, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
-        throw new IllegalArgumentException("Malformed hash of length " + length + " not recognized: " + raw);
+        var reportedString = digest.substring(0, Math.min(length, 10)) + (length > 10 ? "..." : "");
+        throw new IllegalArgumentException("Hash of length " + length + " not recognized: " + reportedString);
     }
 
-    @SuppressWarnings("unchecked")
-    static <H extends HashKind<H>> Optional<Hash<H>> maybe(String raw) {
-        var length = requireNonNull(raw, "raw").length();
-        if (length == K128.digestLength()) {
-            var ls = toLongs(raw, new long[K128.longCount()]);
-            return Optional.of((Hash<H>) new H128(ls[0], ls[1]));
-        }
-        if (length == K256.digestLength()) {
-            var ls = toLongs(raw, new long[K256.longCount()]);
-            return Optional.of((Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]));
-        }
-        return Optional.empty();
+    static <H extends HashKind<H>> Hash<H> of(InputStream stream, H kind) {
+        return of((DataInput) new DataInputStream(stream), kind);
     }
 
-    @SuppressWarnings("unchecked")
     static <H extends HashKind<H>> Hash<H> of(DataInput input, H kind) {
         try {
             return (Hash<H>) switch (kind) {
@@ -88,7 +84,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
                     input.readLong()
                 );
             };
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to read from " + input, e);
         }
     }
@@ -158,10 +154,6 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         return par(digest().substring(0, length - 2));
     }
 
-    default String defaultToString() {
-        return par(digest().substring(0, Math.max(10, kind().digestLength() / 5)));
-    }
-
     /// @return Standard Java {@link UUID#toString() UUID}, or fails if this is not a {@link H128 128-bit} hash
     /// @throws IllegalStateException If this is not a {@link H128 128-bit} hash
     default UUID asUuid() {
@@ -185,7 +177,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     private static long[] toLongs(String raw, long[] ls) {
         var digest = denormalize(raw);
-        var decoded = Base64.getDecoder().decode(digest);
+        byte[] decoded = Base64.getDecoder().decode(digest);
         for (var l = 0; l < ls.length; l++) {
             ls[l] = Bytes.bytesToLong(decoded, l * 8);
         }
@@ -201,7 +193,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
         @Override
         public String toString() {
-            return defaultToString();
+            return par(digest().substring(0, 8));
         }
     }
 
@@ -214,7 +206,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
         @Override
         public String toString() {
-            return defaultToString();
+            return par(digest().substring(0, 12));
         }
     }
 }
