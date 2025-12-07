@@ -1,4 +1,3 @@
-
 dependencies {
     implementation(project(":uplift-hash"))
     implementation(project(":uplift-util"))
@@ -14,5 +13,5 @@ dependencies {
 }
 
 tasks.withType<JavaCompile>().all {
-    options.compilerArgs.addAll(sequenceOf("--enable-preview", "--add-modules", "jdk.incubator.vector"))
+    options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
 }
