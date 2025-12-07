@@ -35,11 +35,11 @@ subprojects {
 
     tasks.test {
         useJUnitPlatform()
-        jvmArgs("--enable-preview")
+        jvmArgs("--enable-preview", "--add-modules", "jdk.incubator.vector")
     }
 
     tasks.withType<JavaCompile>().all {
-        options.compilerArgs.add("--enable-preview")
+        options.compilerArgs.addAll(listOf("--enable-preview", "--add-modules", "jdk.incubator.vector"))
     }
 
     dependencies {

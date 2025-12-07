@@ -2,6 +2,8 @@ package org.slf4j;
 
 import org.slf4j.event.Level;
 
+import java.util.Objects;
+
 import static com.github.kjetilv.uplift.flogs.LogLevel.*;
 
 class Slf4jLogger implements Logger {
@@ -11,8 +13,8 @@ class Slf4jLogger implements Logger {
     private final com.github.kjetilv.uplift.flogs.Logger l;
 
     Slf4jLogger(String name, com.github.kjetilv.uplift.flogs.Logger l) {
-        this.name = name;
-        this.l = l;
+        this.name = Objects.requireNonNull(name, "name");
+        this.l = Objects.requireNonNull(l, "l");
     }
 
     @Override

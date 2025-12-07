@@ -19,7 +19,10 @@ public final class LoggerFactory {
     }
 
     public static Logger getLogger(String name) {
-        return LOGGERS.computeIfAbsent(Objects.requireNonNull(name, "name"), newLogger());
+        return LOGGERS.computeIfAbsent(
+            Objects.requireNonNull(name, "name"),
+            newLogger()
+        );
     }
 
     private LoggerFactory() {
@@ -29,6 +32,7 @@ public final class LoggerFactory {
     private static final Map<String, Logger> LOGGERS = new HashMap<>();
 
     private static Function<String, Logger> newLogger() {
-        return name -> new Slf4jLogger(name, Flogs.get(name));
+        return name ->
+            new Slf4jLogger(name, Flogs.get(name));
     }
 }

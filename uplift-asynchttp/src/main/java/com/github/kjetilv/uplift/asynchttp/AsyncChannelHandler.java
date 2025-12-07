@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
 
-public interface ChannelHandler<S extends ChannelState, C extends ChannelHandler<S, C>>
+public interface AsyncChannelHandler<S extends ChannelState, C extends AsyncChannelHandler<S, C>>
     extends CompletionHandler<Integer, S> {
 
     S channelState(ByteBuffer byteBuffer);

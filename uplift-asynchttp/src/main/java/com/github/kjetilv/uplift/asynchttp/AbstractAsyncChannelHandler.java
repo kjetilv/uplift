@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
-public abstract class AbstractChannelHandler<S extends ChannelState, C extends AbstractChannelHandler<S, C>>
-    implements ChannelHandler<S, C> {
+public abstract class AbstractAsyncChannelHandler<S extends ChannelState, C extends AbstractAsyncChannelHandler<S, C>>
+    implements AsyncChannelHandler<S, C> {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractChannelHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractAsyncChannelHandler.class);
 
     private final AsynchronousByteChannel channel;
 
@@ -20,7 +20,7 @@ public abstract class AbstractChannelHandler<S extends ChannelState, C extends A
 
     private final LongAdder bytesRead = new LongAdder();
 
-    protected AbstractChannelHandler(AsynchronousByteChannel channel, int maxRequestLength, Supplier<Instant> time) {
+    protected AbstractAsyncChannelHandler(AsynchronousByteChannel channel, int maxRequestLength, Supplier<Instant> time) {
         this.channel = channel;
         this.maxRequestLength = maxRequestLength > 0 ? maxRequestLength : DEFAULT_MAX_REQUEST_LENGTH;
         this.time = requireNonNull(time, "clock");

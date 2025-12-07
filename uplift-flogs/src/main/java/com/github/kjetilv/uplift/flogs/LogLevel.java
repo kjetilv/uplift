@@ -8,6 +8,5 @@ public enum LogLevel {
     DEBUG,
     TRACE;
 
-    LogLevel() {
-    }
+    public static final LogLevel DEFAULT = INFO;
 }

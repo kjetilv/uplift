@@ -6,28 +6,28 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
-public record ServerRunner(IOServer server) {
+public record AsyncServerRunner(AsyncIOServer server) {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(AsyncServerRunner.class);
 
-    public static ServerRunner create(
+    public static AsyncServerRunner create(
         Integer port,
         int requestBufferSize
     ) {
-        var server = AsyncIOServer.server(port, requestBufferSize);
+        var server = AsyncIOServer.create(port, requestBufferSize);
         try {
-            return new ServerRunner(server);
+            return new AsyncServerRunner(server);
         } finally {
             Runtime.getRuntime().addShutdownHook(new Thread(server::close, "Close"));
         }
     }
 
-    public ServerRunner {
+    public AsyncServerRunner {
         requireNonNull(server, "server");
     }
 
-    public <S extends ChannelState, C extends ChannelHandler<S, C>> IOServer run(
-        ChannelHandler<S, C> handler
+    public <S extends ChannelState, C extends AsyncChannelHandler<S, C>> AsyncIOServer run(
+        AsyncChannelHandler<S, C> handler
     ) {
         try {
             return server.run(handler::bind);

@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
+import com.github.kjetilv.uplift.asynchttp.HttpAsyncChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
 import com.github.kjetilv.uplift.hash.Hash;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /// HTTP handler that accepts API requests, exposes them to lambda functions and return their responses.
-final class LocalLambdaHandler implements HttpChannelHandler.Server, Closeable {
+final class LocalLambdaHandler implements HttpAsyncChannelHandler.Server, Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(LocalLambdaHandler.class);
 

@@ -9,33 +9,25 @@ public final class FLogger implements Logger {
 
     private final String name;
 
-    private final LogLevel logLevel;
+    private final Flogs.Settings settings;
 
-    private final Function<LogEntry, String> formatter;
+    private final String sourceName;
 
     private final Consumer<String> linesWriter;
 
     private final Consumer<String> emergencyWriter;
 
-    private final Supplier<Instant> time;
-
-    private final String sourceName;
-
     FLogger(
         String name,
-        LogLevel logLevel,
-        Function<LogEntry, String> formatter,
         Consumer<String> linesWriter,
         Consumer<String> emergencyWriter,
-        Supplier<Instant> time,
+        Flogs.Settings settings,
         String... knownPrefixes
     ) {
         this.sourceName = requireNonNull(name, "name");
-        this.logLevel = requireNonNull(logLevel, "logLevel");
-        this.formatter = requireNonNull(formatter, "formatter");
         this.linesWriter = requireNonNull(linesWriter, "linesWriter");
         this.emergencyWriter = emergencyWriter == null ? System.out::println : emergencyWriter;
-        this.time = requireNonNull(time, "time");
+        this.settings = settings;
         var lastDot = this.sourceName.lastIndexOf('.');
         if (lastDot < 0) {
             this.name = sourceName;
@@ -51,13 +43,13 @@ public final class FLogger implements Logger {
 
     @Override
     public boolean isEnabled(LogLevel logLevel) {
-        return this.logLevel.ordinal() >= logLevel.ordinal();
+        return settings.isEnabled(logLevel);
     }
 
     @Override
     public void log(LogLevel level, String msg, Object... args) {
-        if (this.isEnabled(level)) {
-            var logEntry = LogEntry.create(time.get(), name, level, msg, args);
+        if (settings.isEnabled(level)) {
+            var logEntry = LogEntry.create(settings.time().get(), name, level, msg, args);
             var logLine = logLine(logEntry);
             write(logLine);
         }
@@ -90,7 +82,7 @@ public final class FLogger implements Logger {
 
     private String logLine(LogEntry logEntry) {
         try {
-            return formatter.apply(logEntry);
+            return settings.formatter().apply(logEntry);
         } catch (Exception ex) {
             STDERR.println("Logging failed: " + logEntry);
             ex.printStackTrace(STDERR);

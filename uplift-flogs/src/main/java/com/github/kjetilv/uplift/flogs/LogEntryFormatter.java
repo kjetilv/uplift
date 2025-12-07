@@ -23,16 +23,16 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
         var sec = dateTime.getSecond();
         var sb = new StringBuilder()
             .append(dateTime.getYear())
-            .append('-').append(padding(mon)).append(mon)
-            .append('-').append(padding(day)).append(day)
-            .append('T').append(padding(hr)).append(hr)
-            .append(':').append(padding(min)).append(min)
-            .append(':').append(padding(sec)).append(sec);
+            .append('-').append(pad(mon)).append(mon)
+            .append('-').append(pad(day)).append(day)
+            .append('T').append(pad(hr)).append(hr)
+            .append(':').append(pad(min)).append(min)
+            .append(':').append(pad(sec)).append(sec);
         String logLevel = entry.logLevel().name();
         sb.append(' ')
             .append(SPACES, 0, 5 - logLevel.length())
-            .append(logLevel);
-        sb.append(' ')
+            .append(logLevel)
+            .append(' ')
             .append(entry.name())
             .append(": ")
             .append(formattedMessage);
@@ -55,7 +55,7 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
         .mapToObj(_ -> " ")
         .collect(Collectors.joining());
 
-    private static String padding(int i) {
+    private static String pad(int i) {
         return i < 10 ? "0" : "";
     }
 }

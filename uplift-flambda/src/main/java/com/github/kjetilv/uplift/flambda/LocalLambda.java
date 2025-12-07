@@ -1,25 +1,25 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-import com.github.kjetilv.uplift.asynchttp.HttpChannelHandler;
+import com.github.kjetilv.uplift.asynchttp.HttpAsyncChannelHandler;
 import com.github.kjetilv.uplift.asynchttp.HttpReq;
 import com.github.kjetilv.uplift.asynchttp.HttpRes;
-import com.github.kjetilv.uplift.asynchttp.IOServer;
-import com.github.kjetilv.uplift.asynchttp.ServerRunner;
+import com.github.kjetilv.uplift.asynchttp.AsyncIOServer;
+import com.github.kjetilv.uplift.asynchttp.AsyncServerRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /// Emulates AWS lambda service.
 @SuppressWarnings("unused")
-public final class LocalLambda implements Closeable, Runnable, HttpChannelHandler.Server {
+public final class LocalLambda implements Closeable, Runnable, HttpAsyncChannelHandler.Server {
 
     public static final Logger LOG = LoggerFactory.getLogger(LocalLambda.class);
 
-    private final IOServer lambdaServer;
+    private final AsyncIOServer lambdaServer;
 
     private final LocalLambdaHandler lambdaHandler;
 
-    private final IOServer apiServer;
+    private final AsyncIOServer apiServer;
 
     private final URI lambdaUri;
 
@@ -28,12 +28,12 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
     public LocalLambda(LocalLambdaSettings settings) {
         this.lambdaHandler = new LocalLambdaHandler(settings);
 
-        var lambdaServerRunner = ServerRunner.create(
+        var lambdaServerRunner = AsyncServerRunner.create(
             settings.lambdaPort(),
             settings.requestBufferSize()
         );
 
-        var lambdaHandler = new HttpChannelHandler(
+        var lambdaHandler = new HttpAsyncChannelHandler(
             this.lambdaHandler,
             settings.requestBufferSize(),
             settings.time()
@@ -41,23 +41,23 @@ public final class LocalLambda implements Closeable, Runnable, HttpChannelHandle
 
         this.lambdaServer = lambdaServerRunner.run(lambdaHandler);
 
-        var apiServerRunner = ServerRunner.create(
+        var apiServerRunner = AsyncServerRunner.create(
             settings.apiPort(),
             settings.requestBufferSize()
         );
-        var apiHandler = new HttpChannelHandler(
+        var apiHandler = new HttpAsyncChannelHandler(
             new LocalApiHandler(this.lambdaHandler, settings.cors()),
             settings.requestBufferSize(),
             settings.time()
         );
         this.apiServer = apiServerRunner.run(apiHandler);
 
-        var lambdaAddress = lambdaServer.address();
-        this.lambdaUri = URI.create(String.format(URL, lambdaAddress.getPort()));
+        var lambdaPort = lambdaServer.port();
+        this.lambdaUri = URI.create(String.format(URL, lambdaPort));
         LOG.info("Lambda : {} @ {}", lambdaServer, lambdaUri);
 
-        var apiAddress = this.apiServer.address();
-        this.apiUri = URI.create(String.format(URL, apiAddress.getPort()));
+        var apiPort = this.apiServer.port();
+        this.apiUri = URI.create(String.format(URL, apiPort));
         LOG.info("API    : {} @ {}", apiServer, apiUri);
     }
 

@@ -2,8 +2,13 @@ package org.slf4j;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 public record MarkerImpl(String name) implements Marker {
+
+    public MarkerImpl {
+        Objects.requireNonNull(name, "name");
+    }
 
     @Override
     public String getName() {

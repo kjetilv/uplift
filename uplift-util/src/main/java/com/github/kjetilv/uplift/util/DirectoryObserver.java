@@ -4,10 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.Duration;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,79 +16,75 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class DirectoryObserver implements Closeable {
 
+    public static final int MAX_WAIT_TIME = 1000;
+
     private final Path root;
 
     private final Set<Path> paths;
 
-    private final WatchService watchService;
+    private final WatchService service;
 
     private final AtomicLong waitTime = new AtomicLong(10);
 
     public DirectoryObserver(Path root, List<Path> lastSeen) {
         this.root = Objects.requireNonNull(root, "directory");
-        this.paths = lastSeen == null || lastSeen.isEmpty()
-            ? Set.of()
-            : Set.copyOf(lastSeen);
+        this.paths = Set.copyOf(lastSeen);
         try {
-            this.watchService = FileSystems.getDefault().newWatchService();
-            this.root.register(watchService, ENTRY_CREATE);
+            this.service = FileSystems.getDefault().newWatchService();
+            this.root.register(this.service, ENTRY_CREATE);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to setup watch service", e);
         }
     }
 
-    public Update awaitChange(Duration timeout) {
+    public Optional<Update> awaitChange(Duration timeout) {
         var initialUpdate = update();
-        if (initialUpdate.changed()) {
-            return update();
+        if (initialUpdate != null && initialUpdate.changed()) {
+            return Optional.ofNullable(update());
         }
         var deadline = now().plus(timeout);
         do {
-            var key = poll(increasingWaitTime());
+            var key = poll(backoffTime());
             if (key != null) {
                 key.pollEvents();
                 key.reset();
             }
             var update = update();
-            if (update.changed()) {
-                return update;
+            if (update != null && update.changed()) {
+                return Optional.of(update);
             }
         } while (now().isBefore(deadline));
-        return NO_CHANGE;
+        return Optional.empty();
     }
 
     @Override
     public void close() throws IOException {
-        watchService.close();
+        service.close();
     }
 
     private WatchKey poll(long ms) {
         try {
-            return watchService.poll(ms, MILLISECONDS);
+            return service.poll(ms, MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted", e);
         }
     }
 
-    private long increasingWaitTime() {
-        return waitTime.getAndUpdate(t -> Math.min(1000, Math.round(t * 2)));
+    private long backoffTime() {
+        return waitTime.getAndUpdate(t -> Math.min(MAX_WAIT_TIME, t * 2));
     }
 
     private Update update() {
-        try (
-            var currentStream = Files.list(root)
-        ) {
+        try (var currentStream = Files.list(root)) {
             var current = currentStream.collect(Collectors.toSet());
             if (current.equals(paths)) {
-                return NO_CHANGE;
-            }
-            if (current.isEmpty()) {
-                return EMPTY;
+                return null;
             }
             if (current.containsAll(paths)) {
                 var added =
-                    sort(current.stream().filter(fresh -> !paths.contains(fresh)));
+                    sort(current.stream()
+                        .filter(fresh -> !paths.contains(fresh)));
                 return new Added(added);
             }
             return new Changed(sort(current.stream()));
@@ -99,10 +92,6 @@ public final class DirectoryObserver implements Closeable {
             throw new IllegalStateException("Could not list files in " + root, e);
         }
     }
-
-    private static final NoChange NO_CHANGE = new NoChange();
-
-    private static final Empty EMPTY = new Empty();
 
     private static final String EMPTY_STRING = "[]";
 
@@ -138,22 +127,6 @@ public final class DirectoryObserver implements Closeable {
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + current.size() + ": " + print(current) + "]";
-        }
-    }
-
-    public record Empty() implements Update {
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + EMPTY_STRING;
-        }
-    }
-
-    public record NoChange() implements Update {
-
-        @Override
-        public boolean changed() {
-            return false;
         }
     }
 

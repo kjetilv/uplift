@@ -3,12 +3,14 @@ package org.apache.commons.logging;
 import com.github.kjetilv.uplift.flogs.LogLevel;
 import com.github.kjetilv.uplift.flogs.Logger;
 
+import java.util.Objects;
+
 class CommonsLogger implements Log {
 
     private final Logger logger;
 
     CommonsLogger(Logger logger) {
-        this.logger = logger;
+        this.logger = Objects.requireNonNull(logger, "logger");
     }
 
     @Override

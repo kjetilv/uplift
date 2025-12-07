@@ -57,21 +57,10 @@ public record Transfer(long totalSize, int bufferSize) {
 
                     if (transferred + writableBytes > totalSize) {
                         throw new IllegalStateException(
-                            "Transferring " +
-                            writableBytes +
-                            " bytes on top of already transferred " +
-                            transferred +
-                            ", would exceed " +
-                            totalSize +
-                            " wanted, to " +
-                            writer +
-                            " for " +
-                            totalSize +
-                            " bytes " +
-                            "in " +
-                            turnarounds +
-                            " turnarounds, empty turnarounds: " +
-                            emptyTurnarundsTotal);
+                            "Transferring " + writableBytes + " bytes on top of already transferred " + transferred +
+                            ", would exceed " + totalSize +
+                            " wanted, to " + writer + " for " + totalSize + " bytes " +
+                            "in " + turnarounds + " turnarounds, empty turnarounds: " + emptyTurnarundsTotal);
                     }
 
                     try {
@@ -80,7 +69,8 @@ public record Transfer(long totalSize, int bufferSize) {
                         throw new IllegalStateException(
                             "Failed to write " + bytesRead + " bytes to " + writer + " for " + totalSize + " " +
                             "bytes, transferred " + transferred + " in " + turnarounds + " turnarounds, " +
-                            "empty turnarounds: " + emptyTurnarundsTotal, e
+                            "empty turnarounds: " + emptyTurnarundsTotal,
+                            e
                         );
                     } finally {
                         transferred += writableBytes;

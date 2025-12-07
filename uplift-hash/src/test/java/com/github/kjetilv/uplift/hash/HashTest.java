@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.hash;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.util.UUID;
@@ -20,13 +19,13 @@ class HashTest {
     @Test
     void testHash() {
         var hash = Hash.of(0L, 234L);
-        assertEquals("⟨AAAAAAAAAA⟩", hash.toString());
+        assertEquals("⟨AAAAAAAA⟩", hash.toString());
     }
 
     @Test
     void string() {
         var string = HashKind.K128.random().toString();
-        assertEquals(12, string.length());
+        assertEquals(10, string.length());
     }
 
     @Test

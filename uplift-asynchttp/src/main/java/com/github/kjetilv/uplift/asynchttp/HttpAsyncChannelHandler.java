@@ -7,17 +7,17 @@ import org.slf4j.LoggerFactory;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
-public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState, HttpChannelHandler> {
+public class HttpAsyncChannelHandler extends AbstractAsyncChannelHandler<HttpChannelState, HttpAsyncChannelHandler> {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpChannelHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpAsyncChannelHandler.class);
 
     private final Server server;
 
-    public HttpChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
+    public HttpAsyncChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
         this(server, maxRequestLength, null, time);
     }
 
-    private HttpChannelHandler(
+    private HttpAsyncChannelHandler(
         Server server,
         int maxRequestLength,
         AsynchronousByteChannel channel,
@@ -33,8 +33,8 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
     }
 
     @Override
-    public HttpChannelHandler bind(AsynchronousByteChannel channel) {
-        return new HttpChannelHandler(server, maxRequestLength(), channel, clock());
+    public HttpAsyncChannelHandler bind(AsynchronousByteChannel channel) {
+        return new HttpAsyncChannelHandler(server, maxRequestLength(), channel, clock());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class HttpChannelHandler extends AbstractChannelHandler<HttpChannelState,
             : completed.map(
                     request ->
                         response(request, server, this::write))
-                .map(HttpChannelHandler::processing)
+                .map(HttpAsyncChannelHandler::processing)
                 .orElse(Processing.FAIL);
     }
 

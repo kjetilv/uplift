@@ -5,7 +5,7 @@ import module java.base;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-record LogEntry(
+public record LogEntry(
     Instant time,
     String name,
     LogLevel logLevel,
@@ -42,7 +42,7 @@ record LogEntry(
         return logEntry;
     }
 
-    LogEntry {
+    public LogEntry {
         requireNonNull(time, "time");
         requireNonNull(name, "name");
         requireNonNull(logLevel, "logLevel");
