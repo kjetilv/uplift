@@ -39,36 +39,43 @@ public final class DirectoryObserver implements Closeable {
 
     public Optional<Update> awaitChange(Duration timeout) {
         var initialUpdate = update();
-        if (initialUpdate != null && initialUpdate.changed()) {
-            return Optional.ofNullable(update());
+        if (initialUpdate.changed()) {
+            return Optional.of(initialUpdate);
         }
         var deadline = now().plus(timeout);
-        do {
-            var key = poll(backoffTime());
-            if (key != null) {
-                key.pollEvents();
+        while (now().isBefore(deadline)) {
+            WatchKey key;
+            try {
+                key = service.poll(backoffTime(), MILLISECONDS);
+            } catch (ClosedWatchServiceException e) {
+                return Optional.empty();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interrupted", e);
+            }
+            if (key == null) {
+                continue;
+            }
+            List<WatchEvent<?>> events;
+            try {
+                events = key.pollEvents();
+                if (events.isEmpty()) {
+                    continue;
+                }
+            } finally {
                 key.reset();
             }
             var update = update();
-            if (update != null && update.changed()) {
+            if (update.changed()) {
                 return Optional.of(update);
             }
-        } while (now().isBefore(deadline));
+        }
         return Optional.empty();
     }
 
     @Override
     public void close() throws IOException {
         service.close();
-    }
-
-    private WatchKey poll(long ms) {
-        try {
-            return service.poll(ms, MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted", e);
-        }
     }
 
     private long backoffTime() {
@@ -79,7 +86,7 @@ public final class DirectoryObserver implements Closeable {
         try (var currentStream = Files.list(root)) {
             var current = currentStream.collect(Collectors.toSet());
             if (current.equals(paths)) {
-                return null;
+                return new NoChange();
             }
             if (current.containsAll(paths)) {
                 var added =
@@ -106,12 +113,13 @@ public final class DirectoryObserver implements Closeable {
     }
 
     private static String print(List<Path> paths) {
-        return paths.isEmpty()
-            ? EMPTY_STRING
-            : paths.stream()
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .collect(Collectors.joining(", ", "[", "]"));
+        if (paths.isEmpty()) {
+            return EMPTY_STRING;
+        }
+        return paths.stream()
+            .map(Path::getFileName)
+            .map(Path::toString)
+            .collect(Collectors.joining(", ", "[", "]"));
     }
 
     public record Added(List<Path> added) implements Update {
@@ -127,6 +135,14 @@ public final class DirectoryObserver implements Closeable {
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + current.size() + ": " + print(current) + "]";
+        }
+    }
+
+    public record NoChange() implements Update {
+
+        @Override
+        public boolean changed() {
+            return false;
         }
     }
 

@@ -4,6 +4,7 @@ import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/// Describes a section of a byte array
 public record Bytes(byte[] bytes, int offset, int length) {
 
     public static Bytes from(byte[] bytes) {
