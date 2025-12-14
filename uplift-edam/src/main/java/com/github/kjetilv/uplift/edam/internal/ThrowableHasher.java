@@ -23,7 +23,7 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
     ThrowableHasher(boolean messages, HashBuilder<Bytes, K> hashBuilder) {
         this.hashBuilder = Objects.requireNonNull(hashBuilder, "idBuilder");
         this.strings = this.hashBuilder.map(ThrowableHasher::bytes);
-        this.ints = this.hashBuilder.map(Bytes.intToBytes().andThen(Bytes::from));
+        this.ints = this.hashBuilder.map(Bytes.intToBytes());
         this.messages = messages;
     }
 
@@ -70,6 +70,6 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
     }
 
     private static Bytes bytes(String string) {
-        return string == null ? null : new Bytes(string.getBytes(UTF_8));
+        return string == null ? null : Bytes.from(string);
     }
 }

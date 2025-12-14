@@ -11,31 +11,36 @@ public record Bytes(byte[] bytes, int offset, int length) {
         return new Bytes(bytes);
     }
 
-    public static Bytes intToBytes(int i) {
-        return from(intBytes(i));
+    public static Bytes from(String string) {
+        return new Bytes(string.getBytes(UTF_8));
     }
 
-    public static byte[] intBytes(int i) {
+    public static Bytes intBytes(int i) {
         return intToBytes(i, 0, new byte[Integer.BYTES]);
     }
 
-    public static byte[] longBytes(long l) {
+    public static Bytes longBytes(long l) {
         return longToBytes(l, 0, new byte[Long.BYTES]);
     }
 
-    public static Function<Integer, byte[]> intToBytes() {
+    public static Function<Integer, Bytes> intToBytes() {
         return Bytes::intBytes;
     }
 
-    @SuppressWarnings("SameParameterValue")
-    static byte[] intToBytes(int l, int index, byte[] bytes) {
-        long w = l;
-        for (var j = 3; j > 0; j--) {
-            bytes[index + j] = (byte) (w & 0xFF);
-            w >>= 8;
-        }
-        bytes[index] = (byte) (w & 0xFF);
-        return bytes;
+    public static Bytes from(BigInteger bigInteger) {
+        return from(bigInteger.toByteArray());
+    }
+
+    public static Bytes from(BigDecimal bigDecimal) {
+        return from(bigDecimal.unscaledValue().toByteArray());
+    }
+
+    public static Bytes from(byte b) {
+        return from(new byte[] {b});
+    }
+
+    public static Bytes from(Byte b) {
+        return from(new byte[] {b});
     }
 
     public static long bytesToLong(byte[] bytes, int start) {
@@ -48,37 +53,11 @@ public record Bytes(byte[] bytes, int offset, int length) {
         return lw;
     }
 
-    static byte[] longBytes(long long0, long long1, long long2, long long3) {
-        var bytes = new byte[32];
-        longToBytes(long0, 0, bytes);
-        longToBytes(long1, 8, bytes);
-        longToBytes(long2, 16, bytes);
-        longToBytes(long3, 24, bytes);
-        return bytes;
-    }
-
-    static byte[] longBytes(long long0, long long1) {
-        var bytes = new byte[16];
-        longToBytes(long0, 0, bytes);
-        longToBytes(long1, 8, bytes);
-        return bytes;
-    }
-
     public static byte[] longsToBytes(long[] longs) {
         var bytes = new byte[longs.length * Long.BYTES];
         for (var l = 0; l < longs.length; l++) {
             longToBytes(longs[l], l * 8, bytes);
         }
-        return bytes;
-    }
-
-    static byte[] longToBytes(long i, int index, byte[] bytes) {
-        var w = i;
-        for (var j = 7; j > 0; j--) {
-            bytes[index + j] = (byte) (w & 0xFF);
-            w >>= 8;
-        }
-        bytes[index] = (byte) (w & 0xFF);
         return bytes;
     }
 
@@ -90,6 +69,43 @@ public record Bytes(byte[] bytes, int offset, int length) {
             }
         }
         return ls;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    static Bytes intToBytes(int l, int index, byte[] bytes) {
+        long w = l;
+        for (var j = 3; j > 0; j--) {
+            bytes[index + j] = (byte) (w & 0xFF);
+            w >>= 8;
+        }
+        bytes[index] = (byte) (w & 0xFF);
+        return new Bytes(bytes);
+    }
+
+    static Bytes longBytes(long long0, long long1, long long2, long long3) {
+        var bytes = new byte[32];
+        longToBytes(long0, 0, bytes);
+        longToBytes(long1, 8, bytes);
+        longToBytes(long2, 16, bytes);
+        longToBytes(long3, 24, bytes);
+        return from(bytes);
+    }
+
+    static byte[] longBytes(long long0, long long1) {
+        var bytes = new byte[16];
+        longToBytes(long0, 0, bytes);
+        longToBytes(long1, 8, bytes);
+        return bytes;
+    }
+
+    static Bytes longToBytes(long i, int index, byte[] bytes) {
+        var w = i;
+        for (var j = 7; j > 0; j--) {
+            bytes[index + j] = (byte) (w & 0xFF);
+            w >>= 8;
+        }
+        bytes[index] = (byte) (w & 0xFF);
+        return from(bytes);
     }
 
     public Bytes(byte[] bytes) {

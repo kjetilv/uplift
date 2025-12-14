@@ -2,12 +2,13 @@ package com.github.kjetilv.uplift.edamame.impl;
 
 import module java.base;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
+import com.github.kjetilv.uplift.util.Bytes;
 
 final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
 
     private final Map<Object, K> canonicalKeys = new ConcurrentHashMap<>();
 
-    private final Map<K, byte[]> canonicalBytes = new ConcurrentHashMap<>();
+    private final Map<K, Bytes> canonicalBytes = new ConcurrentHashMap<>();
 
     private final KeyHandler<K> keyHandler;
 
@@ -16,7 +17,7 @@ final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
     }
 
     @Override
-    public byte[] bytes(K key) {
+    public Bytes bytes(K key) {
         return canonicalBytes.computeIfAbsent(key, keyHandler::bytes);
     }
 

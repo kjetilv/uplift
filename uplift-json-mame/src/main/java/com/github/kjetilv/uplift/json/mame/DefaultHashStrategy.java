@@ -6,12 +6,13 @@ import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import static java.util.Objects.requireNonNull;
 
 record DefaultHashStrategy<H extends HashKind<H>>(
     H kind,
-    Supplier<HashBuilder<byte[], H>> supplier,
+    Supplier<HashBuilder<Bytes, H>> supplier,
     LeafHasher<H> leafHasher,
     boolean preserveNulls
 ) implements HashStrategy<H> {
@@ -25,7 +26,7 @@ record DefaultHashStrategy<H extends HashKind<H>>(
     DefaultHashStrategy(H kind, LeafHasher<H> leafHasher, boolean preserveNulls) {
         this(
             requireNonNull(kind, "kind"),
-            () -> HashBuilder.forBytes(kind),
+            () -> HashBuilder.forKind(kind),
             leafHasher,
             preserveNulls
         );

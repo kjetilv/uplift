@@ -12,7 +12,7 @@ public interface PojoBytes {
     PojoBytes HASHCODE = value -> Bytes.intBytes(value.hashCode());
 
     /// Uses [Object#toString()] to derive bytes from the string
-    PojoBytes TOSTRING = value -> value.toString().getBytes();
+    PojoBytes TOSTRING = value -> Bytes.from(value.toString());
 
     /// Fails if called.  Use when we don't expect any POJOs.  Default value.
     PojoBytes UNSUPPORTED = value -> {
@@ -23,5 +23,5 @@ public interface PojoBytes {
 
     /// @param pojo Plain old Java object
     /// @return Bytes for the object
-    byte[] bytes(Object pojo);
+    Bytes bytes(Object pojo);
 }

@@ -22,10 +22,6 @@ public interface HashBuilder<T, H extends HashKind<H>> {
 
     Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
 
-    static <H extends HashKind<H>> HashBuilder<byte[], H> forBytes(H kind) {
-        return forKind(kind).map(Bytes::from);
-    }
-
     static <H extends HashKind<H>> HashBuilder<InputStream, H> forInputStream(H kind) {
         return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), inputStream2Bytes());
     }

@@ -1,33 +1,42 @@
 package com.github.kjetilv.uplift.util;
 
+import com.github.kjetilv.uplift.util.DirectoryObserver.FileState;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class DirectoryObserverTest {
 
     static void main(String[] args) throws IOException {
         var tmp = tmp();
-        var list = Files.list(tmp).toList();
-        System.out.println("Going in: " + list);
-        var observer = new DirectoryObserver(tmp, list);
-        CompletableFuture.runAsync(() -> {
-            try {
-                new BufferedReader(new InputStreamReader(System.in)).readLine();
-                System.out.println("Closing");
-                observer.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        try (var fileStream = Files.list(tmp)) {
+            List< Path> files = fileStream.toList();
+            System.out.println("Going in: " + files);
+            Optional<FileState> update;
+            try (var observer = new DirectoryObserver(tmp)) {
+                CompletableFuture.runAsync(() -> bg(observer));
+                update = observer.awaitChange(files, Duration.ofHours(1));
             }
-        });
+            update.ifPresentOrElse(System.out::println, () -> System.out.println("N/A"));
+        }
 
-        var update = observer.awaitChange(Duration.ofHours(1));
-        System.out.println(update);
+    }
 
+    private static void bg(DirectoryObserver observer) {
+        try {
+            new BufferedReader(new InputStreamReader(System.in)).readLine();
+            System.out.println("Closing");
+            observer.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static java.nio.file.Path tmp() {

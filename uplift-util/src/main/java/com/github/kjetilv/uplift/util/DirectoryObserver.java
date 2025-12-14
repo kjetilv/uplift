@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
@@ -10,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.*;
 import static java.time.Instant.now;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -20,27 +19,28 @@ public final class DirectoryObserver implements Closeable {
 
     private final Path root;
 
-    private final Set<Path> paths;
-
     private final WatchService service;
 
     private final AtomicLong waitTime = new AtomicLong(10);
 
-    public DirectoryObserver(Path root, List<Path> lastSeen) {
+    public DirectoryObserver(Path root) {
         this.root = Objects.requireNonNull(root, "directory");
-        this.paths = Set.copyOf(lastSeen);
         try {
             this.service = FileSystems.getDefault().newWatchService();
-            this.root.register(this.service, ENTRY_CREATE);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to setup watch service", e);
+            throw new IllegalStateException("Failed to get watch service for " + this.root, e);
+        }
+        try {
+            this.root.register(this.service, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to register " + this.root + " with " + this.service, e);
         }
     }
 
-    public Optional<Update> awaitChange(Duration timeout) {
-        var initialUpdate = update();
-        if (initialUpdate.changed()) {
-            return Optional.of(initialUpdate);
+    public Optional<FileState> awaitChange(Collection<Path> lastSeen, Duration timeout) {
+        var initial = state(lastSeen);
+        if (initial.changed()) {
+            return Optional.of(initial);
         }
         var deadline = now().plus(timeout);
         while (now().isBefore(deadline)) {
@@ -65,24 +65,29 @@ public final class DirectoryObserver implements Closeable {
             } finally {
                 key.reset();
             }
-            var update = update();
-            if (update.changed()) {
-                return Optional.of(update);
+            var updated = state(lastSeen);
+            if (updated.changed()) {
+                return Optional.of(updated);
             }
         }
         return Optional.empty();
     }
 
     @Override
-    public void close() throws IOException {
-        service.close();
+    public void close() {
+        try {
+            service.close();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to close " + service, e);
+        }
     }
 
     private long backoffTime() {
         return waitTime.getAndUpdate(t -> Math.min(MAX_WAIT_TIME, t * 2));
     }
 
-    private Update update() {
+    private FileState state(Collection<Path> lastSeen) {
+        var paths = Set.copyOf(lastSeen);
         try (var currentStream = Files.list(root)) {
             var current = currentStream.collect(Collectors.toSet());
             if (current.equals(paths)) {
@@ -122,7 +127,7 @@ public final class DirectoryObserver implements Closeable {
             .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    public record Added(List<Path> added) implements Update {
+    public record Added(List<Path> added) implements FileState {
 
         @Override
         public String toString() {
@@ -130,7 +135,7 @@ public final class DirectoryObserver implements Closeable {
         }
     }
 
-    public record Changed(List<Path> current) implements Update {
+    public record Changed(List<Path> current) implements FileState {
 
         @Override
         public String toString() {
@@ -138,7 +143,7 @@ public final class DirectoryObserver implements Closeable {
         }
     }
 
-    public record NoChange() implements Update {
+    public record NoChange() implements FileState {
 
         @Override
         public boolean changed() {
@@ -146,7 +151,7 @@ public final class DirectoryObserver implements Closeable {
         }
     }
 
-    public sealed interface Update {
+    public sealed interface FileState {
 
         default boolean changed() {
             return true;

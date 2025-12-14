@@ -70,7 +70,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         var hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
         var keyHb = hb.map(keyHandler::toBytes);
-        hb.<Integer>map(Bytes::intToBytes).hash(tree.size());
+        hb.map(Bytes::intBytes).hash(tree.size());
         tree.forEach((key, value) -> {
             keyHb.hash(key);
             hashHb.hash(value.hash());
@@ -81,7 +81,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     private Hash<H> hashList(List<? extends HashedTree<K, H>> trees) {
         var hb = newBuilder.get();
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        hb.<Integer>map(Bytes::intToBytes).hash(trees.size());
+        hb.map(Bytes::intBytes).hash(trees.size());
         trees.stream()
             .map(HashedTree::hash)
             .forEach(hashHb::hash);

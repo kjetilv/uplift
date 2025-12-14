@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.edamame.impl;
 
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Bytes;
 
 enum Tag {
     OBJECT,
@@ -32,9 +33,9 @@ enum Tag {
     OTHER_TEMPORAL,
     UUID;
 
-    private final byte[] bytes = {(byte) ordinal()};
+    private final Bytes bytes = new Bytes(new byte[] {(byte) ordinal()});
 
-    <H extends HashKind<H>> HashBuilder<byte[], H> tag(HashBuilder<byte[], H> hb) {
+    <H extends HashKind<H>> HashBuilder<Bytes, H> tag(HashBuilder<Bytes, H> hb) {
         return hb.hash(bytes);
     }
 }

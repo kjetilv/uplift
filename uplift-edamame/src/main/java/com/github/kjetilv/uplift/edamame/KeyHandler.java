@@ -26,7 +26,7 @@ public interface KeyHandler<K> {
     }
 
     default Bytes toBytes(K key) {
-        return Bytes.from(bytes(key));
+        return bytes(key);
     }
 
     /// Affects how maps are hashed wrt. their keys.  Default implementation is to get the
@@ -34,8 +34,8 @@ public interface KeyHandler<K> {
     ///
     /// @param key Key
     /// @return byte array for hashing
-    default byte[] bytes(K key) {
-        return key.toString().getBytes();
+    default Bytes bytes(K key) {
+        return Bytes.from(key.toString());
     }
 
     /// Normalizes a map's key to a K instance.  The returned value will be canonicalized so that the same key

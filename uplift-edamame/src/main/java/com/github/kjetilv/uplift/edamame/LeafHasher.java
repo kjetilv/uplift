@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.edamame.impl.InternalFactory;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Bytes;
 
 /// Strategy for hashing leaf values.  [Overridable][InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes)]
 /// for testing purposes.
@@ -25,18 +26,18 @@ public interface LeafHasher<H extends HashKind<H>> {
 
     static <H extends HashKind<H>> LeafHasher<H> create(
         H kind,
-        Supplier<HashBuilder<byte[], H>> supplier
+        Supplier<HashBuilder<Bytes, H>> supplier
     ) {
         return create(kind, supplier, null);
     }
 
     static <H extends HashKind<H>> LeafHasher<H> create(
         H kind,
-        Supplier<HashBuilder<byte[], H>> supplier,
+        Supplier<HashBuilder<Bytes, H>> supplier,
         PojoBytes pojoBytes
     ) {
         return new DefaultLeafHasher<>(
-            supplier == null ? () -> HashBuilder.forBytes(kind) : supplier,
+            supplier == null ? () -> HashBuilder.forKind(kind) : supplier,
             pojoBytes == null ? PojoBytes.UNSUPPORTED : pojoBytes
         );
     }

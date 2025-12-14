@@ -7,12 +7,13 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.util.Bytes;
 
 abstract sealed class StructureClimber<H extends HashKind<H>>
     extends AbstractClimber<H>
     permits ListClimber, MapClimber {
 
-    private final HashBuilder<byte[], H> builder;
+    private final HashBuilder<Bytes, H> builder;
 
     private final HashBuilder<Hash<H>, H> hashBuilder;
 
@@ -30,7 +31,7 @@ abstract sealed class StructureClimber<H extends HashKind<H>>
         this.onDone = onDone;
         this.parent = parent;
         this.builder = hashStrategy.supplier().get();
-        this.hashBuilder = this.builder.map(Hash::bytes);
+        this.hashBuilder = this.builder.map(Hash::toBytes);
     }
 
     @Override

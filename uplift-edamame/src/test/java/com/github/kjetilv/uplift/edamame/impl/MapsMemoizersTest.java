@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.util.Bytes;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
@@ -24,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MapsMemoizersTest {
 
-    static HashBuilder<byte[], HashKind.K128> md5HashBuilder() {
-        return HashBuilder.forBytes(HashKind.K128);
+    static HashBuilder<Bytes, HashKind.K128> md5HashBuilder() {
+        return HashBuilder.forKind(HashKind.K128);
     }
 
     static Hash<HashKind.K128> random() {
