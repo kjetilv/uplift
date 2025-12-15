@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-public interface Ledge extends Comparable<Ledge> {
-
-    String segment();
-
-    long no();
+interface Ledge extends Comparable<Ledge> {
 
     @Override
     default int compareTo(Ledge l) {
-        return Long.compare(no(), l.no());
+        return Long.compare(number(), l.number());
     }
+
+    String asSegment();
+
+    long number();
 }

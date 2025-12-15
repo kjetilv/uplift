@@ -9,8 +9,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Predicate;
 
-public class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<T> {
+final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<T> {
 
     private final Collection<Path> processed = new HashSet<>();
 
@@ -20,7 +21,7 @@ public class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller
 
     private final LongAdder count = new LongAdder();
 
-    public PathFqPuller(Path path, Fio<T> fio, boolean deleting, Charset cs) {
+    PathFqPuller(Path path, Fio<T> fio, boolean deleting, Charset cs) {
         super(path, fio, cs);
         this.deleting = deleting;
     }
@@ -51,25 +52,25 @@ public class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller
                 if (done()) {
                     return Optional.empty();
                 }
-                (backoff == null ? backoff = new Backoff() : backoff).zzz();
+                backoff = Backoff.sleepAndUpdate(name(), backoff);
             }
         }
     }
 
     private Optional<String> nextLine(Puller puller) {
-        return Optional.ofNullable(puller)
-            .flatMap(Puller::pull);
+        return Optional.ofNullable(puller).flatMap(Puller::pull);
     }
 
     private Puller nextPuller(Collection<Path> processed) {
         return sortedFiles().stream()
-            .filter(path ->
-                !path.equals(tombstone()))
-            .filter(file ->
-                !processed.contains(file))
+            .filter(candidate(processed))
             .findFirst()
             .map(path ->
                 new Puller(path, bufferedReader(path)))
             .orElse(null);
+    }
+
+    private Predicate<Path> candidate(Collection<Path> processed) {
+        return path -> !path.equals(tombstone()) && !processed.contains(path);
     }
 }

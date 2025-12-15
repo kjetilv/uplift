@@ -6,11 +6,12 @@ import com.github.kjetilv.uplift.fq.FqWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 
-public class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
+final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private final Dimensions dimensions;
 
@@ -24,7 +25,7 @@ public class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private Ledge currentLedge;
 
-    public PathFqWriter(Path directory, Dimensions dimensions, Fio<T> fio, Charset cs) {
+    PathFqWriter(Path directory, Dimensions dimensions, Fio<T> fio, Charset cs) {
         super(directory, fio, cs);
         this.dimensions = Objects.requireNonNull(dimensions, "dims");
 
@@ -57,9 +58,7 @@ public class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
             }
         }
         try (var tombstoneWriter = tombstoneWriter()) {
-            new Writer(tombstoneWriter)
-                .write(Instant.now().atZone(UTC).toString())
-                .close();
+            new Writer(tombstoneWriter).write(Instant.now().atZone(UTC).toString()).close();
         } catch (Exception e) {
             throw new RuntimeException("Could not set tombstone", e);
         }
@@ -74,7 +73,9 @@ public class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }
         var ledge = dimensions.ledge(count);
-        nextWriter(ledge);
+        if (!ledge.equals(currentLedge)) {
+            switchWriter(ledge);
+        }
         try {
             currentWriter.write(line);
         } catch (Exception e) {
@@ -84,21 +85,18 @@ public class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
         }
     }
 
-    private void nextWriter(Ledge ledge) {
-        if (!ledge.equals(currentLedge)) {
-            if (currentWriter != null) {
-                currentWriter.close();
-            }
-            currentWriter = new Writer(bufferedWriter(path(ledge)));
-            currentLedge = ledge;
+    private void switchWriter(Ledge ledge) {
+        if (currentWriter != null) {
+            currentWriter.close();
         }
+        currentWriter = new Writer(bufferedWriter(path(ledge)));
+        currentLedge = ledge;
     }
 
     private Path path(Ledge ledge) {
-        return directory().resolve("%s-%s.%s.gz".formatted(
-            this.prefix,
-            ledge.segment(),
-            this.suffix
-        ));
+        var formatted = "%s-%s.%s.gz".formatted(this.prefix, ledge.asSegment(), this.suffix);
+        return directory().resolve(Path.of(formatted));
     }
+
+    private static final ZoneId UTC = ZoneId.of("UTC");
 }

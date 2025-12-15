@@ -1,6 +1,9 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.*;
+import com.github.kjetilv.uplift.fq.Fio;
+import com.github.kjetilv.uplift.fq.FqPuller;
+import com.github.kjetilv.uplift.fq.FqWriter;
+import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -9,7 +12,7 @@ import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class PathFqs<T> implements Fqs<T> {
+public final class PathFqs<T> implements Fqs<T> {
 
     private final Path root;
 
@@ -31,17 +34,7 @@ public class PathFqs<T> implements Fqs<T> {
     }
 
     @Override
-    public FqStreamer<T> stream(String name) {
-        return new PathFqStreamer<>(
-            resolve(name),
-            fio,
-            pull(name),
-            cs
-        );
-    }
-
-    @Override
-    public FqPuller<T> pull(String name) {
+    public FqPuller<T> puller(String name) {
         return new PathFqPuller<>(
             resolve(name),
             fio,
@@ -51,7 +44,7 @@ public class PathFqs<T> implements Fqs<T> {
     }
 
     @Override
-    public FqWriter<T> write(String name) {
+    public FqWriter<T> writer(String name) {
         return new PathFqWriter<>(
             resolve(name),
             dimensions,

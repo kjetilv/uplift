@@ -49,7 +49,7 @@ class DimensionsTest {
 
     private static void ed(Dimensions d, int no, int expected) {
         var ledge = d.ledge(no);
-        assertThat(ledge.segment())
+        assertThat(ledge.asSegment())
             .hasSize(9)
             .startsWith("000")
             .endsWith(String.valueOf(expected));

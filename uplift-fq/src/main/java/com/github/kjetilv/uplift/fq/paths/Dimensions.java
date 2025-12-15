@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static java.text.MessageFormat.format;
@@ -22,16 +23,18 @@ public final class Dimensions {
 
     private final String format;
 
-    private final Map<Long, Ledge> ledges = new HashMap<>();
+    private final Map<Long, Ledge> ledges = new ConcurrentHashMap<>();
 
     public Dimensions(int start, int end, int max) {
-        if (start < end && end <= max) {
-            this.start = start;
-            this.end = end;
-            this.max = max;
-        } else {
+        if (start < 0 || end < 0 || max < 0) {
+            throw new IllegalArgumentException("Require non-negative start/end/max: " + start + "/" + end + "/" + max);
+        }
+        if (start >= end || end > max) {
             throw new IllegalArgumentException("Require " + start + "<" + end + "<=" + max);
         }
+        this.start = start;
+        this.end = end;
+        this.max = max;
         this.powers = IntStream.range(start, end + 1).toArray();
         this.expt10s = IntStream.range(start, end + 1)
             .map(i -> (int) Math.pow(10, i))
@@ -40,17 +43,14 @@ public final class Dimensions {
         this.format = format("%0{0}d", max);
     }
 
-    public Ledge ledge(long count) {
+    Ledge ledge(long count) {
         if (count > maxValue) {
             throw new IllegalArgumentException("#" + count + " exceeds max " + maxValue);
         }
+        var number = ledgeNumber(count);
         return ledges.computeIfAbsent(
-            ledgeNumber(count),
-            no ->
-                new LedgeImpl(
-                    no,
-                    String.format(format, no)
-                )
+            number,
+            _ -> new LedgeImpl(number, String.format(format, number))
         );
     }
 
@@ -68,16 +68,16 @@ public final class Dimensions {
         return no / ten * ten;
     }
 
-    private record LedgeImpl(long no, String segment) implements Ledge {
+    private record LedgeImpl(long number, String asSegment) implements Ledge {
 
         @Override
         public boolean equals(Object object) {
-            return object instanceof LedgeImpl l && no == l.no;
+            return object instanceof LedgeImpl l && number == l.number;
         }
 
         @Override
         public int hashCode() {
-            return Long.hashCode(no);
+            return Long.hashCode(number);
         }
     }
 

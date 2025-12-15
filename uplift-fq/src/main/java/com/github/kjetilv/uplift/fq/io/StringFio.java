@@ -1,8 +1,8 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.io;
 
 import com.github.kjetilv.uplift.fq.Fio;
 
-class StringFio implements Fio<String> {
+public final class StringFio implements Fio<String> {
 
     @Override
     public String read(String line) {

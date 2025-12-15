@@ -8,9 +8,13 @@ import static java.nio.file.Files.size;
 
 final class GzipUtils {
 
-    static boolean incompleteHeader(Path path, Throwable e) {
+    static boolean incompleteGZipHeader(Path path, Throwable e) {
         return chain(e).anyMatch(EOFException.class::isInstance) &&
                fileSize(path) <= GZIP_HEADER_SIZE;
+    }
+
+    static boolean gzipped(Path path) {
+        return path.getFileName().toString().endsWith(".gz");
     }
 
     private GzipUtils() {

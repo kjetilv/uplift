@@ -2,14 +2,17 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import java.io.BufferedReader;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
+
+import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
+import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
+import static java.util.Objects.requireNonNull;
 
 record Puller(Path path, BufferedReader bufferedReader) {
 
     Puller {
-        Objects.requireNonNull(path, "path");
-        Objects.requireNonNull(bufferedReader, "bufferedReader");
+        requireNonNull(path, "path");
+        requireNonNull(bufferedReader, "bufferedReader");
     }
 
     Optional<String> pull() {
@@ -18,8 +21,8 @@ record Puller(Path path, BufferedReader bufferedReader) {
             try {
                 return Optional.ofNullable(bufferedReader.readLine());
             } catch (Exception e) {
-                if (GzipUtils.incompleteHeader(path, e)) {
-                    (backoff == null ? backoff = new Backoff() : backoff).zzz();
+                if (gzipped(path) && incompleteGZipHeader(path, e)) {
+                    backoff = Backoff.sleepAndUpdate("Pull " + path.getFileName(), backoff);
                 } else {
                     throw new IllegalStateException("Failed to read line", e);
                 }
