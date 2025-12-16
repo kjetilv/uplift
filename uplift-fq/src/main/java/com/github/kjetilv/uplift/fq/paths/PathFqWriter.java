@@ -9,10 +9,13 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Function;
 
-final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
+final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<T> {
 
     private final Dimensions dimensions;
+
+    private final Function<Path, Writer<I>> newWriter;
 
     private final LongAdder lineCount = new LongAdder();
 
@@ -20,13 +23,20 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private final String prefix;
 
-    private Writer<byte[]> currentWriter;
+    private Writer<I> currentWriter;
 
     private Ledge currentLedge;
 
-    PathFqWriter(Path directory, Dimensions dimensions, Fio<byte[], T> fio, Tombstone<Path> tombstone) {
+    PathFqWriter(
+        Path directory,
+        Dimensions dimensions,
+        Function<Path, Writer<I>> newWriter,
+        Fio<I, T> fio,
+        Tombstone<Path> tombstone
+    ) {
         super(directory, fio, tombstone);
         this.dimensions = Objects.requireNonNull(dimensions, "dims");
+        this.newWriter = Objects.requireNonNull(newWriter, "newWriter");
 
         var fileName = directory.getFileName().toString();
         var lastDot = fileName.lastIndexOf('.');
@@ -61,7 +71,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private void writeItem(T item) {
         var count = lineCount.longValue();
-        byte[] line;
+        I line;
         try {
             line = toBytes(item);
         } catch (Exception e) {
@@ -74,7 +84,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
         try {
             currentWriter.write(line);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write #" + count + ": " + line.length + " bytes", e);
+            throw new IllegalStateException("Failed to write #" + count + ": " + line, e);
         } finally {
             lineCount.increment();
         }
@@ -84,7 +94,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
         if (currentWriter != null) {
             currentWriter.close();
         }
-        currentWriter = new StreamWriter(bufferedWriter(path(ledge)));
+        currentWriter = newWriter.apply(path(ledge));
         currentLedge = ledge;
     }
 

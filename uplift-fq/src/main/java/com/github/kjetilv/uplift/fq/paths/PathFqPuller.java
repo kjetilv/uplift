@@ -11,13 +11,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
-final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<T> {
+final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqPuller<T> {
 
     private final Collection<Path> processed = new HashSet<>();
 
-    private Puller<byte[]> currentPuller;
+    private Puller<I> currentPuller;
 
-    private final Function<Path, Puller<byte[]>> newPuller;
+    private final Function<Path, Puller<I>> newPuller;
 
     private final boolean deleting;
 
@@ -25,8 +25,8 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
 
     PathFqPuller(
         Path path,
-        Fio<byte[], T> fio,
-        Function<Path, Puller<byte[]>> newPuller,
+        Fio<I, T> fio,
+        Function<Path, Puller<I>> newPuller,
         Tombstone<Path> tombstone,
         boolean deleting
     ) {

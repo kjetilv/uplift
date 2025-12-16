@@ -3,26 +3,22 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.Fq;
 
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.GZIPOutputStream;
 
-import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
 import static java.nio.file.Files.*;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
-abstract class AbstractPathFq<T> implements Fq<T> {
+abstract class AbstractPathFq<I, T> implements Fq<T> {
 
-    private final Fio<byte[], T> fio;
+    private final Fio<I, T> fio;
 
     private final Path directory;
 
     private final Tombstone<Path> tombstone;
 
-    AbstractPathFq(Path directory, Fio<byte[], T> fio, Tombstone<Path> tombstone) {
+    AbstractPathFq(Path directory, Fio<I, T> fio, Tombstone<Path> tombstone) {
         this.directory = Objects.requireNonNull(directory, "path");
         this.fio = Objects.requireNonNull(fio, "fio");
         this.tombstone = Objects.requireNonNull(tombstone, "tombstone");
@@ -50,11 +46,11 @@ abstract class AbstractPathFq<T> implements Fq<T> {
         return directory;
     }
 
-    final byte[] toBytes(T t) {
+    final I toBytes(T t) {
         return fio.write(t);
     }
 
-    final T fromBytes(byte[] line) {
+    final T fromBytes(I line) {
         return fio.read(line);
     }
 
@@ -85,15 +81,6 @@ abstract class AbstractPathFq<T> implements Fq<T> {
                 .toList();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to list files in " + directory(), e);
-        }
-    }
-
-    final OutputStream bufferedWriter(Path path) {
-        try {
-            var out = newOutputStream(path, CREATE_NEW);
-            return gzipped(path) ? new GZIPOutputStream(out, true) : out;
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not write to " + path, e);
         }
     }
 

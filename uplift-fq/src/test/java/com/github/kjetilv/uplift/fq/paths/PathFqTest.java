@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.fq.io.StringFio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,13 @@ class PathFqTest {
             var writer = new PathFqWriter<>(
                 fooTxt,
                 new Dimensions(1, 2, 3),
+                path -> {
+                    try {
+                        return new StreamWriter(Files.newOutputStream(path));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                },
                 new StringFio(),
                 new PathTombstone(fooTxt.resolve("done"))
             )

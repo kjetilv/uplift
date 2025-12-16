@@ -6,14 +6,17 @@ import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
 import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
 import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.newOutputStream;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 public final class PathFqs<T> implements Fqs<T> {
 
@@ -47,14 +50,10 @@ public final class PathFqs<T> implements Fqs<T> {
         return new PathFqWriter<>(
             directory,
             dimensions,
+            this::writer,
             fio,
             new PathTombstone(directory.resolve("done"))
         );
-    }
-
-    @Override
-    public Stream<String> names() {
-        return Stream.empty();
     }
 
     private Puller<byte[]> puller(Path path) {
@@ -77,6 +76,19 @@ public final class PathFqs<T> implements Fqs<T> {
                     throw new IllegalStateException("Could not read " + path, e);
                 }
             }
+        }
+    }
+
+    private Writer<byte[]> writer(Path path) {
+        return new StreamWriter(bufferedWriter(path));
+    }
+
+    private OutputStream bufferedWriter(Path path) {
+        try {
+            var out = newOutputStream(path, CREATE_NEW);
+            return gzipped(path) ? new GZIPOutputStream(out, true) : out;
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not write to " + path, e);
         }
     }
 

@@ -5,11 +5,11 @@ import com.github.kjetilv.uplift.fq.FqReader;
 
 import java.nio.file.Path;
 
-abstract class AbstractPathFqReader<T>
-    extends AbstractPathFq<T>
+abstract class AbstractPathFqReader<I, T>
+    extends AbstractPathFq<I, T>
     implements FqReader<T> {
 
-    AbstractPathFqReader(Path directory, Fio<byte[], T> fio, Tombstone<Path> tombstone) {
+    AbstractPathFqReader(Path directory, Fio<I, T> fio, Tombstone<Path> tombstone) {
         super(directory, fio, tombstone);
     }
 

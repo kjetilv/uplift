@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.fq;
 
-import java.util.stream.Stream;
-
 public interface Fqs<T> {
 
     default FqStreamer<T> streamer(String name) {
@@ -16,5 +14,4 @@ public interface Fqs<T> {
 
     FqWriter<T> writer(String name);
 
-    Stream<String> names();
 }
