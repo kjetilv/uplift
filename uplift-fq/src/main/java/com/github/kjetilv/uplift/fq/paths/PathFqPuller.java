@@ -30,8 +30,10 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
     public Optional<T> next() {
         Backoff backoff = null;
         while (true) {
-            var nextLine = nextLine(currentPuller);
-            if (nextLine.length > 0) {
+            var nextLine = currentPuller == null
+                ? null
+                : currentPuller.pull();
+            if (nextLine != null) {
                 try {
                     return Optional.ofNullable(fromBytes(nextLine));
                 } catch (Exception e) {
@@ -57,11 +59,6 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
         }
     }
 
-    private byte[] nextLine(Puller puller) {
-        return Optional.ofNullable(puller)
-            .map(Puller::pull).orElse(NO_BYTES);
-    }
-
     private Puller nextPuller(Collection<Path> processed) {
         return sortedFiles().stream()
             .filter(candidate(processed))
@@ -74,6 +71,4 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
     private Predicate<Path> candidate(Collection<Path> processed) {
         return path -> !path.equals(tombstone()) && !processed.contains(path);
     }
-
-    private static final byte[] NO_BYTES = new byte[0];
 }

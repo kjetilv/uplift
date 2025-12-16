@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 
-public class Main {
+public final class Main {
 
     static void main(String[] args) {
         var list = Collections.synchronizedList(new ArrayList<>());
@@ -31,7 +31,7 @@ public class Main {
         var goStart = Instant.now();
         var callbacks = session.get().callbacks(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
-        var cachingCallbacks = new AtomicReference<Callbacks>(callbacks);
+        var cachingCallbacks = new AtomicReference<>(callbacks);
         var json = Json.instance(CachingJsonSessions.create(K128));
         if (Arrays.stream(args).anyMatch(arg -> arg.endsWith(".jsonl"))) {
             lines(args).forEach(line ->

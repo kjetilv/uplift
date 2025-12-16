@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
-import com.github.kjetilv.uplift.fq.FqPuller;
-import com.github.kjetilv.uplift.fq.FqWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -139,23 +138,44 @@ class PathFqTest {
             .isCompletedWithValueMatching(Fq::done);
     }
 
-    @SuppressWarnings("resource")
+    @Test
+    void longChain(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        assertChain(
+            tmp,
+            new Dimensions(2, 4, 10),
+            50,
+            100,
+            10_000
+        );
+    }
+
     @Test
     void chain(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        assertChain(
+            tmp,
+            new Dimensions(1, 3, 4),
+            10,
+            10,
+            9999
+        );
+    }
+
+    @SuppressWarnings("resource")
+    private static void assertChain(Path tmp, Dimensions dimensions, int chainLength, int batchSize, int items) {
         PathFqs<String> pathFqs = new PathFqs<>(
             tmp,
             new com.github.kjetilv.uplift.fq.io.StringFio(),
-            new Dimensions(1, 3, 4)
+            dimensions
         );
 
         List<CompletableFuture<Void>> chain = new ArrayList<>();
 
         var format = "foo-G%d.txt";
 
-        for (int i = 1; i < 10; i++) {
+        for (int i = 1; i < chainLength; i++) {
             var writer = pathFqs.writer(format.formatted(i));
             int finalI = i;
-            var batcher = pathFqs.batcher(format.formatted(i - 1), 10);
+            var batcher = pathFqs.batcher(format.formatted(i - 1), batchSize);
             chain.add(CompletableFuture.runAsync(
                 () -> {
                     batcher.read()
@@ -171,7 +191,7 @@ class PathFqTest {
         chain.add(CompletableFuture.runAsync(
             () -> {
                 try (var source = pathFqs.writer(format.formatted(0))) {
-                    for (int j = 0; j < INT; j++) {
+                    for (int j = 0; j < items; j++) {
                         source.write("G-0");
                     }
 
@@ -182,10 +202,14 @@ class PathFqTest {
 
         chain.forEach(CompletableFuture::join);
 
-        assertThat(pathFqs.streamer("foo-G9.txt").read())
+        var line = "G-" + IntStream.range(0, chainLength)
+            .mapToObj(String::valueOf)
+            .collect(Collectors.joining("-"));
+
+        assertThat(pathFqs.streamer("foo-G" + (chainLength - 1) + ".txt").read())
             .isNotEmpty()
-            .allSatisfy(line ->
-                assertThat(line).isEqualTo("G-0-1-2-3-4-5-6-7-8-9"));
+            .allSatisfy(l ->
+                assertThat(l).isEqualTo(line));
     }
 
     private static final int INT = 9999;
