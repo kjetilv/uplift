@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import org.jspecify.annotations.NonNull;
+import com.github.kjetilv.uplift.fq.paths.bytes.BytesSplitter;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -89,7 +89,7 @@ class BytesSplitterTest {
         }
     }
 
-    private static String @NonNull [] lines(String string) {
+    private static String[] lines(String string) {
         return (string.endsWith("\n") ? string.substring(0, string.length() - 1) : string)
             .split("\n", -1);
     }

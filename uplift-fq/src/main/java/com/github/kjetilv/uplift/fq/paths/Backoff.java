@@ -3,18 +3,20 @@ package com.github.kjetilv.uplift.fq.paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-record Backoff(String description, long time, Object lock) {
+import java.time.Instant;
+
+public record Backoff(String description, long time, Object lock, Instant starting) {
 
     private static final Logger log = LoggerFactory.getLogger(Backoff.class);
 
-    static Backoff sleepAndUpdate(String description, Backoff backoff) {
+    public static Backoff sleepAndUpdate(String description, Backoff backoff) {
         return backoff == null
             ? new Backoff(description)
             : backoff.zzz(description);
     }
 
     private Backoff(String description) {
-        this(description, MIN_SLEEP, new boolean[0]);
+        this(description, MIN_SLEEP, new boolean[0], Instant.now());
     }
 
     private Backoff zzz(String description) {
@@ -31,9 +33,9 @@ record Backoff(String description, long time, Object lock) {
         }
         var minTime = Math.min(time * 2, MAX_SLEEP);
         if (minTime == MAX_SLEEP) {
-            log.warn("Backoff reached max sleep time {}ms: {}", minTime, description);
+            log.warn("Reached max sleep time {}ms: {}", minTime, description);
         }
-        return new Backoff(description, minTime, lock);
+        return new Backoff(description, minTime, lock, starting);
     }
 
     private static final long MAX_SLEEP = 100L;

@@ -5,13 +5,13 @@ import java.nio.file.Path;
 
 import static com.github.kjetilv.uplift.util.Throwables.chain;
 
-final class GzipUtils {
+public final class GzipUtils {
 
-    static boolean incompleteGZipHeader(Path path, Throwable e) {
+    public static boolean incompleteGZipHeader(Path path, Throwable e) {
         return chain(e).anyMatch(EOFException.class::isInstance);
     }
 
-    static boolean gzipped(Path path) {
+    public static boolean gzipped(Path path) {
         return path.getFileName().toString().endsWith(".gz");
     }
 

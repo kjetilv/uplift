@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.StringFio;
+import com.github.kjetilv.uplift.fq.paths.bytes.StreamWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -151,9 +152,9 @@ class PathFqTest {
         assertChain(
             tmp,
             new Dimensions(2, 4, 10),
+            25,
             50,
-            100,
-            10_000
+            5_000
         );
     }
 

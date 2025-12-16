@@ -1,4 +1,7 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.paths.bytes;
+
+import com.github.kjetilv.uplift.fq.paths.Backoff;
+import com.github.kjetilv.uplift.fq.paths.Puller;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -8,7 +11,7 @@ import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
 import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
 import static java.util.Objects.requireNonNull;
 
-final class StreamPuller implements Puller<byte[]> {
+public final class StreamPuller implements Puller<byte[]> {
 
     private final Path path;
 
@@ -18,11 +21,11 @@ final class StreamPuller implements Puller<byte[]> {
 
     private final AtomicBoolean opened = new AtomicBoolean();
 
-    StreamPuller(Path path, InputStream inputStream) {
+    public StreamPuller(Path path, InputStream inputStream) {
         this(path, inputStream, 0);
     }
 
-    StreamPuller(Path path, InputStream inputStream, int bufferSize) {
+    public StreamPuller(Path path, InputStream inputStream, int bufferSize) {
         this.path = requireNonNull(path, "path");
         this.inputStream = requireNonNull(inputStream, "bufferedReader");
         this.bytesSplitter = new BytesSplitter(inputStream, '\n', bufferSize);

@@ -1,8 +1,10 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.paths.bytes;
+
+import com.github.kjetilv.uplift.fq.paths.Writer;
 
 import java.io.OutputStream;
 
-record StreamWriter(OutputStream outputStream) implements Writer<byte[]> {
+public record StreamWriter(OutputStream outputStream) implements Writer<byte[]> {
 
     @Override
     public Writer<byte[]> write(byte[] line) {

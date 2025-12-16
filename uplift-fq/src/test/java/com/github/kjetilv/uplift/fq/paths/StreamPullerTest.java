@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.paths.bytes.StreamPuller;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,7 +40,7 @@ class StreamPullerTest {
         }
     }
 
-    private static void assertString(Puller puller, String foo, int bs) {
+    private static void assertString(Puller<byte[]> puller, String foo, int bs) {
         assertThat(puller.pull())
             .describedAs("Could not get string %s with buffer size %s", foo, bs)
             .isEqualTo(foo.getBytes());
