@@ -49,7 +49,12 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
                     rm(currentPuller.path());
                 }
             }
-            currentPuller = nextPuller(processed);
+            currentPuller = sortedFiles().stream()
+                .filter(candidate(processed))
+                .findFirst()
+                .map(path ->
+                    new Puller(path, inputStream(path)))
+                .orElse(null);
             if (currentPuller == null) {
                 if (done()) {
                     return Optional.empty();
@@ -57,15 +62,6 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
                 backoff = Backoff.sleepAndUpdate(name(), backoff);
             }
         }
-    }
-
-    private Puller nextPuller(Collection<Path> processed) {
-        return sortedFiles().stream()
-            .filter(candidate(processed))
-            .findFirst()
-            .map(path ->
-                new Puller(path, inputStream(path)))
-            .orElse(null);
     }
 
     private Predicate<Path> candidate(Collection<Path> processed) {
