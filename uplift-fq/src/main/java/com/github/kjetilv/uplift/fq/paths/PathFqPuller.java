@@ -3,26 +3,35 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqPuller;
 
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<T> {
 
     private final Collection<Path> processed = new HashSet<>();
 
-    private Puller currentPuller;
+    private Puller<byte[]> currentPuller;
+
+    private final Function<Path, Puller<byte[]>> newPuller;
 
     private final boolean deleting;
 
     private final LongAdder count = new LongAdder();
 
-    PathFqPuller(Path path, Fio<T> fio, boolean deleting, Charset cs) {
-        super(path, fio, cs);
+    PathFqPuller(
+        Path path,
+        Fio<byte[], T> fio,
+        Function<Path, Puller<byte[]>> newPuller,
+        Tombstone<Path> tombstone,
+        boolean deleting
+    ) {
+        super(path, fio, tombstone);
+        this.newPuller = Objects.requireNonNull(newPuller, "newPuller");
         this.deleting = deleting;
     }
 
@@ -50,10 +59,9 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
                 }
             }
             currentPuller = sortedFiles().stream()
-                .filter(candidate(processed))
+                .filter(path -> !ignored(processed, path))
                 .findFirst()
-                .map(path ->
-                    new Puller(path, inputStream(path)))
+                .map(newPuller)
                 .orElse(null);
             if (currentPuller == null) {
                 if (done()) {
@@ -64,7 +72,7 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
         }
     }
 
-    private Predicate<Path> candidate(Collection<Path> processed) {
-        return path -> !path.equals(tombstone()) && !processed.contains(path);
+    private boolean ignored(Collection<Path> processed, Path path) {
+        return isTombstone(path) || processed.contains(path);
     }
 }

@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-class PullerTest {
+class StreamPullerTest {
 
     @Test
     void test(@TempDir(cleanup = CleanupMode.ALWAYS) Path tmp) {
@@ -24,7 +24,7 @@ class PullerTest {
                 x
                 """.getBytes();
         for (int i = 25; i >= 5; i--) {
-            var puller = new Puller(tmp, new ByteArrayInputStream(body), i);
+            var puller = new StreamPuller(tmp, new ByteArrayInputStream(body), i);
             try {
                 assertString(puller, "foo", i);
                 assertString(puller, "bar", i);

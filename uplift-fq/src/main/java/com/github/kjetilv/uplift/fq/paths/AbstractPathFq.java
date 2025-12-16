@@ -3,32 +3,29 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.Fq;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
-import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 abstract class AbstractPathFq<T> implements Fq<T> {
 
-    private final Fio<T> fio;
+    private final Fio<byte[], T> fio;
 
     private final Path directory;
 
-    private final Path tombstone;
+    private final Tombstone<Path> tombstone;
 
-    AbstractPathFq(Path directory, Fio<T> fio) {
+    AbstractPathFq(Path directory, Fio<byte[], T> fio, Tombstone<Path> tombstone) {
         this.directory = Objects.requireNonNull(directory, "path");
         this.fio = Objects.requireNonNull(fio, "fio");
-        this.tombstone = this.directory.resolve("done");
+        this.tombstone = Objects.requireNonNull(tombstone, "tombstone");
 
         if (nonDirectory(this.directory)) {
             throw new IllegalStateException("Path must be a directory: " + directory);
@@ -49,10 +46,6 @@ abstract class AbstractPathFq<T> implements Fq<T> {
         return fio.type();
     }
 
-    final Path tombstone() {
-        return tombstone;
-    }
-
     final Path directory() {
         return directory;
     }
@@ -66,13 +59,24 @@ abstract class AbstractPathFq<T> implements Fq<T> {
     }
 
     final void failOnTombstone() {
-        if (foundTombstone()) {
-            throw new IllegalStateException("Tombstone was already set: " + tombstone());
+        if (tombstone.isSet()) {
+            throw new IllegalStateException("Tombstone was already set: " + tombstone);
         }
     }
 
     final boolean foundTombstone() {
-        return exists(tombstone);
+        return tombstone.isSet();
+    }
+
+    final boolean isTombstone(Path file) {
+        return tombstone.isTombstone(file);
+    }
+
+    final void setTombstone(String inscription) {
+        if (tombstone.isSet()) {
+            throw new IllegalStateException("Tombstone already set: " + tombstone);
+        }
+        tombstone.set(inscription);
     }
 
     final List<Path> sortedFiles() {
@@ -81,33 +85,6 @@ abstract class AbstractPathFq<T> implements Fq<T> {
                 .toList();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to list files in " + directory(), e);
-        }
-    }
-
-    final OutputStream tombstoneOutputStream() {
-        try {
-            return newOutputStream(tombstone, CREATE_NEW);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not write tombstone", e);
-        }
-    }
-
-    final InputStream inputStream(Path path) {
-        Backoff backoff = null;
-        var gzipped = gzipped(path);
-        while (true) {
-            try {
-                var in = newInputStream(path);
-                return gzipped
-                    ? new GZIPInputStream(in)
-                    : in;
-            } catch (Exception e) {
-                if (gzipped && incompleteGZipHeader(path, e)) {
-                    backoff = Backoff.sleepAndUpdate("Read " + path.getFileName(), backoff);
-                } else {
-                    throw new IllegalStateException("Could not read " + path, e);
-                }
-            }
         }
     }
 

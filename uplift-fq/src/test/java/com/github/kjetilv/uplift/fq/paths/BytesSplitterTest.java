@@ -10,7 +10,7 @@ import java.util.Comparator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-class StreamSplitterTest {
+class BytesSplitterTest {
 
     @Test
     void endLine() {
@@ -67,7 +67,7 @@ class StreamSplitterTest {
         var strings = lines(string);
         for (int i = minBuf; i < maxBuf; i++) {
             try (var inputStream = new ByteArrayInputStream(body)) {
-                var puller = new StreamSplitter(inputStream, (byte) '\n', i);
+                var puller = new BytesSplitter(inputStream, (byte) '\n', i);
                 try {
                     int finalI = i;
                     Arrays.stream(strings)

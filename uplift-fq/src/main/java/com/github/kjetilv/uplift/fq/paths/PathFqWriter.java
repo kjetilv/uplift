@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqWriter;
 
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -21,12 +20,12 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private final String prefix;
 
-    private Writer currentWriter;
+    private Writer<byte[]> currentWriter;
 
     private Ledge currentLedge;
 
-    PathFqWriter(Path directory, Dimensions dimensions, Fio<T> fio, Charset cs) {
-        super(directory, fio);
+    PathFqWriter(Path directory, Dimensions dimensions, Fio<byte[], T> fio, Tombstone<Path> tombstone) {
+        super(directory, fio, tombstone);
         this.dimensions = Objects.requireNonNull(dimensions, "dims");
 
         var fileName = directory.getFileName().toString();
@@ -57,14 +56,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
                 throw new RuntimeException("Failed to close", e);
             }
         }
-        try (var tombstoneWriter = tombstoneOutputStream()) {
-            var timestamp = Instant.now().atZone(UTC).toString();
-            new Writer(tombstoneWriter)
-                .write(timestamp.getBytes())
-                .close();
-        } catch (Exception e) {
-            throw new RuntimeException("Could not set tombstone", e);
-        }
+        setTombstone(Instant.now().atZone(UTC).toString());
     }
 
     private void writeItem(T item) {
@@ -92,7 +84,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
         if (currentWriter != null) {
             currentWriter.close();
         }
-        currentWriter = new Writer(bufferedWriter(path(ledge)));
+        currentWriter = new StreamWriter(bufferedWriter(path(ledge)));
         currentLedge = ledge;
     }
 

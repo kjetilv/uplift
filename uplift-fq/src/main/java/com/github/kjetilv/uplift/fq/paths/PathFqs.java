@@ -5,57 +5,79 @@ import com.github.kjetilv.uplift.fq.FqPuller;
 import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
 
-import java.nio.charset.Charset;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
+import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
+import static java.nio.file.Files.newInputStream;
 
 public final class PathFqs<T> implements Fqs<T> {
 
     private final Path root;
 
-    private final Fio<T> fio;
+    private final Fio<byte[], T> fio;
 
     private final Dimensions dimensions;
 
-    private final Charset cs;
-
-    public PathFqs(Path root, Fio<T> fio, Dimensions dimensions) {
-        this(root, fio, dimensions, null);
-    }
-
-    public PathFqs(Path root, Fio<T> fio, Dimensions dimensions, Charset cs) {
+    public PathFqs(Path root, Fio<byte[], T> fio, Dimensions dimensions) {
         this.root = Objects.requireNonNull(root, "root");
         this.fio = Objects.requireNonNull(fio, "fio");
         this.dimensions = Objects.requireNonNull(dimensions, "dimensions");
-        this.cs = cs == null ? UTF_8 : cs;
     }
 
     @Override
     public FqPuller<T> puller(String name) {
+        var directory = resolve(name);
         return new PathFqPuller<>(
-            resolve(name),
+            directory,
             fio,
-            false,
-            cs
+            this::puller,
+            new PathTombstone(directory.resolve("done")),
+            false
         );
     }
 
     @Override
     public FqWriter<T> writer(String name) {
+        var directory = resolve(name);
         return new PathFqWriter<>(
-            resolve(name),
+            directory,
             dimensions,
             fio,
-            cs
+            new PathTombstone(directory.resolve("done"))
         );
     }
 
     @Override
     public Stream<String> names() {
         return Stream.empty();
+    }
+
+    private Puller<byte[]> puller(Path path) {
+        return new StreamPuller(path, inputStream(path));
+    }
+
+    private InputStream inputStream(Path path) {
+        Backoff backoff = null;
+        var gzipped = gzipped(path);
+        while (true) {
+            try {
+                var in = newInputStream(path);
+                return gzipped
+                    ? new GZIPInputStream(in)
+                    : in;
+            } catch (Exception e) {
+                if (gzipped && incompleteGZipHeader(path, e)) {
+                    backoff = Backoff.sleepAndUpdate("Read " + path.getFileName(), backoff);
+                } else {
+                    throw new IllegalStateException("Could not read " + path, e);
+                }
+            }
+        }
     }
 
     private Path resolve(String name) {

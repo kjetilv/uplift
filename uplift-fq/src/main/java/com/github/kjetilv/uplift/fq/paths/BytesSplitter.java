@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import java.io.InputStream;
 
-final class StreamSplitter {
+final class BytesSplitter {
 
     private final byte[] buffer;
 
@@ -16,7 +16,7 @@ final class StreamSplitter {
 
     private boolean exhausted;
 
-    StreamSplitter(InputStream inputStream, int limiter, int size) {
+    BytesSplitter(InputStream inputStream, int limiter, int size) {
         this.buffer = new byte[size > 0 ? size : DEFAULT_BUFFER_SIZE];
         this.limiter = limiter;
         this.inputStream = inputStream;

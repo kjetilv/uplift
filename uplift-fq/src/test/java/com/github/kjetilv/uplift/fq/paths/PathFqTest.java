@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
+import com.github.kjetilv.uplift.fq.io.StringFio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +21,13 @@ class PathFqTest {
 
     @Test
     void testWrite(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        var fooTxt = tmp.resolve("foo.txt");
         try (
             var writer = new PathFqWriter<>(
-                tmp.resolve("foo.txt"),
+                fooTxt,
                 new Dimensions(1, 2, 3),
-                new com.github.kjetilv.uplift.fq.io.StringFio(),
-                StandardCharsets.UTF_8
+                new StringFio(),
+                new PathTombstone(fooTxt.resolve("done"))
             )
         ) {
             for (int i = 0; i < 110; i++) {
@@ -35,7 +36,7 @@ class PathFqTest {
         }
 
         var pathAssert =
-            assertThat(tmp.resolve("foo.txt"))
+            assertThat(fooTxt)
                 .exists()
                 .isDirectory();
         for (int i = 0; i < 10; i++) {
@@ -49,10 +50,10 @@ class PathFqTest {
     }
 
     @Test
-    void testSimpleWriteAndReade(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+    void testSimpleWriteAndReader(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         PathFqs<String> pfq = new PathFqs<>(
             tmp,
-            new com.github.kjetilv.uplift.fq.io.StringFio(),
+            new StringFio(),
             new Dimensions(1, 2, 4)
         );
 
@@ -68,10 +69,9 @@ class PathFqTest {
 
     @Test
     void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-
         PathFqs<String> pfq = new PathFqs<>(
             tmp,
-            new com.github.kjetilv.uplift.fq.io.StringFio(),
+            new StringFio(),
             new Dimensions(1, 2, 4)
         );
 
@@ -164,7 +164,7 @@ class PathFqTest {
     private static void assertChain(Path tmp, Dimensions dimensions, int chainLength, int batchSize, int items) {
         PathFqs<String> pathFqs = new PathFqs<>(
             tmp,
-            new com.github.kjetilv.uplift.fq.io.StringFio(),
+            new StringFio(),
             dimensions
         );
 

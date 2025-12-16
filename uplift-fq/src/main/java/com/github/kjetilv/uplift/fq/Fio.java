@@ -1,10 +1,10 @@
 package com.github.kjetilv.uplift.fq;
 
-public interface Fio<T> {
+public interface Fio<I, O> {
 
-    T read(byte[] line);
+    O read(I line);
 
-    byte[] write(T value);
+    I write(O value);
 
-    Class<T> type();
+    Class<O> type();
 }
