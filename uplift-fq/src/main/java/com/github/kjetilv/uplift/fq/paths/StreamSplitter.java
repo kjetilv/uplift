@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import java.io.InputStream;
 
-public final class StreamSplitter {
+final class StreamSplitter {
 
     private final byte[] buffer;
 
@@ -10,23 +10,23 @@ public final class StreamSplitter {
 
     private final InputStream inputStream;
 
-    public int index;
+    private int index;
 
-    public int end;
+    private int end;
 
     private boolean exhausted;
 
-    public StreamSplitter(InputStream inputStream, int limiter, int size) {
+    StreamSplitter(InputStream inputStream, int limiter, int size) {
         this.buffer = new byte[size > 0 ? size : DEFAULT_BUFFER_SIZE];
         this.limiter = limiter;
         this.inputStream = inputStream;
     }
 
-    public byte[] next() {
-        int startIndex = index;
+    byte[] next() {
+        int limit = index;
         while (true) {
             if (index == end) {
-                load(startIndex);
+                load(limit);
                 if (index == end && exhausted) {
                     return null;
                 }
@@ -34,7 +34,7 @@ public final class StreamSplitter {
             byte next = buffer[index];
             try {
                 if (next == limiter) {
-                    return segment(startIndex);
+                    return segment(limit);
                 }
             } finally {
                 nextIndex();
@@ -46,16 +46,25 @@ public final class StreamSplitter {
         index = (index + 1) % buffer.length;
     }
 
-    private byte[] segment(int startIndex) {
-        if (index > startIndex) {
-            var segment = new byte[index - startIndex];
-            System.arraycopy(buffer, startIndex, segment, 0, segment.length);
+    private byte[] segment(int limit) {
+        if (index == limit) {
+            return EMPTY;
+        }
+        if (index > limit) {
+            var segment = new byte[index - limit];
+            System.arraycopy(buffer, limit, segment, 0, segment.length);
             return segment;
         }
-        var tail = buffer.length - startIndex;
-        byte[] segment = new byte[tail + index];
-        System.arraycopy(buffer, startIndex, segment, 0, tail);
-        System.arraycopy(buffer, 0, segment, tail, index);
+        if (index > 0) {
+            var tail = buffer.length - limit;
+            byte[] segment = new byte[tail + index];
+            System.arraycopy(buffer, limit, segment, 0, tail);
+            System.arraycopy(buffer, 0, segment, tail, index);
+            return segment;
+        }
+        var tail = buffer.length - limit;
+        byte[] segment = new byte[tail];
+        System.arraycopy(buffer, limit, segment, 0, tail);
         return segment;
     }
 
@@ -83,8 +92,12 @@ public final class StreamSplitter {
         } else if (index > 0 && limit > index) {
             // Need to fill inside the buffer
             var loaded = load(index, limit - index);
-            end += loaded;
-        } else  {
+            if (loaded == -1) {
+                exhausted = true;
+            } else {
+                end += loaded;
+            }
+        } else {
             // Need to fill the tail and then the head
             var tail = buffer.length - index;
             var tailLoad = load(index, tail);
@@ -106,5 +119,7 @@ public final class StreamSplitter {
         }
     }
 
-    public static final int DEFAULT_BUFFER_SIZE = 8192;
+    private static final byte[] EMPTY = new byte[0];
+
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
 }

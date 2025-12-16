@@ -1,8 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -10,39 +13,85 @@ import static org.assertj.core.api.Assertions.fail;
 class StreamSplitterTest {
 
     @Test
-    void simple() {
-        var body =
+    void endLine() {
+        assertLines(
             """
-                foo
-                1
-                22
-                bar
-                zot
-                zip
-                xx
                 x
-                """.getBytes();
-        for (int i = 30; i >= 4; i--) {
-            var puller = new StreamSplitter(new ByteArrayInputStream(body), (byte) '\n', i);
-            try {
-                assertString(puller, "foo", i);
-                assertString(puller, "1", i);
-                assertString(puller, "22", i);
-                assertString(puller, "bar", i);
-                assertString(puller, "zot", i);
-                assertString(puller, "zip", i);
-                assertString(puller, "xx", i);
-                assertString(puller, "x", i);
-                assertThat(puller.next()).isNull();
-            } catch (Throwable e) {
-                fail("Failed with buffer size " + i, e);
+                
+                """);
+    }
+
+    @Test
+    void simple() {
+        assertLines("""
+            
+            foofoofoofoo
+            foofoofoofo
+            foofoofoof
+            foofoofoo
+            
+            foofoofo
+            foofoof
+            foofoo
+            
+            
+            
+            foofo
+            foof
+            foo
+            1
+            1
+            22
+            bar
+            1
+            22
+            333
+            4444
+            55555
+            zot
+            zip
+            xx
+            x
+            
+            
+            """);
+    }
+
+    private static void assertLines(String string) {
+        var body = string.getBytes();
+        int minBuf = Arrays.stream(string.split("\n"))
+                         .max(Comparator.comparing(String::length))
+                         .map(String::length)
+                         .orElseThrow() + 1;
+        var maxBuf = body.length + 1;
+        var strings = lines(string);
+        for (int i = minBuf; i < maxBuf; i++) {
+            try (var inputStream = new ByteArrayInputStream(body)) {
+                var puller = new StreamSplitter(inputStream, (byte) '\n', i);
+                try {
+                    int finalI = i;
+                    Arrays.stream(strings)
+                        .forEach(line ->
+                            assertThat(puller.next()).isNotNull()
+                                .satisfies(bytes -> {
+                                    var next = new String(bytes);
+                                    assertThat(next)
+                                        .describedAs("Could not get string %s with buffer size %s", line, finalI)
+                                        .isEqualTo(line);
+                                }));
+                    assertThat(puller.next()).isNull();
+                } catch (Throwable e) {
+                    fail("Failed with buffer size " + i + " (" + minBuf + "-" + maxBuf + ")", e);
+                }
+            } catch (Exception e) {
+                fail("Failed to closeX", e);
             }
         }
     }
 
-    private static void assertString(StreamSplitter puller, String foo, int bs) {
-        assertThat(puller.next())
-            .describedAs("Could not get string %s with buffer size %s", foo, bs)
-            .isEqualTo(foo.getBytes());
+    private static String @NonNull [] lines(String string) {
+        return (string.endsWith("\n") ? string.substring(0, string.length() - 1) : string)
+            .split("\n", -1);
     }
+
 }

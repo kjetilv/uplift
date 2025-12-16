@@ -114,7 +114,7 @@ abstract class AbstractPathFq<T> implements Fq<T> {
     final OutputStream bufferedWriter(Path path) {
         try {
             var out = newOutputStream(path, CREATE_NEW);
-            return gzipped(path) ? new GZIPOutputStream(out) : out;
+            return gzipped(path) ? new GZIPOutputStream(out, true) : out;
         } catch (Exception e) {
             throw new IllegalStateException("Could not write to " + path, e);
         }
