@@ -3,11 +3,8 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.Fq;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -22,19 +19,16 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 abstract class AbstractPathFq<T> implements Fq<T> {
 
-    private final Charset cs;
-
     private final Fio<T> fio;
 
     private final Path directory;
 
     private final Path tombstone;
 
-    AbstractPathFq(Path directory, Fio<T> fio, Charset cs) {
+    AbstractPathFq(Path directory, Fio<T> fio) {
         this.directory = Objects.requireNonNull(directory, "path");
         this.fio = Objects.requireNonNull(fio, "fio");
         this.tombstone = this.directory.resolve("done");
-        this.cs = Objects.requireNonNull(cs, "cs");
 
         if (nonDirectory(this.directory)) {
             throw new IllegalStateException("Path must be a directory: " + directory);
@@ -63,11 +57,11 @@ abstract class AbstractPathFq<T> implements Fq<T> {
         return directory;
     }
 
-    final String toString(T t) {
+    final byte[] toBytes(T t) {
         return fio.write(t);
     }
 
-    final T fromString(String line) {
+    final T fromBytes(byte[] line) {
         return fio.read(line);
     }
 
@@ -90,25 +84,23 @@ abstract class AbstractPathFq<T> implements Fq<T> {
         }
     }
 
-    final BufferedWriter tombstoneWriter() {
+    final OutputStream tombstoneOutputStream() {
         try {
-            return newBufferedWriter(tombstone, CREATE_NEW);
+            return newOutputStream(tombstone, CREATE_NEW);
         } catch (Exception e) {
             throw new IllegalStateException("Could not write tombstone", e);
         }
     }
 
-    final BufferedReader bufferedReader(Path path) {
+    final InputStream inputStream(Path path) {
         Backoff backoff = null;
         var gzipped = gzipped(path);
         while (true) {
             try {
                 var in = newInputStream(path);
-                return new BufferedReader(
-                    new InputStreamReader(
-                        gzipped ? new GZIPInputStream(in) : in,
-                        cs
-                    ));
+                return gzipped
+                    ? new GZIPInputStream(in)
+                    : in;
             } catch (Exception e) {
                 if (gzipped && incompleteGZipHeader(path, e)) {
                     backoff = Backoff.sleepAndUpdate("Read " + path.getFileName(), backoff);
@@ -119,14 +111,10 @@ abstract class AbstractPathFq<T> implements Fq<T> {
         }
     }
 
-    final BufferedWriter bufferedWriter(Path path) {
+    final OutputStream bufferedWriter(Path path) {
         try {
             var out = newOutputStream(path, CREATE_NEW);
-            return new BufferedWriter(
-                new OutputStreamWriter(
-                    gzipped(path) ? new GZIPOutputStream(out) : out,
-                    cs
-                ));
+            return gzipped(path) ? new GZIPOutputStream(out) : out;
         } catch (Exception e) {
             throw new IllegalStateException("Could not write to " + path, e);
         }

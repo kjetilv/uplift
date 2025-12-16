@@ -31,9 +31,9 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
         Backoff backoff = null;
         while (true) {
             var nextLine = nextLine(currentPuller);
-            if (nextLine.isPresent()) {
+            if (nextLine.length > 0) {
                 try {
-                    return nextLine.map(this::fromString);
+                    return Optional.ofNullable(fromBytes(nextLine));
                 } catch (Exception e) {
                     throw new IllegalStateException("Failed to parse #" + count, e);
                 } finally {
@@ -57,8 +57,9 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
         }
     }
 
-    private Optional<String> nextLine(Puller puller) {
-        return Optional.ofNullable(puller).flatMap(Puller::pull);
+    private byte[] nextLine(Puller puller) {
+        return Optional.ofNullable(puller)
+            .map(Puller::pull).orElse(NO_BYTES);
     }
 
     private Puller nextPuller(Collection<Path> processed) {
@@ -66,11 +67,13 @@ final class PathFqPuller<T> extends AbstractPathFqReader<T> implements FqPuller<
             .filter(candidate(processed))
             .findFirst()
             .map(path ->
-                new Puller(path, bufferedReader(path)))
+                new Puller(path, inputStream(path)))
             .orElse(null);
     }
 
     private Predicate<Path> candidate(Collection<Path> processed) {
         return path -> !path.equals(tombstone()) && !processed.contains(path);
     }
+
+    private static final byte[] NO_BYTES = new byte[0];
 }

@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import java.io.BufferedWriter;
+import java.io.OutputStream;
 
-record Writer(BufferedWriter bufferedWriter) {
+record Writer(OutputStream outputStream) {
 
-    Writer write(String line) {
+    Writer write(byte[] line) {
         try {
-            bufferedWriter.write(line);
-            bufferedWriter.write("\n");
+            outputStream.write(line);
+            outputStream.write('\n');
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write line", e);
         }
@@ -16,7 +16,7 @@ record Writer(BufferedWriter bufferedWriter) {
 
     void close() {
         try {
-            bufferedWriter.close();
+            outputStream.close();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to close", e);
         }

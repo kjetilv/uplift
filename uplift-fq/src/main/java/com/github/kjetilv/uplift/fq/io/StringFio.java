@@ -2,16 +2,27 @@ package com.github.kjetilv.uplift.fq.io;
 
 import com.github.kjetilv.uplift.fq.Fio;
 
-public final class StringFio implements Fio<String> {
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-    @Override
-    public String read(String line) {
-        return line;
+public record StringFio(Charset cs) implements Fio<String> {
+
+    public StringFio(Charset cs) {
+        this.cs = cs == null ? StandardCharsets.UTF_8 : cs;
+    }
+
+    public StringFio() {
+        this(null);
     }
 
     @Override
-    public String write(String value) {
-        return value;
+    public String read(byte[] line) {
+        return new String(line, cs);
+    }
+
+    @Override
+    public byte[] write(String value) {
+        return value.getBytes(cs);
     }
 
     @Override

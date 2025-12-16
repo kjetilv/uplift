@@ -11,7 +11,7 @@ abstract class AbstractPathFqReader<T>
     implements FqReader<T> {
 
     AbstractPathFqReader(Path directory, Fio<T> fio, Charset cs) {
-        super(directory, fio, cs);
+        super(directory, fio);
     }
 
     @Override

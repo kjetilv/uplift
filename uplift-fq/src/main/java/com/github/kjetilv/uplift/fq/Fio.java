@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.fq;
 
 public interface Fio<T> {
 
-    T read(String line);
+    T read(byte[] line);
 
-    String write(T value);
+    byte[] write(T value);
 
     Class<T> type();
 }

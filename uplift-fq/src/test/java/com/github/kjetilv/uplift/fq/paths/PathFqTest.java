@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
+import com.github.kjetilv.uplift.fq.FqPuller;
+import com.github.kjetilv.uplift.fq.FqWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -48,8 +50,25 @@ class PathFqTest {
     }
 
     @Test
+    void testSimpleWriteAndReade(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        PathFqs<String> pfq = new PathFqs<>(
+            tmp,
+            new com.github.kjetilv.uplift.fq.io.StringFio(),
+            new Dimensions(1, 2, 4)
+        );
+
+        try (var w = pfq.writer("foo.txt")) {
+            w.write(List.of("foo", "bar"));
+        }
+
+        var puller = pfq.puller("foo.txt");
+        assertThat(puller.next()).hasValue("foo");
+        assertThat(puller.next()).hasValue("bar");
+        assertThat(puller.next()).isEmpty();
+    }
+
+    @Test
     void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        var path = tmp.resolve("foo.txt");
 
         PathFqs<String> pfq = new PathFqs<>(
             tmp,

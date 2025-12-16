@@ -26,7 +26,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
     private Ledge currentLedge;
 
     PathFqWriter(Path directory, Dimensions dimensions, Fio<T> fio, Charset cs) {
-        super(directory, fio, cs);
+        super(directory, fio);
         this.dimensions = Objects.requireNonNull(dimensions, "dims");
 
         var fileName = directory.getFileName().toString();
@@ -57,8 +57,11 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
                 throw new RuntimeException("Failed to close", e);
             }
         }
-        try (var tombstoneWriter = tombstoneWriter()) {
-            new Writer(tombstoneWriter).write(Instant.now().atZone(UTC).toString()).close();
+        try (var tombstoneWriter = tombstoneOutputStream()) {
+            var timestamp = Instant.now().atZone(UTC).toString();
+            new Writer(tombstoneWriter)
+                .write(timestamp.getBytes())
+                .close();
         } catch (Exception e) {
             throw new RuntimeException("Could not set tombstone", e);
         }
@@ -66,9 +69,9 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
 
     private void writeItem(T item) {
         var count = lineCount.longValue();
-        String line;
+        byte[] line;
         try {
-            line = toString(item);
+            line = toBytes(item);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }
@@ -79,7 +82,7 @@ final class PathFqWriter<T> extends AbstractPathFq<T> implements FqWriter<T> {
         try {
             currentWriter.write(line);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write #" + count + ": " + line, e);
+            throw new IllegalStateException("Failed to write #" + count + ": " + line.length + " bytes", e);
         } finally {
             lineCount.increment();
         }
