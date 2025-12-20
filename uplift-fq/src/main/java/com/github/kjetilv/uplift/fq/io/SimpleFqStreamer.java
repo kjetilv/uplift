@@ -1,15 +1,18 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.io;
+
+import com.github.kjetilv.uplift.fq.FqPuller;
+import com.github.kjetilv.uplift.fq.FqStreamer;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-final class SimpleFqStreamer<T>
+public final class SimpleFqStreamer<T>
     implements FqStreamer<T> {
 
     private final FqPuller<T> puller;
 
-    SimpleFqStreamer(FqPuller<T> puller) {
+    public SimpleFqStreamer(FqPuller<T> puller) {
         this.puller = Objects.requireNonNull(puller, "puller");
     }
 

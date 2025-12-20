@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqWriter;
+import com.github.kjetilv.uplift.fq.Tombstone;
 
 import java.nio.file.Path;
 import java.time.Instant;
@@ -99,7 +100,7 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
     }
 
     private Path path(Ledge ledge) {
-        var formatted = "%s-%s.%s.gz".formatted(this.prefix, ledge.asSegment(), this.suffix);
+        var formatted = "%s-%s.%s".formatted(this.prefix, ledge.asSegment(), this.suffix);
         return directory().resolve(Path.of(formatted));
     }
 

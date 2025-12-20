@@ -1,64 +1,53 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.Fio;
-import com.github.kjetilv.uplift.fq.FqPuller;
-import com.github.kjetilv.uplift.fq.FqWriter;
-import com.github.kjetilv.uplift.fq.Fqs;
-import com.github.kjetilv.uplift.fq.paths.bytes.StreamFactories;
+import com.github.kjetilv.uplift.fq.*;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
-public final class PathFqs<T> implements Fqs<T> {
+public final class PathFqs<I, O> implements Fqs<O> {
 
-    private final Path root;
-
-    private final Fio<byte[], T> fio;
+    private final Fio<I, O> fio;
 
     private final Dimensions dimensions;
 
-    private final StreamFactories factories;
+    private final AccessProvider<Path, I> accessProvider;
+
+    private final SourceProvider<Path> sourceProvider;
 
     public PathFqs(
-        Path root,
-        Fio<byte[], T> fio,
+        Fio<I, O> fio,
+        SourceProvider<Path> sourceProvider,
+        AccessProvider<Path, I> accessProvider,
         Dimensions dimensions
     ) {
-        this.root = Objects.requireNonNull(root, "root");
         this.fio = Objects.requireNonNull(fio, "fio");
+        this.sourceProvider = Objects.requireNonNull(sourceProvider, "sourceProvider");
+        this.accessProvider = Objects.requireNonNull(accessProvider, "factories");
         this.dimensions = Objects.requireNonNull(dimensions, "dimensions");
-        this.factories = new StreamFactories();
     }
 
     @Override
-    public FqPuller<T> puller(String name) {
-        var directory = resolve(name);
+    public FqPuller<O> puller(String name) {
+        var directory = sourceProvider.source(name);
         return new PathFqPuller<>(
             directory,
             fio,
-            factories::puller,
-            new PathTombstone(directory.resolve("done")),
+            accessProvider::puller,
+            accessProvider.tombstone(directory),
             false
         );
     }
 
     @Override
-    public FqWriter<T> writer(String name) {
-        var directory = resolve(name);
+    public FqWriter<O> writer(String name) {
+        var directory = sourceProvider.source(name);
         return new PathFqWriter<>(
             directory,
             dimensions,
-            factories::writer,
+            accessProvider::writer,
             fio,
-            new PathTombstone(directory.resolve("done"))
+            accessProvider.tombstone(directory)
         );
-    }
-
-    private Path resolve(String name) {
-        var path = Path.of(name);
-        if (path.isAbsolute()) {
-            throw new IllegalStateException("Expected non-absolute path, relative to " + root + ", got: " + name);
-        }
-        return root.resolve(path);
     }
 }

@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.Tombstone;
+import com.github.kjetilv.uplift.util.SayFiles;
+
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -7,8 +10,6 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import static java.nio.file.Files.exists;
-import static java.nio.file.Files.newOutputStream;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 public record PathTombstone(Path value) implements Tombstone<Path> {
 
@@ -40,7 +41,7 @@ public record PathTombstone(Path value) implements Tombstone<Path> {
 
     private OutputStream tombstoneOutputStream() {
         try {
-            return newOutputStream(value, CREATE_NEW);
+            return SayFiles.newFileOutputStream(value);
         } catch (Exception e) {
             throw new IllegalStateException("Could not write tombstone", e);
         }

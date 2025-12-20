@@ -2,6 +2,10 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqPuller;
+import com.github.kjetilv.uplift.fq.Tombstone;
+import com.github.kjetilv.uplift.util.Sleeper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -10,8 +14,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqPuller<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(PathFqPuller.class);
 
     private final Collection<Path> processed = new HashSet<>();
 
@@ -37,11 +44,12 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     @Override
     public Optional<T> next() {
-        Backoff backoff = null;
+        Sleeper sleeper = null;
         while (true) {
             var nextLine = currentPuller == null
                 ? null
                 : currentPuller.pull();
+
             if (nextLine != null) {
                 try {
                     return Optional.ofNullable(fromBytes(nextLine));
@@ -51,6 +59,7 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
                     count.increment();
                 }
             }
+
             if (currentPuller != null) {
                 currentPuller.close();
                 processed.add(currentPuller.path());
@@ -58,21 +67,33 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
                     rm(currentPuller.path());
                 }
             }
+
             currentPuller = sortedFiles().stream()
                 .filter(path -> !ignored(processed, path))
                 .findFirst()
                 .map(newPuller)
                 .orElse(null);
+
             if (currentPuller == null) {
                 if (done()) {
                     return Optional.empty();
                 }
-                backoff = Backoff.sleepAndUpdate(name(), backoff);
+                (sleeper = sleeper(sleeper, this::name)).sleep();
             }
         }
     }
 
     private boolean ignored(Collection<Path> processed, Path path) {
         return isTombstone(path) || processed.contains(path);
+    }
+
+    private static Sleeper sleeper(Sleeper sleeper, Supplier<String> description) {
+        return Objects.requireNonNullElseGet(
+            sleeper, () -> new Sleeper(
+                description.get(),
+                state ->
+                    log.warn("No files found after {}: {}", state.duration(), description.get())
+            )
+        );
     }
 }

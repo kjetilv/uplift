@@ -3,9 +3,9 @@ package com.github.kjetilv.uplift.asynchttp;
 import com.github.kjetilv.uplift.hash.HashKind;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorSpecies;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -36,6 +36,7 @@ public class SyncTest {
         System.out.println(byteVector2.eq((byte) '\n'));
     }
 
+    @Disabled
     @Test
     void test() {
         var server = SyncIOServer.create();

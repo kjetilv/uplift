@@ -5,13 +5,13 @@ import com.github.kjetilv.uplift.fq.Fio;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public record StringFio(Charset cs) implements Fio<byte[], String> {
+public record BytesStringFio(Charset cs) implements Fio<byte[], String> {
 
-    public StringFio(Charset cs) {
+    public BytesStringFio(Charset cs) {
         this.cs = cs == null ? StandardCharsets.UTF_8 : cs;
     }
 
-    public StringFio() {
+    public BytesStringFio() {
         this(null);
     }
 

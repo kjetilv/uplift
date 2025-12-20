@@ -1,14 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
-import com.github.kjetilv.uplift.fq.paths.Backoff;
 import com.github.kjetilv.uplift.fq.paths.Puller;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.github.kjetilv.uplift.fq.paths.GzipUtils.gzipped;
-import static com.github.kjetilv.uplift.fq.paths.GzipUtils.incompleteGZipHeader;
 import static java.util.Objects.requireNonNull;
 
 public final class StreamPuller implements Puller<byte[]> {
@@ -33,20 +30,9 @@ public final class StreamPuller implements Puller<byte[]> {
 
     @Override
     public byte[] pull() {
-        Backoff backoff = null;
-        while (true) {
-            try {
-                var segment = bytesSplitter.next();
-                opened.compareAndSet(false, true);
-                return segment;
-            } catch (Exception e) {
-                if (!opened.get() && gzipped(path) && incompleteGZipHeader(path, e)) {
-                    backoff = Backoff.sleepAndUpdate("Pull " + path.getFileName(), backoff);
-                } else {
-                    throw new IllegalStateException("Failed to read line", e);
-                }
-            }
-        }
+        var segment = bytesSplitter.next();
+        opened.compareAndSet(false, true);
+        return segment;
     }
 
     public void close() {

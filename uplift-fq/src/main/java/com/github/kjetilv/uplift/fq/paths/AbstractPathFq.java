@@ -2,13 +2,15 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.Fq;
+import com.github.kjetilv.uplift.fq.Tombstone;
+import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static java.nio.file.Files.*;
+import static java.nio.file.Files.delete;
 
 abstract class AbstractPathFq<I, T> implements Fq<T> {
 
@@ -23,11 +25,11 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         this.fio = Objects.requireNonNull(fio, "fio");
         this.tombstone = Objects.requireNonNull(tombstone, "tombstone");
 
-        if (nonDirectory(this.directory)) {
+        if (SayFiles.nonDirectory(this.directory)) {
             throw new IllegalStateException("Path must be a directory: " + directory);
         }
 
-        if (nonWritable(directory)) {
+        if (SayFiles.nonWritable(directory)) {
             throw new IllegalStateException("Directory must be writable: " + directory);
         }
     }
@@ -76,7 +78,7 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
     }
 
     final List<Path> sortedFiles() {
-        try (var list = list(directory())) {
+        try (var list = SayFiles.list(directory())) {
             return list.sorted(BY_FILE_NAME)
                 .toList();
         } catch (Exception e) {
@@ -94,21 +96,4 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
 
     private static final Comparator<Path> BY_FILE_NAME =
         Comparator.comparing(path -> path.getFileName().toString());
-
-    private static boolean nonDirectory(Path directory) {
-        return exists(directory) && !isDirectory(directory);
-    }
-
-    private static boolean nonWritable(Path directory) {
-        return !(isWritable(directory) || couldCreate(directory));
-    }
-
-    private static boolean couldCreate(Path directory) {
-        try {
-            createDirectories(directory);
-            return true;
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not create " + directory, e);
-        }
-    }
 }

@@ -1,0 +1,73 @@
+package com.github.kjetilv.uplift.util;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+
+public final class SayFiles {
+
+    public static OutputStream newFileOutputStream(String path) {
+        return newFileOutputStream(Paths.get(path));
+    }
+
+    public static OutputStream newFileOutputStream(Path path) {
+        try {
+            return Files.newOutputStream(path, CREATE_NEW);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not write to " + path, e);
+        }
+
+    }
+
+    public static InputStream fileInputStream(Path path) {
+        try {
+            return Files.newInputStream(path);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not read from " + path, e);
+        }
+    }
+
+    public static Stream<Path> list(Path directory) {
+        try {
+            return Files.list(directory);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not list files in " + directory, e);
+        }
+    }
+
+    public static long sizeOf(Path path) {
+        if (Files.exists(path)) {
+            try {
+                return Files.size(path);
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not find size of " + path, e);
+            }
+        }
+        return 0L;
+    }
+
+    public static boolean nonDirectory(Path directory) {
+        return Files.exists(directory) && !Files.isDirectory(directory);
+    }
+
+    public static boolean nonWritable(Path directory) {
+        return !(Files.isWritable(directory) || couldCreate(directory));
+    }
+
+    private SayFiles() {
+    }
+
+    private static boolean couldCreate(Path directory) {
+        try {
+            Files.createDirectories(directory);
+            return true;
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not create " + directory, e);
+        }
+    }
+}

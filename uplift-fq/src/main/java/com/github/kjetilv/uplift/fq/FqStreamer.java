@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.fq;
 
+import com.github.kjetilv.uplift.fq.io.SimpleFqStreamer;
+
 import java.util.stream.Stream;
 
 public interface FqStreamer<T> extends FqReader<T> {

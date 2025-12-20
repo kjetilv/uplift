@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.fq;
 
+import com.github.kjetilv.uplift.fq.io.SimpleFqBatcher;
+
 import java.util.List;
 import java.util.stream.Stream;
 

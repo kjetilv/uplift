@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
@@ -54,13 +55,12 @@ public final class Dimensions {
     }
 
     private long ledgeNumber(long no) {
-        var power = (long) Math.floor(Math.log10(no));
-        for (int i = 0; i < powers.length; i++) {
-            if (power == powers[i]) {
-                return normalize(no, expt10s[i]);
-            }
+        var power = (int) Math.floor(Math.log10(no));
+        var i = Arrays.binarySearch(powers, power);
+        if (i < 0) {
+            return normalize(no, expt10s[powers.length - 1]);
         }
-        return normalize(no, expt10s[powers.length - 1]);
+        return normalize(no, expt10s[i]);
     }
 
     private long normalize(long no, int ten) {
