@@ -18,9 +18,9 @@ public class ByteBufferWriter implements Writer<byte[]> {
 
     private final byte[] separator;
 
-    public ByteBufferWriter(Path path, char separator) {
+    public ByteBufferWriter(Path path, byte separator) {
         this.path = Objects.requireNonNull(path, "path");
-        this.separator = new byte[] {(byte) (separator > 0 ? separator : LN)};
+        this.separator = new byte[] {separator};
         try {
             randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");
         } catch (Exception e) {
@@ -57,6 +57,4 @@ public class ByteBufferWriter implements Writer<byte[]> {
             }
         }
     }
-
-    private static final char LN = '\n';
 }

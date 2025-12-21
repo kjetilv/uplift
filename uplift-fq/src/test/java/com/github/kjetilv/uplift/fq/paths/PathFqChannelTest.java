@@ -28,7 +28,7 @@ class PathFqChannelTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new ByteBufferWriter(path, '\n');
+                        return new ByteBufferWriter(path, (byte) '\n');
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

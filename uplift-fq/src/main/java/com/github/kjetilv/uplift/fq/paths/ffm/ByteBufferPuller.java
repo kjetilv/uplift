@@ -13,11 +13,11 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
 @SuppressWarnings("unchecked")
@@ -41,7 +41,7 @@ class ByteBufferPuller implements Puller<byte[]> {
 
     private VectorMask<Byte> mask = ZERO;
 
-    ByteBufferPuller(Path path, char separator) {
+    ByteBufferPuller(Path path, byte separator, Arena arena) {
         this.path = Objects.requireNonNull(path, "path");
         this.size = SayFiles.sizeOf(path);
         if (this.size < LENGTH) {
@@ -51,28 +51,33 @@ class ByteBufferPuller implements Puller<byte[]> {
         }
 
         this.randomAccessFile = randomAccessFile(this.path);
-        this.segment = segment(randomAccessFile, this.size);
+        this.segment = segment(randomAccessFile, this.size, arena);
         this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
-        this.separator = (byte) (separator > 0 ? separator : LN);
+        this.separator = separator;
     }
 
     @Override
     public byte[] pull() {
         while (true) {
-            if (!mask.anyTrue()) {
+            if (mask.firstTrue() == LENGTH) {
                 if (maskStart > size) {
                     return null;
                 }
                 nextMask();
             }
-            if (mask.anyTrue()) {
-                var maskPosition = mask.firstTrue();
-                var bytesFound = length(maskPosition);
-                var array = bytes(bytesFound);
-                lineStart += bytesFound + 1;
-                mask = clearMask(maskPosition);
-                return array;
+            var maskPosition = mask.firstTrue();
+            if (maskPosition == LENGTH) {
+                continue;
             }
+            var bytesFound = length(maskPosition);
+            var array = bytes(
+                segment,
+                lineStart,
+                bytesFound
+            );
+            lineStart += bytesFound + 1;
+            mask = clearMask(maskPosition);
+            return array;
         }
     }
 
@@ -89,10 +94,8 @@ class ByteBufferPuller implements Puller<byte[]> {
         return mask.and(UNSET[maskPositions]);
     }
 
-    private byte[] bytes(long length) {
-        return segment
-            .asSlice(lineStart, length)
-            .toArray(ValueLayout.JAVA_BYTE);
+    private byte[] bytes(MemorySegment segment, long offset, long length) {
+        return segment.asSlice(offset, length).toArray(ValueLayout.JAVA_BYTE);
     }
 
     private long length(int maskPosition) {
@@ -101,10 +104,10 @@ class ByteBufferPuller implements Puller<byte[]> {
 
     private void nextMask() {
         try {
-            var byteVector = maskStart + LENGTH <= size
+            var vector = maskStart + LENGTH <= size
                 ? vectorFrom(maskStart)
                 : vectorFrom(size - LENGTH).slice(endSlice);
-            mask = byteVector.compare(EQ, separator);
+            mask = vector.compare(EQ, separator);
         } finally {
             maskStart += LENGTH;
         }
@@ -113,8 +116,6 @@ class ByteBufferPuller implements Puller<byte[]> {
     private ByteVector vectorFrom(long offset) {
         return ByteVector.fromMemorySegment(SPECIES, segment, offset, BYTE_ORDER);
     }
-
-    private static final char LN = '\n';
 
     private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 
@@ -149,10 +150,14 @@ class ByteBufferPuller implements Puller<byte[]> {
         }
     }
 
-    private static MemorySegment segment(RandomAccessFile file, long size) {
+    private static MemorySegment segment(
+        RandomAccessFile file,
+        long size,
+        Arena arena
+    ) {
         try {
             return file.getChannel()
-                .map(FileChannel.MapMode.READ_ONLY, 0, size, Arena.ofAuto());
+                .map(READ_ONLY, 0, size, arena);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to map " + file, e);
         }
