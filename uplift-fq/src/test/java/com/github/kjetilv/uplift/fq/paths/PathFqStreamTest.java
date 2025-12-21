@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.io.CleanupMode.ON_SUCCESS;
 
-class PathFqTest {
+class PathFqStreamTest {
 
     @Test
     void testWrite(@TempDir(cleanup = ON_SUCCESS) Path tmp) {

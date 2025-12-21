@@ -2,8 +2,8 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
-import com.github.kjetilv.uplift.fq.paths.ffm.ByteBufferWriter;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelsAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelArrayWriter;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.io.CleanupMode.ON_SUCCESS;
 
-class PathFqChannelTest {
+class PathFqChannelBytesTest {
 
     @Test
     void testWrite(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
@@ -28,7 +28,7 @@ class PathFqChannelTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new ByteBufferWriter(path, (byte) '\n');
+                        return new ChannelArrayWriter(path, (byte) '\n');
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -61,7 +61,7 @@ class PathFqChannelTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelsAccessProvider(),
+            new ChannelBytesAccessProvider(),
             new Dimensions(1, 2, 4)
         );
 
@@ -73,7 +73,7 @@ class PathFqChannelTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelsAccessProvider(),
+            new ChannelBytesAccessProvider(),
             new Dimensions(1, 2, 4)
         );
 
@@ -176,7 +176,7 @@ class PathFqChannelTest {
             new PathFqs<>(
                 new BytesStringFio(),
                 new PathProvider(tmp),
-                new ChannelsAccessProvider(),
+                new ChannelBytesAccessProvider(),
                 dimensions
             )
         );

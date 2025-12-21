@@ -48,7 +48,7 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         return directory;
     }
 
-    final I toBytes(T t) {
+    final I toT(T t) {
         return fio.write(t);
     }
 

@@ -18,7 +18,9 @@ public record ByteBufferStringFio(Charset cs) implements Fio<ByteBuffer, String>
 
     @Override
     public String read(ByteBuffer buffer) {
-        return buffer.asCharBuffer().toString();
+        var bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+        return new String(bytes, cs);
     }
 
     @Override

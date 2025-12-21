@@ -68,7 +68,7 @@ final class Chains {
                 assertThat(l).isEqualTo(line));
     }
 
-    static void assertSimpleWriteRead(PathFqs<byte[], String> pfq) {
+    static void assertSimpleWriteRead(PathFqs<?, String> pfq) {
         try (var w = pfq.writer("foo.txt")) {
             for (var i = 0; i < 10; i++) {
                 w.write(List.of("foo" + i, "bar" + i));

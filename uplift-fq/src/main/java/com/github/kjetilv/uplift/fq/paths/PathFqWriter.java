@@ -81,7 +81,7 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         var count = lineCount.longValue();
         I line;
         try {
-            line = toBytes(item);
+            line = toT(item);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }
