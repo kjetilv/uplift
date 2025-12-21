@@ -2,7 +2,9 @@ package com.github.kjetilv.uplift.fq.paths.bytes;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.Tombstone;
-import com.github.kjetilv.uplift.fq.paths.*;
+import com.github.kjetilv.uplift.fq.paths.PathTombstone;
+import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.GzipUtils;
 import com.github.kjetilv.uplift.util.SayFiles;
 import com.github.kjetilv.uplift.util.Sleeper;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 
 public final class StreamAccessProvider implements AccessProvider<Path, byte[]> {
@@ -60,31 +63,24 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
 
     private static GZIPInputStream gzipInputStream(Path path) {
         InputStream in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
-        Sleeper sleeper = null;
+        Supplier<Sleeper> sleeper = Sleeper.create(
+            () -> "Unzip " + path.getFileName(),
+            state ->
+                log.warn("Incomplete Gzip file after {}: {}", state.duration(), path)
+        );
         while (SayFiles.sizeOf(path) <= GZIP_HEADER_SIZE) {
-            (sleeper = sleeper(path, sleeper)).sleep();
+            sleeper.get().sleep();
         }
         while (true) {
             try {
                 return GzipUtils.unzip(path, in);
             } catch (Exception e) {
                 if (GzipUtils.incompleteGZipHeader(e)) {
-                    (sleeper = sleeper(path, sleeper)).sleep();
+                    sleeper.get().sleep();
                 } else {
                     throw new IllegalStateException("Failed to unzip " + path, e);
                 }
             }
         }
-    }
-
-    private static Sleeper sleeper(Path path, Sleeper sleeper) {
-        if (sleeper == null) {
-            return new Sleeper(
-                "Unzip " + path.getFileName(),
-                state ->
-                    log.warn("Incomplete Gzip file after {}: {}", state.duration(), path)
-                );
-        }
-        return sleeper;
     }
 }

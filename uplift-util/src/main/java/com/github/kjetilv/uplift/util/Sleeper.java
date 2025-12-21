@@ -3,23 +3,25 @@ package com.github.kjetilv.uplift.util;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public record Sleeper(State state, Object lock, Consumer<State> onMax) {
 
-    public Sleeper(String description) {
-        this(description, 0L, 0L, null, null);
+    public static Supplier<Sleeper> create(Supplier<String> description) {
+        return create(description, (Consumer<State>) null);
     }
 
-    public Sleeper(String description, Consumer<State> onMax) {
-        this(description, 0L, 0L, null, onMax);
+    public static Supplier<Sleeper> create(Supplier<String> description, Consumer<State> onMax) {
+        return create(description, null, onMax);
     }
 
-    public Sleeper(String description, Duration timeout) {
-        this(description, 0L, 0L, timeout, null);
+    public static Supplier<Sleeper> create(Supplier<String> description, Duration timeout) {
+        return create(description, timeout, null);
     }
 
-    public Sleeper(String description, Duration timeout, Consumer<State> onMax) {
-        this(description, 0L, 0L, timeout, onMax);
+    public static Supplier<Sleeper> create(Supplier<String> description, Duration timeout, Consumer<State> onMax) {
+        return StableValue.supplier(() ->
+            new Sleeper(description.get(), 0L, 0L, timeout, onMax));
     }
 
     private Sleeper(String description, long time, long maxTime, Duration timeout, Consumer<State> onMax) {

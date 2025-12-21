@@ -1,0 +1,91 @@
+package com.github.kjetilv.uplift.fq.paths;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+final class Chains {
+
+    @SuppressWarnings("resource")
+    static void assertChain(
+        int chainLength,
+        int batchSize,
+        int items,
+        PathFqs<byte[], String> pathFqs
+    ) {
+        List<CompletableFuture<Void>> chain = new ArrayList<>();
+
+        var format = "foo-G%d.txt";
+        var executor = Executors.newVirtualThreadPerTaskExecutor();
+        var initialName = format.formatted(0);
+
+        for (var i = 1; i < chainLength; i++) {
+            var finalI = i;
+
+            var linkName = format.formatted(i);
+            var writer = pathFqs.writer(linkName);
+            var precedingLinkName = format.formatted(i - 1);
+            var batcher = pathFqs.batcher(precedingLinkName, batchSize);
+
+            chain.add(CompletableFuture.runAsync(
+                () -> {
+                    batcher.read()
+                        .forEach(lines ->
+                            lines.forEach(line ->
+                                writer.write(line + "-" + finalI)
+                            ));
+                    writer.close();
+                },
+                executor
+            ));
+        }
+
+        chain.add(CompletableFuture.runAsync(
+            () -> {
+                try (var source = pathFqs.writer(initialName)) {
+                    for (var j = 0; j < items; j++) {
+                        source.write("G-0");
+                    }
+                }
+            },
+            executor
+        ));
+
+        chain.forEach(CompletableFuture::join);
+
+        var line = "G-" + IntStream.range(0, chainLength)
+            .mapToObj(String::valueOf)
+            .collect(Collectors.joining("-"));
+
+        assertThat(pathFqs.streamer("foo-G" + (chainLength - 1) + ".txt").read())
+            .isNotEmpty()
+            .allSatisfy(l ->
+                assertThat(l).isEqualTo(line));
+    }
+
+    static void assertSimpleWriteRead(PathFqs<byte[], String> pfq) {
+        try (var w = pfq.writer("foo.txt")) {
+            for (var i = 0; i < 10; i++) {
+                w.write(List.of("foo" + i, "bar" + i));
+            }
+        }
+
+        var puller = pfq.puller("foo.txt");
+        for (var i = 0; i < 10; i++) {
+            assertThat(puller.next()).hasValue("foo" + i);
+            assertThat(puller.next()).hasValue("bar" + i);
+        }
+        assertThat(puller.next()).isEmpty();
+    }
+
+    private Chains() {
+
+    }
+
+    static final int INT = 9999;
+}

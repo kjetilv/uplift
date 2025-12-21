@@ -24,6 +24,8 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     private Puller<I> currentPuller;
 
+    private Path currentPath;
+
     private final Function<Path, Puller<I>> newPuller;
 
     private final boolean deleting;
@@ -44,56 +46,77 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     @Override
     public Optional<T> next() {
-        Sleeper sleeper = null;
+        var nextLine = currentPuller == null
+            ? null
+            : currentPuller.pull();
+        if (nextLine != null) {
+            return nextLine(nextLine);
+        }
+        Supplier<Sleeper> sleeper = Sleeper.create(
+            this::name,
+            state ->
+                log.warn("No files found after {}: {}", state.duration(), name())
+        );
+
         while (true) {
-            var nextLine = currentPuller == null
+            if (currentPuller != null) {
+                reset();
+            }
+
+            try (var pathStream = sortedFiles()) {
+                var available = pathStream.filter(this::candidate)
+                    .toList();
+                if (available.size() > 1 || available.size() == 1 && done()) {
+                    set(available.getFirst());
+                } else {
+                    if (done()) {
+                        return Optional.empty();
+                    }
+                    sleeper.get().sleep();
+                }
+            }
+
+            nextLine = currentPuller == null
                 ? null
                 : currentPuller.pull();
-
             if (nextLine != null) {
-                try {
-                    return Optional.ofNullable(fromBytes(nextLine));
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to parse #" + count, e);
-                } finally {
-                    count.increment();
-                }
-            }
-
-            if (currentPuller != null) {
-                currentPuller.close();
-                processed.add(currentPuller.path());
-                if (deleting) {
-                    rm(currentPuller.path());
-                }
-            }
-
-            currentPuller = sortedFiles().stream()
-                .filter(path -> !ignored(processed, path))
-                .findFirst()
-                .map(newPuller)
-                .orElse(null);
-
-            if (currentPuller == null) {
-                if (done()) {
-                    return Optional.empty();
-                }
-                (sleeper = sleeper(sleeper, this::name)).sleep();
+                return nextLine(nextLine);
             }
         }
     }
 
-    private boolean ignored(Collection<Path> processed, Path path) {
-        return isTombstone(path) || processed.contains(path);
+    @Override
+    protected void subToString(StringBuilder builder) {
+        builder.append("processed: ").append(processed.size());
     }
 
-    private static Sleeper sleeper(Sleeper sleeper, Supplier<String> description) {
-        return Objects.requireNonNullElseGet(
-            sleeper, () -> new Sleeper(
-                description.get(),
-                state ->
-                    log.warn("No files found after {}: {}", state.duration(), description.get())
-            )
-        );
+    private Optional<T> nextLine(I nextLine) {
+        try {
+            return Optional.ofNullable(fromBytes(nextLine));
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse #" + count, e);
+        } finally {
+            count.increment();
+        }
     }
+
+    private void set(Path first) {
+        currentPath = first;
+        currentPuller = newPuller.apply(currentPath);
+    }
+
+    private void reset() {
+        currentPuller.close();
+        processed.add(currentPath);
+        if (deleting) {
+            rm(currentPath);
+        }
+        currentPuller = null;
+        currentPath = null;
+    }
+
+    private boolean candidate(Path path) {
+        return !isTombstone(path) && !processed.contains(path);
+    }
+
 }

@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.fq.paths.ffm;
 
 import com.github.kjetilv.uplift.fq.paths.Writer;
 
-import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -17,39 +16,47 @@ public class ByteBufferWriter implements Writer<byte[]> {
 
     private final FileChannel fileChannel;
 
-    public ByteBufferWriter(Path path) {
+    private final byte[] separator;
+
+    public ByteBufferWriter(Path path, char separator) {
         this.path = Objects.requireNonNull(path, "path");
+        this.separator = new byte[] {(byte) (separator > 0 ? separator : LN)};
         try {
             randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write to " + this.path, e);
         }
         fileChannel = randomAccessFile.getChannel();
     }
 
     @Override
     public Writer<byte[]> write(byte[] line) {
-        try {
-            var written = 0;
-            while (written < line.length) {
-                written += fileChannel.write(ByteBuffer.wrap(line));
-            }
-            var ln = 0;
-            while (ln < 1) {
-                ln += fileChannel.write(ByteBuffer.wrap("\n".getBytes()));
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not write to " + path, e);
-        }
+        doWrite(line);
+        doWrite(this.separator);
         return this;
     }
 
     @Override
     public void close() {
         try {
+            fileChannel.close();
             randomAccessFile.close();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to close " + path, e);
         }
     }
+
+    private void doWrite(byte[] bytes) {
+        var length = bytes.length;
+        var written = 0;
+        while (written < length) {
+            try {
+                written += fileChannel.write(ByteBuffer.wrap(bytes));
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not write to " + path, e);
+            }
+        }
+    }
+
+    private static final char LN = '\n';
 }

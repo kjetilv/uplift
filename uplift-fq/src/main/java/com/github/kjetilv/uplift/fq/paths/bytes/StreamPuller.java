@@ -43,10 +43,6 @@ public final class StreamPuller implements Puller<byte[]> {
         }
     }
 
-    public Path path() {
-        return path;
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + path.getFileName() + "]";

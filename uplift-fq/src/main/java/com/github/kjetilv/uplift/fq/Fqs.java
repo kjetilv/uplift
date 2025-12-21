@@ -13,5 +13,4 @@ public interface Fqs<T> {
     }
 
     FqWriter<T> writer(String name);
-
 }

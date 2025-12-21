@@ -11,11 +11,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -69,15 +67,7 @@ class PathFqTest {
             new StreamAccessProvider(),
             new Dimensions(1, 2, 4)
         );
-
-        try (var w = pfq.writer("foo.txt")) {
-            w.write(List.of("foo", "bar"));
-        }
-
-        var puller = pfq.puller("foo.txt");
-        assertThat(puller.next()).hasValue("foo");
-        assertThat(puller.next()).hasValue("bar");
-        assertThat(puller.next()).isEmpty();
+        Chains.assertSimpleWriteRead(pfq);
     }
 
     @Test
@@ -186,7 +176,6 @@ class PathFqTest {
 
     private static final int INT = 9999;
 
-    @SuppressWarnings("resource")
     private static void assertChain(
         Path tmp,
         Dimensions dimensions,
@@ -195,54 +184,16 @@ class PathFqTest {
         int items,
         boolean gzipped
     ) {
-        PathFqs<byte[], String> pathFqs = new PathFqs<>(
-            new BytesStringFio(),
-            new PathProvider(tmp),
-            new StreamAccessProvider(gzipped),
-            dimensions
+        Chains.assertChain(
+            chainLength,
+            batchSize,
+            items,
+            new PathFqs<>(
+                new BytesStringFio(),
+                new PathProvider(tmp),
+                new StreamAccessProvider(gzipped),
+                dimensions
+            )
         );
-
-        List<CompletableFuture<Void>> chain = new ArrayList<>();
-
-        var format = "foo-G%d.txt";
-
-        for (int i = 1; i < chainLength; i++) {
-            var writer = pathFqs.writer(format.formatted(i));
-            int finalI = i;
-            var batcher = pathFqs.batcher(format.formatted(i - 1), batchSize);
-            chain.add(CompletableFuture.runAsync(
-                () -> {
-                    batcher.read()
-                        .forEach(lines ->
-                            lines.forEach(line ->
-                                writer.write(line + "-" + finalI)));
-                    writer.close();
-                },
-                Executors.newVirtualThreadPerTaskExecutor()
-            ));
-        }
-
-        chain.add(CompletableFuture.runAsync(
-            () -> {
-                try (var source = pathFqs.writer(format.formatted(0))) {
-                    for (int j = 0; j < items; j++) {
-                        source.write("G-0");
-                    }
-
-                }
-            },
-            Executors.newVirtualThreadPerTaskExecutor()
-        ));
-
-        chain.forEach(CompletableFuture::join);
-
-        var line = "G-" + IntStream.range(0, chainLength)
-            .mapToObj(String::valueOf)
-            .collect(Collectors.joining("-"));
-
-        assertThat(pathFqs.streamer("foo-G" + (chainLength - 1) + ".txt").read())
-            .isNotEmpty()
-            .allSatisfy(l ->
-                assertThat(l).isEqualTo(line));
     }
 }

@@ -7,8 +7,8 @@ import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.nio.file.Files.delete;
 
@@ -77,10 +77,10 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         tombstone.set(inscription);
     }
 
-    final List<Path> sortedFiles() {
-        try (var list = SayFiles.list(directory())) {
-            return list.sorted(BY_FILE_NAME)
-                .toList();
+    final Stream<Path> sortedFiles() {
+        try {
+            var list = SayFiles.list(directory());
+            return list.sorted(BY_FILE_NAME);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to list files in " + directory(), e);
         }
@@ -94,6 +94,16 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         }
     }
 
+    protected abstract void subToString(StringBuilder builder);
+
     private static final Comparator<Path> BY_FILE_NAME =
         Comparator.comparing(path -> path.getFileName().toString());
+
+    @Override
+    public final String toString() {
+        var sb = new StringBuilder(getClass().getSimpleName())
+            .append("[").append(directory).append(": ");
+        subToString(sb);
+        return sb.append("]").toString();
+    }
 }

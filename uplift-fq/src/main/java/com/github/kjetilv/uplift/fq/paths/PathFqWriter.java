@@ -28,6 +28,8 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
 
     private Ledge currentLedge;
 
+    private Path currentPath;
+
     PathFqWriter(
         Path directory,
         Dimensions dimensions,
@@ -70,6 +72,11 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         setTombstone(Instant.now().atZone(UTC).toString());
     }
 
+    @Override
+    protected void subToString(StringBuilder builder) {
+        builder.append("current: ").append(currentPath);
+    }
+
     private void writeItem(T item) {
         var count = lineCount.longValue();
         I line;
@@ -95,7 +102,8 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         if (currentWriter != null) {
             currentWriter.close();
         }
-        currentWriter = newWriter.apply(path(ledge));
+        currentPath = path(ledge);
+        currentWriter = newWriter.apply(currentPath);
         currentLedge = ledge;
     }
 

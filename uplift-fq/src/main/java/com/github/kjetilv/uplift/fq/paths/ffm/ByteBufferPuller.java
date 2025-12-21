@@ -1,32 +1,37 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
-import com.github.kjetilv.uplift.util.SayFiles;
 import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.util.SayFiles;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
+@SuppressWarnings("unchecked")
 class ByteBufferPuller implements Puller<byte[]> {
 
     private final Path path;
 
-    private final MemorySegment memorySegment;
+    private final MemorySegment segment;
 
     private final RandomAccessFile randomAccessFile;
+
+    private final byte separator;
+
+    private final int endSlice;
 
     private final long size;
 
@@ -36,25 +41,19 @@ class ByteBufferPuller implements Puller<byte[]> {
 
     private VectorMask<Byte> mask = ZERO;
 
-    ByteBufferPuller(Path path) {
+    ByteBufferPuller(Path path, char separator) {
         this.path = Objects.requireNonNull(path, "path");
-        try {
-            this.randomAccessFile = new RandomAccessFile(this.path.toFile(), "r");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+        this.size = SayFiles.sizeOf(path);
+        if (this.size < LENGTH) {
+            throw new IllegalStateException(
+                "File too small, must be at least " + LENGTH + " bytes: " + path + " (" + size + " bytes)"
+            );
         }
-        try {
-            this.size = SayFiles.sizeOf(path);
-            this.memorySegment = randomAccessFile.getChannel()
-                .map(
-                    READ_ONLY,
-                    0,
-                    this.size,
-                    Arena.ofAuto()
-                );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        this.randomAccessFile = randomAccessFile(this.path);
+        this.segment = segment(randomAccessFile, this.size);
+        this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
+        this.separator = (byte) (separator > 0 ? separator : LN);
     }
 
     @Override
@@ -64,15 +63,14 @@ class ByteBufferPuller implements Puller<byte[]> {
                 if (maskStart > size) {
                     return null;
                 }
-                mask = newMask();
+                nextMask();
             }
             if (mask.anyTrue()) {
-                var firstTrue = mask.firstTrue();
-                var next = maskStart - SPECIES.length() + firstTrue;
-                var length = next - lineStart;
-                var array = array(length);
-                lineStart += length + 1;
-                mask = mask.and(UNSETS[firstTrue]);
+                var maskPosition = mask.firstTrue();
+                var bytesFound = length(maskPosition);
+                var array = bytes(bytesFound);
+                lineStart += bytesFound + 1;
+                mask = clearMask(maskPosition);
                 return array;
             }
         }
@@ -87,63 +85,77 @@ class ByteBufferPuller implements Puller<byte[]> {
         }
     }
 
-    @Override
-    public Path path() {
-        return path;
+    private VectorMask<Byte> clearMask(int maskPositions) {
+        return mask.and(UNSET[maskPositions]);
     }
 
-    private byte[] array(long length) {
-        var segment = memorySegment.asSlice(lineStart, length);
-        return segment.toArray(ValueLayout.JAVA_BYTE);
+    private byte[] bytes(long length) {
+        return segment
+            .asSlice(lineStart, length)
+            .toArray(ValueLayout.JAVA_BYTE);
     }
 
-    private VectorMask<Byte> newMask() {
+    private long length(int maskPosition) {
+        return maskStart + maskPosition - LENGTH - lineStart;
+    }
+
+    private void nextMask() {
         try {
-            return atEnd()
-                ? vectorFrom(size - SPECIES.length()).slice(shift()).compare(EQ, (byte) '\n')
-                : vectorFrom(maskStart).compare(EQ, (byte) '\n');
+            var byteVector = maskStart + LENGTH <= size
+                ? vectorFrom(maskStart)
+                : vectorFrom(size - LENGTH).slice(endSlice);
+            mask = byteVector.compare(EQ, separator);
         } finally {
-            maskStart += SPECIES.length();
+            maskStart += LENGTH;
         }
     }
 
     private ByteVector vectorFrom(long offset) {
-        return ByteVector.fromMemorySegment(
-            SPECIES,
-            memorySegment,
-            offset,
-            BYTE_ORDER
-        );
+        return ByteVector.fromMemorySegment(SPECIES, segment, offset, BYTE_ORDER);
     }
 
-    private int shift() {
-        return Math.toIntExact(SPECIES.length() - size % SPECIES.length());
-    }
-
-    private boolean atEnd() {
-        return maskStart + SPECIES.length() > size;
-    }
+    private static final char LN = '\n';
 
     private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 
     private static final VectorSpecies<Byte> SPECIES = VectorSpecies.ofPreferred(byte.class);
 
-    private static final VectorMask<Byte>[] UNSETS;
+    private static final int LENGTH = SPECIES.length();
 
-    private static final VectorMask<Byte> ZERO =
-        VectorMask.fromValues(SPECIES, new boolean[SPECIES.length()]);
+    private static final VectorMask<Byte> ZERO = VectorMask.fromValues(SPECIES, new boolean[LENGTH]);
+
+    @SuppressWarnings("rawtypes")
+    private static final VectorMask[] UNSET;
 
     static {
-        var unsets = new ArrayList<VectorMask<Byte>>(SPECIES.length());
-        for (int i = 0; i < SPECIES.length(); i++) {
-            var copy = new boolean[SPECIES.length()];
-            Arrays.fill(copy, true);
-            copy[i] = false;
-            var byteVectorMask = VectorMask.fromValues(SPECIES, copy);
-            unsets.add(byteVectorMask);
+        UNSET = new VectorMask[LENGTH];
+        for (int i = 0; i < LENGTH; i++) {
+            UNSET[i] = VectorMask.fromValues(SPECIES, withFalse(i));
         }
-        //noinspection unchecked
-        UNSETS = unsets.<VectorMask<Byte>>toArray(new VectorMask[0]);
+    }
+
+    private static boolean[] withFalse(int i) {
+        var array = new boolean[LENGTH];
+        Arrays.fill(array, true);
+        array[i] = false;
+        return array;
+    }
+
+    private static RandomAccessFile randomAccessFile(Path path) {
+        try {
+            return new RandomAccessFile(path.toFile(), "r");
+        } catch (FileNotFoundException e) {
+            throw new IllegalStateException("Failed to read " + path, e);
+        }
+    }
+
+    private static MemorySegment segment(RandomAccessFile file, long size) {
+        try {
+            return file.getChannel()
+                .map(FileChannel.MapMode.READ_ONLY, 0, size, Arena.ofAuto());
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to map " + file, e);
+        }
     }
 
     @Override

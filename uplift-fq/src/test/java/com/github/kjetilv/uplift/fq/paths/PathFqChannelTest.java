@@ -4,16 +4,13 @@ import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.ffm.ByteBufferWriter;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelsAccessProvider;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -31,7 +28,7 @@ class PathFqChannelTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new ByteBufferWriter(path);
+                        return new ByteBufferWriter(path, '\n');
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -68,25 +65,9 @@ class PathFqChannelTest {
             new Dimensions(1, 2, 4)
         );
 
-        try (var w = pfq.writer("foo.txt")) {
-            for (var i = 0; i < 10; i++) {
-                w.write(List.of("foo" + i, "bar" + i));
-            }
-        }
-
-        var puller = pfq.puller("foo.txt");
-        for (var i = 0; i < 10; i++) {
-            var next1 = puller.next();
-            assertThat(next1).hasValue("foo" + i);
-            next1.ifPresent(System.out::println);
-            var next2 = puller.next();
-            assertThat(next2).hasValue("bar" + i);
-            next2.ifPresent(System.out::println);
-        }
-        assertThat(puller.next()).isEmpty();
+        Chains.assertSimpleWriteRead(pfq);
     }
 
-    @Disabled
     @Test
     void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         var pfq = new PathFqs<>(
@@ -96,7 +77,7 @@ class PathFqChannelTest {
             new Dimensions(1, 2, 4)
         );
 
-        var expected = IntStream.range(0, INT).boxed()
+        var expected = IntStream.range(0, Chains.INT).boxed()
             .map(String::valueOf)
             .toList();
 
@@ -106,7 +87,7 @@ class PathFqChannelTest {
                 try (
                     var fqw = pfq.writer("foo.txt")
                 ) {
-                    for (var i = 0; i < INT; i++) {
+                    for (var i = 0; i < Chains.INT; i++) {
                         fqw.write(String.valueOf(i));
                     }
                     return fqw;
@@ -119,7 +100,7 @@ class PathFqChannelTest {
             () -> {
                 var fqp = pfq.puller("foo.txt");
 
-                for (var i = 0; i < INT; i++) {
+                for (var i = 0; i < Chains.INT; i++) {
                     assertThat(fqp.next()).hasValue(String.valueOf(i));
                 }
                 assertThat(fqp.next()).isEmpty();
@@ -159,7 +140,6 @@ class PathFqChannelTest {
             .isCompletedWithValueMatching(Fq::done);
     }
 
-    @Disabled
     @Test
     void longChain(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         assertChain(
@@ -172,70 +152,33 @@ class PathFqChannelTest {
     }
 
     @Test
-    @Disabled
     void chain(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         assertChain(
             tmp,
-            new Dimensions(1, 3, 4),
+            new Dimensions(1, 3, 5),
             10,
             10,
             9999
         );
     }
 
-    private static final int INT = 9999;
-
-    @SuppressWarnings("resource")
-    private static void assertChain(Path tmp, Dimensions dimensions, int chainLength, int batchSize, int items) {
-        var pathFqs = new PathFqs<>(
-            new BytesStringFio(),
-            new PathProvider(tmp),
-            new ChannelsAccessProvider(),
-            dimensions
+    private static void assertChain(
+        Path tmp,
+        Dimensions dimensions,
+        int chainLength,
+        int batchSize,
+        int items
+    ) {
+        Chains.assertChain(
+            chainLength,
+            batchSize,
+            items,
+            new PathFqs<>(
+                new BytesStringFio(),
+                new PathProvider(tmp),
+                new ChannelsAccessProvider(),
+                dimensions
+            )
         );
-
-        List<CompletableFuture<Void>> chain = new ArrayList<>();
-
-        var format = "foo-G%d.txt";
-        var executor = Executors.newVirtualThreadPerTaskExecutor();
-
-        for (var i = 1; i < chainLength; i++) {
-            var writer = pathFqs.writer(format.formatted(i));
-            var finalI = i;
-            var batcher = pathFqs.batcher(format.formatted(i - 1), batchSize);
-            chain.add(CompletableFuture.runAsync(
-                () -> {
-                    batcher.read()
-                        .forEach(lines ->
-                            lines.forEach(line ->
-                                writer.write(line + "-" + finalI)));
-                    writer.close();
-                },
-                executor
-            ));
-        }
-
-        chain.add(CompletableFuture.runAsync(
-            () -> {
-                try (var source = pathFqs.writer(format.formatted(0))) {
-                    for (var j = 0; j < items; j++) {
-                        source.write("G-0");
-                    }
-
-                }
-            },
-            executor
-        ));
-
-        chain.forEach(CompletableFuture::join);
-
-        var line = "G-" + IntStream.range(0, chainLength)
-            .mapToObj(String::valueOf)
-            .collect(Collectors.joining("-"));
-
-        assertThat(pathFqs.streamer("foo-G" + (chainLength - 1) + ".txt").read())
-            .isNotEmpty()
-            .allSatisfy(l ->
-                assertThat(l).isEqualTo(line));
     }
 }
