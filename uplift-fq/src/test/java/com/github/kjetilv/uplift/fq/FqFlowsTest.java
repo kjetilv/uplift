@@ -1,9 +1,12 @@
 package com.github.kjetilv.uplift.fq;
 
 import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
+import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.Dimensions;
 import com.github.kjetilv.uplift.fq.paths.PathFqs;
+import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,15 +26,42 @@ class FqFlowsTest {
     public static final String GLOB = "glob:**/";
 
     @Test
-    void test(@TempDir Path tmp, TestInfo testInfo) {
-
+    void testBuffers(@TempDir Path tmp, TestInfo testInfo) {
         var fqs = PathFqs.create(
             tmp,
             new ByteBufferStringFio(StandardCharsets.UTF_8),
             new ChannelBufferAccessProvider(),
             new Dimensions(2, 3, 5)
         );
+        test(tmp, testInfo, fqs);
+    }
 
+    @Test
+    void testChannelArrays(@TempDir Path tmp, TestInfo testInfo) {
+        var fqs = PathFqs.create(
+            tmp,
+            new BytesStringFio(StandardCharsets.UTF_8),
+            new ChannelBytesAccessProvider(),
+            new Dimensions(2, 3, 5)
+        );
+        test(tmp, testInfo, fqs);
+    }
+
+    @Test
+    void testArrays(@TempDir Path tmp, TestInfo testInfo) {
+        var fqs = PathFqs.create(
+            tmp,
+            new BytesStringFio(StandardCharsets.UTF_8),
+            new StreamAccessProvider(),
+            new Dimensions(2, 3, 5)
+        );
+
+        test(tmp, testInfo, fqs);
+    }
+
+    private static final String DONE = "done";
+
+    private static <T> void test(Path tmp, TestInfo testInfo, PathFqs<T, String> fqs) {
         var name = testInfo.getTestMethod().orElseThrow().getName();
         var ref = new AtomicReference<Exception>();
 
@@ -73,8 +103,6 @@ class FqFlowsTest {
         contents(tmp, "4", "in1in2in4");
         contents(tmp, "X", "inX");
     }
-
-    private static final String DONE = "done";
 
     private static List<String> check(List<String> items) {
         assertThat(items.size()).isIn(10, 25);
