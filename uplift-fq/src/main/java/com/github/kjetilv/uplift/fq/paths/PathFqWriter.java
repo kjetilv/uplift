@@ -45,7 +45,7 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         var lastDot = fileName.lastIndexOf('.');
 
         this.suffix = fileName.substring(lastDot + 1);
-        this.prefix = fileName.substring(0, lastDot);
+        this.prefix = lastDot < 0 ? fileName : fileName.substring(0, lastDot);
 
         failOnTombstone();
     }

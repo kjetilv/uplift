@@ -1,7 +1,4 @@
-package com.github.kjetilv.uplift.fq.io;
-
-import com.github.kjetilv.uplift.fq.FqBatcher;
-import com.github.kjetilv.uplift.fq.FqPuller;
+package com.github.kjetilv.uplift.fq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,14 +8,14 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public final class SimpleFqBatcher<T>
+final class SimpleFqBatcher<T>
     implements FqBatcher<T> {
 
     private final FqPuller<T> puller;
 
     private final int batchSize;
 
-    public SimpleFqBatcher(FqPuller<T> puller, int batchSize) {
+    SimpleFqBatcher(FqPuller<T> puller, int batchSize) {
         this.puller = Objects.requireNonNull(puller, "puller");
         if (batchSize > 0) {
             this.batchSize = batchSize;

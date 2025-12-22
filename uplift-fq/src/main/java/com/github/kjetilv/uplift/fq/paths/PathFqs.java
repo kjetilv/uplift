@@ -7,6 +7,20 @@ import java.util.Objects;
 
 public final class PathFqs<I, O> implements Fqs<O> {
 
+    public static <I, O> PathFqs<I, O> create(
+        Path directory,
+        Fio<I, O> fio,
+        AccessProvider<Path, I> accessProvider,
+        Dimensions dimensions
+    ) {
+        return new PathFqs<>(
+            fio,
+            new PathProvider(directory),
+            accessProvider,
+            dimensions
+        );
+    }
+
     private final Fio<I, O> fio;
 
     private final Dimensions dimensions;

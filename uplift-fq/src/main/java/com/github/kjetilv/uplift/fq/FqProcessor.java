@@ -1,6 +1,12 @@
 package com.github.kjetilv.uplift.fq;
 
-public interface FqProcessor<T, R> {
+import java.util.List;
 
-    R process(T t);
+public interface FqProcessor<T> {
+
+    default T process(T t) {
+        return process(List.of(t)).getFirst();
+    }
+
+    List<T> process(List<T> items);
 }
