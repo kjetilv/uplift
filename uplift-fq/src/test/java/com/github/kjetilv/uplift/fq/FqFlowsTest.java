@@ -23,8 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FqFlowsTest {
 
-    public static final String GLOB = "glob:**/";
-
     @Test
     void testBuffers(@TempDir Path tmp, TestInfo testInfo) {
         var fqs = PathFqs.create(
@@ -58,6 +56,8 @@ class FqFlowsTest {
 
         test(tmp, testInfo, fqs);
     }
+
+    private static final String GLOB = "glob:**/";
 
     private static final String DONE = "done";
 
