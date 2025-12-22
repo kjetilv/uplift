@@ -19,7 +19,7 @@ import java.util.Objects;
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
-public abstract class ChannelPuller<T> implements Puller<T> {
+public sealed abstract class ChannelPuller<T> implements Puller<T> permits ChannelArrayPuller, ChannelBufferPuller {
 
     private final Path path;
 

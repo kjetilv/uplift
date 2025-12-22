@@ -6,13 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
-class ChannelBufferPuller extends ChannelPuller<ByteBuffer> {
+public final class ChannelBufferPuller extends ChannelPuller<ByteBuffer> {
 
-    ChannelBufferPuller(
-        Path path,
-        byte separator,
-        Supplier<Arena> arena
-    ) {
+    public ChannelBufferPuller(Path path, byte separator, Supplier<Arena> arena) {
         super(
             path,
             separator,

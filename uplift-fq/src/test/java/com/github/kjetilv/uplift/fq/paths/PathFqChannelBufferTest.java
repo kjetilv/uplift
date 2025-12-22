@@ -3,14 +3,13 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferWriter;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -33,13 +32,7 @@ class PathFqChannelBufferTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new ChannelWriter<>(path, ByteBuffer.wrap(new byte[] {'\n'})) {
-
-                            @Override
-                            protected ByteBuffer byteBuffer(ByteBuffer line) {
-                                return line;
-                            }
-                        };
+                        return new ChannelBufferWriter(path, (byte) '\n');
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

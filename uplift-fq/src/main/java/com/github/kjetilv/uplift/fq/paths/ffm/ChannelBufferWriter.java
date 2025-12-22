@@ -3,11 +3,11 @@ package com.github.kjetilv.uplift.fq.paths.ffm;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-class ChannelBufferWriter extends ChannelWriter<ByteBuffer> {
+public final class ChannelBufferWriter extends ChannelWriter<ByteBuffer> {
 
     private final byte separator;
 
-    ChannelBufferWriter(Path path, byte separator) {
+    public ChannelBufferWriter(Path path, byte separator) {
         super(path, ByteBuffer.wrap(new byte[] {separator}));
         this.separator = separator;
     }

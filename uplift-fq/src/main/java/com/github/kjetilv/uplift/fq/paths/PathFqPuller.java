@@ -8,13 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqPuller<T> {
 
@@ -52,7 +48,7 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
         if (nextLine != null) {
             return nextLine(nextLine);
         }
-        Supplier<Sleeper> sleeper = Sleeper.create(
+        var sleeper = Sleeper.deferred(
             this::name,
             state ->
                 log.warn("No files found after {}: {}", state.duration(), name())
@@ -64,9 +60,10 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
             }
 
             try (var pathStream = sortedFiles()) {
-                var available = pathStream.filter(this::candidate)
+                var available = pathStream
+                    .filter(this::candidate)
                     .toList();
-                if (available.size() > 1 || available.size() == 1 && done()) {
+                if (fileReady(available)) {
                     set(available.getFirst());
                 } else {
                     if (done()) {
@@ -88,6 +85,10 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
     @Override
     protected void subToString(StringBuilder builder) {
         builder.append("processed: ").append(processed.size());
+    }
+
+    private boolean fileReady(List<Path> available) {
+        return available.size() > 1 || available.size() == 1 && done();
     }
 
     private Optional<T> nextLine(I nextLine) {

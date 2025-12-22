@@ -1,8 +1,18 @@
 package com.github.kjetilv.uplift.fq;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface FqPuller<T> extends FqReader<T> {
 
     Optional<T> next();
+
+    default Stream<T> stream() {
+        return FqStreamer.from(this).read();
+    }
+
+    default Stream<List<T>> batches(int batchSize) {
+        return FqBatcher.from(this, batchSize).read();
+    }
 }

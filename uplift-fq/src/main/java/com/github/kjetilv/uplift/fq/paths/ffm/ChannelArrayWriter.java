@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.fq.paths.ffm;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-public class ChannelArrayWriter extends ChannelWriter<byte[]> {
+public final class ChannelArrayWriter extends ChannelWriter<byte[]> {
 
     public ChannelArrayWriter(Path path, byte separator) {
         super(path, new byte[] {separator});

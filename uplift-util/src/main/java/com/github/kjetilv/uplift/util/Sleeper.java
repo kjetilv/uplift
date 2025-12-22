@@ -7,19 +7,19 @@ import java.util.function.Supplier;
 
 public record Sleeper(State state, Object lock, Consumer<State> onMax) {
 
-    public static Supplier<Sleeper> create(Supplier<String> description) {
-        return create(description, (Consumer<State>) null);
+    public static Supplier<Sleeper> deferred(Supplier<String> description) {
+        return deferred(description, (Consumer<State>) null);
     }
 
-    public static Supplier<Sleeper> create(Supplier<String> description, Consumer<State> onMax) {
-        return create(description, null, onMax);
+    public static Supplier<Sleeper> deferred(Supplier<String> description, Consumer<State> onMax) {
+        return deferred(description, null, onMax);
     }
 
-    public static Supplier<Sleeper> create(Supplier<String> description, Duration timeout) {
-        return create(description, timeout, null);
+    public static Supplier<Sleeper> deferred(Supplier<String> description, Duration timeout) {
+        return deferred(description, timeout, null);
     }
 
-    public static Supplier<Sleeper> create(Supplier<String> description, Duration timeout, Consumer<State> onMax) {
+    public static Supplier<Sleeper> deferred(Supplier<String> description, Duration timeout, Consumer<State> onMax) {
         return StableValue.supplier(() ->
             new Sleeper(description.get(), 0L, 0L, timeout, onMax));
     }
