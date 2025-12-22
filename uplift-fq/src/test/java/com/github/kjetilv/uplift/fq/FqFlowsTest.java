@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import static java.text.MessageFormat.format;
@@ -32,28 +33,31 @@ class FqFlowsTest {
         );
 
         var name = testInfo.getTestMethod().orElseThrow().getName();
+        var ref = new AtomicReference<Exception>();
 
-        var flows = FqFlows.create(name, fqs)
-            .batchSize(10)
+        var configured = FqFlows.create(name, fqs)
+            .batchSize(25)
             .timeout(Duration.ofMinutes(1))
-            .onException((_, _, e) ->
-                System.err.println("Exception in FqFlowsTest: " + e.getMessage()));
+            .onException((_, _, e) -> ref.set(e))
 
-        var configured = flows
             .fromSource("in1").with(items ->
-                items.stream()
+                check(items).stream()
                     .map(i -> i + "in1")
                     .toList())
             .fromSource("inX").with(items ->
-                items.stream()
+                check(items).stream()
                     .map(i -> i + "inX")
                     .toList())
             .from("in1", "in2").with(items ->
-                items.stream()
+                check(items).stream()
                     .map(i -> i + "in2")
                     .toList())
+            .from("in2", "in4").with(items ->
+                check(items).stream()
+                    .map(i -> i + "in4")
+                    .toList())
             .from("in1", "in3").with(items ->
-                items.stream()
+                check(items).stream()
                     .map(i -> i + "in3")
                     .toList());
 
@@ -61,20 +65,30 @@ class FqFlowsTest {
 
         configured.feed(strings);
 
-        assertContents(tmp, "1", "in1");
-        assertContents(tmp, "2", "in1in2");
-        assertContents(tmp, "3", "in1in3");
-        assertContents(tmp, "X", "inX");
+        assertThat(ref).hasValue(null);
+
+        contents(tmp, "1", "in1");
+        contents(tmp, "2", "in1in2");
+        contents(tmp, "3", "in1in3");
+        contents(tmp, "4", "in1in2in4");
+        contents(tmp, "X", "inX");
     }
 
-    private static void assertContents(Path tmp, String index, String suffix) {
+    private static final String DONE = "done";
+
+    private static List<String> check(List<String> items) {
+        assertThat(items.size()).isIn(10, 25);
+        return items;
+    }
+
+    private static void contents(Path tmp, String index, String suffix) {
         var first100 = format("in{0}-00000.in{0}", index);
         var last10 = format("in{0}-00100.in{0}", index);
         var notFound = format("in{0}-00200.in{0}", index);
         var dir = tmp.resolve("in" + index);
 
         assertThat(dir)
-            .isDirectoryContaining(GLOB + "done")
+            .isDirectoryContaining(GLOB + DONE)
             .isDirectoryContaining(GLOB + first100)
             .isDirectoryContaining(GLOB + last10)
             .isDirectoryNotContaining(GLOB + notFound);
@@ -86,6 +100,10 @@ class FqFlowsTest {
             .isRegularFile()
             .content()
             .hasLineCount(10);
+        assertThat(dir.resolve(DONE))
+            .isRegularFile()
+            .content()
+            .isNotBlank();
         List.of(first100, last10)
             .forEach(file ->
                 assertThat(dir.resolve(file))
@@ -94,5 +112,4 @@ class FqFlowsTest {
                         assertThat(content.split("\n")).allSatisfy(line ->
                             assertThat(line).endsWith(suffix))));
     }
-
 }
