@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FqFlowsTest {
 
+    public static final String GLOB = "glob:**/";
+
     @Test
     void test(@TempDir Path tmp, TestInfo testInfo) {
 
@@ -42,31 +44,40 @@ class FqFlowsTest {
                 items.stream()
                     .map(i -> i + "in1")
                     .toList())
+            .fromSource("inX").with(items ->
+                items.stream()
+                    .map(i -> i + "inX")
+                    .toList())
             .from("in1", "in2").with(items ->
                 items.stream()
                     .map(i -> i + "in2")
+                    .toList())
+            .from("in1", "in3").with(items ->
+                items.stream()
+                    .map(i -> i + "in3")
                     .toList());
 
         var strings = IntStream.range(0, 110).mapToObj(String::valueOf);
 
         configured.feed(strings);
 
-        assertContents(tmp, 1, "in1");
-        assertContents(tmp, 2, "in1in2");
+        assertContents(tmp, "1", "in1");
+        assertContents(tmp, "2", "in1in2");
+        assertContents(tmp, "3", "in1in3");
+        assertContents(tmp, "X", "inX");
     }
 
-    private static void assertContents(Path tmp, int index, String suffix) {
-        var glob = "glob:**/";
+    private static void assertContents(Path tmp, String index, String suffix) {
         var first100 = format("in{0}-00000.in{0}", index);
         var last10 = format("in{0}-00100.in{0}", index);
         var notFound = format("in{0}-00200.in{0}", index);
         var dir = tmp.resolve("in" + index);
 
         assertThat(dir)
-            .isDirectoryContaining(glob + "done")
-            .isDirectoryContaining(glob + first100)
-            .isDirectoryContaining(glob + last10)
-            .isDirectoryNotContaining(glob + notFound);
+            .isDirectoryContaining(GLOB + "done")
+            .isDirectoryContaining(GLOB + first100)
+            .isDirectoryContaining(GLOB + last10)
+            .isDirectoryNotContaining(GLOB + notFound);
         assertThat(dir.resolve(first100))
             .isRegularFile()
             .content()
