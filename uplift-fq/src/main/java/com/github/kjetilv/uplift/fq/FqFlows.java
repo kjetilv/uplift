@@ -16,12 +16,12 @@ public sealed interface FqFlows<T> permits AbstractFqFlows {
             : new SimpleFqFlows<>(name, fqs);
     }
 
-    default To<T> fromSource() {
-        return from(null);
+    default With<T> fromSource(String to) {
+        return fromSource().to(to);
     }
 
-    default With<T> fromSource(String to) {
-        return from(null).to(to);
+    default To<T> fromSource() {
+        return from(null);
     }
 
     default With<T> from(String from, String to) {

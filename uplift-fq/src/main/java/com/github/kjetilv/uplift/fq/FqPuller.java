@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface FqPuller<T> extends FqReader<T> {
+public interface FqPuller<T> extends Fq<T> {
 
     Optional<T> next();
 

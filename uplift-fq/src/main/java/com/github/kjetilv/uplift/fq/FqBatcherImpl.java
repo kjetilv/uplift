@@ -8,14 +8,14 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-final class SimpleFqBatcher<T>
+final class FqBatcherImpl<T>
     implements FqBatcher<T> {
 
     private final FqPuller<T> puller;
 
     private final int batchSize;
 
-    SimpleFqBatcher(FqPuller<T> puller, int batchSize) {
+    FqBatcherImpl(FqPuller<T> puller, int batchSize) {
         this.puller = Objects.requireNonNull(puller, "puller");
         if (batchSize > 0) {
             this.batchSize = batchSize;

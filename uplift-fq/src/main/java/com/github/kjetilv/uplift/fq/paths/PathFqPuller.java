@@ -42,12 +42,15 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     @Override
     public Optional<T> next() {
+
         var nextLine = currentPuller == null
             ? null
             : currentPuller.pull();
+
         if (nextLine != null) {
             return nextLine(nextLine);
         }
+
         var sleeper = Sleeper.deferred(
             this::name,
             state ->

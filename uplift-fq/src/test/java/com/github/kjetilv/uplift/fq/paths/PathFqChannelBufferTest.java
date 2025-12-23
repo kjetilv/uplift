@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferWriter;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

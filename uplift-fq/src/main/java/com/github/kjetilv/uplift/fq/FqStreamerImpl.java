@@ -4,12 +4,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-final class SimpleFqStreamer<T>
+final class FqStreamerImpl<T>
     implements FqStreamer<T> {
 
     private final FqPuller<T> puller;
 
-    SimpleFqStreamer(FqPuller<T> puller) {
+    FqStreamerImpl(FqPuller<T> puller) {
         this.puller = Objects.requireNonNull(puller, "puller");
     }
 
