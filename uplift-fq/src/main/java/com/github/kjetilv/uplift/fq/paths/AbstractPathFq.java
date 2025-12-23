@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.Fq;
-import com.github.kjetilv.uplift.fq.Tombstone;
 import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Path;

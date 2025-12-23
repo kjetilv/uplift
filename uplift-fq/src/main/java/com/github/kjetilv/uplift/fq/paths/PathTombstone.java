@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.Tombstone;
 import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.io.BufferedWriter;

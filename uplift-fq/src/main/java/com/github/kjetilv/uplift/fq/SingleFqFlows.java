@@ -4,31 +4,31 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 
-final class SimpleFqFlows<T>
+final class SingleFqFlows<T>
     extends AbstractFqFlows<T> {
 
-    SimpleFqFlows(String name, Fqs<T> fqs) {
+    SingleFqFlows(String name, Fqs<T> fqs) {
         this(name, fqs, null, null, null);
     }
 
-    SimpleFqFlows(
+    SingleFqFlows(
         String name,
         Fqs<T> fqs,
         List<Flow<T>> flows,
         Duration timeout,
-        Handler<T> handler
+        ErrorHandler<T> handler
     ) {
         super(name, fqs, 0, timeout, flows, handler);
     }
 
     @Override
-    public FqFlows<T> onException(Handler<T> handler) {
-        return new SimpleFqFlows<>(name, fqs, flows, timeout, handler);
+    public FqFlows<T> onException(ErrorHandler<T> handler) {
+        return new SingleFqFlows<>(name, fqs, flows, timeout, handler);
     }
 
     @Override
     public FqFlows<T> timeout(Duration timeout) {
-        return new SimpleFqFlows<>(name, fqs, flows, timeout, handler);
+        return new SingleFqFlows<>(name, fqs, flows, timeout, handler);
     }
 
     @Override
@@ -46,6 +46,6 @@ final class SimpleFqFlows<T>
 
     @Override
     protected FqFlows<T> with(List<Flow<T>> flows) {
-        return new SimpleFqFlows<>(name, fqs, flows, timeout, handler);
+        return new SingleFqFlows<>(name, fqs, flows, timeout, handler);
     }
 }

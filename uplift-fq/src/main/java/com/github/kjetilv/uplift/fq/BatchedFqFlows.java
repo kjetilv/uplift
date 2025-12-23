@@ -17,13 +17,13 @@ final class BatchedFqFlows<T>
         List<Flow<T>> flows,
         int batchSize,
         Duration timeout,
-        Handler<T> handler
+        ErrorHandler<T> handler
     ) {
         super(name, fqs, batchSize, timeout, flows, handler);
     }
 
     @Override
-    public FqFlows<T> onException(Handler<T> handler) {
+    public FqFlows<T> onException(ErrorHandler<T> handler) {
         return new BatchedFqFlows<>(name, fqs, flows, batchSize, timeout, handler);
     }
 
@@ -34,11 +34,11 @@ final class BatchedFqFlows<T>
 
     @Override
     protected void run(String source, Flow<T> flow, FqWriter<T> writer) {
-        fqs.batches(source, batchSize).flatMap(item -> {
+        fqs.batches(source, batchSize).flatMap(items -> {
                 try {
-                    return Stream.of(flow.processor().process(item));
+                    return Stream.of(flow.processor().process(items));
                 } catch (Exception e) {
-                    handler.failed(flow, item, e);
+                    handler.failed(flow, items, e);
                     return Stream.empty();
                 }
             })

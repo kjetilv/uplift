@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.paths;
 
 public interface Tombstone<S> {
 

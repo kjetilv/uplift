@@ -42,7 +42,7 @@ final class FqBatcherImpl<T>
     @Override
     public Stream<List<T>> read() {
         return StreamSupport.stream(
-            new BatchSpliterator<T>(puller, batchSize),
+            new BatchSpliterator<>(puller, batchSize),
             false
         );
     }

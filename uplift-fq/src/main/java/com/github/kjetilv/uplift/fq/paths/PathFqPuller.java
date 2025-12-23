@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqPuller;
-import com.github.kjetilv.uplift.fq.Tombstone;
 import com.github.kjetilv.uplift.util.Sleeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

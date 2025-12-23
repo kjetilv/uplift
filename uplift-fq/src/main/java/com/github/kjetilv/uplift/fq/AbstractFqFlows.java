@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("ProtectedField")
 abstract sealed class AbstractFqFlows<T>
     implements FqFlows<T>
-    permits BatchedFqFlows, SimpleFqFlows {
+    permits BatchedFqFlows, SingleFqFlows {
 
     protected final String name;
 
@@ -24,7 +24,7 @@ abstract sealed class AbstractFqFlows<T>
 
     protected final List<Flow<T>> flows;
 
-    protected final Handler<T> handler;
+    protected final ErrorHandler<T> handler;
 
     AbstractFqFlows(
         String name,
@@ -32,7 +32,7 @@ abstract sealed class AbstractFqFlows<T>
         int batchSize,
         Duration timeout,
         List<Flow<T>> flows,
-        Handler<T> handler
+        ErrorHandler<T> handler
     ) {
         this.name = Objects.requireNonNull(name, "name");
         if (this.name.isBlank()) {
@@ -67,21 +67,19 @@ abstract sealed class AbstractFqFlows<T>
                     this::configure
                 )
         ) {
-            try {
-                flows.forEach(flow ->
-                    scope.fork(() -> {
-                        try (var writer = fqs.writer(flow.to())) {
-                            run(flow.fromOr(this.name), flow, writer);
-                        }
-                    }));
-                var count = scope.join().count();
-                assert count == flows.size() : "Expected " + flows.size() + " runs, got " + count;
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Flow execution interrupted", e);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to execute flow", e);
-            }
+            flows.forEach(flow ->
+                scope.fork(() -> {
+                    try (var writer = fqs.writer(flow.to())) {
+                        run(flow.fromOr(this.name), flow, writer);
+                    }
+                }));
+            var count = scope.join().count();
+            assert count == flows.size() : "Expected " + flows.size() + " runs, got " + count;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Flow execution interrupted", e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to execute flow", e);
         }
     }
 

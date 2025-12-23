@@ -1,19 +1,18 @@
 package com.github.kjetilv.uplift.fq;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.stream.Stream;
 
 public sealed interface FqFlows<T> permits AbstractFqFlows {
 
     static <T> FqFlows<T> create(String name, Fqs<T> fqs) {
-        return new SimpleFqFlows<>(name, fqs);
+        return new SingleFqFlows<>(name, fqs);
     }
 
     static <T> FqFlows<T> create(String name, Fqs<T> fqs, int batchSize) {
         return batchSize > 1
             ? new BatchedFqFlows<>(name, fqs, batchSize)
-            : new SimpleFqFlows<>(name, fqs);
+            : new SingleFqFlows<>(name, fqs);
     }
 
     default With<T> fromSource(String to) {
@@ -32,18 +31,9 @@ public sealed interface FqFlows<T> permits AbstractFqFlows {
 
     void feed(Stream<T> items);
 
-    FqFlows<T> onException(Handler<T> handler);
+    FqFlows<T> onException(ErrorHandler<T> handler);
 
     FqFlows<T> timeout(Duration timeout);
-
-    interface Handler<T> {
-
-        default void failed(Flow<T> flow, T item, Exception e) {
-            failed(flow, List.of(item), e);
-        }
-
-        void failed(Flow<T> flow, List<T> items, Exception e);
-    }
 
     interface To<T> {
 
