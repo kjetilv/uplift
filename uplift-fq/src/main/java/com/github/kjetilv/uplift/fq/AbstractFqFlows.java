@@ -75,7 +75,7 @@ abstract sealed class AbstractFqFlows<T>
                         }
                     }));
                 var count = scope.join().count();
-                assert count == flows.size() : "Expected " + flows.size() + ", got " + count;
+                assert count == flows.size() : "Expected " + flows.size() + " runs, got " + count;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException("Flow execution interrupted", e);
@@ -98,12 +98,11 @@ abstract sealed class AbstractFqFlows<T>
     }
 
     private FqFlows<T> withFlow(Flow<T> flow) {
-        return with(newList(flow));
-    }
-
-    private List<Flow<T>> newList(Flow<T> flow) {
-        return Stream.concat(flows.stream(), Stream.of(flow))
-            .toList();
+        return with(Stream.concat(
+                flows.stream(),
+                Stream.of(flow)
+            )
+            .toList());
     }
 
     private static <T> String print(List<Flow<T>> flows) {
@@ -137,14 +136,14 @@ abstract sealed class AbstractFqFlows<T>
     }
 
     private static ThreadFactory threadFactory(String namePrefix) {
-        LongAdder i = new LongAdder();
+        LongAdder counter = new LongAdder();
         return runnable -> {
             try {
                 return Thread.ofVirtual()
-                    .name(namePrefix + "-" + i.longValue())
+                    .name("%s-%s".formatted(namePrefix, counter))
                     .unstarted(runnable);
             } finally {
-                i.increment();
+                counter.increment();
             }
         };
     }
