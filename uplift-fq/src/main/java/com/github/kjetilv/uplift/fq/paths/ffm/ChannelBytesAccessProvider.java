@@ -17,10 +17,6 @@ public record ChannelBytesAccessProvider(Supplier<Arena> arena, byte separator)
         this('\n', null);
     }
 
-    public ChannelBytesAccessProvider(Supplier<Arena> arena) {
-        this((char) 0, arena);
-    }
-
     public ChannelBytesAccessProvider(char separator, Supplier<Arena> arena) {
         this(arena, (byte) separator);
     }

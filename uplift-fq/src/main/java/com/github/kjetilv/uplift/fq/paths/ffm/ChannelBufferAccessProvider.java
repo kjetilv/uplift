@@ -18,10 +18,6 @@ public record ChannelBufferAccessProvider(Supplier<Arena> arena, byte separator)
         this('\n', null);
     }
 
-    public ChannelBufferAccessProvider(Supplier<Arena> arena) {
-        this((char) 0, arena);
-    }
-
     public ChannelBufferAccessProvider(char separator, Supplier<Arena> arena) {
         this(arena, (byte) separator);
     }

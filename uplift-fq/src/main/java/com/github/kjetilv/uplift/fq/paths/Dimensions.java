@@ -56,11 +56,9 @@ public final class Dimensions {
 
     private long ledgeNumber(long no) {
         var power = (int) Math.floor(Math.log10(no));
-        var i = Arrays.binarySearch(powers, power);
-        if (i < 0) {
-            return normalize(no, expt10s[powers.length - 1]);
-        }
-        return normalize(no, expt10s[i]);
+        var powerIndex = Arrays.binarySearch(powers, power);
+        var exptIndex = powerIndex < 0 ? powers.length - 1 : powerIndex;
+        return normalize(no, expt10s[exptIndex]);
     }
 
     private long normalize(long no, int ten) {

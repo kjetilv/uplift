@@ -4,10 +4,16 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 
-public interface FqFlows<T> {
+public sealed interface FqFlows<T> permits AbstractFqFlows {
 
     static <T> FqFlows<T> create(String name, Fqs<T> fqs) {
-        return new FqFlowsImpl<>(name, fqs);
+        return new SimpleFqFlows<>(name, fqs);
+    }
+
+    static <T> FqFlows<T> create(String name, Fqs<T> fqs, int batchSize) {
+        return batchSize > 1
+            ? new BatchedFqFlows<>(name, fqs, batchSize)
+            : new SimpleFqFlows<>(name, fqs);
     }
 
     default To<T> fromSource() {
@@ -29,8 +35,6 @@ public interface FqFlows<T> {
     FqFlows<T> onException(Handler<T> handler);
 
     FqFlows<T> timeout(Duration timeout);
-
-    FqFlows<T> batchSize(int batchSize);
 
     interface Handler<T> {
 
