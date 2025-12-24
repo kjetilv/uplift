@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.*;
+import com.github.kjetilv.uplift.fq.data.Name;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -42,7 +43,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
     }
 
     @Override
-    public FqPuller<O> puller(String name) {
+    public FqPuller<O> puller(Name name) {
         var directory = sourceProvider.source(name);
         return new PathFqPuller<>(
             directory,
@@ -54,7 +55,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
     }
 
     @Override
-    public FqWriter<O> writer(String name) {
+    public FqWriter<O> writer(Name name) {
         var directory = sourceProvider.source(name);
         return new PathFqWriter<>(
             directory,

@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
-import com.github.kjetilv.uplift.fq.paths.Tombstone;
 import com.github.kjetilv.uplift.fq.paths.PathTombstone;
 import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.fq.paths.Tombstone;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.GzipUtils;
 import com.github.kjetilv.uplift.util.SayFiles;

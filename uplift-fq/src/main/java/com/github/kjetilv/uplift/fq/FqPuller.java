@@ -6,8 +6,6 @@ import java.util.stream.Stream;
 
 public interface FqPuller<T> extends Fq<T> {
 
-    Optional<T> next();
-
     default Stream<T> stream() {
         return FqStreamer.from(this).read();
     }
@@ -15,4 +13,6 @@ public interface FqPuller<T> extends Fq<T> {
     default Stream<List<T>> batches(int batchSize) {
         return FqBatcher.from(this, batchSize).read();
     }
+
+    Optional<T> next();
 }

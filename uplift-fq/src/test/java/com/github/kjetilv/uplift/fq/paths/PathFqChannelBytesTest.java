@@ -85,7 +85,7 @@ class PathFqChannelBytesTest {
         var writer = CompletableFuture.supplyAsync(
             () -> {
                 try (
-                    var fqw = pfq.writer("foo.txt")
+                    var fqw = pfq.writer(() -> "foo.txt")
                 ) {
                     for (var i = 0; i < Chains.INT; i++) {
                         fqw.write(String.valueOf(i));
@@ -98,7 +98,7 @@ class PathFqChannelBytesTest {
 
         var puller = CompletableFuture.supplyAsync(
             () -> {
-                var fqp = pfq.puller("foo.txt");
+                var fqp = pfq.puller(() -> "foo.txt");
 
                 for (var i = 0; i < Chains.INT; i++) {
                     assertThat(fqp.next()).hasValue(String.valueOf(i));
@@ -111,7 +111,7 @@ class PathFqChannelBytesTest {
 
         var streamer = CompletableFuture.supplyAsync(
             () -> {
-                var fqs = pfq.streamer("foo.txt");
+                var fqs = pfq.streamer(() -> "foo.txt");
                 assertThat(fqs.read()).containsExactlyElementsOf(expected);
                 return fqs;
             }, executor
@@ -119,7 +119,7 @@ class PathFqChannelBytesTest {
 
         var batcher = CompletableFuture.supplyAsync(
             () -> {
-                var fqb = pfq.batcher("foo.txt", 100);
+                var fqb = pfq.batcher(() -> "foo.txt", 100);
                 assertThat(fqb.read().flatMap(List::stream)).containsExactlyElementsOf(expected);
                 return fqb;
             }

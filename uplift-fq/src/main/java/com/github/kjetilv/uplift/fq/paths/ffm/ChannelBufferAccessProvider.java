@@ -1,9 +1,9 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
-import com.github.kjetilv.uplift.fq.paths.Tombstone;
 import com.github.kjetilv.uplift.fq.paths.PathTombstone;
 import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.fq.paths.Tombstone;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 
 import java.lang.foreign.Arena;

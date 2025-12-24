@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.data.Name;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,14 +24,14 @@ final class Chains {
 
         var format = "foo-G%d.txt";
         var executor = Executors.newVirtualThreadPerTaskExecutor();
-        var initialName = format.formatted(0);
+        var initialName = Name.of(format.formatted(0));
 
         for (var i = 1; i < chainLength; i++) {
             var finalI = i;
 
-            var linkName = format.formatted(i);
+            var linkName = Name.of(format.formatted(i));
             var writer = pathFqs.writer(linkName);
-            var precedingLinkName = format.formatted(i - 1);
+            var precedingLinkName = Name.of(format.formatted(i - 1));
             var batcher = pathFqs.batcher(precedingLinkName, batchSize);
 
             chain.add(CompletableFuture.runAsync(
@@ -62,20 +64,20 @@ final class Chains {
             .mapToObj(String::valueOf)
             .collect(Collectors.joining("-"));
 
-        assertThat(pathFqs.streamer("foo-G" + (chainLength - 1) + ".txt").read())
+        assertThat(pathFqs.streamer(() -> "foo-G" + (chainLength - 1) + ".txt").read())
             .isNotEmpty()
             .allSatisfy(l ->
                 assertThat(l).isEqualTo(line));
     }
 
     static void assertSimpleWriteRead(PathFqs<?, String> pfq) {
-        try (var w = pfq.writer("foo.txt")) {
+        try (var w = pfq.writer(() -> "foo.txt")) {
             for (var i = 0; i < 10; i++) {
                 w.write(List.of("foo" + i, "bar" + i));
             }
         }
 
-        var puller = pfq.puller("foo.txt");
+        var puller = pfq.puller(() -> "foo.txt");
         for (var i = 0; i < 10; i++) {
             assertThat(puller.next()).hasValue("foo" + i);
             assertThat(puller.next()).hasValue("bar" + i);

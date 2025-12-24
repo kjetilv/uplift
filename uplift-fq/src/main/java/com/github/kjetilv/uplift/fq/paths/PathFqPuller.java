@@ -50,6 +50,9 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
             return nextLine(nextLine);
         }
 
+        var serial = new LongAdder();
+        serial.increment();
+
         var sleeper = Sleeper.deferred(
             this::name,
             state ->
@@ -95,7 +98,7 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     private Optional<T> nextLine(I nextLine) {
         try {
-            return Optional.ofNullable(fromBytes(nextLine));
+            return Optional.of(fromBytes(nextLine));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse #" + count, e);
         } finally {

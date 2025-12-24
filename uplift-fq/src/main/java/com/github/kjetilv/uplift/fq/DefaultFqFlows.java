@@ -1,54 +1,59 @@
 package com.github.kjetilv.uplift.fq;
 
+import com.github.kjetilv.uplift.fq.data.Name;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.StructuredTaskScope.Configuration;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("ProtectedField")
-abstract sealed class AbstractFqFlows<T>
-    implements FqFlows<T>
-    permits BatchedFqFlows, SingleFqFlows {
+final class DefaultFqFlows<T>
+    implements FqFlows<T> {
 
-    protected final String name;
+    private final Name name;
 
-    protected final Fqs<T> fqs;
+    private final Fqs<T> fqs;
 
-    protected final int batchSize;
+    private final List<Flow<T>> flows;
 
-    protected final Duration timeout;
+    private final Duration timeout;
 
-    protected final List<Flow<T>> flows;
+    private final Runner<T> runner;
 
-    protected final ErrorHandler<T> handler;
-
-    AbstractFqFlows(
-        String name,
+    DefaultFqFlows(
+        Name name,
         Fqs<T> fqs,
-        int batchSize,
         Duration timeout,
-        List<Flow<T>> flows,
-        ErrorHandler<T> handler
+        Runner<T> runner
+    ) {
+        this(name, fqs, timeout, runner, null);
+    }
+
+    DefaultFqFlows(
+        Name name,
+        Fqs<T> fqs,
+        Duration timeout,
+        Runner<T> runner,
+        List<Flow<T>> flows
     ) {
         this.name = Objects.requireNonNull(name, "name");
+        this.runner = runner;
         if (this.name.isBlank()) {
             throw new IllegalArgumentException("Could not create flows with empty name");
         }
         this.fqs = Objects.requireNonNull(fqs, "fqs");
-        this.batchSize = Math.max(batchSize, 1);
         this.timeout = timeout;
         this.flows = flows == null || flows.isEmpty()
             ? List.of()
             : List.copyOf(flows);
-        this.handler = handler;
     }
 
-    @Override
-    public To<T> from(String from) {
+    public To<T> from(Name from) {
         return to ->
             process ->
                 this.withFlow(new Flow<>(from, to, process));
@@ -68,11 +73,9 @@ abstract sealed class AbstractFqFlows<T>
                 )
         ) {
             flows.forEach(flow ->
-                scope.fork(() -> {
-                    try (var writer = fqs.writer(flow.to())) {
-                        run(flow.fromOr(this.name), flow, writer);
-                    }
-                }));
+                scope.fork(() ->
+                    runner.run(this.name, fqs, flow)
+                ));
             var count = scope.join().count();
             assert count == flows.size() : "Expected " + flows.size() + " runs, got " + count;
         } catch (InterruptedException e) {
@@ -83,13 +86,19 @@ abstract sealed class AbstractFqFlows<T>
         }
     }
 
-    protected abstract void run(String source, Flow<T> flow, FqWriter<T> writer);
+    private FqFlows<T> with(List<Flow<T>> flows) {
+        return new DefaultFqFlows<>(
+            name,
+            fqs,
+            timeout,
+            runner,
+            flows
+        );
+    }
 
-    protected abstract FqFlows<T> with(List<Flow<T>> flows);
-
-    private StructuredTaskScope.Configuration configure(StructuredTaskScope.Configuration cf) {
+    private Configuration configure(Configuration cf) {
         var named = cf
-            .withName(name)
+            .withName(name.name())
             .withThreadFactory(threadFactory(name));
         return timeout == null ? named
             : named.withTimeout(Duration.ofMinutes(5));
@@ -133,12 +142,12 @@ abstract sealed class AbstractFqFlows<T>
         }
     }
 
-    private static ThreadFactory threadFactory(String namePrefix) {
+    private static ThreadFactory threadFactory(Name name) {
         LongAdder counter = new LongAdder();
         return runnable -> {
             try {
                 return Thread.ofVirtual()
-                    .name("%s-%s".formatted(namePrefix, counter))
+                    .name("%s-%s".formatted(name.name(), counter))
                     .unstarted(runnable);
             } finally {
                 counter.increment();
@@ -148,6 +157,11 @@ abstract sealed class AbstractFqFlows<T>
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + name + ": " + batchSize + "]";
+        return getClass().getSimpleName() + "[" + name + ": " + runner + "]";
+    }
+
+    interface Runner<T> {
+
+        void run(Name source, Fqs<T> fqs, Flow<T> flow);
     }
 }

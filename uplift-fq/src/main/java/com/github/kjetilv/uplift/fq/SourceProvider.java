@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.fq;
 
+import com.github.kjetilv.uplift.fq.data.Name;
+
 public interface SourceProvider<S>{
 
-    S source(String name);
+    S source(Name name);
 }
