@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.flows;
 
 import java.util.List;
 

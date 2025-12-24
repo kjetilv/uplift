@@ -1,15 +1,17 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.flows;
 
+import com.github.kjetilv.uplift.fq.Fqs;
 import com.github.kjetilv.uplift.fq.data.Name;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 final class SingleRunner<T> implements DefaultFqFlows.Runner<T> {
 
     private final ErrorHandler<T> handler;
 
-    SingleRunner(ErrorHandler<T> errorHandler) {
-        this.handler = errorHandler;
+    SingleRunner(ErrorHandler<T> handler) {
+        this.handler = Objects.requireNonNull(handler, "handler");
     }
 
     @Override
@@ -26,8 +28,6 @@ final class SingleRunner<T> implements DefaultFqFlows.Runner<T> {
                     }
                 })
                 .forEach(writer::write);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to execute " + flow, e);
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.fq;
 
 import com.github.kjetilv.uplift.fq.data.Name;
+import com.github.kjetilv.uplift.fq.flows.FqFlows;
+import com.github.kjetilv.uplift.fq.flows.Processor;
 import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.Dimensions;
@@ -17,7 +19,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static java.text.MessageFormat.format;
@@ -122,44 +123,38 @@ class FqFlowsTest {
     ) {
         var name = Name.of(testInfo.getTestMethod().orElseThrow().getName());
         var ref = new AtomicReference<Exception>();
-        UnaryOperator<List<String>> check = items -> {
+
+        Processor<String> check = items -> {
             assertThat(items.size()).isIn(batchSizes);
             return items;
         };
 
-        var baseFlows = FqFlows.builder(name, fqs)
+        var flows = FqFlows.builder(name, fqs)
             .batchSize(batchSize)
             .timeout(Duration.ofMinutes(1))
             .onException((_, _, e) ->
                 ref.set(e))
-            .build();
-
-        var flows = baseFlows
-            .fromSource(() -> "in1").with(items ->
-                check.apply(items)
-                    .stream()
+            .fromSource(() -> "in1").with(check.andThen(items ->
+                items.stream()
                     .map(i -> i + "in1")
-                    .toList())
-            .fromSource(() -> "inX").with(items ->
-                check.apply(items)
-                    .stream()
+                    .toList()))
+            .fromSource(() -> "inX").with(check.andThen(items ->
+                items.stream()
                     .map(i -> i + "inX")
-                    .toList())
-            .from(() -> "in1", () -> "in2").with(items ->
-                check.apply(items)
-                    .stream()
+                    .toList()))
+            .from(() -> "in1", () -> "in2").with(check.andThen(items ->
+                items.stream()
                     .map(i -> i + "in2")
-                    .toList())
-            .from(() -> "in2", () -> "in4").with(items ->
-                check.apply(items)
-                    .stream()
+                    .toList()))
+            .from(() -> "in2", () -> "in4").with(check.andThen(items ->
+                items.stream()
                     .map(i -> i + "in4")
-                    .toList())
-            .from(() -> "in1", () -> "in3").with(items ->
-                check.apply(items)
-                    .stream()
+                    .toList()))
+            .from(() -> "in1", () -> "in3").with(check.andThen(items ->
+                items.stream()
                     .map(i -> i + "in3")
-                    .toList());
+                    .toList()))
+            .build();
 
         var strings = IntStream.range(0, count).mapToObj(String::valueOf);
 

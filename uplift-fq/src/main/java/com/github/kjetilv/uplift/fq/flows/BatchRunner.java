@@ -1,8 +1,10 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.flows;
 
+import com.github.kjetilv.uplift.fq.Fqs;
 import com.github.kjetilv.uplift.fq.data.Name;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 final class BatchRunner<T> implements DefaultFqFlows.Runner<T> {
@@ -12,14 +14,19 @@ final class BatchRunner<T> implements DefaultFqFlows.Runner<T> {
     private final ErrorHandler<T> handler;
 
     BatchRunner(int batchSize, ErrorHandler<T> handler) {
-        this.batchSize = batchSize;
-        this.handler = handler;
+        if (batchSize > 1) {
+            this.batchSize = batchSize;
+        } else {
+            throw new IllegalArgumentException("batchSize must be >1: " + batchSize);
+        }
+        this.handler = Objects.requireNonNull(handler, "handler");
     }
 
     @Override
     public void run(Name source, Fqs<T> fqs, Flow<T> flow) {
         try (var writer = fqs.writer(flow.to())) {
-            fqs.batches(flow.fromOr(source), batchSize)
+            var name = flow.fromOr(source);
+            fqs.batches(name, batchSize)
                 .flatMap(items -> {
                     List<T> processed;
                     try {
@@ -34,8 +41,6 @@ final class BatchRunner<T> implements DefaultFqFlows.Runner<T> {
                     return Stream.of(processed);
                 })
                 .forEach(writer::write);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to execute " + flow, e);
         }
     }
 }
