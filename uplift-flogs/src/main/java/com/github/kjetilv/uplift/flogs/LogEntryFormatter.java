@@ -28,7 +28,7 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
             .append('T').append(pad(hr)).append(hr)
             .append(':').append(pad(min)).append(min)
             .append(':').append(pad(sec)).append(sec);
-        String logLevel = entry.logLevel().name();
+        var logLevel = entry.logLevel().name();
         sb.append(' ')
             .append(SPACES, 0, 5 - logLevel.length())
             .append(logLevel)

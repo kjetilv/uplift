@@ -14,7 +14,7 @@ public final class ChannelBufferWriter extends ChannelWriter<ByteBuffer> {
 
     @Override
     protected ByteBuffer ln(ByteBuffer line) {
-        return ByteBuffer.wrap(new byte[] {separator });
+        return ByteBuffer.wrap(new byte[] {separator});
     }
 
     @Override

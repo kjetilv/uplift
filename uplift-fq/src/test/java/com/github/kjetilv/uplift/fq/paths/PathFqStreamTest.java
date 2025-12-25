@@ -40,7 +40,7 @@ class PathFqStreamTest {
                 new PathTombstone(fooTxt.resolve("done"))
             )
         ) {
-            for (int i = 0; i < 110; i++) {
+            for (var i = 0; i < 110; i++) {
                 writer.write(String.valueOf(i));
             }
         }
@@ -49,7 +49,7 @@ class PathFqStreamTest {
             assertThat(fooTxt)
                 .exists()
                 .isDirectory();
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
             var str = String.format("%03d", i * 10);
             var fs = "foo-%s.txt".formatted(str);
             pathAssert
@@ -61,7 +61,7 @@ class PathFqStreamTest {
 
     @Test
     void testSimpleWriteAndReader(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        PathFqs<byte[], String> pfq = new PathFqs<>(
+        var pfq = new PathFqs<byte[], String>(
             new BytesStringFio(),
             new PathProvider(tmp),
             new StreamAccessProvider(),
@@ -72,14 +72,14 @@ class PathFqStreamTest {
 
     @Test
     void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        PathFqs<byte[], String> pfq = new PathFqs<>(
+        var pfq = new PathFqs<byte[], String>(
             new BytesStringFio(),
             new PathProvider(tmp),
             new StreamAccessProvider(true),
             new Dimensions(1, 2, 4)
         );
 
-        List<String> expected = IntStream.range(0, INT).boxed()
+        var expected = IntStream.range(0, INT).boxed()
             .map(String::valueOf)
             .toList();
 
@@ -89,7 +89,7 @@ class PathFqStreamTest {
                 try (
                     var fqw = pfq.writer(() -> "foo.txt")
                 ) {
-                    for (int i = 0; i < INT; i++) {
+                    for (var i = 0; i < INT; i++) {
                         fqw.write(String.valueOf(i));
                     }
                     return fqw;
@@ -102,7 +102,7 @@ class PathFqStreamTest {
             () -> {
                 var fqp = pfq.puller(() -> "foo.txt");
 
-                for (int i = 0; i < INT; i++) {
+                for (var i = 0; i < INT; i++) {
                     assertThat(fqp.next()).hasValue(String.valueOf(i));
                 }
                 assertThat(fqp.next()).isEmpty();

@@ -102,7 +102,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
     private void handleOutcome(Invocation<Q, R> qr, Throwable throwable) {
         if (qr.requestFailure() == null && throwable == null) {
             if (lastException.get() != null) {
-                Throwable last = lastException.getAndSet(null);
+                var last = lastException.getAndSet(null);
                 log.info("Service restored, last exception: {}", last.toString());
             } else {
                 log.debug("Completed: {}", qr, throwable);
@@ -119,7 +119,7 @@ public final class LambdaLooper<Q, R> implements Runnable, Closeable {
                 log.warn("Request failed: {}", qr, combined);
             }
         } else {
-            Throwable combined = combine(throwable, qr.requestFailure());
+            var combined = combine(throwable, qr.requestFailure());
             lastException.set(combined);
             log.warn("Request failed: {}", qr, combined);
         }

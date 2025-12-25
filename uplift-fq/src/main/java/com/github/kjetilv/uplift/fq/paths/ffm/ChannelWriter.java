@@ -8,7 +8,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Objects;
 
-public abstract class ChannelWriter<T> implements Writer<T> {
+abstract class ChannelWriter<T> implements Writer<T> {
     private final Path path;
 
     private final RandomAccessFile randomAccessFile;
@@ -17,7 +17,7 @@ public abstract class ChannelWriter<T> implements Writer<T> {
 
     private final T separator;
 
-    public ChannelWriter(Path path, T separator) {
+    ChannelWriter(Path path, T separator) {
         this.path = Objects.requireNonNull(path, "path");
         try {
             this.randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");

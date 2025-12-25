@@ -39,7 +39,7 @@ class PathFqChannelBufferTest {
                 new PathTombstone(fooTxt.resolve("done"))
             )
         ) {
-            for (int i = 0; i < 110; i++) {
+            for (var i = 0; i < 110; i++) {
                 writer.write(String.valueOf(i));
             }
         }
@@ -48,7 +48,7 @@ class PathFqChannelBufferTest {
             assertThat(fooTxt)
                 .exists()
                 .isDirectory();
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
             var str = String.format("%03d", i * 10);
             var fs = "foo-%s.txt".formatted(str);
             pathAssert
@@ -160,6 +160,17 @@ class PathFqChannelBufferTest {
             new Dimensions(1, 3, 5),
             10,
             10,
+            9999
+        );
+    }
+
+    @Test
+    void chain2(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        assertChain(
+            tmp,
+            new Dimensions(1, 3, 5),
+            10,
+            111,
             9999
         );
     }

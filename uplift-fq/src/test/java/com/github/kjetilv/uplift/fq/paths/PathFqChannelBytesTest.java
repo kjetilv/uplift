@@ -37,7 +37,7 @@ class PathFqChannelBytesTest {
                 new PathTombstone(fooTxt.resolve("done"))
             )
         ) {
-            for (int i = 0; i < 110; i++) {
+            for (var i = 0; i < 110; i++) {
                 writer.write(String.valueOf(i));
             }
         }
@@ -46,7 +46,7 @@ class PathFqChannelBytesTest {
             assertThat(fooTxt)
                 .exists()
                 .isDirectory();
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
             var str = String.format("%03d", i * 10);
             var fs = "foo-%s.txt".formatted(str);
             pathAssert

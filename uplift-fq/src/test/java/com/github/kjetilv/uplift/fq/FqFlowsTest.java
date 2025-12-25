@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.fq;
 
-import com.github.kjetilv.uplift.fq.data.Name;
 import com.github.kjetilv.uplift.fq.flows.FqFlows;
-import com.github.kjetilv.uplift.fq.flows.Processor;
+import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.Dimensions;
@@ -17,8 +16,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static java.text.MessageFormat.format;
@@ -107,6 +107,62 @@ class FqFlowsTest {
         );
     }
 
+    @Test
+    void scaleTest(@TempDir Path tmp, TestInfo testInfo) {
+        var name = Name.of(testInfo.getTestMethod().orElseThrow().getName());
+
+        FqFlows.ErrorHandler<String> stringErrorHandler = (_, _, e) -> e.toString();
+        FqFlows.Processor<String> check = items -> items;
+
+        var fqs = PathFqs.create(
+            tmp,
+            new ByteBufferStringFio(),
+            new ChannelBufferAccessProvider(),
+            new Dimensions(2, 3, 6)
+        );
+
+        var flows = flows(
+            name,
+            fqs,
+            100,
+            stringErrorHandler,
+            check
+        );
+
+        var count = feed(flows, 100_000).join().count();
+        assertThat(count).isEqualTo(100_000);
+    }
+
+    @Test
+    void scaleTest2(@TempDir Path tmp, TestInfo testInfo) {
+        var name = Name.of(testInfo.getTestMethod().orElseThrow().getName());
+
+        FqFlows.ErrorHandler<String> stringErrorHandler = (_, _, e) -> e.toString();
+        FqFlows.Processor<String> check = items -> items;
+
+        var fqs = PathFqs.create(
+            tmp,
+            new ByteBufferStringFio(),
+            new ChannelBufferAccessProvider(),
+            new Dimensions(2, 3, 6)
+        );
+
+        var flows = flows(
+            name,
+            fqs,
+            100,
+            stringErrorHandler,
+            check
+        );
+
+        var strings = IntStream.range(0, 100_000).mapToObj(String::valueOf);
+        try (var writer = fqs.writer(name)) {
+            strings.forEach(writer::write);
+        }
+        var count = flows.feed().join().count();
+        assertThat(count).isEqualTo(-1);
+    }
+
     private static final String GLOB = "glob:**/";
 
     private static final String DONE = "done";
@@ -122,51 +178,78 @@ class FqFlowsTest {
         List<Integer> batchSizes
     ) {
         var name = Name.of(testInfo.getTestMethod().orElseThrow().getName());
-        var ref = new AtomicReference<Exception>();
+        var exceptions = new ArrayList<Exception>();
 
-        Processor<String> check = items -> {
+        FqFlows.ErrorHandler<String> stringErrorHandler = (_, _, e) -> {
+            exceptions.add(e);
+            return e.toString();
+        };
+
+        FqFlows.Processor<String> check = items -> {
             assertThat(items.size()).isIn(batchSizes);
             return items;
         };
 
-        var flows = FqFlows.builder(name, fqs)
-            .batchSize(batchSize)
-            .timeout(Duration.ofMinutes(1))
-            .onException((_, _, e) ->
-                ref.set(e))
-            .fromSource(() -> "in1").with(check.andThen(items ->
-                items.stream()
-                    .map(i -> i + "in1")
-                    .toList()))
-            .fromSource(() -> "inX").with(check.andThen(items ->
-                items.stream()
-                    .map(i -> i + "inX")
-                    .toList()))
-            .from(() -> "in1", () -> "in2").with(check.andThen(items ->
-                items.stream()
-                    .map(i -> i + "in2")
-                    .toList()))
-            .from(() -> "in2", () -> "in4").with(check.andThen(items ->
-                items.stream()
-                    .map(i -> i + "in4")
-                    .toList()))
-            .from(() -> "in1", () -> "in3").with(check.andThen(items ->
-                items.stream()
-                    .map(i -> i + "in3")
-                    .toList()))
-            .build();
+        var flows = flows(
+            name, fqs,
+            batchSize,
+            stringErrorHandler,
+            check
+        );
 
-        var strings = IntStream.range(0, count).mapToObj(String::valueOf);
+        var feed = feed(flows, count);
+        assertThat(feed.count()).isEqualTo(count);
+        feed.join();
 
-        flows.feed(strings);
-
-        assertThat(ref).hasValue(null);
+        assertThat(exceptions).isEmpty();
 
         contents(tmp, "1", "in1", firstSize, lastSize);
         contents(tmp, "2", "in1in2", firstSize, lastSize);
         contents(tmp, "3", "in1in3", firstSize, lastSize);
         contents(tmp, "4", "in1in2in4", firstSize, lastSize);
         contents(tmp, "X", "inX", firstSize, lastSize);
+    }
+
+    private static FqFlows.Run feed(FqFlows<String> flows, int count) {
+        var strings = IntStream.range(0, count).mapToObj(String::valueOf);
+        return flows.feed(strings);
+    }
+
+    private static <T> FqFlows<String> flows(
+        Name name, PathFqs<T, String> fqs,
+        int batchSize,
+        FqFlows.ErrorHandler<String> stringErrorHandler,
+        FqFlows.Processor<String> check
+    ) {
+        return FqFlows.builder(name, fqs)
+            .batchSize(batchSize)
+            .timeout(Duration.ofMinutes(1))
+            .onException(stringErrorHandler)
+            .fromSource("in1").with(
+                check.andThen(items ->
+                    items.map(add("in1"))
+                ))
+            .fromSource("inX").with(
+                check.andThen(items ->
+                    items.map(add("inX"))
+                ))
+            .from("in1", "in2").with(
+                check.andThen(items ->
+                    items.map(add("in2"))
+                ))
+            .from("in2", "in4").with(
+                check.andThen(items ->
+                    items.map(add("in4"))
+                ))
+            .from("in1", "in3").with(
+                check.andThen(items ->
+                    items.map(add("in3"))
+                ))
+            .build();
+    }
+
+    private static Function<String, String> add(String str) {
+        return i -> i + str;
     }
 
     private static void contents(Path tmp, String index, String suffix, int firstSize, int lastSize) {

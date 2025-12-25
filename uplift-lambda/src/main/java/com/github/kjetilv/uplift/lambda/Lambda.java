@@ -39,7 +39,7 @@ public final class Lambda {
         Duration connectTimeout,
         Duration responseTimeout
     ) {
-        Env env = Env.actual();
+        var env = Env.actual();
         return managed(
             env.awsLambdaUri(),
             new LambdaClientSettings(

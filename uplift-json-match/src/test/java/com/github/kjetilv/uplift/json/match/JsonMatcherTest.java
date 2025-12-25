@@ -319,7 +319,7 @@ class JsonMatcherTest {
 
     @Test
     void isNotPartIfArrayIsNotSubsequence() {
-        StructureMatcher<Object> matcher = Structures.matcher(
+        var matcher = Structures.matcher(
             JsonDings.json(
                 """
                     {

@@ -131,7 +131,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     private String describe() {
         var count = hashes.size();
         var canonicalsSize = objects.size();
-        int overflowsCount = overflow.size();
+        var overflowsCount = overflow.size();
         return (count + overflowsCount) +
                " items" +
                (overflowsCount == 0 ? ", " : " (" + overflowsCount + " collisions), ") +

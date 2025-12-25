@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq;
 
-import com.github.kjetilv.uplift.fq.data.Name;
+import com.github.kjetilv.uplift.fq.flows.Name;
 
 import java.util.List;
 import java.util.stream.Stream;

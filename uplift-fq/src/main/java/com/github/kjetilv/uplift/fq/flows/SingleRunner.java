@@ -1,33 +1,31 @@
 package com.github.kjetilv.uplift.fq.flows;
 
 import com.github.kjetilv.uplift.fq.Fqs;
-import com.github.kjetilv.uplift.fq.data.Name;
 
-import java.util.Objects;
 import java.util.stream.Stream;
 
-final class SingleRunner<T> implements DefaultFqFlows.Runner<T> {
+final class SingleRunner<T> extends AbstractRunner<T> {
 
-    private final ErrorHandler<T> handler;
-
-    SingleRunner(ErrorHandler<T> handler) {
-        this.handler = Objects.requireNonNull(handler, "handler");
+    SingleRunner(FqFlows.ErrorHandler<T> handler) {
+        super(handler);
     }
 
     @Override
-    public void run(Name source, Fqs<T> fqs, Flow<T> flow) {
-        try (var writer = fqs.writer(flow.to())) {
-            fqs.streamer(flow.fromOr(source))
-                .read()
-                .flatMap(item -> {
-                    try {
-                        return Stream.of(flow.processor().process(item));
-                    } catch (Exception e) {
-                        handler.failed(flow, item, e);
-                        return Stream.empty();
-                    }
-                })
-                .forEach(writer::write);
-        }
+    protected Stream<Entries<T>> entries(
+        Name source,
+        Fqs<T> fqs,
+        Flow<T> flow,
+        FqFlows.ErrorHandler<T> handler
+    ) {
+        return fqs.streamer(source)
+            .read()
+            .map(item -> {
+                var entry = Entries.single(flow.to(), item);
+                try {
+                    return flow.processor().process(entry);
+                } catch (Exception e) {
+                    return entry.map(t -> handler.failed(flow, t, e));
+                }
+            });
     }
 }

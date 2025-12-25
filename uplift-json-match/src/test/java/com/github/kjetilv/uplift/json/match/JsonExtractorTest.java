@@ -67,7 +67,7 @@ public class JsonExtractorTest {
         var extract = extractor.extract(mask);
         assertThat(extract).hasValueSatisfying(subset -> {
             assertThat(matcher.contains(subset)).isTrue();
-            Match<Object> match = matcher(subset).match(mask);
+            var match = matcher(subset).match(mask);
             System.out.println("\nPathways\n");
             match.pathways().stream()
                 .flatMap(probe -> probe.lines("", "  "))
@@ -84,7 +84,7 @@ public class JsonExtractorTest {
                 .forEach(System.out::println);
         });
 
-        Map<Pointer<Object>, Diff<Object>> subdiff = differ.subdiff(mask);
+        var subdiff = differ.subdiff(mask);
 //        System.out.println(subdiff);
 
         subdiff.forEach((jsonNodePointer, jsonNodeDiff) ->

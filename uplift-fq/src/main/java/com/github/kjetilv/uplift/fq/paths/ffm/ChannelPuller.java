@@ -19,7 +19,9 @@ import java.util.Objects;
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
-public abstract sealed class ChannelPuller<T> implements Puller<T> permits ChannelArrayPuller, ChannelBufferPuller {
+abstract sealed class ChannelPuller<T>
+    implements Puller<T>
+    permits ChannelArrayPuller, ChannelBufferPuller {
 
     private final Path path;
 
@@ -39,9 +41,11 @@ public abstract sealed class ChannelPuller<T> implements Puller<T> permits Chann
 
     private VectorMask<Byte> mask = ZERO;
 
-    public ChannelPuller(Path path, byte separator, Arena arena) {
+    ChannelPuller(Path path, byte separator, Arena arena) {
         this.path = Objects.requireNonNull(path, "path");
         this.separator = separator;
+        Objects.requireNonNull(arena, "arena");
+
         this.size = SayFiles.sizeOf(path);
         if (this.size < LENGTH) {
             throw new IllegalStateException(
@@ -50,7 +54,11 @@ public abstract sealed class ChannelPuller<T> implements Puller<T> permits Chann
         }
 
         this.randomAccessFile = randomAccessFile(this.path);
-        this.segment = segment(randomAccessFile, this.size, arena);
+        this.segment = segment(
+            randomAccessFile,
+            this.size,
+            arena
+        );
         this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
     }
 
@@ -127,7 +135,7 @@ public abstract sealed class ChannelPuller<T> implements Puller<T> permits Chann
 
     static {
         UNSET = new VectorMask[LENGTH];
-        for (int i = 0; i < LENGTH; i++) {
+        for (var i = 0; i < LENGTH; i++) {
             UNSET[i] = VectorMask.fromValues(SPECIES, withFalse(i));
         }
     }

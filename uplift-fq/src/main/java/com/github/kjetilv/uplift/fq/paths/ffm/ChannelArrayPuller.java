@@ -5,9 +5,10 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.file.Path;
 
-public final class ChannelArrayPuller extends ChannelPuller<byte[]> {
+final class ChannelArrayPuller
+    extends ChannelPuller<byte[]> {
 
-    public ChannelArrayPuller(Path path, byte separator, Arena arena) {
+    ChannelArrayPuller(Path path, byte separator, Arena arena) {
         super(path, separator, arena);
     }
 

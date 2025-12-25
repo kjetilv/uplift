@@ -24,7 +24,7 @@ class StreamPullerTest {
                 xx
                 x
                 """.getBytes();
-        for (int i = body.length + 1; i >= 5; i--) {
+        for (var i = body.length + 1; i >= 5; i--) {
             var puller = new StreamPuller(tmp, new ByteArrayInputStream(body), i);
             try {
                 assertString(puller, "foo", i);

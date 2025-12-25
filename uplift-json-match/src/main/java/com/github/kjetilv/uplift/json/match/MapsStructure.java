@@ -33,8 +33,8 @@ final class MapsStructure implements Structure<Object> {
     @Override
     public Optional<Object> get(Object array, int index) {
         if (array instanceof Iterable<?> iterable) {
-            Iterator<?> iterator = iterable.iterator();
-            for (int i = 0; i < index; i++) {
+            var iterator = iterable.iterator();
+            for (var i = 0; i < index; i++) {
                 iterator.next();
             }
             return Optional.of(iterator).filter(Iterator::hasNext).map(Iterator::next);

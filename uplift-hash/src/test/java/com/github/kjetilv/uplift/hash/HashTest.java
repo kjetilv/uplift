@@ -84,7 +84,7 @@ class HashTest {
 
     @Test
     void io() {
-        Hash<HashKind.K256> hash = HashKind.K256.random();
+        var hash = HashKind.K256.random();
         DataInput dataInput = new DataInputStream(new ByteArrayInputStream(hash.bytes()));
         var hash1 = Hash.of(dataInput, HashKind.K256);
         assertEquals(hash, hash1);

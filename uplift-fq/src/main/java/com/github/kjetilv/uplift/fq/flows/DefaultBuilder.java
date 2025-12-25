@@ -1,16 +1,16 @@
 package com.github.kjetilv.uplift.fq.flows;
 
 import com.github.kjetilv.uplift.fq.Fqs;
-import com.github.kjetilv.uplift.fq.data.Name;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class DefaultFqFlowsBuilder<T> implements FqFlowsBuilder<T> {
+final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     private final Name name;
 
@@ -22,27 +22,36 @@ final class DefaultFqFlowsBuilder<T> implements FqFlowsBuilder<T> {
 
     private Duration timeout;
 
-    private ErrorHandler<T> handler;
+    private FqFlows.ErrorHandler<T> handler;
 
-    DefaultFqFlowsBuilder(Name name, Fqs<T> fqs) {
+    DefaultBuilder(Name name, Fqs<T> fqs) {
         this.name = Objects.requireNonNull(name, "name");
         this.fqs = Objects.requireNonNull(fqs, "fqs");
     }
 
     @Override
-    public FqFlowsBuilder<T> timeout(Duration timeout) {
+    public FqFlows.Builder<T> timeout(Duration timeout) {
+        if (this.timeout != null) {
+            throw new IllegalStateException("Timeout already set");
+        }
         this.timeout = Objects.requireNonNull(timeout, "timeout");
         return this;
     }
 
     @Override
-    public FqFlowsBuilder<T> onException(ErrorHandler<T> errorHandler) {
+    public FqFlows.Builder<T> onException(FqFlows.ErrorHandler<T> errorHandler) {
+        if (handler != null) {
+            throw new IllegalStateException("Error handler already set");
+        }
         this.handler = Objects.requireNonNull(errorHandler, "errorHandler");
         return this;
     }
 
     @Override
-    public FqFlowsBuilder<T> batchSize(int batchSize) {
+    public FqFlows.Builder<T> batchSize(int batchSize) {
+        if (this.batchSize != null) {
+            throw new IllegalStateException("Batch size already set");
+        }
         if (batchSize > 1) {
             this.batchSize = batchSize;
             return this;
@@ -50,10 +59,10 @@ final class DefaultFqFlowsBuilder<T> implements FqFlowsBuilder<T> {
         throw new IllegalArgumentException("batchSize must be at least 1");
     }
 
-    public FqFlowsBuilder.To<T> from(Name from) {
+    public FqFlows.Builder.To<T> from(Name from) {
         return to ->
             process -> {
-                Flow<T> flow = new Flow<>(from, to, process);
+                var flow = new Flow<T>(from, to, process);
                 flows.add(validated(flow));
                 return this;
             };
@@ -77,18 +86,14 @@ final class DefaultFqFlowsBuilder<T> implements FqFlowsBuilder<T> {
     }
 
     private Flow<T> validated(Flow<T> flow) {
-        var flows = Stream.concat(this.flows.stream(), Stream.of(flow))
-            .toList();
-        validate(flows);
+        validate(Stream.concat(this.flows.stream(), Stream.of(flow))
+            .toList());
         return flow;
     }
 
-    private ErrorHandler<T> fail() {
-        return (flow, items, error) -> {
-            throw new RuntimeException(
-                "Failed to process " + items.size() + " items " + flow.description() + ":  " + items,
-                error
-            );
+    private FqFlows.ErrorHandler<T> fail() {
+        return (flow, item, error) -> {
+            throw new RuntimeException("Failed to process " + item + " " + flow.description(), error);
         };
     }
 
@@ -98,6 +103,21 @@ final class DefaultFqFlowsBuilder<T> implements FqFlowsBuilder<T> {
             .toList();
         if (sources.isEmpty()) {
             throw new IllegalStateException("No source intake defined: " + print(flows));
+        }
+        var groups = flows.stream()
+            .collect(Collectors.groupingBy(Flow::description));
+        var dupes = groups.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().size() > 1)
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue
+                ));
+        if (!dupes.isEmpty()) {
+            throw new IllegalStateException(
+                "Duplicate flow descriptions: " + String.join(", ", dupes.keySet())
+            );
         }
         var downstream = flows.stream()
             .filter(flow ->

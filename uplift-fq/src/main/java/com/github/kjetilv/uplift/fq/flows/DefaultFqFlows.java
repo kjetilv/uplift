@@ -1,14 +1,12 @@
 package com.github.kjetilv.uplift.fq.flows;
 
 import com.github.kjetilv.uplift.fq.Fqs;
-import com.github.kjetilv.uplift.fq.data.Name;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.*;
 import java.util.concurrent.StructuredTaskScope.Configuration;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -46,37 +44,83 @@ final class DefaultFqFlows<T>
     }
 
     @Override
-    public void feed(Stream<T> items) {
+    public Run feed() {
         if (flows.isEmpty()) {
             throw new IllegalStateException("No flows defined");
         }
-        try (var writer = fqs.writer(this.name)) {
-            items.forEach(writer::write);
+        return run(-1);
+    }
+
+    @Override
+    public Run feed(Stream<T> items) {
+        if (flows.isEmpty()) {
+            throw new IllegalStateException("No flows defined");
         }
+        var itemCount = feedItems(items);
+        return run(itemCount);
+    }
+
+    private Run run(long itemCount) {
+        return new Run() {
+
+            @Override
+            public long count() {
+                return itemCount;
+            }
+
+            @Override
+            public Run join() {
+                var flowsCount = CompletableFuture.supplyAsync(
+                    () -> runFlows(),
+                    EXECUTOR
+                ).join();
+                assert flowsCount == flows.size()
+                    : "Expected  " + flows.size() + " runs, got " + flows.size();
+                return this;
+            }
+        };
+    }
+
+    private int runFlows() {
         try (
-            var scope =
-                StructuredTaskScope.open(
-                    StructuredTaskScope.Joiner.allSuccessfulOrThrow(),
-                    this::configure
-                )
+            var scope = StructuredTaskScope.open(
+                StructuredTaskScope.Joiner.allSuccessfulOrThrow(),
+                DefaultFqFlows.this::configure
+            )
         ) {
-            flows.forEach(flow ->
-                scope.fork(() -> {
-                        try {
-                            runner.run(this.name, fqs, flow);
-                        } catch (Exception e) {
-                            throw new IllegalStateException("Failed to execute " + flow, e);
-                        }
-                    }
-                ));
-            var count = scope.join().count();
-            assert count == flows.size() : "Expected " + flows.size() + " runs, got " + count;
+            for (var flow : flows) {
+                scope.fork(run(flow));
+            }
+            return Math.toIntExact(scope.join().count());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Flow execution interrupted", e);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to execute flow", e);
+            throw new IllegalStateException("Failed to execute flows", e);
         }
+    }
+
+    private Runnable run(Flow<T> flow) {
+        try {
+            return () ->
+                runner.run(flow.fromOr(this.name), fqs, flow);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to execute " + flow, e);
+        }
+    }
+
+    private long feedItems(Stream<T> items) {
+        var counter = new LongAdder();
+        try (var writer = fqs.writer(this.name)) {
+             items.forEach(item -> {
+                try {
+                    writer.write(item);
+                } finally {
+                    counter.increment();
+                }
+            });
+        }
+        return counter.longValue();
     }
 
     private Configuration configure(Configuration cf) {
@@ -88,8 +132,10 @@ final class DefaultFqFlows<T>
             : named;
     }
 
+    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+
     private static ThreadFactory threadFactory(Name name) {
-        LongAdder counter = new LongAdder();
+        var counter = new LongAdder();
         return runnable -> {
             try {
                 return Thread.ofVirtual()

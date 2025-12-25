@@ -11,7 +11,7 @@ public record Partitions(List<Partition> partitions) {
         if (total < minSize * 2) {
             return Optional.empty();
         }
-        long trailing = total % minSize;
+        var trailing = total % minSize;
         if (trailing == 0) {
             return Optional.of(check(total, evenPartitions(total, minSize)));
         }
@@ -33,9 +33,9 @@ public record Partitions(List<Partition> partitions) {
     }
 
     private static Partitions prettyEvenPartitions(long total, long minSize) {
-        int count = Math.toIntExact(total / minSize);
-        int tail = Math.toIntExact(total % count);
-        long length = total / count;
+        var count = Math.toIntExact(total / minSize);
+        var tail = Math.toIntExact(total % count);
+        var length = total / count;
         var headLength = tail * (length + 1);
 
         var headLengths = IntStream.range(0, tail)

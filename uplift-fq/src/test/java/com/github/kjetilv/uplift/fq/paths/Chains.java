@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.data.Name;
+import com.github.kjetilv.uplift.fq.flows.Name;
 
 import java.util.ArrayList;
 import java.util.List;

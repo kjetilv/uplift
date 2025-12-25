@@ -51,7 +51,7 @@ final class AwsLookup {
     private static final Pattern SPLIT = Pattern.compile("\\s*=\\s*");
 
     private static String valueOf(String value) {
-        String[] pair = SPLIT.split(value, 2);
+        var pair = SPLIT.split(value, 2);
         if (pair.length == 2) {
             return pair[1];
         }

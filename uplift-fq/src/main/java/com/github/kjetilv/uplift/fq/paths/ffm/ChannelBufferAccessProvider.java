@@ -11,14 +11,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
-public record ChannelBufferAccessProvider(Supplier<Arena> arena, byte separator)
+ public record ChannelBufferAccessProvider(Supplier<Arena> arena, byte separator)
     implements AccessProvider<Path, ByteBuffer> {
 
     public ChannelBufferAccessProvider() {
         this('\n', null);
     }
 
-    public ChannelBufferAccessProvider(char separator, Supplier<Arena> arena) {
+    ChannelBufferAccessProvider(char separator, Supplier<Arena> arena) {
         this(arena, (byte) separator);
     }
 

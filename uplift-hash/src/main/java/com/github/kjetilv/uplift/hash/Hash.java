@@ -158,7 +158,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     /// @throws IllegalStateException If this is not a {@link H128 128-bit} hash
     default UUID asUuid() {
         return switch (this) {
-            case H128(long l0, long l1) -> new UUID(l0, l1);
+            case H128(var l0, var l1) -> new UUID(l0, l1);
             case H256 _ -> throw new IllegalStateException("Not a valid UUID: " + this);
         };
     }
@@ -177,7 +177,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
 
     private static long[] toLongs(String raw, long[] ls) {
         var digest = denormalize(raw);
-        byte[] decoded = Base64.getDecoder().decode(digest);
+        var decoded = Base64.getDecoder().decode(digest);
         for (var l = 0; l < ls.length; l++) {
             ls[l] = Bytes.bytesToLong(decoded, l * 8);
         }

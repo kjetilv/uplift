@@ -39,8 +39,8 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
         return new ValueClimber<>(hashStrategy, canonicalizer, onDone, collisionHandler);
     }
 
-    private static <H extends HashKind<H>> Canonicalizer<String, H> canonicalizer(CachingSettings cachingSettings) {
-        return Canonicalizers.canonicalizer(cachingSettings != null && cachingSettings.collisionsNeverHappen());
+    private static <H extends HashKind<H>> Canonicalizer<String, H> canonicalizer(CachingSettings settings) {
+        return Canonicalizers.canonicalizer(settings != null && settings.collisionsNeverHappen());
     }
 
     private static boolean preserveNull(CachingSettings cachingSettings) {

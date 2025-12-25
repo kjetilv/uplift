@@ -22,7 +22,7 @@ void main(String[] args) {
         .map(Integer::parseInt)
         .findFirst().orElse(API_PORT);
 
-    LocalLambdaSettings settings = new LocalLambdaSettings(
+    var settings = new LocalLambdaSettings(
         lambdaPort,
         apiPort,
         REQUEST_BUFFER_SIZE,

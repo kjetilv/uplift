@@ -62,8 +62,8 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
     private static final int GZIP_HEADER_SIZE = 10;
 
     private static GZIPInputStream gzipInputStream(Path path) {
-        InputStream in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
-        Supplier<Sleeper> sleeper = Sleeper.deferred(
+        var in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
+        var sleeper = Sleeper.deferred(
             () -> "Unzip " + path.getFileName(),
             state ->
                 log.warn("Incomplete Gzip file after {}: {}", state.duration(), path)

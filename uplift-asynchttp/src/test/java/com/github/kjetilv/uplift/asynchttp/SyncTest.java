@@ -19,7 +19,7 @@ public class SyncTest {
     @Test
     void vectors() {
 
-        String parsed =
+        var parsed =
             """
                 foo
                 bar
@@ -43,8 +43,8 @@ public class SyncTest {
 
         var run = server.run((in, out) -> {
             try {
-                ByteBuffer inBuffer = ByteBuffer.allocate(1024);
-                ByteBuffer outBuffer = ByteBuffer.allocate(1024);
+                var inBuffer = ByteBuffer.allocate(1024);
+                var outBuffer = ByteBuffer.allocate(1024);
                 var read = in.read(inBuffer);
                 HttpBytes.read(inBuffer)
                     .ifPresent(httpBytes -> {

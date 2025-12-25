@@ -51,7 +51,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         if (state.onMaxTime()) {
             return this;
         }
-        State nextState = state.increasedTime();
+        var nextState = state.increasedTime();
         if (nextState.onMaxTime()) {
             nextState.handleTimeout();
             if (onMax != null) {

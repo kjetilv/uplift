@@ -23,7 +23,7 @@ public final class BytesSplitter {
     }
 
     public byte[] next() {
-        int limit = index;
+        var limit = index;
         while (true) {
             if (index == end) {
                 load(limit);
@@ -31,7 +31,7 @@ public final class BytesSplitter {
                     return null;
                 }
             }
-            byte next = buffer[index];
+            var next = buffer[index];
             try {
                 if (next == limiter) {
                     return segment(limit);
@@ -57,13 +57,13 @@ public final class BytesSplitter {
         }
         if (index > 0) {
             var tail = buffer.length - limit;
-            byte[] segment = new byte[tail + index];
+            var segment = new byte[tail + index];
             System.arraycopy(buffer, limit, segment, 0, tail);
             System.arraycopy(buffer, 0, segment, tail, index);
             return segment;
         }
         var tail = buffer.length - limit;
-        byte[] segment = new byte[tail];
+        var segment = new byte[tail];
         System.arraycopy(buffer, limit, segment, 0, tail);
         return segment;
     }

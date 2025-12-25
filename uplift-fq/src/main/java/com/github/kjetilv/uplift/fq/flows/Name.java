@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.fq.data;
+package com.github.kjetilv.uplift.fq.flows;
 
 public interface Name {
 

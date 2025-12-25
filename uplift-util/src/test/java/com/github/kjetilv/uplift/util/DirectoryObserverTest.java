@@ -17,7 +17,7 @@ public class DirectoryObserverTest {
     static void main(String[] args) throws IOException {
         var tmp = tmp();
         try (var fileStream = Files.list(tmp)) {
-            List< Path> files = fileStream.toList();
+            var files = fileStream.toList();
             System.out.println("Going in: " + files);
             Optional<FileState> update;
             try (var observer = new DirectoryObserver(tmp)) {

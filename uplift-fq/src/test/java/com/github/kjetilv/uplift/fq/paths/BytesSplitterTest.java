@@ -59,17 +59,17 @@ class BytesSplitterTest {
 
     private static void assertLines(String string) {
         var body = string.getBytes();
-        int minBuf = Arrays.stream(string.split("\n"))
+        var minBuf = Arrays.stream(string.split("\n"))
                          .max(Comparator.comparing(String::length))
                          .map(String::length)
                          .orElseThrow() + 1;
         var maxBuf = body.length + 1;
         var strings = lines(string);
-        for (int i = minBuf; i < maxBuf; i++) {
+        for (var i = minBuf; i < maxBuf; i++) {
             try (var inputStream = new ByteArrayInputStream(body)) {
                 var puller = new BytesSplitter(inputStream, (byte) '\n', i);
                 try {
-                    int finalI = i;
+                    var finalI = i;
                     Arrays.stream(strings)
                         .forEach(line ->
                             assertThat(puller.next()).isNotNull()
