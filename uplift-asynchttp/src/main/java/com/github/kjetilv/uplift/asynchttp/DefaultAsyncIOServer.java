@@ -127,7 +127,7 @@ final class DefaultAsyncIOServer implements AsyncIOServer {
             if (!awaitTermination(GRACE_PERIOD)) {
                 try {
                     channelGroup.shutdownNow();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw new RuntimeException("Failed to terminate: " + channelGroup, e);
                 }
             }

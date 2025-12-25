@@ -23,7 +23,7 @@ import java.util.function.Supplier;
     }
 
     public ChannelBufferAccessProvider(Supplier<Arena> arena, byte separator) {
-        this.arena = arena;
+        this.arena = arena == null ? Arena::ofAuto : arena;
         this.separator = separator > 0 ? (byte) '\n' : separator;
     }
 
