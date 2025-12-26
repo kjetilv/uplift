@@ -5,6 +5,4 @@ public interface Fio<I, O> {
     O read(I line);
 
     I write(O value);
-
-    Class<O> type();
 }

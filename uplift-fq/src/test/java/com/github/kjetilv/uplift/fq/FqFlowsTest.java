@@ -7,14 +7,17 @@ import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.Dimensions;
 import com.github.kjetilv.uplift.fq.paths.PathFqs;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBufferAccessProvider;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelAccessProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -33,7 +36,13 @@ class FqFlowsTest {
         var fqs = PathFqs.create(
             tmp,
             new ByteBufferStringFio(StandardCharsets.UTF_8),
-            new ChannelBufferAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                MemorySegment::asByteBuffer,
+                Function.identity(),
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(2, 3, 5)
         );
         test(
@@ -54,7 +63,13 @@ class FqFlowsTest {
         var fqs = PathFqs.create(
             tmp,
             new ByteBufferStringFio(StandardCharsets.UTF_8),
-            new ChannelBufferAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                MemorySegment::asByteBuffer,
+                Function.identity(),
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(2, 3, 5)
         );
         test(
@@ -72,10 +87,19 @@ class FqFlowsTest {
 
     @Test
     void testChannelArrays(@TempDir Path tmp, TestInfo testInfo) {
+        var byteBufferChannelAccessProvider = new ChannelAccessProvider<>(
+            Arena::ofAuto,
+            (byte) '\n',
+            segment ->
+                segment.toArray(ValueLayout.JAVA_BYTE)
+            ,
+            ByteBuffer::wrap,
+            () -> ByteBuffer.wrap(new byte[] {'\n'})
+        );
         var fqs = PathFqs.create(
             tmp,
             new BytesStringFio(StandardCharsets.UTF_8),
-            new ChannelBytesAccessProvider(),
+            byteBufferChannelAccessProvider,
             new Dimensions(2, 3, 5)
         );
         test(
@@ -128,7 +152,13 @@ class FqFlowsTest {
         var fqs = PathFqs.create(
             tmp,
             new ByteBufferStringFio(),
-            new ChannelBufferAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                MemorySegment::asByteBuffer,
+                Function.identity(),
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(2, 3, 6)
         );
 
@@ -154,7 +184,13 @@ class FqFlowsTest {
         var fqs = PathFqs.create(
             tmp,
             new ByteBufferStringFio(),
-            new ChannelBufferAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                MemorySegment::asByteBuffer,
+                Function.identity(),
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(2, 3, 6)
         );
 

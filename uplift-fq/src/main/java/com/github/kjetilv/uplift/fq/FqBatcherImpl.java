@@ -25,11 +25,6 @@ final class FqBatcherImpl<T>
     }
 
     @Override
-    public Class<T> type() {
-        return puller.type();
-    }
-
-    @Override
     public boolean done() {
         return puller.done();
     }

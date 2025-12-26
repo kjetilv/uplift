@@ -38,11 +38,6 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         return directory.getFileName().toString();
     }
 
-    @Override
-    public Class<T> type() {
-        return fio.type();
-    }
-
     final Path directory() {
         return directory;
     }

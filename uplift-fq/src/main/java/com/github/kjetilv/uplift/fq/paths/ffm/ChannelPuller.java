@@ -15,13 +15,13 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
-abstract sealed class ChannelPuller<T>
-    implements Puller<T>
-    permits ChannelArrayPuller, ChannelBufferPuller {
+class ChannelPuller<T>
+    implements Puller<T> {
 
     private final Path path;
 
@@ -30,6 +30,8 @@ abstract sealed class ChannelPuller<T>
     private final RandomAccessFile randomAccessFile;
 
     private final byte separator;
+
+    private final Function<MemorySegment, T> mapper;
 
     private final int endSlice;
 
@@ -41,9 +43,10 @@ abstract sealed class ChannelPuller<T>
 
     private VectorMask<Byte> mask = ZERO;
 
-    ChannelPuller(Path path, byte separator, Arena arena) {
+    ChannelPuller(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
         this.path = Objects.requireNonNull(path, "path");
         this.separator = separator;
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(arena, "arena");
 
         this.size = SayFiles.sizeOf(path);
@@ -76,14 +79,11 @@ abstract sealed class ChannelPuller<T>
                 continue;
             }
             var bytesFound = length(maskPosition);
-            var array = bytes(
-                segment,
-                lineStart,
-                bytesFound
-            );
+            var segment = this.segment.asSlice(lineStart, bytesFound);
+            var t = mapper.apply(segment);
             lineStart += bytesFound + 1;
             mask = clearMask(maskPosition);
-            return array;
+            return t;
         }
     }
 
@@ -95,8 +95,6 @@ abstract sealed class ChannelPuller<T>
             throw new IllegalStateException("Failed to close " + path, e);
         }
     }
-
-    protected abstract T bytes(MemorySegment segment, long offset, long length);
 
     @SuppressWarnings("unchecked")
     private VectorMask<Byte> clearMask(int maskPositions) {

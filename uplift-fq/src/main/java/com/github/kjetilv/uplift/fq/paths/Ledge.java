@@ -4,10 +4,10 @@ interface Ledge extends Comparable<Ledge> {
 
     @Override
     default int compareTo(Ledge l) {
-        return Long.compare(number(), l.number());
+        return Long.compare(ledge(), l.ledge());
     }
 
     String asSegment();
 
-    long number();
+    long ledge();
 }

@@ -25,8 +25,4 @@ public record BytesStringFio(Charset cs) implements Fio<byte[], String> {
         return value.getBytes(cs);
     }
 
-    @Override
-    public Class<String> type() {
-        return String.class;
-    }
 }

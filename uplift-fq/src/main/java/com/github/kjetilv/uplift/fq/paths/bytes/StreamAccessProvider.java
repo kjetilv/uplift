@@ -8,8 +8,6 @@ import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.GzipUtils;
 import com.github.kjetilv.uplift.util.SayFiles;
 import com.github.kjetilv.uplift.util.Sleeper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,22 +18,12 @@ import java.util.zip.GZIPInputStream;
 
 public final class StreamAccessProvider implements AccessProvider<Path, byte[]> {
 
-    private static final Logger log = LoggerFactory.getLogger(StreamAccessProvider.class);
-
     private final boolean gzipped;
 
     private final BiConsumer<Path, Duration> onMaxTime;
 
-    public StreamAccessProvider() {
-        this(false);
-    }
-
     public StreamAccessProvider(boolean gzipped) {
         this(gzipped, null);
-    }
-
-    public StreamAccessProvider(BiConsumer<Path, Duration> onMaxTime) {
-        this(false, onMaxTime);
     }
 
     public StreamAccessProvider(boolean gzipped, BiConsumer<Path, Duration> onMaxTime) {
@@ -53,7 +41,7 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
 
     @Override
     public Writer<byte[]> writer(Path path) {
-        return new StreamWriter(newBufferedWriter(path));
+        return new StreamWriter(newBufferedWriter(path), (byte) '\n');
     }
 
     @Override

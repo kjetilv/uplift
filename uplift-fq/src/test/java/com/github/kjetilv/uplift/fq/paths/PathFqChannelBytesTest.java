@@ -2,11 +2,14 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelArrayWriter;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelAccessProvider;
+import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.ValueLayout;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -28,7 +31,11 @@ class PathFqChannelBytesTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new ChannelArrayWriter(path, (byte) '\n');
+                        return new ChannelWriter<>(
+                            path,
+                            ByteBuffer::wrap,
+                            () -> ByteBuffer.wrap(new byte[] {'\n'})
+                        );
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -61,7 +68,15 @@ class PathFqChannelBytesTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelBytesAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                segment ->
+                    segment.toArray(ValueLayout.JAVA_BYTE)
+                ,
+                ByteBuffer::wrap,
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(1, 2, 4)
         );
 
@@ -73,7 +88,15 @@ class PathFqChannelBytesTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelBytesAccessProvider(),
+            new ChannelAccessProvider<>(
+                Arena::ofAuto,
+                (byte) '\n',
+                segment ->
+                    segment.toArray(ValueLayout.JAVA_BYTE)
+                ,
+                ByteBuffer::wrap,
+                () -> ByteBuffer.wrap(new byte[] {'\n'})
+            ),
             new Dimensions(1, 2, 4)
         );
 
@@ -176,7 +199,15 @@ class PathFqChannelBytesTest {
             new PathFqs<>(
                 new BytesStringFio(),
                 new PathProvider(tmp),
-                new ChannelBytesAccessProvider(),
+                new ChannelAccessProvider<>(
+                    Arena::ofAuto,
+                    (byte) '\n',
+                    segment ->
+                        segment.toArray(ValueLayout.JAVA_BYTE)
+                    ,
+                    ByteBuffer::wrap,
+                    () -> ByteBuffer.wrap(new byte[] {'\n'})
+                ),
                 dimensions
             )
         );

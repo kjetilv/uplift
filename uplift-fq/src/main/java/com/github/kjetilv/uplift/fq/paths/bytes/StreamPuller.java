@@ -4,7 +4,6 @@ import com.github.kjetilv.uplift.fq.paths.Puller;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Objects.requireNonNull;
 
@@ -15,8 +14,6 @@ public final class StreamPuller implements Puller<byte[]> {
     private final InputStream inputStream;
 
     private final BytesSplitter bytesSplitter;
-
-    private final AtomicBoolean opened = new AtomicBoolean();
 
     public StreamPuller(Path path, InputStream inputStream) {
         this(path, inputStream, 0);
@@ -30,9 +27,7 @@ public final class StreamPuller implements Puller<byte[]> {
 
     @Override
     public byte[] pull() {
-        var segment = bytesSplitter.next();
-        opened.compareAndSet(false, true);
-        return segment;
+        return bytesSplitter.next();
     }
 
     public void close() {

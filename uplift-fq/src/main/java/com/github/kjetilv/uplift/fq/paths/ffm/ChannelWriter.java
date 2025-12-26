@@ -7,31 +7,40 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-abstract class ChannelWriter<T> implements Writer<T> {
+public class ChannelWriter<T> implements Writer<T> {
     private final Path path;
 
     private final RandomAccessFile randomAccessFile;
 
     private final FileChannel fileChannel;
 
-    private final T separator;
+    private final Function<T, ByteBuffer> byteBuffer;
 
-    ChannelWriter(Path path, T separator) {
+    private final Supplier<ByteBuffer> linebreak;
+
+    public ChannelWriter(
+        Path path,
+        Function<T, ByteBuffer> byteBuffer,
+        Supplier<ByteBuffer> linebreak
+    ) {
         this.path = Objects.requireNonNull(path, "path");
+        this.byteBuffer = Objects.requireNonNull(byteBuffer, "toByteBuffer");
+        this.linebreak = Objects.requireNonNull(linebreak, "toLinebreak");
         try {
             this.randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write to " + this.path, e);
         }
         this.fileChannel = this.randomAccessFile.getChannel();
-        this.separator = separator;
     }
 
     @Override
     public Writer<T> write(T line) {
-        doWrite(byteBuffer(line));
-        doWrite(ln(this.separator));
+        doWrite(byteBuffer.apply(line));
+        doWrite(linebreak.get());
         return this;
     }
 
@@ -45,9 +54,7 @@ abstract class ChannelWriter<T> implements Writer<T> {
         }
     }
 
-    protected void doWrite(
-        ByteBuffer byteBuffer
-    ) {
+    private void doWrite(ByteBuffer byteBuffer) {
         var written = 0;
         while (written < byteBuffer.capacity()) {
             try {
@@ -57,10 +64,4 @@ abstract class ChannelWriter<T> implements Writer<T> {
             }
         }
     }
-
-    protected ByteBuffer ln(T line) {
-        return byteBuffer(line);
-    }
-
-    protected abstract ByteBuffer byteBuffer(T line);
 }

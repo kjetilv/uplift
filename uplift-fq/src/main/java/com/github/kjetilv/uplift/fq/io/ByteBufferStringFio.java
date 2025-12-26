@@ -28,8 +28,4 @@ public record ByteBufferStringFio(Charset cs) implements Fio<ByteBuffer, String>
         return ByteBuffer.wrap(value.getBytes(cs));
     }
 
-    @Override
-    public Class<String> type() {
-        return String.class;
-    }
 }

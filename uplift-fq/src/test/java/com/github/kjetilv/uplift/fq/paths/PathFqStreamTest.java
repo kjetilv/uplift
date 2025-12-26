@@ -31,7 +31,7 @@ class PathFqStreamTest {
                 new Dimensions(1, 2, 3),
                 path -> {
                     try {
-                        return new StreamWriter(Files.newOutputStream(path));
+                        return new StreamWriter(Files.newOutputStream(path), (byte)'\n');
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -59,23 +59,25 @@ class PathFqStreamTest {
         }
     }
 
-    @Test
-    void testSimpleWriteAndReader(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        var pfq = new PathFqs<byte[], String>(
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testSimpleWriteAndReader(boolean compress, @TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new StreamAccessProvider(),
+            new StreamAccessProvider(compress),
             new Dimensions(1, 2, 4)
         );
         Chains.assertSimpleWriteRead(pfq);
     }
 
-    @Test
-    void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        var pfq = new PathFqs<byte[], String>(
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testWriteAndRead(boolean compress, @TempDir(cleanup = ON_SUCCESS) Path tmp) {
+        var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new StreamAccessProvider(true),
+            new StreamAccessProvider(compress),
             new Dimensions(1, 2, 4)
         );
 

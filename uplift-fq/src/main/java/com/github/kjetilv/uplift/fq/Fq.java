@@ -4,7 +4,5 @@ public interface Fq<T> {
 
     String name();
 
-    Class<T> type();
-
     boolean done();
 }
