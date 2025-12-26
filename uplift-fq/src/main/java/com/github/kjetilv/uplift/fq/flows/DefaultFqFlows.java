@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.StructuredTaskScope.Configuration;
+import java.util.concurrent.StructuredTaskScope.Joiner;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -45,22 +46,17 @@ final class DefaultFqFlows<T>
 
     @Override
     public Run feed() {
-        if (flows.isEmpty()) {
-            throw new IllegalStateException("No flows defined");
-        }
         return run(-1);
     }
 
     @Override
     public Run feed(Stream<T> items) {
-        if (flows.isEmpty()) {
-            throw new IllegalStateException("No flows defined");
-        }
-        var itemCount = feedItems(items);
-        return run(itemCount);
+        return run(feedItems(items));
     }
 
     private Run run(long itemCount) {
+        var future =
+            CompletableFuture.supplyAsync(this::runFlows, EXECUTOR);
         return new Run() {
 
             @Override
@@ -70,12 +66,7 @@ final class DefaultFqFlows<T>
 
             @Override
             public Run join() {
-                var flowsCount = CompletableFuture.supplyAsync(
-                    () -> runFlows(),
-                    EXECUTOR
-                ).join();
-                assert flowsCount == flows.size()
-                    : "Expected  " + flows.size() + " runs, got " + flows.size();
+                future.join();
                 return this;
             }
         };
@@ -84,8 +75,8 @@ final class DefaultFqFlows<T>
     private int runFlows() {
         try (
             var scope = StructuredTaskScope.open(
-                StructuredTaskScope.Joiner.allSuccessfulOrThrow(),
-                DefaultFqFlows.this::configure
+                Joiner.allSuccessfulOrThrow(),
+                this::configure
             )
         ) {
             for (var flow : flows) {

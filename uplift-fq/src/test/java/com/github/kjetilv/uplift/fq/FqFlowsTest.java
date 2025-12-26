@@ -12,6 +12,8 @@ import com.github.kjetilv.uplift.fq.paths.ffm.ChannelBytesAccessProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -36,6 +38,7 @@ class FqFlowsTest {
         );
         test(
             tmp,
+            "",
             testInfo,
             fqs,
             110,
@@ -56,6 +59,7 @@ class FqFlowsTest {
         );
         test(
             tmp,
+            "",
             testInfo,
             fqs,
             110,
@@ -76,6 +80,7 @@ class FqFlowsTest {
         );
         test(
             tmp,
+            "",
             testInfo,
             fqs,
             110,
@@ -86,17 +91,23 @@ class FqFlowsTest {
         );
     }
 
-    @Test
-    void testArrays(@TempDir Path tmp, TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testArrays(boolean compressed, @TempDir Path tmp, TestInfo testInfo) {
         var fqs = PathFqs.create(
             tmp,
             new BytesStringFio(StandardCharsets.UTF_8),
-            new StreamAccessProvider(),
+            new StreamAccessProvider(
+                compressed,
+                (path, duration) ->
+                    assertThat(tmp).isDirectoryContaining(path::equals)
+            ),
             new Dimensions(2, 3, 5)
         );
 
         test(
             tmp,
+            compressed ? ".gz" : "",
             testInfo,
             fqs,
             110,
@@ -169,6 +180,7 @@ class FqFlowsTest {
 
     private static <T> void test(
         Path tmp,
+        String gz,
         TestInfo testInfo,
         PathFqs<T, String> fqs,
         int count,
@@ -203,11 +215,11 @@ class FqFlowsTest {
 
         assertThat(exceptions).isEmpty();
 
-        contents(tmp, "1", "in1", firstSize, lastSize);
-        contents(tmp, "2", "in1in2", firstSize, lastSize);
-        contents(tmp, "3", "in1in3", firstSize, lastSize);
-        contents(tmp, "4", "in1in2in4", firstSize, lastSize);
-        contents(tmp, "X", "inX", firstSize, lastSize);
+        contents(tmp, gz, "1", "in1", firstSize, lastSize);
+        contents(tmp, gz, "2", "in1in2", firstSize, lastSize);
+        contents(tmp, gz, "3", "in1in3", firstSize, lastSize);
+        contents(tmp, gz, "4", "in1in2in4", firstSize, lastSize);
+        contents(tmp, gz, "X", "inX", firstSize, lastSize);
     }
 
     private static FqFlows.Run feed(FqFlows<String> flows, int count) {
@@ -225,25 +237,27 @@ class FqFlowsTest {
             .batchSize(batchSize)
             .timeout(Duration.ofMinutes(1))
             .onException(stringErrorHandler)
-            .fromSource("in1").with(
-                check.andThen(items ->
-                    items.map(add("in1"))
-                ))
-            .fromSource("inX").with(
-                check.andThen(items ->
-                    items.map(add("inX"))
-                ))
+
             .from("in1", "in2").with(
                 check.andThen(items ->
                     items.map(add("in2"))
                 ))
-            .from("in2", "in4").with(
+            .from("in2").to(() -> "in4").with(
                 check.andThen(items ->
                     items.map(add("in4"))
                 ))
-            .from("in1", "in3").with(
+            .from(() -> "in1").to("in3").with(
                 check.andThen(items ->
                     items.map(add("in3"))
+                ))
+
+            .fromSource("in1").with(
+                check.andThen(items ->
+                    items.map(add("in1"))
+                ))
+            .fromSource().to("inX").with(
+                check.andThen(items ->
+                    items.map(add("inX"))
                 ))
             .build();
     }
@@ -252,10 +266,10 @@ class FqFlowsTest {
         return i -> i + str;
     }
 
-    private static void contents(Path tmp, String index, String suffix, int firstSize, int lastSize) {
-        var first = format("in{0}-00000.in{0}", index);
-        var last = format("in{0}-00100.in{0}", index);
-        var notFound = format("in{0}-00200.in{0}", index);
+    private static void contents(Path tmp, String gz, String index, String suffix, int firstSize, int lastSize) {
+        var first = format("in{0}-00000.in{0}{1}", index, gz);
+        var last = format("in{0}-00100.in{0}{1}", index, gz);
+        var notFound = format("in{0}-00200.in{0}{1}", index, gz);
         var dir = tmp.resolve("in" + index);
 
         assertThat(dir)
@@ -263,24 +277,26 @@ class FqFlowsTest {
             .isDirectoryContaining(GLOB + first)
             .isDirectoryContaining(GLOB + last)
             .isDirectoryNotContaining(GLOB + notFound);
-        assertThat(dir.resolve(first))
-            .isRegularFile()
-            .content()
-            .hasLineCount(firstSize);
-        assertThat(dir.resolve(last))
-            .isRegularFile()
-            .content()
-            .hasLineCount(lastSize);
-        assertThat(dir.resolve(DONE))
-            .isRegularFile()
-            .content()
-            .isNotBlank();
-        List.of(first, last)
-            .forEach(file ->
-                assertThat(dir.resolve(file))
-                    .content()
-                    .satisfies(content ->
-                        assertThat(content.split("\n")).allSatisfy(line ->
-                            assertThat(line).endsWith(suffix))));
+        if (gz.isEmpty()) {
+            assertThat(dir.resolve(first))
+                .isRegularFile()
+                .content()
+                .hasLineCount(firstSize);
+            assertThat(dir.resolve(last))
+                .isRegularFile()
+                .content()
+                .hasLineCount(lastSize);
+            assertThat(dir.resolve(DONE))
+                .isRegularFile()
+                .content()
+                .isNotBlank();
+            List.of(first, last)
+                .forEach(file ->
+                    assertThat(dir.resolve(file))
+                        .content()
+                        .satisfies(content ->
+                            assertThat(content.split("\n")).allSatisfy(line ->
+                                assertThat(line).endsWith(suffix))));
+        }
     }
 }

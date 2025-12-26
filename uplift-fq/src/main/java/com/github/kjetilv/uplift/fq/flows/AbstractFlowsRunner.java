@@ -5,11 +5,12 @@ import com.github.kjetilv.uplift.fq.Fqs;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-abstract class AbstractRunner<T> implements DefaultFqFlows.Runner<T> {
+abstract sealed class AbstractFlowsRunner<T> implements DefaultFqFlows.Runner<T>
+    permits BatchRunner, SingleRunner {
 
     private final FqFlows.ErrorHandler<T> handler;
 
-    AbstractRunner(FqFlows.ErrorHandler<T> handler) {
+    AbstractFlowsRunner(FqFlows.ErrorHandler<T> handler) {
         this.handler = Objects.requireNonNull(handler, "handler");
     }
 

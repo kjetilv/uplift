@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.function.Supplier;
+import java.time.Duration;
+import java.util.function.BiConsumer;
 import java.util.zip.GZIPInputStream;
 
 public final class StreamAccessProvider implements AccessProvider<Path, byte[]> {
@@ -23,12 +24,26 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
 
     private final boolean gzipped;
 
+    private final BiConsumer<Path, Duration> onMaxTime;
+
     public StreamAccessProvider() {
         this(false);
     }
 
     public StreamAccessProvider(boolean gzipped) {
+        this(gzipped, null);
+    }
+
+    public StreamAccessProvider(BiConsumer<Path, Duration> onMaxTime) {
+        this(false, onMaxTime);
+    }
+
+    public StreamAccessProvider(boolean gzipped, BiConsumer<Path, Duration> onMaxTime) {
         this.gzipped = gzipped;
+        this.onMaxTime = onMaxTime != null
+            ? onMaxTime
+            : (_, _) -> {
+            };
     }
 
     @Override
@@ -59,14 +74,12 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
         return gzipInputStream(path);
     }
 
-    private static final int GZIP_HEADER_SIZE = 10;
-
-    private static GZIPInputStream gzipInputStream(Path path) {
+    private GZIPInputStream gzipInputStream(Path path) {
         var in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
         var sleeper = Sleeper.deferred(
             () -> "Unzip " + path.getFileName(),
             state ->
-                log.warn("Incomplete Gzip file after {}: {}", state.duration(), path)
+                onMaxTime.accept(path, state.duration())
         );
         while (SayFiles.sizeOf(path) <= GZIP_HEADER_SIZE) {
             sleeper.get().sleep();
@@ -83,4 +96,6 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
             }
         }
     }
+
+    private static final int GZIP_HEADER_SIZE = 10;
 }

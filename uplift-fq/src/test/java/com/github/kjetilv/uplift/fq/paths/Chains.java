@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 final class Chains {
 
-    @SuppressWarnings("resource")
     static void assertChain(
         int chainLength,
         int batchSize,

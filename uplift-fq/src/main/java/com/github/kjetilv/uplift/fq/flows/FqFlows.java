@@ -39,7 +39,7 @@ public interface FqFlows<T> {
     interface Builder<T> {
 
         default To<T> fromSource() {
-            return from(null);
+            return from((Name) null);
         }
 
         default With<T> fromSource(String to) {
@@ -58,6 +58,10 @@ public interface FqFlows<T> {
             return from(from).to(to);
         }
 
+        default To<T> from(String name) {
+            return from(() -> name);
+        }
+
         To<T> from(Name name);
 
         Builder<T> timeout(Duration timeout);
@@ -69,6 +73,10 @@ public interface FqFlows<T> {
         FqFlows<T> build();
 
         interface To<T> {
+
+            default With<T> to(String name) {
+                return to(() -> name);
+            }
 
             With<T> to(Name name);
         }

@@ -70,19 +70,12 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     @Override
     public FqFlows<T> build() {
-        var handler = this.handler != null
-            ? this.handler
-            : fail();
+        validateIntakes(flows);
+        var handler = this.handler == null ? fail() : this.handler;
         var runner = batchSize == null
             ? new SingleRunner<>(handler)
             : new BatchRunner<>(batchSize, handler);
-        return new DefaultFqFlows<>(
-            name,
-            fqs,
-            timeout,
-            runner,
-            flows
-        );
+        return new DefaultFqFlows<>(name, fqs, timeout, runner, flows);
     }
 
     private Flow<T> validated(Flow<T> flow) {
@@ -98,12 +91,6 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
     }
 
     private static <T> void validate(List<Flow<T>> flows) {
-        var sources = flows.stream()
-            .filter(Flow::isFromSource)
-            .toList();
-        if (sources.isEmpty()) {
-            throw new IllegalStateException("No source intake defined: " + print(flows));
-        }
         var groups = flows.stream()
             .collect(Collectors.groupingBy(Flow::description));
         var dupes = groups.entrySet()
@@ -130,6 +117,15 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
             .toList();
         if (!missingInputs.isEmpty()) {
             throw new IllegalStateException("Missing inputs to flows: " + print(missingInputs));
+        }
+    }
+
+    private static <T> void validateIntakes(List<Flow<T>> flows) {
+        var sources = flows.stream()
+            .filter(Flow::isFromSource)
+            .toList();
+        if (sources.isEmpty()) {
+            throw new IllegalStateException("No source intake defined: " + print(flows));
         }
     }
 

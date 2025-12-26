@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.util.stream.Stream;
 
-final class SingleRunner<T> extends AbstractRunner<T> {
+final class SingleRunner<T> extends AbstractFlowsRunner<T> {
 
     SingleRunner(FqFlows.ErrorHandler<T> handler) {
         super(handler);
@@ -20,7 +20,7 @@ final class SingleRunner<T> extends AbstractRunner<T> {
         return fqs.streamer(source)
             .read()
             .map(item ->
-                entry(flow, item))
+                Entries.single(flow.to(), item))
             .map(entry -> {
                 try {
                     return flow.processor().process(entry);
@@ -31,7 +31,4 @@ final class SingleRunner<T> extends AbstractRunner<T> {
             });
     }
 
-    private static <T> Entries<T> entry(Flow<T> flow, T item) {
-        return Entries.single(flow.to(), item);
-    }
 }
