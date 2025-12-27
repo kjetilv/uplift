@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
-import com.github.kjetilv.uplift.fq.paths.PathTombstone;
-import com.github.kjetilv.uplift.fq.paths.Puller;
-import com.github.kjetilv.uplift.fq.paths.Tombstone;
+import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.GzipUtils;
 import com.github.kjetilv.uplift.util.SayFiles;
@@ -20,33 +18,21 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
 
     private final boolean gzipped;
 
-    private final BiConsumer<Path, Duration> onMaxTime;
+    private final BiConsumer<Path, Duration> onMax;
 
-    public StreamAccessProvider(boolean gzipped) {
-        this(gzipped, null);
-    }
-
-    public StreamAccessProvider(boolean gzipped, BiConsumer<Path, Duration> onMaxTime) {
+    public StreamAccessProvider(boolean gzipped, BiConsumer<Path, Duration> onMax) {
         this.gzipped = gzipped;
-        this.onMaxTime = onMaxTime != null
-            ? onMaxTime
-            : (_, _) -> {
-            };
+        this.onMax = onMax;
     }
 
     @Override
-    public Puller<byte[]> puller(Path path) {
-        return new StreamPuller(path, inputStream(path));
+    public Reader<byte[]> reader(Path source) {
+        return new StreamReader(source, inputStream(source));
     }
 
     @Override
-    public Writer<byte[]> writer(Path path) {
-        return new StreamWriter(newBufferedWriter(path), (byte) '\n');
-    }
-
-    @Override
-    public Tombstone<Path> tombstone(Path path) {
-        return new PathTombstone(path.resolve("done"));
+    public Writer<byte[]> writer(Path source) {
+        return new StreamWriter(newBufferedWriter(source), (byte) '\n');
     }
 
     private OutputStream newBufferedWriter(Path path) {
@@ -56,18 +42,17 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
     }
 
     private InputStream inputStream(Path path) {
-        if (!gzipped) {
-            return SayFiles.fileInputStream(GzipUtils.gzipFile(path, gzipped));
-        }
-        return gzipInputStream(path);
+        return gzipped
+            ? gzipInputStream(path)
+            : SayFiles.fileInputStream(path);
     }
 
     private GZIPInputStream gzipInputStream(Path path) {
         var in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
         var sleeper = Sleeper.deferred(
             () -> "Unzip " + path.getFileName(),
-            state ->
-                onMaxTime.accept(path, state.duration())
+            onMax == null ? null : state ->
+                onMax.accept(path, state.duration())
         );
         while (SayFiles.sizeOf(path) <= GZIP_HEADER_SIZE) {
             sleeper.get().sleep();

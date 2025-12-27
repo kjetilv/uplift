@@ -8,12 +8,12 @@ import java.nio.charset.StandardCharsets;
 
 public record ByteBufferStringFio(Charset cs) implements Fio<ByteBuffer, String> {
 
-    public ByteBufferStringFio(Charset cs) {
-        this.cs = cs == null ? StandardCharsets.UTF_8 : cs;
-    }
-
     public ByteBufferStringFio() {
         this(null);
+    }
+
+    public ByteBufferStringFio(Charset cs) {
+        this.cs = cs == null ? StandardCharsets.UTF_8 : cs;
     }
 
     @Override
@@ -27,5 +27,4 @@ public record ByteBufferStringFio(Charset cs) implements Fio<ByteBuffer, String>
     public ByteBuffer write(String value) {
         return ByteBuffer.wrap(value.getBytes(cs));
     }
-
 }

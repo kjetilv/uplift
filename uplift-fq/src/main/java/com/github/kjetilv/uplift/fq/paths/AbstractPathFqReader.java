@@ -11,8 +11,7 @@ abstract class AbstractPathFqReader<I, T>
         super(directory, fio, tombstone);
     }
 
-    @Override
-    public boolean done() {
+    final boolean done() {
         return foundTombstone();
     }
 }

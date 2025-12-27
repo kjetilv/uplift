@@ -1,13 +1,13 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
-import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.fq.paths.Reader;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 
-public final class StreamPuller implements Puller<byte[]> {
+final class StreamReader implements Reader<byte[]> {
 
     private final Path path;
 
@@ -15,21 +15,22 @@ public final class StreamPuller implements Puller<byte[]> {
 
     private final BytesSplitter bytesSplitter;
 
-    public StreamPuller(Path path, InputStream inputStream) {
+    StreamReader(Path path, InputStream inputStream) {
         this(path, inputStream, 0);
     }
 
-    public StreamPuller(Path path, InputStream inputStream, int bufferSize) {
+    StreamReader(Path path, InputStream inputStream, int bufferSize) {
         this.path = requireNonNull(path, "path");
         this.inputStream = requireNonNull(inputStream, "bufferedReader");
         this.bytesSplitter = new BytesSplitter(inputStream, '\n', bufferSize);
     }
 
     @Override
-    public byte[] pull() {
+    public byte[] read() {
         return bytesSplitter.next();
     }
 
+    @Override
     public void close() {
         try {
             inputStream.close();

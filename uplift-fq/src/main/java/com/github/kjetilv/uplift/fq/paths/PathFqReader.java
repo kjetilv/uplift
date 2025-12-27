@@ -1,50 +1,52 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
-import com.github.kjetilv.uplift.fq.FqPuller;
+import com.github.kjetilv.uplift.fq.FqReader;
 import com.github.kjetilv.uplift.util.Sleeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
-final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqPuller<T> {
+final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqReader<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(PathFqPuller.class);
+    private static final Logger log = LoggerFactory.getLogger(PathFqReader.class);
 
     private final Collection<Path> processed = new HashSet<>();
 
-    private Puller<I> currentPuller;
+    private Reader<I> currentReader;
 
     private Path currentPath;
 
-    private final Function<Path, Puller<I>> newPuller;
+    private final Function<Path, Reader<I>> readerFactory;
 
     private final boolean deleting;
 
     private final LongAdder count = new LongAdder();
 
-    PathFqPuller(
+    PathFqReader(
         Path path,
         Fio<I, T> fio,
-        Function<Path, Puller<I>> newPuller,
+        Function<Path, Reader<I>> readerFactory,
         Tombstone<Path> tombstone,
         boolean deleting
     ) {
         super(path, fio, tombstone);
-        this.newPuller = Objects.requireNonNull(newPuller, "newPuller");
+        this.readerFactory = Objects.requireNonNull(readerFactory, "newPuller");
         this.deleting = deleting;
     }
 
     @Override
-    public Optional<T> next() {
-
-        var nextLine = currentPuller == null
+    public T next() {
+        var nextLine = currentReader == null
             ? null
-            : currentPuller.pull();
+            : currentReader.read();
 
         if (nextLine != null) {
             return nextLine(nextLine);
@@ -60,7 +62,7 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
         );
 
         while (true) {
-            if (currentPuller != null) {
+            if (currentReader != null) {
                 reset();
             }
 
@@ -72,15 +74,15 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
                     set(available.getFirst());
                 } else {
                     if (done()) {
-                        return Optional.empty();
+                        return null;
                     }
                     sleeper.get().sleep();
                 }
             }
 
-            nextLine = currentPuller == null
+            nextLine = currentReader == null
                 ? null
-                : currentPuller.pull();
+                : currentReader.read();
             if (nextLine != null) {
                 return nextLine(nextLine);
             }
@@ -96,9 +98,9 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
         return available.size() > 1 || available.size() == 1 && done();
     }
 
-    private Optional<T> nextLine(I nextLine) {
+    private T nextLine(I nextLine) {
         try {
-            return Optional.of(fromBytes(nextLine));
+            return fromBytes(nextLine);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse #" + count, e);
         } finally {
@@ -108,21 +110,20 @@ final class PathFqPuller<I, T> extends AbstractPathFqReader<I, T> implements FqP
 
     private void set(Path first) {
         currentPath = first;
-        currentPuller = newPuller.apply(currentPath);
+        currentReader = readerFactory.apply(currentPath);
     }
 
     private void reset() {
-        currentPuller.close();
+        currentReader.close();
         processed.add(currentPath);
         if (deleting) {
             rm(currentPath);
         }
-        currentPuller = null;
+        currentReader = null;
         currentPath = null;
     }
 
     private boolean candidate(Path path) {
         return !isTombstone(path) && !processed.contains(path);
     }
-
 }

@@ -55,11 +55,6 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
     }
 
     @Override
-    public boolean done() {
-        return foundTombstone();
-    }
-
-    @Override
     public void close() {
         if (currentWriter != null) {
             try {

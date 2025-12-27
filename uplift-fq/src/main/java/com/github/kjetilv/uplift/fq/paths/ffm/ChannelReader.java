@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
-import com.github.kjetilv.uplift.fq.paths.Puller;
+import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.util.SayFiles;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
@@ -20,8 +20,7 @@ import java.util.function.Function;
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
-class ChannelPuller<T>
-    implements Puller<T> {
+class ChannelReader<T> implements Reader<T> {
 
     private final Path path;
 
@@ -43,7 +42,7 @@ class ChannelPuller<T>
 
     private VectorMask<Byte> mask = ZERO;
 
-    ChannelPuller(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
+    ChannelReader(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
         this.path = Objects.requireNonNull(path, "path");
         this.separator = separator;
         this.mapper = Objects.requireNonNull(mapper, "mapper");
@@ -66,7 +65,7 @@ class ChannelPuller<T>
     }
 
     @Override
-    public T pull() {
+    public T read() {
         while (true) {
             if (mask.firstTrue() == LENGTH) {
                 if (maskStart > size) {

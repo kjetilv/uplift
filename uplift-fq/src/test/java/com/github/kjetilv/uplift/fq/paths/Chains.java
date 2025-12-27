@@ -31,11 +31,10 @@ final class Chains {
             var linkName = Name.of(format.formatted(i));
             var writer = pathFqs.writer(linkName);
             var precedingLinkName = Name.of(format.formatted(i - 1));
-            var batcher = pathFqs.batcher(precedingLinkName, batchSize);
 
             chain.add(CompletableFuture.runAsync(
                 () -> {
-                    batcher.read()
+                    pathFqs.batches(precedingLinkName, batchSize)
                         .forEach(lines ->
                             lines.forEach(line ->
                                 writer.write(line + "-" + finalI)
@@ -63,7 +62,7 @@ final class Chains {
             .mapToObj(String::valueOf)
             .collect(Collectors.joining("-"));
 
-        assertThat(pathFqs.streamer(() -> "foo-G" + (chainLength - 1) + ".txt").read())
+        assertThat(pathFqs.stream(() -> "foo-G" + (chainLength - 1) + ".txt"))
             .isNotEmpty()
             .allSatisfy(l ->
                 assertThat(l).isEqualTo(line));
@@ -76,12 +75,12 @@ final class Chains {
             }
         }
 
-        var puller = pfq.puller(() -> "foo.txt");
+        var puller = pfq.reader(() -> "foo.txt");
         for (var i = 0; i < 10; i++) {
-            assertThat(puller.next()).hasValue("foo" + i);
-            assertThat(puller.next()).hasValue("bar" + i);
+            assertThat(puller.next()).isEqualTo("foo" + i);
+            assertThat(puller.next()).isEqualTo("bar" + i);
         }
-        assertThat(puller.next()).isEmpty();
+        assertThat(puller.next()).isNull();
     }
 
     private Chains() {

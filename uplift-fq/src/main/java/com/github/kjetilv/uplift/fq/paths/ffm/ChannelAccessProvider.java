@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
-import com.github.kjetilv.uplift.fq.paths.PathTombstone;
-import com.github.kjetilv.uplift.fq.paths.Puller;
-import com.github.kjetilv.uplift.fq.paths.Tombstone;
+import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 
 import java.lang.foreign.Arena;
@@ -42,23 +40,17 @@ public final class ChannelAccessProvider<T>
     }
 
     @Override
-    public Puller<T> puller(Path path) {
-        return new ChannelPuller<>(path, separator, arena.get(), fromMemorySegment);
+    public Reader<T> reader(Path source) {
+        return new ChannelReader<>(source, separator, arena.get(), fromMemorySegment);
     }
 
     @Override
-    public Writer<T> writer(Path path) {
-        return new ChannelWriter<>(path, toByteBuffer, linebreak);
-    }
-
-    @Override
-    public Tombstone<Path> tombstone(Path path) {
-        return new PathTombstone(path.resolve("done"));
+    public Writer<T> writer(Path source) {
+        return new ChannelWriter<>(source, toByteBuffer, linebreak);
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[]";
     }
-
 }

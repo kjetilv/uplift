@@ -19,27 +19,41 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         return deferred(description, timeout, null);
     }
 
-    public static Supplier<Sleeper> deferred(Supplier<String> description, Duration timeout, Consumer<State> onMax) {
+    public static Supplier<Sleeper> deferred(
+        Supplier<String> description,
+        Duration timeout,
+        Consumer<State> onMax
+    ) {
         return StableValue.supplier(() ->
-            new Sleeper(description.get(), 0L, 0L, timeout, onMax));
+            new Sleeper(
+                description.get(),
+                0L,
+                0L,
+                timeout,
+                onMax
+            ));
     }
 
-    private Sleeper(String description, long time, long maxTime, Duration timeout, Consumer<State> onMax) {
+    private Sleeper(
+        String description,
+        long time,
+        long maxTime,
+        Duration timeout,
+        Consumer<State> onMax
+    ) {
         var now = Instant.now();
-        this(
-            new State(
-                description,
-                time > 0 ? time : MIN_SLEEP,
-                maxTime > 0 ? maxTime : MAX_SLEEP,
-                now,
-                timeout == null ? null : now.plus(timeout)
-            ),
-            new boolean[0],
-            onMax
+        var deadline = timeout == null ? null : now.plus(timeout);
+        var state = new State(
+            description,
+            time > 0 ? time : MIN_SLEEP,
+            maxTime > 0 ? maxTime : MAX_SLEEP,
+            now,
+            deadline
         );
+        this(state, newLock(), onMax);
     }
 
-    public Sleeper sleep() {
+    public void sleep() {
         synchronized (lock) {
             try {
                 lock.wait(state.time);
@@ -49,7 +63,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
             }
         }
         if (state.onMaxTime()) {
-            return this;
+            return;
         }
         var nextState = state.increasedTime();
         if (nextState.onMaxTime()) {
@@ -58,12 +72,16 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
                 onMax.accept(nextState);
             }
         }
-        return new Sleeper(nextState, lock, onMax);
+        new Sleeper(nextState, lock, onMax);
     }
 
     private static final long MAX_SLEEP = 100L;
 
     private static final long MIN_SLEEP = 1L;
+
+    private static Object newLock() {
+        return new boolean[0];
+    }
 
     public record State(
         String description,

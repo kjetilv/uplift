@@ -1,6 +1,6 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.paths.bytes;
 
-import com.github.kjetilv.uplift.fq.paths.bytes.StreamPuller;
+import com.github.kjetilv.uplift.fq.paths.Reader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-class StreamPullerTest {
+class StreamReaderTest {
 
     @Test
     void test(@TempDir(cleanup = CleanupMode.ALWAYS) Path tmp) {
@@ -25,7 +25,7 @@ class StreamPullerTest {
                 x
                 """.getBytes();
         for (var i = body.length + 1; i >= 5; i--) {
-            var puller = new StreamPuller(tmp, new ByteArrayInputStream(body), i);
+            var puller = new StreamReader(tmp, new ByteArrayInputStream(body), i);
             try {
                 assertString(puller, "foo", i);
                 assertString(puller, "bar", i);
@@ -33,15 +33,15 @@ class StreamPullerTest {
                 assertString(puller, "zip", i);
                 assertString(puller, "xx", i);
                 assertString(puller, "x", i);
-                assertThat(puller.pull()).isNull();
+                assertThat(puller.read()).isNull();
             } catch (Throwable e) {
                 fail("Failed with buffer size " + i, e);
             }
         }
     }
 
-    private static void assertString(Puller<byte[]> puller, String foo, int bs) {
-        assertThat(puller.pull())
+    private static void assertString(Reader<byte[]> reader, String foo, int bs) {
+        assertThat(reader.read())
             .describedAs("Could not get string %s with buffer size %s", foo, bs)
             .isEqualTo(foo.getBytes());
     }

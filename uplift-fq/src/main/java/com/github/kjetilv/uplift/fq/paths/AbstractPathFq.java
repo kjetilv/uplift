@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
-import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Path;
@@ -11,7 +10,7 @@ import java.util.stream.Stream;
 
 import static java.nio.file.Files.delete;
 
-abstract class AbstractPathFq<I, T> implements Fq<T> {
+abstract class AbstractPathFq<I, T> {
 
     private final Fio<I, T> fio;
 
@@ -31,11 +30,6 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         if (SayFiles.nonWritable(directory)) {
             throw new IllegalStateException("Directory must be writable: " + directory);
         }
-    }
-
-    @Override
-    public String name() {
-        return directory.getFileName().toString();
     }
 
     final Path directory() {
@@ -86,6 +80,10 @@ abstract class AbstractPathFq<I, T> implements Fq<T> {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to delete " + path, e);
         }
+    }
+
+    final String name() {
+        return directory.getFileName().toString();
     }
 
     protected abstract void subToString(StringBuilder builder);

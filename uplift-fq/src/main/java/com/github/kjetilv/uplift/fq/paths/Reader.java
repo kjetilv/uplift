@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-public interface Puller<I> {
+public interface Reader<I> {
 
-    I pull();
+    I read();
 
     void close();
 }

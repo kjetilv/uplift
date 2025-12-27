@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamWriter;
@@ -24,26 +23,7 @@ class PathFqStreamTest {
 
     @Test
     void testWrite(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        var fooTxt = tmp.resolve("foo.txt");
-        try (
-            var writer = new PathFqWriter<>(
-                fooTxt,
-                new Dimensions(1, 2, 3),
-                path -> {
-                    try {
-                        return new StreamWriter(Files.newOutputStream(path), (byte)'\n');
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                new BytesStringFio(),
-                new PathTombstone(fooTxt.resolve("done"))
-            )
-        ) {
-            for (var i = 0; i < 110; i++) {
-                writer.write(String.valueOf(i));
-            }
-        }
+        var fooTxt = getPath(tmp);
 
         var pathAssert =
             assertThat(fooTxt)
@@ -65,7 +45,7 @@ class PathFqStreamTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new StreamAccessProvider(compress),
+            new StreamAccessProvider(compress, null),
             new Dimensions(1, 2, 4)
         );
         Chains.assertSimpleWriteRead(pfq);
@@ -77,7 +57,7 @@ class PathFqStreamTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new StreamAccessProvider(compress),
+            new StreamAccessProvider(compress, null),
             new Dimensions(1, 2, 4)
         );
 
@@ -100,48 +80,35 @@ class PathFqStreamTest {
             executor
         );
 
-        var puller = CompletableFuture.supplyAsync(
+        var puller = CompletableFuture.runAsync(
             () -> {
-                var fqp = pfq.puller(() -> "foo.txt");
+                var fqp = pfq.reader(() -> "foo.txt");
 
                 for (var i = 0; i < INT; i++) {
-                    assertThat(fqp.next()).hasValue(String.valueOf(i));
+                    assertThat(fqp.next()).isEqualTo(String.valueOf(i));
                 }
-                assertThat(fqp.next()).isEmpty();
-                return fqp;
+                assertThat(fqp.next()).isNull();
             },
             executor
         );
 
-        var streamer = CompletableFuture.supplyAsync(
+        var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.streamer(() -> "foo.txt");
-                assertThat(fqs.read()).containsExactlyElementsOf(expected);
-                return fqs;
+                var fqs = pfq.stream(() -> "foo.txt");
+                assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );
 
-        var batcher = CompletableFuture.supplyAsync(
+        var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.batcher(() -> "foo.txt", 100);
-                assertThat(fqb.read().flatMap(List::stream)).containsExactlyElementsOf(expected);
-                return fqb;
+                var fqb = pfq.batches(() -> "foo.txt", 100);
+                var actual = fqb.flatMap(List::stream);
+                assertThat(actual).containsExactlyElementsOf(expected);
             }
         );
 
         Stream.of(writer, puller, batcher, streamer)
             .forEach(CompletableFuture::join);
-
-        assertThat(writer)
-            .isCompletedWithValueMatching(Fq::done)
-            .isCompletedWithValueMatching(Fq::done);
-        assertThat(puller)
-            .isCompletedWithValueMatching(Fq::done)
-            .isCompletedWithValueMatching(p -> p.next().isEmpty());
-        assertThat(streamer)
-            .isCompletedWithValueMatching(Fq::done);
-        assertThat(batcher)
-            .isCompletedWithValueMatching(Fq::done);
     }
 
     @ParameterizedTest
@@ -178,6 +145,30 @@ class PathFqStreamTest {
 
     private static final int INT = 9999;
 
+    private static Path getPath(Path tmp) {
+        var fooTxt = tmp.resolve("foo.txt");
+        try (
+            var writer = new PathFqWriter<>(
+                fooTxt,
+                new Dimensions(1, 2, 3),
+                path -> {
+                    try {
+                        return new StreamWriter(Files.newOutputStream(path), (byte) '\n');
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                new BytesStringFio(),
+                new PathTombstone(fooTxt.resolve("done"))
+            )
+        ) {
+            for (var i = 0; i < 110; i++) {
+                writer.write(String.valueOf(i));
+            }
+        }
+        return fooTxt;
+    }
+
     private static void assertChain(
         Path tmp,
         Dimensions dimensions,
@@ -193,7 +184,7 @@ class PathFqStreamTest {
             new PathFqs<>(
                 new BytesStringFio(),
                 new PathProvider(tmp),
-                new StreamAccessProvider(gzipped),
+                new StreamAccessProvider(gzipped, null),
                 dimensions
             )
         );

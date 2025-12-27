@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import com.github.kjetilv.uplift.fq.Fq;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
-import com.github.kjetilv.uplift.fq.paths.ffm.ChannelAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
@@ -68,15 +64,7 @@ class PathFqChannelBytesTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelAccessProvider<>(
-                Arena::ofAuto,
-                (byte) '\n',
-                segment ->
-                    segment.toArray(ValueLayout.JAVA_BYTE)
-                ,
-                ByteBuffer::wrap,
-                () -> ByteBuffer.wrap(new byte[] {'\n'})
-            ),
+            AccessProviders.channelBytes(),
             new Dimensions(1, 2, 4)
         );
 
@@ -88,15 +76,7 @@ class PathFqChannelBytesTest {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            new ChannelAccessProvider<>(
-                Arena::ofAuto,
-                (byte) '\n',
-                segment ->
-                    segment.toArray(ValueLayout.JAVA_BYTE)
-                ,
-                ByteBuffer::wrap,
-                () -> ByteBuffer.wrap(new byte[] {'\n'})
-            ),
+            AccessProviders.channelBytes((byte) '\n'),
             new Dimensions(1, 2, 4)
         );
 
@@ -121,46 +101,36 @@ class PathFqChannelBytesTest {
 
         var puller = CompletableFuture.supplyAsync(
             () -> {
-                var fqp = pfq.puller(() -> "foo.txt");
+                var fqp = pfq.reader(() -> "foo.txt");
 
                 for (var i = 0; i < Chains.INT; i++) {
-                    assertThat(fqp.next()).hasValue(String.valueOf(i));
+                    assertThat(fqp.next()).isEqualTo(String.valueOf(i));
                 }
-                assertThat(fqp.next()).isEmpty();
+                assertThat(fqp.next()).isNull();
                 return fqp;
             },
             executor
         );
 
-        var streamer = CompletableFuture.supplyAsync(
+        var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.streamer(() -> "foo.txt");
-                assertThat(fqs.read()).containsExactlyElementsOf(expected);
-                return fqs;
+                var fqs = pfq.stream(() -> "foo.txt");
+                assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );
 
-        var batcher = CompletableFuture.supplyAsync(
+        var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.batcher(() -> "foo.txt", 100);
-                assertThat(fqb.read().flatMap(List::stream)).containsExactlyElementsOf(expected);
-                return fqb;
+                var fqb = pfq.reader(() -> "foo.txt").batches(100);
+                assertThat(fqb.flatMap(List::stream)).containsExactlyElementsOf(expected);
             }
         );
 
         Stream.of(writer, puller, batcher, streamer)
             .forEach(CompletableFuture::join);
 
-        assertThat(writer)
-            .isCompletedWithValueMatching(Fq::done)
-            .isCompletedWithValueMatching(Fq::done);
         assertThat(puller)
-            .isCompletedWithValueMatching(Fq::done)
-            .isCompletedWithValueMatching(p -> p.next().isEmpty());
-        assertThat(streamer)
-            .isCompletedWithValueMatching(Fq::done);
-        assertThat(batcher)
-            .isCompletedWithValueMatching(Fq::done);
+            .isCompletedWithValueMatching(p -> p.next() == null);
     }
 
     @Test
@@ -199,15 +169,7 @@ class PathFqChannelBytesTest {
             new PathFqs<>(
                 new BytesStringFio(),
                 new PathProvider(tmp),
-                new ChannelAccessProvider<>(
-                    Arena::ofAuto,
-                    (byte) '\n',
-                    segment ->
-                        segment.toArray(ValueLayout.JAVA_BYTE)
-                    ,
-                    ByteBuffer::wrap,
-                    () -> ByteBuffer.wrap(new byte[] {'\n'})
-                ),
+                AccessProviders.channelBytes(),
                 dimensions
             )
         );

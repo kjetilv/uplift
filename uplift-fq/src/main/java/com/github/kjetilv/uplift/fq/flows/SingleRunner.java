@@ -17,8 +17,7 @@ final class SingleRunner<T> extends AbstractFlowsRunner<T> {
         Flow<T> flow,
         FqFlows.ErrorHandler<T> handler
     ) {
-        return fqs.streamer(source)
-            .read()
+        return fqs.stream(source)
             .map(item ->
                 Entries.single(flow.to(), item))
             .map(entry -> {

@@ -7,23 +7,15 @@ import java.util.stream.Stream;
 
 public interface Fqs<T> {
 
-    default FqStreamer<T> streamer(Name name) {
-        return FqStreamer.from(puller(name));
-    }
-
-    default FqBatcher<T> batcher(Name name, int batchSize) {
-        return FqBatcher.from(puller(name), batchSize);
-    }
-
     default Stream<T> stream(Name name) {
-        return streamer(name).read();
+        return reader(name).stream();
     }
 
     default Stream<List<T>> batches(Name name, int batchSize) {
-        return batcher(name, batchSize).read();
+        return reader(name).batches(batchSize);
     }
 
-    FqPuller<T> puller(Name name);
+    FqReader<T> reader(Name name);
 
     FqWriter<T> writer(Name name);
 }

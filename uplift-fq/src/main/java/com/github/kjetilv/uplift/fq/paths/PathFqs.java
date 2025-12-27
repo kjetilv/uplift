@@ -43,13 +43,13 @@ public final class PathFqs<I, O> implements Fqs<O> {
     }
 
     @Override
-    public FqPuller<O> puller(Name name) {
+    public FqReader<O> reader(Name name) {
         var directory = sourceProvider.source(name);
-        return new PathFqPuller<>(
+        return new PathFqReader<>(
             directory,
             fio,
-            accessProvider::puller,
-            accessProvider.tombstone(directory),
+            accessProvider::reader,
+            new PathTombstone(directory.resolve("done")),
             false
         );
     }
@@ -62,7 +62,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
             dimensions,
             accessProvider::writer,
             fio,
-            accessProvider.tombstone(directory)
+            new PathTombstone(directory.resolve("done"))
         );
     }
 }
