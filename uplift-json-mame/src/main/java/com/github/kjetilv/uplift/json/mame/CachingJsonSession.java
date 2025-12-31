@@ -1,22 +1,24 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.edamame.Canonicalizer;
-import com.github.kjetilv.uplift.edamame.Canonicalizers;
-import com.github.kjetilv.uplift.edamame.LeafHasher;
-import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.edamame.*;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.JsonSession;
+import com.github.kjetilv.uplift.json.Token;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
+final class CachingJsonSession<H extends HashKind<H>> implements JsonSession, KeyHandler<String> {
 
     private final HashStrategy<H> hashStrategy;
 
     private final Canonicalizer<String, H> canonicalizer;
+
+    private final Map<Object, String> keys = new ConcurrentHashMap<>();
 
     private final BiConsumer<Hash<H>, Object> collisionHandler;
 
@@ -35,8 +37,20 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
     }
 
     @Override
+    public String normalize(Object key) {
+        return keys.computeIfAbsent(key, _ ->
+            ((Token.Field)key).value());
+    }
+
+    @Override
     public Callbacks callbacks(Consumer<Object> onDone) {
-        return new ValueClimber<>(hashStrategy, canonicalizer, onDone, collisionHandler);
+        return new ValueClimber<>(
+            hashStrategy,
+            canonicalizer,
+            this,
+            onDone,
+            collisionHandler
+        );
     }
 
     private static <H extends HashKind<H>> Canonicalizer<String, H> canonicalizer(CachingSettings settings) {

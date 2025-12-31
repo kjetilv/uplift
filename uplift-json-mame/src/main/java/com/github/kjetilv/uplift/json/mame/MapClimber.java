@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.mame;
 
 import module java.base;
 import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
@@ -11,15 +12,16 @@ final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
     private final Map<String, HashedTree<String, H>> map = new HashMap<>();
 
-    private Token.Field currentField;
+    private String currentField;
 
     MapClimber(
         HashStrategy<H> hashStrategy,
+        KeyHandler<String> keyHandler,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(hashStrategy, cacher, onDone, parent);
+        super(hashStrategy, keyHandler, cacher, onDone, parent);
     }
 
     @Override
@@ -40,6 +42,6 @@ final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
     @Override
     protected void set(HashedTree<String, H> tree) {
-        map.put(currentField.value(), tree);
+        map.put(currentField, tree);
     }
 }

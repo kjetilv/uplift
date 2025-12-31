@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.Canonicalizer;
 import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
@@ -19,10 +20,11 @@ final class ValueClimber<H extends HashKind<H>>
     ValueClimber(
         HashStrategy<H> hashStrategy,
         Canonicalizer<String, H> canonicalizer,
+        KeyHandler<String> keyHandler,
         Consumer<Object> onDone,
         BiConsumer<Hash<H>, Object> collisionHandler
     ) {
-        super(hashStrategy, Objects.requireNonNull(canonicalizer, "canonicalizer")::canonical);
+        super(hashStrategy, keyHandler, Objects.requireNonNull(canonicalizer, "canonicalizer")::canonical);
         this.canonicalizer = Objects.requireNonNull(canonicalizer, "canonicalizer");
         this.onDone = Objects.requireNonNull(onDone, "onDone");
         this.collisionHandler = collisionHandler;

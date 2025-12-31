@@ -80,6 +80,12 @@ public interface FqFlows<T> {
             return fromSource(() -> to);
         }
 
+        default With<T> then(String to) {
+            return then(() -> to);
+        }
+
+        With<T> then(Name to);
+
         default With<T> fromSource(Name to) {
             return fromSource().to(to);
         }

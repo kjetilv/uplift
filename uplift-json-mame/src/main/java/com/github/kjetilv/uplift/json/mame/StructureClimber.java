@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.mame;
 
 import module java.base;
 import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
@@ -23,11 +24,12 @@ abstract sealed class StructureClimber<H extends HashKind<H>>
 
     StructureClimber(
         HashStrategy<H> hashStrategy,
+        KeyHandler<String> keyHandler,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone,
         Callbacks parent
     ) {
-        super(hashStrategy, cacher);
+        super(hashStrategy, keyHandler, cacher);
         this.onDone = onDone;
         this.parent = parent;
         this.builder = hashStrategy.supplier().get();
@@ -47,9 +49,9 @@ abstract sealed class StructureClimber<H extends HashKind<H>>
         return parent;
     }
 
-    protected final Token.Field hashedField(Token.Field key) {
+    protected final String hashedField(Token.Field key) {
         var field = normalized(key);
-        builder.hash(fieldBytes(field));
+        builder.hash(Bytes.from(field.getBytes()));
         return field;
     }
 

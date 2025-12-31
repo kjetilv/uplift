@@ -2,9 +2,11 @@ package com.github.kjetilv.uplift.json.mame;
 
 import module java.base;
 import com.github.kjetilv.uplift.edamame.HashedTree;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.Token;
 
 final class ListClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
@@ -12,11 +14,12 @@ final class ListClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
     ListClimber(
         HashStrategy<H> hashStrategy,
+        KeyHandler<String> keyHandler,
         Callbacks parent,
         Consumer<HashedTree<String, H>> cacher,
         Consumer<HashedTree<String, H>> onDone
     ) {
-        super(hashStrategy, cacher, onDone, parent);
+        super(hashStrategy, keyHandler, cacher, onDone, parent);
     }
 
     @Override

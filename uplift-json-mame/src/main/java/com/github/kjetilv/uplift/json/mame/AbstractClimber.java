@@ -12,23 +12,30 @@ abstract sealed class AbstractClimber<H extends HashKind<H>>
     implements Climber
     permits StructureClimber, ValueClimber {
 
+    private final KeyHandler<String> keyHandler;
+
     private final Consumer<HashedTree<String, H>> cacher;
 
     private final HashStrategy<H> hashStrategy;
 
-    protected AbstractClimber(HashStrategy<H> hashStrategy, Consumer<HashedTree<String, H>> cacher) {
+    protected AbstractClimber(
+        HashStrategy<H> hashStrategy,
+        KeyHandler<String> keyHandler,
+        Consumer<HashedTree<String, H>> cacher
+    ) {
         this.hashStrategy = Objects.requireNonNull(hashStrategy, "climbingStrategy");
+        this.keyHandler = Objects.requireNonNull(keyHandler, "keyHandler");
         this.cacher = Objects.requireNonNull(cacher, "cacher");
     }
 
     @Override
     public final Callbacks arrayStarted() {
-        return new ListClimber<>(hashStrategy, this, cacher, this::done);
+        return new ListClimber<>(hashStrategy, keyHandler, this, cacher, this::done);
     }
 
     @Override
     public final Callbacks objectStarted() {
-        return new MapClimber<>(hashStrategy, this, cacher, this::done);
+        return new MapClimber<>(hashStrategy, keyHandler, this, cacher, this::done);
     }
 
     @Override
@@ -58,6 +65,10 @@ abstract sealed class AbstractClimber<H extends HashKind<H>>
         cacher.accept(tree);
     }
 
+    protected String normalized(Token.Field key) {
+        return keyHandler.normalize(key);
+    }
+
     protected abstract void done(HashedTree<String, H> tree);
 
     private Callbacks doneLeaf(Object object) {
@@ -65,24 +76,7 @@ abstract sealed class AbstractClimber<H extends HashKind<H>>
         return this;
     }
 
-    private static final KeyHandler<Token.Field> KEY_HANDLER = new KeyHandler<>() {
-
-        @Override
-        public Token.Field normalize(Object key) {
-            return (Token.Field) key;
-        }
-
-        @Override
-        public Bytes bytes(Token.Field key) {
-            return Bytes.from(key.bytes());
-        }
-    };
-
-    protected static Bytes fieldBytes(Token.Field field) {
-        return KEY_HANDLER.bytes(field);
-    }
-
-    protected static Token.Field normalized(Token.Field key) {
-        return KEY_HANDLER.normalize(key);
+    protected  Bytes fieldBytes(Token.Field field) {
+        return Bytes.from(field.bytes());
     }
 }

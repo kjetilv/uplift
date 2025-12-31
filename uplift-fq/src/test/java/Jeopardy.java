@@ -10,10 +10,7 @@ import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.nio.file.Files.*;
@@ -44,23 +41,22 @@ void main() {
 
     var startFile = Path.of("JEOPARDY_QUESTIONS1.jsonl");
 
-    setupStartFile(workDir, downloads, startFile);
+    setupStartFile(workDir, downloads, startFile, 0);
 
     var flows = FqFlows.builder(
             () -> startFile.getFileName().toString(),
             fqs
         )
-        .fromSource().to(Stage.CAPITALIZE_ANSWER)
-        .with(items ->
+        .fromSource().to(Stage.CAPITALIZE_ANSWER).with(items ->
             items.map(this::uppercaseAnswer))
-        .from(Stage.CAPITALIZE_ANSWER).to(Stage.REWRITE_CATEGORY)
-        .with(items ->
+        .then(Stage.REWRITE_CATEGORY).with(items ->
             items.map(this::rewriteCategory))
-        .from(Stage.REWRITE_CATEGORY).to(Stage.REWRITE_SHOW_NO)
-        .with(items ->
+        .then(Stage.REWRITE_SHOW_NO).with(items ->
             items.map(this::countShowNo))
-        .from(Stage.REWRITE_SHOW_NO).to(Stage.REWRITE_AIR_DATE)
-        .with(items -> items.map(this::airDate))
+        .then(Stage.REWRITE_AIR_DATE).with(items ->
+            items.map(this::airDate))
+        .then(Stage.REWRITE_VALUE).with(items ->
+            items.map(this::revalue))
         .build();
 
     if (flows.start()) {
@@ -118,6 +114,20 @@ private <K, V> Map<K, V> airDate(Map<K, V> item) {
     return Map.copyOf(kvMap);
 }
 
+@SuppressWarnings("unchecked")
+private <K, V> Map<K, V> revalue(Map<K, V> item) {
+    var val = Optional.ofNullable(item.get((K) "value"))
+        .map(Object::toString).orElse("0");
+    var cleaned =
+        val.replaceAll("\\$", "").replaceAll(",", "");
+    var kvMap = new HashMap<>(item);
+    kvMap.put(
+        (K) "value",
+        (V) Integer.valueOf(Integer.parseInt(cleaned))
+    );
+    return Map.copyOf(kvMap);
+}
+
 private String upcase(String str) {
     return str == null || str.isBlank() ? str
         : Character.toUpperCase(str.charAt(0)) + str.substring(1);
@@ -128,7 +138,7 @@ private String downcase(String str) {
         : str.charAt(0) + str.substring(1).toLowerCase();
 }
 
-private static void setupStartFile(Path workDir, Path downloads, Path startFile) {
+private static void setupStartFile(Path workDir, Path downloads, Path startFile, int size) {
     try {
         if (exists(workDir)) {
             try (var walk = walk(workDir).sorted(Comparator.reverseOrder())) {
@@ -139,11 +149,29 @@ private static void setupStartFile(Path workDir, Path downloads, Path startFile)
         var source = downloads.resolve(startFile);
         var target = workDir.resolve(startFile);
         if (!exists(target) || exists(target) && size(target) != size(source)) {
-            copy(
-                source,
-                target,
-                COPY_ATTRIBUTES, REPLACE_EXISTING
-            );
+            if (size <= 0) {
+                copy(
+                    source,
+                    target,
+                    COPY_ATTRIBUTES, REPLACE_EXISTING
+                );
+            } else {
+                try (
+                    var writer = SayFiles.newBufferedWriter(target);
+                    var lines = lines(source)
+                ) {
+                    lines.limit(size)
+                        .forEach(line -> {
+                            try {
+                                writer.write(line);
+                                writer.write("\n");
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                }
+
+            }
         }
     } catch (Exception e) {
         throw new IllegalStateException("Failed", e);
@@ -155,6 +183,6 @@ enum Stage implements Name {
     CAPITALIZE_ANSWER,
     REWRITE_CATEGORY,
     REWRITE_SHOW_NO,
-    PARSE_NUMBER,
-    REWRITE_AIR_DATE
+    REWRITE_AIR_DATE,
+    REWRITE_VALUE
 }

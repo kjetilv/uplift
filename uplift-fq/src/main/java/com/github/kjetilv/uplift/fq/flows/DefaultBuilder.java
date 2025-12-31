@@ -57,10 +57,15 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
         throw new IllegalArgumentException("batchSize must be at least 1");
     }
 
+    @Override
+    public With<T> then(Name to) {
+        return from(flows.isEmpty() ? name : flows.getLast().to(), to);
+    }
+
     public FqFlows.Builder.To<T> from(Name from) {
         return to ->
             process -> {
-                var flow = new Flow<T>(from, to, process);
+                var flow = new Flow<>(from, to, process);
                 flows.add(validated(flow));
                 return this;
             };

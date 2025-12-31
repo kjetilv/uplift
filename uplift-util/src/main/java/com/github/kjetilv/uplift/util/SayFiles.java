@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
+import java.io.BufferedWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -22,7 +23,14 @@ public final class SayFiles {
         } catch (Exception e) {
             throw new IllegalStateException("Could not write to " + path, e);
         }
+    }
 
+    public static BufferedWriter newBufferedWriter(Path path) {
+        try {
+            return Files.newBufferedWriter(path, CREATE_NEW);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not write to " + path, e);
+        }
     }
 
     public static InputStream fileInputStream(Path path) {
