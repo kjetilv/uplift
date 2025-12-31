@@ -44,8 +44,8 @@ public final class BytesSourceTokens implements Tokens {
             case 'f' -> _alse();
             case 't' -> _rue();
             case 'n' -> _ull();
-            case 0 -> fail("Unexpected end of stream", "`" + bytesSource.lexeme().string() + "`");
-            default -> fail("Unrecognized character", "`" + (char) c + "`");
+            case 0 -> fail("Unexpected end of stream", bytesSource.lexeme().string());
+            default -> fail("Unrecognized character", Character.toString((char) c));
         };
     }
 
@@ -93,8 +93,13 @@ public final class BytesSourceTokens implements Tokens {
         return Token.NULL;
     }
 
-    private static Token fail(String msg, String details) {
-        throw new ReadException(msg, details);
+    private Token fail(String msg, String details) {
+        var tail = Stream.generate(bytesSource::chomp)
+            .takeWhile(i -> i > 0)
+            .limit(100)
+            .map(Character::toString)
+            .collect(Collectors.joining());
+        throw new ReadException(msg, "<" + details + "><" + tail + ">");
     }
 
     @Override

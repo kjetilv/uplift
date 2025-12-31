@@ -21,6 +21,10 @@ public interface Json {
         return asMap(source, read(source));
     }
 
+    default Map<?, ?> jsonMap(ByteBuffer source) {
+        return asMap(source, read(source));
+    }
+
     default Map<?, ?> jsonMap(byte[] source) {
         return asMap(source, read(new String(source, UTF_8)));
     }
@@ -29,11 +33,19 @@ public interface Json {
         return asMap(source, read(source));
     }
 
+    default Map<?, ?> jsonMap(BytesSource source) {
+        return asMap(source, read(source));
+    }
+
     default Map<?, ?> jsonMap(String source) {
         return asMap(source, read(source));
     }
 
     default List<?> jsonArray(String source) {
+        return asList(source, read(source));
+    }
+
+    default List<?> jsonArray(BytesSource source) {
         return asList(source, read(source));
     }
 
@@ -75,11 +87,21 @@ public interface Json {
 
     Object read(InputStream inputStream);
 
+    Object read(ByteBuffer inputStream);
+
+    Object read(BytesSource bytesSource);
+
     void write(Object object, OutputStream outputStream);
+
+    void write(Object object, WritableByteChannel byteChannel);
 
     Callbacks parse(String source, Callbacks callbacks);
 
     Callbacks parseMulti(String source, Callbacks callbacks);
+
+    Callbacks parse(ByteBuffer source, Callbacks callbacks);
+
+    Callbacks parseMulti(ByteBuffer source, Callbacks callbacks);
 
     Callbacks parse(InputStream source, Callbacks callbacks);
 

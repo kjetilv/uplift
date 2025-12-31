@@ -37,14 +37,26 @@ public final class JsonWrites {
     private JsonWrites() {
     }
 
+    private static final Pattern ESCESC = Pattern.compile("\\\\");
+
     private static final Pattern QUOTE = Pattern.compile("\"");
 
     private static void writeString(Sink sink, String value) {
-        sink.accept("\"")
-            .accept(value.indexOf('"') >= 0
-                ? QUOTE.matcher(value).replaceAll("\\\\\"")
-                : value)
-            .accept("\"");
+        sink.accept("\"");
+        sink.accept(quoted(escaped(value)));
+        sink.accept("\"");
+    }
+
+    private static String quoted(String value) {
+        return value.indexOf('"') >= 0
+            ? QUOTE.matcher(value).replaceAll("\\\\\"")
+            : value;
+    }
+
+    private static String escaped(String value) {
+        return value.indexOf('\\') >= 0
+            ? ESCESC.matcher(value).replaceAll("\\\\\\\\")
+            : value;
     }
 
     private static void writeNull(Sink sink) {

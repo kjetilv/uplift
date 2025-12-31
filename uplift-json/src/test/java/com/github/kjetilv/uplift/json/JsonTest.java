@@ -26,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JsonTest {
 
+    public static final Json JSON = Json.instance();
+
     static void failedParse(
         String bytesSource,
         Consumer<? super ParseException> failer
@@ -66,23 +68,21 @@ class JsonTest {
         assertThat(e.getExpected()).containsAll(set);
     }
 
+    //language=json
     @Test
     void singleValueTrue() {
-        //language=json
         var read = JSON.read("true");
         assertThat(read).isEqualTo(true);
     }
 
     @Test
     void singleValueString() {
-        //language=json
         var read = JSON.read("\"foo\"");
         assertThat(read).isEqualTo("foo");
     }
 
     @Test
     void singleValueStringmoji() {
-        //language=json
         var read = JSON.read("\"🃑\"");
         assertThat(read).isEqualTo("🃑");
     }
@@ -91,6 +91,68 @@ class JsonTest {
     void singleValueDec() {
         var read = JSON.read("0.42");
         assertThat(read).isEqualTo(new BigDecimal("0.42"));
+    }
+
+    @Test
+    void escapedEscape() {
+        //language=json
+        var string = """
+            { "a": "This is a \\\\\\"quoted\\\\\\" string",
+             "b": true
+             }
+            """;
+        var read = JSON.read(string);
+        assertThat(read).asInstanceOf(MAP).containsAllEntriesOf(
+            Map.of(
+                "a",
+                """
+                    This is a \\"quoted\\" string""",
+                "b", true
+            )
+        );
+    }
+
+    @Test
+    void escapedEscape2() {
+        //language=json
+        String sdf = """
+            {
+              "category": "THEATRE",
+              "air_date": "2001-04-12",
+              "question": "'The 1996 musical \\"Play On!\\" gets its title from the first line of this Shakespeare play, on which it is based'",
+              "value": null,
+              "answer": "\\\\\\"Twelfth Night\\\\\\"",
+              "round": "Final Jeopardy!",
+              "show_number": "3834"
+            }
+            """;
+        var read = JSON.read(sdf);
+        assertThat(read).asInstanceOf(MAP)
+            .containsEntry(
+                "question",
+                """
+                    'The 1996 musical "Play On!" gets its title from the first line of this Shakespeare play, on which it is based'"""
+            )
+            .containsEntry(
+                "answer", """
+                    \\"Twelfth Night\\\""""
+            );
+    }
+
+    @Test
+    void escapedEscape3() {
+        //language=json
+        roundtrip("""
+            {
+              "category": "THEATRE",
+              "air_date": "2001-04-12",
+              "question": "'The 1996 musical \\"Play On!\\" gets its title from the first line of this Shakespeare play, on which it is based'",
+              "value": null,
+              "answer": "\\\\\\"Twelfth Night\\\\\\"",
+              "round": "Final Jeopardy!",
+              "show_number": "3834"
+            }
+            """);
     }
 
     @Test
@@ -643,8 +705,6 @@ class JsonTest {
             assertThat(e.getMessage()).contains("Bad object");
         }
     }
-
-    public static final Json JSON = Json.instance();
 
     private static void failedRead(
         String bytesSource,

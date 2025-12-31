@@ -5,19 +5,19 @@ import com.github.kjetilv.uplift.fq.Fqs;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-abstract sealed class AbstractFlowsRunner<T> implements DefaultFqFlows.Runner<T>
-    permits BatchRunner, SingleRunner {
+abstract sealed class AbstractSequentialFlowRunner<T> implements FlowRunner<T>
+    permits SequentialBatchRunner, SequentialSingleRunner {
 
     private final FqFlows.ErrorHandler<T> handler;
 
-    AbstractFlowsRunner(FqFlows.ErrorHandler<T> handler) {
+    AbstractSequentialFlowRunner(FqFlows.ErrorHandler<T> handler) {
         this.handler = Objects.requireNonNull(handler, "handler");
     }
 
     @Override
-    public final void run(Name source, Fqs<T> fqs, Flow<T> flow) {
+    public final void run(Fqs<T> fqs, Flow<T> flow) {
         try (var writer = fqs.writer(flow.to())) {
-            entries(source, fqs, flow, handler)
+            entries(fqs, flow, handler)
                 .forEach(entries -> {
                     writer.write(entries.items());
                 });
@@ -25,7 +25,6 @@ abstract sealed class AbstractFlowsRunner<T> implements DefaultFqFlows.Runner<T>
     }
 
     protected abstract Stream<Entries<T>> entries(
-        Name source,
         Fqs<T> fqs,
         Flow<T> flow,
         FqFlows.ErrorHandler<T> handler

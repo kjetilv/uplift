@@ -5,9 +5,7 @@ import com.github.kjetilv.uplift.fq.Fqs;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 final class DefaultBuilder<T> implements FqFlows.Builder<T> {
@@ -16,13 +14,13 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     private final Fqs<T> fqs;
 
-    private final List<Flow<T>> flows = new ArrayList<>();
-
     private Integer batchSize;
 
     private Duration timeout;
 
     private FqFlows.ErrorHandler<T> handler;
+
+    private final List<Flow<T>> flows = new ArrayList<>();
 
     DefaultBuilder(Name name, Fqs<T> fqs) {
         this.name = Objects.requireNonNull(name, "name");
@@ -70,17 +68,23 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     @Override
     public FqFlows<T> build() {
-        validateIntakes(flows);
-        var handler = this.handler == null ? fail() : this.handler;
+        Flows.validateAll(flows);
+
+        var handler = this.handler == null
+            ? fail()
+            : this.handler;
+
         var runner = batchSize == null
-            ? new SingleRunner<>(handler)
-            : new BatchRunner<>(batchSize, handler);
+            ? new SequentialSingleRunner<>(handler)
+            : new SequentialBatchRunner<>(batchSize, handler);
+
         return new DefaultFqFlows<>(name, fqs, timeout, runner, flows);
     }
 
     private Flow<T> validated(Flow<T> flow) {
-        validate(Stream.concat(this.flows.stream(), Stream.of(flow))
-            .toList());
+        var combined = Stream.concat(this.flows.stream(), Stream.of(flow))
+            .toList();
+        Flows.validate(combined);
         return flow;
     }
 
@@ -88,50 +92,5 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
         return (flow, item, error) -> {
             throw new RuntimeException("Failed to process " + item + " " + flow.description(), error);
         };
-    }
-
-    private static <T> void validate(List<Flow<T>> flows) {
-        var groups = flows.stream()
-            .collect(Collectors.groupingBy(Flow::description));
-        var dupes = groups.entrySet()
-            .stream()
-            .filter(entry -> entry.getValue().size() > 1)
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue
-                ));
-        if (!dupes.isEmpty()) {
-            throw new IllegalStateException(
-                "Duplicate flow descriptions: " + String.join(", ", dupes.keySet())
-            );
-        }
-        var downstream = flows.stream()
-            .filter(flow ->
-                !flow.isFromSource())
-            .toList();
-        var tos = flows.stream()
-            .collect(Collectors.groupingBy(Flow::to));
-        var missingInputs = downstream.stream()
-            .filter(flow -> !tos.containsKey(flow.to()))
-            .toList();
-        if (!missingInputs.isEmpty()) {
-            throw new IllegalStateException("Missing inputs to flows: " + print(missingInputs));
-        }
-    }
-
-    private static <T> void validateIntakes(List<Flow<T>> flows) {
-        var sources = flows.stream()
-            .filter(Flow::isFromSource)
-            .toList();
-        if (sources.isEmpty()) {
-            throw new IllegalStateException("No source intake defined: " + print(flows));
-        }
-    }
-
-    private static <T> String print(List<Flow<T>> flows) {
-        return flows.stream()
-            .map(Flow::description)
-            .collect(Collectors.joining(" "));
     }
 }

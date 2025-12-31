@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json;
 
 import module java.base;
 import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
+import com.github.kjetilv.uplift.json.bytes.ByteBufferIntsBytesSource;
 import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
 import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
 import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
@@ -21,6 +22,16 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     }
 
     @Override
+    public Object read(BytesSource bytesSource) {
+        return process(bytesSource);
+    }
+
+    @Override
+    public Object read(ByteBuffer inputStream) {
+        return process(new ByteBufferIntsBytesSource(inputStream));
+    }
+
+    @Override
     public Object read(InputStream inputStream) {
         return process(new InputStreamIntsBytesSource(inputStream));
     }
@@ -33,6 +44,16 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public Callbacks parseMulti(String source, Callbacks callbacks) {
         return parseMulti(new ByteArrayIntsBytesSource(source.getBytes(UTF_8)), callbacks);
+    }
+
+    @Override
+    public Callbacks parse(ByteBuffer source, Callbacks callbacks) {
+        return parse(new ByteBufferIntsBytesSource(source), callbacks);
+    }
+
+    @Override
+    public Callbacks parseMulti(ByteBuffer source, Callbacks callbacks) {
+        return parseMulti(new ByteBufferIntsBytesSource(source), callbacks);
     }
 
     @Override
@@ -84,21 +105,28 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public String write(Object object) {
         var sb = new StringBuilder();
-        JsonWrites.write(Sink.stream(sb), object);
+        JsonWrites.write(Sink.build(sb), object);
         return sb.toString();
     }
 
     @Override
     public byte[] writeBytes(Object object) {
-        var baos = new ByteArrayOutputStream();
-        JsonWrites.write(Sink.stream(baos), object);
-        return baos.toByteArray();
+        try (var outputStream = new ByteArrayOutputStream()) {
+            write(object, outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to close", e);
+        }
     }
 
     @Override
     public void write(Object object, OutputStream outputStream) {
-        var baos = new ByteArrayOutputStream();
-        JsonWrites.write(Sink.stream(baos), object);
+        JsonWrites.write(Sink.stream(outputStream), object);
+    }
+
+    @Override
+    public void write(Object object, WritableByteChannel byteChannel) {
+        JsonWrites.write(Sink.buffer(byteChannel), object);
     }
 
     private Object process(BytesSource bytesSource) {

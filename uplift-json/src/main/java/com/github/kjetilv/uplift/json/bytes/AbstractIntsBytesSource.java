@@ -17,6 +17,10 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private int index;
 
+    public AbstractIntsBytesSource() {
+        initialize();
+    }
+
     @Override
     public Bytes spoolField() {
         index = 0;

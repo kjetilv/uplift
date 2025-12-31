@@ -170,7 +170,7 @@ class FqFlowsTest {
         try (var writer = fqs.writer(name)) {
             strings.forEach(writer::write);
         }
-        var count = flows.feed().join().count();
+        var count = flows.run().join().count();
         assertThat(count).isEqualTo(-1);
     }
 
@@ -229,7 +229,8 @@ class FqFlowsTest {
     }
 
     private static <T> FqFlows<String> flows(
-        Name name, PathFqs<T, String> fqs,
+        Name name,
+        PathFqs<T, String> fqs,
         int batchSize,
         FqFlows.ErrorHandler<String> stringErrorHandler,
         FqFlows.Processor<String> check

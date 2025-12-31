@@ -11,7 +11,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
-final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<T> {
+final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
+    implements FqWriter<O> {
 
     private final Dimensions dimensions;
 
@@ -33,7 +34,7 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         Path directory,
         Dimensions dimensions,
         Function<Path, Writer<I>> newWriter,
-        Fio<I, T> fio,
+        Fio<I, O> fio,
         Tombstone<Path> tombstone
     ) {
         super(directory, fio, tombstone);
@@ -50,7 +51,7 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
     }
 
     @Override
-    public void write(List<T> items) {
+    public void write(List<O> items) {
         items.forEach(this::writeItem);
     }
 
@@ -71,11 +72,11 @@ final class PathFqWriter<I, T> extends AbstractPathFq<I, T> implements FqWriter<
         builder.append("current: ").append(currentPath);
     }
 
-    private void writeItem(T item) {
+    private void writeItem(O item) {
         var count = lineCount.longValue();
         I line;
         try {
-            line = toT(item);
+            line = toOutput(item);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }

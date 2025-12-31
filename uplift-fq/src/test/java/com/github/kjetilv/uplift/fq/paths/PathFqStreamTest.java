@@ -94,14 +94,15 @@ class PathFqStreamTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.stream(() -> "foo.txt");
+                var fqs = pfq.reader(() -> "foo.txt")
+                    .stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );
 
         var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.batches(() -> "foo.txt", 100);
+                var fqb = pfq.reader(() -> "foo.txt").batches(100);
                 var actual = fqb.flatMap(List::stream);
                 assertThat(actual).containsExactlyElementsOf(expected);
             }

@@ -6,7 +6,7 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 
     private final InputStream stream;
 
-    private final byte[] buffer = new byte[1024];
+    private final byte[] buffer;
 
     private int index;
 
@@ -14,7 +14,8 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 
     public InputStreamIntsBytesSource(InputStream stream) {
         this.stream = Objects.requireNonNull(stream, "stream");
-        this.initialize();
+        this.buffer = new byte[1024];
+        super();
     }
 
     @Override

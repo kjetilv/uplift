@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
@@ -116,7 +117,7 @@ class PathFqChannelBufferTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.stream(() -> "foo.txt");
+                var fqs = pfq.reader(Name.of("foo.txt")).stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );

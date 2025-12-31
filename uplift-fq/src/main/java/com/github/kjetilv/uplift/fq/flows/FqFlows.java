@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.fq.flows;
 import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public interface FqFlows<T> {
@@ -11,15 +13,47 @@ public interface FqFlows<T> {
         return new DefaultBuilder<>(name, fqs);
     }
 
+    /// Start the flow
+    ///
+    /// @return True if flow started, false if already started
+    boolean start();
+
+    /// Feed a single source item
+    ///
+    /// @param item Item, may not be null
+    /// @return Number of items fed so far
+    default long feed(T item) {
+        return feed(List.of(Objects.requireNonNull(item, "item")));
+    }
+
+    /// Feed the source items
+    ///
+    /// @param items Items, may be null but may not contain null
+    /// @return Number of items fed so far
+    /// @throws NullPointerException if any item is null
+    long feed(List<T> items);
+
+    /// Stream the items and complete the run. Equivalent to:
+    /// * [#start()]
+    /// * [#feed(List)]
+    /// * [#run()]
+    ///
+    /// @param items Items stream
+    /// @return Completed run
     Run feed(Stream<T> items);
 
-    Run feed();
+    /// Complete the run
+    ///
+    /// @return Completed run
+    Run run();
 
     interface Run {
 
-        long count();
+        default Run join() {
+            return this;
+        }
 
-        Run join();
+        long count();
     }
 
     interface Processor<T> {

@@ -1,15 +1,30 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 
-public sealed interface Sink permits StreamSink, StringSink {
+public sealed interface Sink permits ByteChannelSink, StreamSink, StringSink {
 
-    static Sink stream(ByteArrayOutputStream baos) {
-        return new StreamSink(baos);
+    static Sink stream(OutputStream outputStream) {
+        return stream(outputStream, null);
     }
 
-    static Sink stream(StringBuilder stringBuilder) {
+    static Sink stream(OutputStream outputStream, Charset charset) {
+        return new StreamSink(outputStream, charset);
+    }
+
+    static Sink build(StringBuilder stringBuilder) {
         return new StringSink(stringBuilder);
+    }
+
+    static Sink buffer(WritableByteChannel byteChannel) {
+        return buffer(byteChannel, null);
+    }
+
+    static Sink buffer(WritableByteChannel byteChannel, Charset charset) {
+        return new ByteChannelSink(byteChannel, charset);
     }
 
     default Sink accept(Object obj) {

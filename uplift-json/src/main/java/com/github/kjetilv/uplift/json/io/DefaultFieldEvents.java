@@ -98,21 +98,22 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         if (values == null || values.isEmpty()) {
             return this;
         }
+        var sink = sink();
         if (mark.moved()) {
-            sink().accept(",");
+            sink.accept(",");
         }
         field(field);
-        sink().accept("[");
-        var arrayMark = sink().mark();
+        sink.accept("[");
+        var arrayMark = sink.mark();
         try {
             for (var value : values) {
                 if (arrayMark.moved()) {
-                    sink().accept(",");
+                    sink.accept(",");
                 }
                 setter.accept(map.apply(value));
             }
         } finally {
-            sink().accept("]");
+            sink.accept("]");
         }
         return this;
     }

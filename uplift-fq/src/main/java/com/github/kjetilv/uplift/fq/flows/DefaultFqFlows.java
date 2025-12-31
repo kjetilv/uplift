@@ -1,18 +1,25 @@
 package com.github.kjetilv.uplift.fq.flows;
 
+import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
 
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.StructuredTaskScope.Configuration;
-import java.util.concurrent.StructuredTaskScope.Joiner;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.LongSupplier;
 import java.util.stream.Stream;
 
-final class DefaultFqFlows<T>
-    implements FqFlows<T> {
+import static com.github.kjetilv.uplift.fq.flows.DefaultFqFlows.Phase.*;
+import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
+
+final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
 
     private final Name name;
 
@@ -22,13 +29,21 @@ final class DefaultFqFlows<T>
 
     private final Duration timeout;
 
-    private final Runner<T> runner;
+    private final FlowRunner<T> runner;
+
+    private final LongAdder counter = new LongAdder();
+
+    private final StableValue<FqWriter<T>> sourceWriter = StableValue.of();
+
+    private final AtomicReference<Phase> phase = new AtomicReference<>(NEW);
+
+    private CompletableFuture<Void> flowsFuture;
 
     DefaultFqFlows(
         Name name,
         Fqs<T> fqs,
         Duration timeout,
-        Runner<T> runner,
+        FlowRunner<T> runner,
         List<Flow<T>> flows
     ) {
         this.name = Objects.requireNonNull(name, "name");
@@ -42,98 +57,141 @@ final class DefaultFqFlows<T>
         if (this.flows.isEmpty()) {
             throw new IllegalArgumentException("No flows defined");
         }
+        Flows.validateAll(this.flows);;
     }
 
     @Override
-    public Run feed() {
-        return run(-1);
+    public boolean start() {
+        return started();
     }
 
     @Override
-    public Run feed(Stream<T> items) {
-        return run(feedItems(items));
-    }
-
-    private Run run(long itemCount) {
-        var future =
-            CompletableFuture.supplyAsync(this::runFlows, EXECUTOR);
-        return new Run() {
-
-            @Override
-            public long count() {
-                return itemCount;
-            }
-
-            @Override
-            public Run join() {
-                future.join();
-                return this;
-            }
-        };
-    }
-
-    private int runFlows() {
-        try (
-            var scope = StructuredTaskScope.open(
-                Joiner.allSuccessfulOrThrow(),
-                this::configure
-            )
-        ) {
-            for (var flow : flows) {
-                scope.fork(run(flow));
-            }
-            return Math.toIntExact(scope.join().count());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Flow execution interrupted", e);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to execute flows", e);
+    public long feed(List<T> items) {
+        if (items == null || items.isEmpty()) {
+            return counter.longValue();
         }
-    }
-
-    private Runnable run(Flow<T> flow) {
-        try {
-            return () ->
-                runner.run(flow.fromOr(this.name), fqs, flow);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to execute " + flow, e);
-        }
-    }
-
-    private long feedItems(Stream<T> items) {
-        var counter = new LongAdder();
-        try (var writer = fqs.writer(this.name)) {
-             items.forEach(item -> {
-                try {
-                    writer.write(item);
-                } finally {
-                    counter.increment();
-                }
-            });
+        for (T item : items) {
+            add(item);
         }
         return counter.longValue();
     }
 
-    private Configuration configure(Configuration cf) {
-        var named = cf
-            .withName(name.name())
-            .withThreadFactory(threadFactory(name));
-        return timeout != null
-            ? named.withTimeout(Duration.ofMinutes(5))
-            : named;
+    @Override
+    public Run feed(Stream<T> items) {
+        return run(() -> {
+            try (this) {
+                started();
+                items.forEach(this::add);
+            }
+            return counter.longValue();
+        });
     }
 
-    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+    @Override
+    public Run run() {
+        return run(() -> {
+            try (this) {
+                started();
+            }
+            return counter.longValue();
+        });
+    }
+
+    @Override
+    public void close() {
+        closed();
+    }
+
+    private boolean started() {
+        if (transition(NEW, STARTED)) {
+            try {
+                return true;
+            } finally {
+                startFlow();
+            }
+        }
+        return false;
+    }
+
+    private void closed() {
+        if (transition(STARTED, DONE)) {
+            var sourceWriter = this.sourceWriter.orElse(null);
+            if (sourceWriter != null) {
+                sourceWriter.close();
+            }
+        }
+    }
+
+    private boolean transition(Phase previous, Phase next) {
+        if (next.ordinal() == previous.ordinal() + 1) {
+            return phase.compareAndSet(previous, next);
+        }
+        throw new IllegalStateException("Phase transition from " + previous + " to " + next + " not allowed");
+    }
+
+    private void startFlow() {
+        this.flowsFuture = CompletableFuture.runAsync(() -> {
+            try (
+                var scope = StructuredTaskScope.open(
+                    allSuccessfulOrThrow(),
+                    configuration ->
+                        withTimeout(configuration
+                            .withName(name.name())
+                            .withThreadFactory(threadFactory(name)))
+                )
+            ) {
+                for (var flow : this.flows) {
+                    scope.fork(execute(flow));
+                }
+                scope.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Flow execution interrupted", e);
+            }
+        });
+    }
+
+    @SuppressWarnings("resource")
+    private void add(T item) {
+        try {
+            sourceWriter
+                .orElseSet(() -> fqs.writer(this.name))
+                .write(Objects.requireNonNull(item, "item"));
+        } finally {
+            counter.increment();
+        }
+    }
+
+    private Runnable execute(Flow<T> flow) {
+        var runnableFlow = flow.isFromSource()
+            ? flow.from(this.name)
+            : flow;
+        try {
+            return () ->
+                runner.run(fqs, runnableFlow);
+        } catch (Exception e) {
+            throw new IllegalStateException(runner + " failed to execute " + runnableFlow, e);
+        }
+    }
+
+    private DefaultRun run(LongSupplier itemCount) {
+        return new DefaultRun(flowsFuture, itemCount);
+    }
+
+    private Configuration withTimeout(Configuration named) {
+        return timeout == null ? named
+            : named.withTimeout(Duration.ofMinutes(5));
+    }
 
     private static ThreadFactory threadFactory(Name name) {
-        var counter = new LongAdder();
+        var threadCount = new LongAdder();
         return runnable -> {
             try {
                 return Thread.ofVirtual()
-                    .name("%s-%s".formatted(name.name(), counter))
+                    .name("%s-%s".formatted(name.name(), threadCount))
                     .unstarted(runnable);
             } finally {
-                counter.increment();
+                threadCount.increment();
             }
         };
     }
@@ -143,8 +201,9 @@ final class DefaultFqFlows<T>
         return getClass().getSimpleName() + "[" + name + ": " + runner + "]";
     }
 
-    public interface Runner<T> {
-
-        void run(Name source, Fqs<T> fqs, Flow<T> flow);
+    enum Phase {
+        NEW,
+        STARTED,
+        DONE
     }
 }

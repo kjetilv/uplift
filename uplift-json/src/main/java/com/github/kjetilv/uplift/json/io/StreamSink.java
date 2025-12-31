@@ -2,16 +2,29 @@ package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
 
-record StreamSink(ByteArrayOutputStream baos) implements Sink {
+final class StreamSink implements Sink {
 
-    StreamSink {
-        Objects.requireNonNull(baos, "baos");
+    private final LongAdder lengthCounter = new LongAdder();
+
+    private final OutputStream outputStream;
+
+    private final Charset charset;
+
+    StreamSink(OutputStream outputStream) {
+        this(outputStream, null);
+    }
+
+    StreamSink(OutputStream outputStream, Charset charset) {
+        this.outputStream = Objects.requireNonNull(outputStream, "baos");
+        this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
     }
 
     @Override
     public Sink accept(String str) {
         try {
-            baos.write(str.getBytes(StandardCharsets.UTF_8));
+            var bytes = str.getBytes(charset);
+            lengthCounter.add(bytes.length);
+            outputStream.write(bytes);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + str, e);
         }
@@ -20,7 +33,7 @@ record StreamSink(ByteArrayOutputStream baos) implements Sink {
 
     @Override
     public Mark mark() {
-        var initialLength = baos.size();
+        var initialLength = length();
         var moved = new AtomicReference<Boolean>();
         return () ->
             moved.updateAndGet(alreadyMoved ->
@@ -29,10 +42,16 @@ record StreamSink(ByteArrayOutputStream baos) implements Sink {
 
     @Override
     public int length() {
-        return baos.size();
+        return Math.toIntExact(lengthCounter.longValue());
     }
 
     private static boolean truDat(Boolean b) {
         return b != null && b;
     }
+
+    @Override
+    public String toString() {
+        return "StreamSink[->" + outputStream + ']';
+    }
+
 }

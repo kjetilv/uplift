@@ -3,10 +3,38 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.function.Function;
 
 public final class PathFqs<I, O> implements Fqs<O> {
+
+    public static <I, O> PathFqs<I, O> create(
+        Path directory,
+        Function<I, O> read,
+        Function<O, I> write,
+        AccessProvider<Path, I> accessProvider,
+        Dimensions dimensions
+    ) {
+        return new PathFqs<>(
+            new Fio<>() {
+
+                @Override
+                public O read(I line) {
+                    return read.apply(line);
+                }
+
+                @Override
+                public I write(O value) {
+                    return write.apply(value);
+                }
+            },
+            new PathProvider(directory),
+            accessProvider,
+            dimensions
+        );
+    }
 
     public static <I, O> PathFqs<I, O> create(
         Path directory,
@@ -44,14 +72,17 @@ public final class PathFqs<I, O> implements Fqs<O> {
 
     @Override
     public FqReader<O> reader(Name name) {
-        var directory = sourceProvider.source(name);
-        return new PathFqReader<>(
-            directory,
-            fio,
-            accessProvider::reader,
-            new PathTombstone(directory.resolve("done")),
-            false
-        );
+        var path = sourceProvider.source(name);
+        if (Files.isDirectory(path)) {
+            return new PathFqReader<>(
+                path,
+                fio,
+                accessProvider::reader,
+                new PathTombstone(path.resolve("done")),
+                false
+            );
+        }
+        return new FileFqReader<>(fio, accessProvider.reader(path));
     }
 
     @Override

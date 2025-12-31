@@ -34,7 +34,7 @@ final class Chains {
 
             chain.add(CompletableFuture.runAsync(
                 () -> {
-                    pathFqs.batches(precedingLinkName, batchSize)
+                    pathFqs.reader(precedingLinkName).batches(batchSize)
                         .forEach(lines ->
                             lines.forEach(line ->
                                 writer.write(line + "-" + finalI)
@@ -62,7 +62,7 @@ final class Chains {
             .mapToObj(String::valueOf)
             .collect(Collectors.joining("-"));
 
-        assertThat(pathFqs.stream(() -> "foo-G" + (chainLength - 1) + ".txt"))
+        assertThat(pathFqs.reader(Name.of("foo-G" + (chainLength - 1) + ".txt")).stream())
             .isNotEmpty()
             .allSatisfy(l ->
                 assertThat(l).isEqualTo(line));

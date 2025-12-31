@@ -114,7 +114,7 @@ class PathFqChannelBytesTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.stream(() -> "foo.txt");
+                var fqs = pfq.reader(() -> "foo.txt").stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );

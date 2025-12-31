@@ -4,20 +4,19 @@ import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.util.stream.Stream;
 
-final class SingleRunner<T> extends AbstractFlowsRunner<T> {
+final class SequentialSingleRunner<T> extends AbstractSequentialFlowRunner<T> {
 
-    SingleRunner(FqFlows.ErrorHandler<T> handler) {
+    SequentialSingleRunner(FqFlows.ErrorHandler<T> handler) {
         super(handler);
     }
 
     @Override
     protected Stream<Entries<T>> entries(
-        Name source,
         Fqs<T> fqs,
         Flow<T> flow,
         FqFlows.ErrorHandler<T> handler
     ) {
-        return fqs.stream(source)
+        return fqs.reader(flow.from()).stream()
             .map(item ->
                 Entries.single(flow.to(), item))
             .map(entry -> {

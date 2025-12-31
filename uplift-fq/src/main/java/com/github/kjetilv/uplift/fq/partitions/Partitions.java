@@ -1,59 +1,24 @@
 package com.github.kjetilv.uplift.fq.partitions;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public record Partitions(List<Partition> partitions) {
 
-    public static Optional<Partitions> of(long total, long minSize) {
-        if (total < minSize * 2) {
-            return Optional.empty();
+    public Partitions {
+        if (partitions == null || partitions.isEmpty()) {
+            throw new IllegalArgumentException("No partitions defined");
         }
-        var trailing = total % minSize;
-        if (trailing == 0) {
-            return Optional.of(check(total, evenPartitions(total, minSize)));
+        if (!partitions.getFirst().first()) {
+            throw new IllegalStateException("Invalid partitioning: first partition must be first(): " + partitions);
         }
-        var partitions = prettyEvenPartitions(total, minSize);
-        return Optional.of(check(total, partitions));
+        if (!partitions.getLast().last()) {
+            throw new IllegalStateException("Invalid partitioning: last partition must be last(): " + partitions);
+        }
     }
 
     public long total() {
-        return partitions.stream().mapToLong(Partition::length).sum();
-    }
-
-    private static Partitions evenPartitions(long total, long minSize) {
-        return new Partitions(
-            IntStream.range(0, Math.toIntExact(total / minSize))
-                .mapToObj(no ->
-                    new Partition(no, no * minSize, minSize))
-                .toList()
-        );
-    }
-
-    private static Partitions prettyEvenPartitions(long total, long minSize) {
-        var count = Math.toIntExact(total / minSize);
-        var tail = Math.toIntExact(total % count);
-        var length = total / count;
-        var headLength = tail * (length + 1);
-
-        var headLengths = IntStream.range(0, tail)
-            .mapToObj(i ->
-                new Partition(i, i * (length + 1), length + 1))
-            .toList();
-        var tailLengths = IntStream.range(0, count - tail)
-            .mapToObj(i ->
-                new Partition(i + tail, headLength + i * length, length))
-            .toList();
-        return new Partitions(Stream.of(headLengths, tailLengths)
-            .flatMap(List::stream)
-            .toList());
-    }
-
-    private static Partitions check(long total, Partitions partitions) {
-        assert partitions.total() == total
-            : "Expected same count: " + partitions.total() + " != " + total;
-        return partitions;
+        return partitions.stream()
+            .mapToLong(Partition::length)
+            .sum();
     }
 }

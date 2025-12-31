@@ -16,7 +16,7 @@ public class StringJsonWriter<T extends Record> extends AbstractJsonWriter<T, St
 
     @Override
     protected Sink output(StringBuilder out) {
-        return Sink.stream(out);
+        return Sink.build(out);
     }
 
     @Override

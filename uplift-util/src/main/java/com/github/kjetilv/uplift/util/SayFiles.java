@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static java.nio.file.Files.isDirectory;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 public final class SayFiles {
@@ -51,12 +52,25 @@ public final class SayFiles {
         return 0L;
     }
 
+    public static boolean emptyDirectory(Path directory) {
+        return isDirectory(directory) && list(directory).findAny().isEmpty() ||
+               couldCreate(directory);
+    }
+
     public static boolean nonDirectory(Path directory) {
-        return Files.exists(directory) && !Files.isDirectory(directory);
+        return Files.exists(directory) && !isDirectory(directory);
     }
 
     public static boolean nonWritable(Path directory) {
         return !(Files.isWritable(directory) || couldCreate(directory));
+    }
+
+    public static void delete(Path path) {
+        try {
+            Files.delete(path);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not delete " + path, e);
+        }
     }
 
     private SayFiles() {

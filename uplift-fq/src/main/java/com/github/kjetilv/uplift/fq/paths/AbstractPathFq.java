@@ -36,11 +36,11 @@ abstract class AbstractPathFq<I, T> {
         return directory;
     }
 
-    final I toT(T t) {
+    final I toOutput(T t) {
         return fio.write(t);
     }
 
-    final T fromBytes(I line) {
+    final T fromInput(I line) {
         return fio.read(line);
     }
 

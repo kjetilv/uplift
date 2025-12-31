@@ -14,7 +14,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
-final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqReader<T> {
+final class PathFqReader<I, O> extends AbstractPathFq<I, O>
+    implements FqReader<O> {
 
     private static final Logger log = LoggerFactory.getLogger(PathFqReader.class);
 
@@ -32,7 +33,7 @@ final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqR
 
     PathFqReader(
         Path path,
-        Fio<I, T> fio,
+        Fio<I, O> fio,
         Function<Path, Reader<I>> readerFactory,
         Tombstone<Path> tombstone,
         boolean deleting
@@ -43,7 +44,7 @@ final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqR
     }
 
     @Override
-    public T next() {
+    public O next() {
         var nextLine = currentReader == null
             ? null
             : currentReader.read();
@@ -73,7 +74,7 @@ final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqR
                 if (fileReady(available)) {
                     set(available.getFirst());
                 } else {
-                    if (done()) {
+                    if (foundTombstone()) {
                         return null;
                     }
                     sleeper.get().sleep();
@@ -95,14 +96,14 @@ final class PathFqReader<I, T> extends AbstractPathFqReader<I, T> implements FqR
     }
 
     private boolean fileReady(List<Path> available) {
-        return available.size() > 1 || available.size() == 1 && done();
+        return available.size() > 1 || available.size() == 1 && foundTombstone();
     }
 
-    private T nextLine(I nextLine) {
+    private O nextLine(I nextLine) {
         try {
-            return fromBytes(nextLine);
+            return fromInput(nextLine);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse #" + count, e);
+            throw new IllegalStateException(this + " failed to parse #" + count + ": " + nextLine, e);
         } finally {
             count.increment();
         }

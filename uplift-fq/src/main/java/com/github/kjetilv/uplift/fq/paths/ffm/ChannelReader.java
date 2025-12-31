@@ -45,8 +45,8 @@ class ChannelReader<T> implements Reader<T> {
     ChannelReader(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
         this.path = Objects.requireNonNull(path, "path");
         this.separator = separator;
-        this.mapper = Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(arena, "arena");
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
 
         this.size = SayFiles.sizeOf(path);
         if (this.size < LENGTH) {
@@ -145,11 +145,7 @@ class ChannelReader<T> implements Reader<T> {
         }
     }
 
-    protected static MemorySegment segment(
-        RandomAccessFile file,
-        long size,
-        Arena arena
-    ) {
+    protected static MemorySegment segment(RandomAccessFile file, long size, Arena arena) {
         try {
             return file.getChannel()
                 .map(READ_ONLY, 0, size, arena);

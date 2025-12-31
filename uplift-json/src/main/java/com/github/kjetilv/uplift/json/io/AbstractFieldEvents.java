@@ -21,11 +21,15 @@ public abstract class AbstractFieldEvents implements FieldEvents {
     }
 
     protected void value(String value) {
+        var escaped = value.indexOf('\\') >= 0;
+        var unescaped = escaped
+            ? ESCAPE.matcher(value).replaceAll("\\")
+            : value;
         var quoted = value.indexOf('"') >= 0;
-        var formatted = quoted
+        var unquoted = quoted
             ? QUOTE.matcher(value).replaceAll("\\\\\"")
             : value;
-        sink.accept("\"%s\"".formatted(formatted));
+        sink.accept("\"%s\"".formatted(unquoted));
     }
 
     protected void value(Number value) {
@@ -45,6 +49,8 @@ public abstract class AbstractFieldEvents implements FieldEvents {
     }
 
     private static final Pattern QUOTE = Pattern.compile("\"");
+
+    private static final Pattern ESCAPE = Pattern.compile("\\\\");
 
     protected static String boolValue(Boolean value) {
         return value ? Canonical.TRUE : Canonical.FALSE;

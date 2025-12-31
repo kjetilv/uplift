@@ -2,22 +2,22 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
 
-public final class ByteArrayIntsBytesSource extends AbstractIntsBytesSource {
+public final class ByteBufferIntsBytesSource extends AbstractIntsBytesSource {
 
-    private final byte[] bytes;
+    private final ByteBuffer bytes;
 
     private int i;
 
     private final int len;
 
-    public ByteArrayIntsBytesSource(byte[] bytes) {
+    public ByteBufferIntsBytesSource(ByteBuffer bytes) {
         this.bytes = Objects.requireNonNull(bytes, "bytes");
-        this.len = bytes.length;
+        this.len = bytes.capacity();
         super();
     }
 
     @Override
     protected byte nextByte() {
-        return i == len ? 0 : bytes[i++];
+        return i == len ? 0 : bytes.get(i++);
     }
 }
