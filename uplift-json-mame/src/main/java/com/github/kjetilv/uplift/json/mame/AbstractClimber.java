@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
-import com.github.kjetilv.uplift.util.Bytes;
 
 abstract sealed class AbstractClimber<H extends HashKind<H>>
     implements Climber
@@ -74,9 +73,5 @@ abstract sealed class AbstractClimber<H extends HashKind<H>>
     private Callbacks doneLeaf(Object object) {
         done(new HashedTree.Leaf<>(hashStrategy.hashLeaf(object), object));
         return this;
-    }
-
-    protected  Bytes fieldBytes(Token.Field field) {
-        return Bytes.from(field.bytes());
     }
 }

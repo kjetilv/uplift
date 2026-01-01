@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
 
 final class ListClimber<H extends HashKind<H>> extends StructureClimber<H> {
 

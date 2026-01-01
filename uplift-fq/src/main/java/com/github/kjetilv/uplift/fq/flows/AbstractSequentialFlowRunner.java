@@ -18,10 +18,8 @@ abstract sealed class AbstractSequentialFlowRunner<T> implements FlowRunner<T>
     @Override
     public final void run(Fqs<T> fqs, Flow<T> flow) {
         try (var writer = fqs.writer(flow.to())) {
-            entries(fqs, flow, handler)
-                .forEach(entries -> {
-                    writer.write(entries.items());
-                });
+            entries(fqs, flow, handler).forEach(entries ->
+                writer.write(entries.items()));
         }
     }
 

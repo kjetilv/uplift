@@ -14,19 +14,9 @@ public final class ByteChannelSink implements Sink {
 
     private final LongAdder bytesWritten = new LongAdder();
 
-    public ByteChannelSink(WritableByteChannel byteChannel) {
-        this(byteChannel, null, 0);
-    }
-
     public ByteChannelSink(WritableByteChannel byteChannel, Charset charset) {
-        this(byteChannel, charset, 0);
-    }
-
-    public ByteChannelSink(WritableByteChannel byteChannel, Charset charset, int bufferSize) {
         this.byteChannel = byteChannel;
         this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
-        int bufferSize1 = bufferSize == 0 ? 8192 : bufferSize;
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize1);
     }
 
     @Override

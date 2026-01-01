@@ -21,10 +21,6 @@ public record Flow<T>(Name from, Name to, FqFlows.Processor<T> processor) {
         return new Flow<>(from, to, processor);
     }
 
-    Name fromOr(Name name) {
-        return from == null ? name : from;
-    }
-
     boolean isFromSource() {
         return from == null;
     }

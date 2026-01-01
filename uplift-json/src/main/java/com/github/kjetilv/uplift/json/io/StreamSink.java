@@ -10,10 +10,6 @@ final class StreamSink implements Sink {
 
     private final Charset charset;
 
-    StreamSink(OutputStream outputStream) {
-        this(outputStream, null);
-    }
-
     StreamSink(OutputStream outputStream, Charset charset) {
         this.outputStream = Objects.requireNonNull(outputStream, "baos");
         this.charset = charset == null ? StandardCharsets.UTF_8 : charset;

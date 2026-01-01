@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.io.Closeable;
 import java.io.OutputStream;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
