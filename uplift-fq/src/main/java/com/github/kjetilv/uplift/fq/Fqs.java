@@ -8,5 +8,5 @@ public interface Fqs<T> {
 
     FqWriter<T> writer(Name name);
 
-    void init(Name name);
+    void init(Name... names);
 }

@@ -78,6 +78,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
 
     @Override
     public Run feed(Stream<T> items) {
+        started();
         return run(() -> {
             try (this) {
                 started();

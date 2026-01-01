@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamWriter;
@@ -60,6 +61,8 @@ class PathFqStreamTest {
             new StreamAccessProvider(compress, null),
             new Dimensions(1, 2, 4)
         );
+        Name foo = () -> "foo.txt";
+        pfq.init(foo);
 
         var expected = IntStream.range(0, INT).boxed()
             .map(String::valueOf)
@@ -69,7 +72,7 @@ class PathFqStreamTest {
         var writer = CompletableFuture.supplyAsync(
             () -> {
                 try (
-                    var fqw = pfq.writer(() -> "foo.txt")
+                    var fqw = pfq.writer(foo)
                 ) {
                     for (var i = 0; i < INT; i++) {
                         fqw.write(String.valueOf(i));
@@ -82,7 +85,7 @@ class PathFqStreamTest {
 
         var puller = CompletableFuture.runAsync(
             () -> {
-                var fqp = pfq.reader(() -> "foo.txt");
+                var fqp = pfq.reader(foo);
 
                 for (var i = 0; i < INT; i++) {
                     assertThat(fqp.next()).isEqualTo(String.valueOf(i));
@@ -94,7 +97,7 @@ class PathFqStreamTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.reader(() -> "foo.txt")
+                var fqs = pfq.reader(foo)
                     .stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
@@ -102,7 +105,7 @@ class PathFqStreamTest {
 
         var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.reader(() -> "foo.txt").batches(100);
+                var fqb = pfq.reader(foo).batches(100);
                 var actual = fqb.flatMap(List::stream);
                 assertThat(actual).containsExactlyElementsOf(expected);
             }

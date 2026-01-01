@@ -17,27 +17,27 @@ public interface Json {
         return jsonSession == null ? INSTANCE : new JsonImpl(jsonSession);
     }
 
-    default Map<?, ?> jsonMap(InputStream source) {
+    default Map<String, Object> jsonMap(InputStream source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(ByteBuffer source) {
+    default Map<String, Object> jsonMap(ByteBuffer source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(byte[] source) {
+    default Map<String, Object> jsonMap(byte[] source) {
         return asMap(source, read(new String(source, UTF_8)));
     }
 
-    default Map<?, ?> jsonMap(char[] source) {
+    default Map<String, Object> jsonMap(char[] source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(BytesSource source) {
+    default Map<String, Object> jsonMap(BytesSource source) {
         return asMap(source, read(source));
     }
 
-    default Map<?, ?> jsonMap(String source) {
+    default Map<String, Object> jsonMap(String source) {
         return asMap(source, read(source));
     }
 
@@ -111,12 +111,13 @@ public interface Json {
 
     Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks);
 
-    private static Map<?, ?> asMap(Object source, Object json) {
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> asMap(Object source, Object json) {
         if (json == null) {
             return Collections.emptySortedMap();
         }
         if (json instanceof Map<?, ?> map) {
-            return map;
+            return (Map<String, Object>) map;
         }
         throw new IllegalArgumentException("Not an object: " + source + " => " + json);
     }

@@ -170,8 +170,9 @@ class FqFlowsTest {
         try (var writer = fqs.writer(name)) {
             strings.forEach(writer::write);
         }
+        flows.start();
         var count = flows.run().join().count();
-        assertThat(count).isEqualTo(-1);
+        assertThat(count).isEqualTo(0);
     }
 
     private static final String GLOB = "glob:**/";
@@ -210,6 +211,7 @@ class FqFlowsTest {
             check
         );
 
+        flows.start();
         var feed = feed(flows, count);
         assertThat(feed.count()).isEqualTo(count);
         feed.join();

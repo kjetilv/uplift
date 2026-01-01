@@ -25,10 +25,6 @@ public interface KeyHandler<K> {
         return key -> (K) key.toString();
     }
 
-    default Bytes toBytes(K key) {
-        return bytes(key);
-    }
-
     /// Affects how maps are hashed wrt. their keys.  Default implementation is to get the
     /// bytes of its [toString][Object#toString()].
     ///

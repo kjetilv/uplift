@@ -82,6 +82,8 @@ class PathFqChannelBufferTest {
             AccessProviders.channelBytes(),
             new Dimensions(1, 2, 4)
         );
+        Name foo = () -> "foo.txt";
+        pfq.init(foo);
 
         var expected = IntStream.range(0, Chains.INT).boxed()
             .map(String::valueOf)
@@ -91,7 +93,7 @@ class PathFqChannelBufferTest {
         var writer = CompletableFuture.supplyAsync(
             () -> {
                 try (
-                    var fqw = pfq.writer(() -> "foo.txt")
+                    var fqw = pfq.writer(foo)
                 ) {
                     for (var i = 0; i < Chains.INT; i++) {
                         fqw.write(String.valueOf(i));
@@ -104,7 +106,7 @@ class PathFqChannelBufferTest {
 
         var reader = CompletableFuture.supplyAsync(
             () -> {
-                var fqp = pfq.reader(() -> "foo.txt");
+                var fqp = pfq.reader(foo);
 
                 for (var i = 0; i < Chains.INT; i++) {
                     assertThat(fqp.next()).isEqualTo(String.valueOf(i));
@@ -124,7 +126,7 @@ class PathFqChannelBufferTest {
 
         var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.reader(() -> "foo.txt").batches(100);
+                var fqb = pfq.reader(foo).batches(100);
                 assertThat(fqb.flatMap(List::stream)).containsExactlyElementsOf(expected);
             }
         );

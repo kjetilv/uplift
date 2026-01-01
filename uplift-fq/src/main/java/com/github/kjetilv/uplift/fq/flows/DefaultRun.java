@@ -5,6 +5,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.LongSupplier;
 
+import static java.util.Objects.requireNonNull;
+
 final class DefaultRun implements FqFlows.Run {
 
     private final CompletableFuture<Void> flowRun;
@@ -12,7 +14,7 @@ final class DefaultRun implements FqFlows.Run {
     private final CompletableFuture<Long> feedItems;
 
     DefaultRun(CompletableFuture<Void> runFlows, LongSupplier feedItems) {
-        this.flowRun = runFlows;
+        this.flowRun = requireNonNull(runFlows, "runFlows");
         this.feedItems = CompletableFuture.supplyAsync(feedItems::getAsLong, EXECUTOR);
     }
 

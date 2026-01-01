@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
@@ -79,6 +80,8 @@ class PathFqChannelBytesTest {
             AccessProviders.channelBytes((byte) '\n'),
             new Dimensions(1, 2, 4)
         );
+        Name foo = () -> "foo.txt";
+        pfq.init(foo);
 
         var expected = IntStream.range(0, Chains.INT).boxed()
             .map(String::valueOf)
@@ -88,7 +91,7 @@ class PathFqChannelBytesTest {
         var writer = CompletableFuture.supplyAsync(
             () -> {
                 try (
-                    var fqw = pfq.writer(() -> "foo.txt")
+                    var fqw = pfq.writer(foo)
                 ) {
                     for (var i = 0; i < Chains.INT; i++) {
                         fqw.write(String.valueOf(i));
@@ -101,7 +104,7 @@ class PathFqChannelBytesTest {
 
         var puller = CompletableFuture.supplyAsync(
             () -> {
-                var fqp = pfq.reader(() -> "foo.txt");
+                var fqp = pfq.reader(foo);
 
                 for (var i = 0; i < Chains.INT; i++) {
                     assertThat(fqp.next()).isEqualTo(String.valueOf(i));
@@ -114,14 +117,14 @@ class PathFqChannelBytesTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.reader(() -> "foo.txt").stream();
+                var fqs = pfq.reader(foo).stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );
 
         var batcher = CompletableFuture.runAsync(
             () -> {
-                var fqb = pfq.reader(() -> "foo.txt").batches(100);
+                var fqb = pfq.reader(foo).batches(100);
                 assertThat(fqb.flatMap(List::stream)).containsExactlyElementsOf(expected);
             }
         );

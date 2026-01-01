@@ -32,6 +32,8 @@ final class Chains {
             var writer = pathFqs.writer(linkName);
             var precedingLinkName = Name.of(format.formatted(i - 1));
 
+            pathFqs.init(linkName, precedingLinkName);
+
             chain.add(CompletableFuture.runAsync(
                 () -> {
                     pathFqs.reader(precedingLinkName).batches(batchSize)

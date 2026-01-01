@@ -17,7 +17,7 @@ abstract sealed class AbstractClimber<H extends HashKind<H>>
 
     private final HashStrategy<H> hashStrategy;
 
-    protected AbstractClimber(
+    AbstractClimber(
         HashStrategy<H> hashStrategy,
         KeyHandler<String> keyHandler,
         Consumer<HashedTree<String, H>> cacher

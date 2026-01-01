@@ -88,16 +88,16 @@ public final class PathFqs<I, O> implements Fqs<O> {
     @Override
     public FqReader<O> reader(Name name) {
         var path = sourceProvider.source(name);
-        if (Files.isDirectory(path)) {
-            return new PathFqReader<>(
-                path,
-                fio,
-                accessProvider::reader,
-                new PathTombstone(path.resolve("done")),
-                false
-            );
+        if (Files.isRegularFile(path)) {
+            return new FileFqReader<>(fio, accessProvider.reader(path));
         }
-        return new FileFqReader<>(fio, accessProvider.reader(path));
+        return new PathFqReader<>(
+            path,
+            fio,
+            accessProvider::reader,
+            new PathTombstone(path.resolve("done")),
+            false
+        );
     }
 
     @Override
@@ -113,8 +113,10 @@ public final class PathFqs<I, O> implements Fqs<O> {
     }
 
     @Override
-    public void init(Name name) {
-        ensureWritable(sourceProvider.source(name));
+    public void init(Name... names) {
+        for (Name name : names) {
+            ensureWritable(sourceProvider.source(name));
+        }
     }
 
     private static String suffix(Path directory) {

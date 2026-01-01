@@ -36,7 +36,7 @@ void main() {
 
     var fqs = PathFqs.create(
         workDir,
-        (ByteBuffer source) -> (Map<String, Object>) json.jsonMap(source),
+        json::jsonMap,
         value ->
             ByteBuffer.wrap(json.write(value).getBytes()),
         AccessProviders.channelBuffers(),
@@ -53,6 +53,8 @@ void main() {
         .then(Stage.SHOW_NO, process(this::countShowNo))
         .then(Stage.AIR_DATE, process(this::airDate))
         .then(Stage.VALUE, process(this::revalue))
+        .batchSize(10)
+        .timeout(Duration.ofSeconds(30))
         .build();
 
     Instant now = Instant.now();

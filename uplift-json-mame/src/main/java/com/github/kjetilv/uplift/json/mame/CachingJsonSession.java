@@ -6,19 +6,18 @@ import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.JsonSession;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.util.Bytes;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-final class CachingJsonSession<H extends HashKind<H>> implements JsonSession, KeyHandler<String> {
+final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
     private final HashStrategy<H> hashStrategy;
 
     private final Canonicalizer<String, H> canonicalizer;
-
-    private final Map<Object, String> keys = new ConcurrentHashMap<>();
 
     private final BiConsumer<Hash<H>, Object> collisionHandler;
 
@@ -37,17 +36,11 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession, Ke
     }
 
     @Override
-    public String normalize(Object key) {
-        return keys.computeIfAbsent(key, _ ->
-            ((Token.Field)key).value());
-    }
-
-    @Override
     public Callbacks callbacks(Consumer<Object> onDone) {
         return new ValueClimber<>(
             hashStrategy,
             canonicalizer,
-            this,
+            new StringHandler(),
             onDone,
             collisionHandler
         );
@@ -71,6 +64,22 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession, Ke
             };
         }
         return handler;
+    }
+
+    private static final class StringHandler implements KeyHandler<String> {
+
+        private final Map<Object, String> keys = new ConcurrentHashMap<>();
+
+        @Override
+        public Bytes bytes(String key) {
+            throw new IllegalStateException("Should not receive " + key);
+        }
+
+        @Override
+        public String normalize(Object key) {
+            return keys.computeIfAbsent(key, _ -> ((Token.Field) key).value());
+        }
+
     }
 
     @Override

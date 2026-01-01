@@ -28,5 +28,4 @@ final class SequentialSingleRunner<T> extends AbstractSequentialFlowRunner<T> {
                 }
             });
     }
-
 }
