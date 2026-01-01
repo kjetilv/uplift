@@ -8,9 +8,10 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
 
 public final class ChannelAccessProvider<T>
     implements AccessProvider<Path, T> {
@@ -34,9 +35,9 @@ public final class ChannelAccessProvider<T>
     ) {
         this.arena = arena == null ? Arena::ofAuto : arena;
         this.separator = separator > 0 ? (byte) '\n' : separator;
-        this.fromMemorySegment = Objects.requireNonNull(fromMemorySegment, "fromMemorySegment");
-        this.toByteBuffer = Objects.requireNonNull(toByteBuffer, "toByteBuffer");
-        this.linebreak = Objects.requireNonNull(linebreak, "linebreak");
+        this.fromMemorySegment = requireNonNull(fromMemorySegment, "fromMemorySegment");
+        this.toByteBuffer = requireNonNull(toByteBuffer, "toByteBuffer");
+        this.linebreak = requireNonNull(linebreak, "linebreak");
     }
 
     @Override

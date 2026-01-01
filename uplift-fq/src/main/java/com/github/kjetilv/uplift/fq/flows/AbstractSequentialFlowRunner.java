@@ -2,8 +2,9 @@ package com.github.kjetilv.uplift.fq.flows;
 
 import com.github.kjetilv.uplift.fq.Fqs;
 
-import java.util.Objects;
 import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
 
 abstract sealed class AbstractSequentialFlowRunner<T> implements FlowRunner<T>
     permits SequentialBatchRunner, SequentialSingleRunner {
@@ -11,7 +12,7 @@ abstract sealed class AbstractSequentialFlowRunner<T> implements FlowRunner<T>
     private final FqFlows.ErrorHandler<T> handler;
 
     AbstractSequentialFlowRunner(FqFlows.ErrorHandler<T> handler) {
-        this.handler = Objects.requireNonNull(handler, "handler");
+        this.handler = requireNonNull(handler, "handler");
     }
 
     @Override

@@ -36,7 +36,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
 
     private Sleeper(
         String description,
-        long time,
+        double time,
         long maxTime,
         Duration timeout,
         Consumer<State> onMax
@@ -45,8 +45,9 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         var deadline = timeout == null ? null : now.plus(timeout);
         var state = new State(
             description,
-            time > 0 ? time : MIN_SLEEP,
+            time > 0d ? time : MIN_SLEEP,
             maxTime > 0 ? maxTime : MAX_SLEEP,
+            0L,
             now,
             deadline
         );
@@ -56,7 +57,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
     public void sleep() {
         synchronized (lock) {
             try {
-                lock.wait(state.time);
+                lock.wait(Math.round(state.time));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Interrupted", e);
@@ -75,9 +76,11 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         new Sleeper(nextState, lock, onMax);
     }
 
-    private static final long MAX_SLEEP = 100L;
+    private static final double MAX_SLEEP = 10d;
 
-    private static final long MIN_SLEEP = 1L;
+    private static final double MIN_SLEEP = 0.5d;
+
+    private static final double SQRT_2 = Math.sqrt(2d);
 
     private static Object newLock() {
         return new boolean[0];
@@ -85,8 +88,9 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
 
     public record State(
         String description,
-        long time,
-        long maxTime,
+        double time,
+        double maxTime,
+        double slept,
         Instant starting,
         Instant deadline
     ) {
@@ -109,8 +113,9 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         private State increasedTime() {
             return new State(
                 description,
-                Math.min(time * 2, maxTime),
+                Math.min(time * SQRT_2, maxTime),
                 maxTime,
+                slept + time,
                 starting,
                 deadline
             );

@@ -2,11 +2,16 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
+import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.function.Function;
+
+import static com.github.kjetilv.uplift.util.SayFiles.couldCreate;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.isWritable;
+import static java.util.Objects.requireNonNull;
 
 public final class PathFqs<I, O> implements Fqs<O> {
 
@@ -17,20 +22,12 @@ public final class PathFqs<I, O> implements Fqs<O> {
         AccessProvider<Path, I> accessProvider,
         Dimensions dimensions
     ) {
-        return new PathFqs<>(
-            new Fio<>() {
-
-                @Override
-                public O read(I line) {
-                    return read.apply(line);
-                }
-
-                @Override
-                public I write(O value) {
-                    return write.apply(value);
-                }
-            },
-            new PathProvider(directory),
+        return create(
+            directory,
+            fio(
+                read,
+                write
+            ),
             accessProvider,
             dimensions
         );
@@ -44,10 +41,28 @@ public final class PathFqs<I, O> implements Fqs<O> {
     ) {
         return new PathFqs<>(
             fio,
-            new PathProvider(directory),
+            new PathProvider(directory, suffix(directory)),
             accessProvider,
             dimensions
         );
+    }
+
+    static Path ensureWritable(Path directory) {
+        requireNonNull(directory, "directory");
+
+        if (SayFiles.nonDirectory(directory)) {
+            throw new IllegalArgumentException("Path was not a directory: " + directory);
+        }
+
+        if (exists(directory) && !isWritable(directory)) {
+            throw new IllegalArgumentException("Directory was not writable: " + directory);
+        }
+
+        if (!exists(directory) && !couldCreate(directory)) {
+            throw new IllegalArgumentException("Directory could not be created: " + directory);
+        }
+
+        return directory;
     }
 
     private final Fio<I, O> fio;
@@ -64,10 +79,10 @@ public final class PathFqs<I, O> implements Fqs<O> {
         AccessProvider<Path, I> accessProvider,
         Dimensions dimensions
     ) {
-        this.fio = Objects.requireNonNull(fio, "fio");
-        this.sourceProvider = Objects.requireNonNull(sourceProvider, "sourceProvider");
-        this.accessProvider = Objects.requireNonNull(accessProvider, "factories");
-        this.dimensions = Objects.requireNonNull(dimensions, "dimensions");
+        this.fio = requireNonNull(fio, "fio");
+        this.sourceProvider = requireNonNull(sourceProvider, "sourceProvider");
+        this.accessProvider = requireNonNull(accessProvider, "factories");
+        this.dimensions = requireNonNull(dimensions, "dimensions");
     }
 
     @Override
@@ -95,5 +110,35 @@ public final class PathFqs<I, O> implements Fqs<O> {
             fio,
             new PathTombstone(directory.resolve("done"))
         );
+    }
+
+    @Override
+    public void init(Name name) {
+        ensureWritable(sourceProvider.source(name));
+    }
+
+    private static String suffix(Path directory) {
+        var fileName = directory.getFileName().toString();
+        var index = fileName.lastIndexOf('.');
+        var suffix = index == -1 ? null : fileName.substring(index + 1);
+        return suffix;
+    }
+
+    private static <I, O> Fio<I, O> fio(
+        Function<I, O> read,
+        Function<O, I> write
+    ) {
+        return new Fio<>() {
+
+            @Override
+            public O read(I line) {
+                return read.apply(line);
+            }
+
+            @Override
+            public I write(O value) {
+                return write.apply(value);
+            }
+        };
     }
 }

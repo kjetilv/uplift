@@ -10,9 +10,10 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 final class PathFqReader<I, O> extends AbstractPathFq<I, O>
     implements FqReader<O> {
@@ -39,7 +40,7 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
         boolean deleting
     ) {
         super(path, fio, tombstone);
-        this.readerFactory = Objects.requireNonNull(readerFactory, "newPuller");
+        this.readerFactory = requireNonNull(readerFactory, "readerFactory");
         this.deleting = deleting;
     }
 
@@ -52,9 +53,6 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
         if (nextLine != null) {
             return nextLine(nextLine);
         }
-
-        var serial = new LongAdder();
-        serial.increment();
 
         var sleeper = Sleeper.deferred(
             this::name,

@@ -5,10 +5,10 @@ import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import static java.nio.file.Files.delete;
+import static java.util.Objects.requireNonNull;
 
 abstract class AbstractPathFq<I, T> {
 
@@ -19,17 +19,9 @@ abstract class AbstractPathFq<I, T> {
     private final Tombstone<Path> tombstone;
 
     AbstractPathFq(Path directory, Fio<I, T> fio, Tombstone<Path> tombstone) {
-        this.directory = Objects.requireNonNull(directory, "path");
-        this.fio = Objects.requireNonNull(fio, "fio");
-        this.tombstone = Objects.requireNonNull(tombstone, "tombstone");
-
-        if (SayFiles.nonDirectory(this.directory)) {
-            throw new IllegalStateException("Path must be a directory: " + directory);
-        }
-
-        if (SayFiles.nonWritable(directory)) {
-            throw new IllegalStateException("Directory must be writable: " + directory);
-        }
+        this.directory = PathFqs.ensureWritable(directory);
+        this.fio = requireNonNull(fio, "fio");
+        this.tombstone = requireNonNull(tombstone, "tombstone");
     }
 
     final Path directory() {

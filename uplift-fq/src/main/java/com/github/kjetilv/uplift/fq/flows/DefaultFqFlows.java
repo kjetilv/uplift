@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.fq.Fqs;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.StructuredTaskScope.Configuration;
@@ -17,6 +16,7 @@ import java.util.function.LongSupplier;
 import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.fq.flows.DefaultFqFlows.Phase.*;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
 final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
@@ -46,18 +46,18 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
         FlowRunner<T> runner,
         List<Flow<T>> flows
     ) {
-        this.name = Objects.requireNonNull(name, "name");
+        this.name = requireNonNull(name, "name");
         if (this.name.isBlank()) {
             throw new IllegalArgumentException("Could not create flows with empty name");
         }
-        this.runner = Objects.requireNonNull(runner, "runner");
-        this.fqs = Objects.requireNonNull(fqs, "fqs");
+        this.runner = requireNonNull(runner, "runner");
+        this.fqs = requireNonNull(fqs, "fqs");
         this.timeout = timeout;
         this.flows = List.copyOf(flows);
         if (this.flows.isEmpty()) {
             throw new IllegalArgumentException("No flows defined");
         }
-        Flows.validateAll(this.flows);;
+        Flows.validateAll(this.flows);
     }
 
     @Override
@@ -141,6 +141,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
                 )
             ) {
                 for (var flow : this.flows) {
+                    init(flow);
                     scope.fork(execute(flow));
                 }
                 scope.join();
@@ -151,12 +152,16 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
         });
     }
 
+    private void init(Flow<T> flow) {
+        fqs.init(flow.to());
+    }
+
     @SuppressWarnings("resource")
     private void add(T item) {
         try {
             sourceWriter
                 .orElseSet(() -> fqs.writer(this.name))
-                .write(Objects.requireNonNull(item, "item"));
+                .write(requireNonNull(item, "item"));
         } finally {
             counter.increment();
         }

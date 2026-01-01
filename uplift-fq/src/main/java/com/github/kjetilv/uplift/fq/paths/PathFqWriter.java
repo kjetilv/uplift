@@ -7,9 +7,10 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
     implements FqWriter<O> {
@@ -38,8 +39,8 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
         Tombstone<Path> tombstone
     ) {
         super(directory, fio, tombstone);
-        this.dimensions = Objects.requireNonNull(dimensions, "dims");
-        this.newWriter = Objects.requireNonNull(newWriter, "newWriter");
+        this.dimensions = requireNonNull(dimensions, "dims");
+        this.newWriter = requireNonNull(newWriter, "newWriter");
 
         var fileName = directory.getFileName().toString();
         var lastDot = fileName.lastIndexOf('.');

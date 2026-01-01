@@ -6,9 +6,10 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
 
 public class ChannelWriter<T> implements Writer<T> {
     private final Path path;
@@ -26,9 +27,9 @@ public class ChannelWriter<T> implements Writer<T> {
         Function<T, ByteBuffer> byteBuffer,
         Supplier<ByteBuffer> linebreak
     ) {
-        this.path = Objects.requireNonNull(path, "path");
-        this.byteBuffer = Objects.requireNonNull(byteBuffer, "toByteBuffer");
-        this.linebreak = Objects.requireNonNull(linebreak, "toLinebreak");
+        this.path = requireNonNull(path, "path");
+        this.byteBuffer = requireNonNull(byteBuffer, "byteBuffer");
+        this.linebreak = requireNonNull(linebreak, "linebreak");
         try {
             this.randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");
         } catch (Exception e) {

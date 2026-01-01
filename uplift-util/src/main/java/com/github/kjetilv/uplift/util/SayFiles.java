@@ -69,10 +69,6 @@ public final class SayFiles {
         return Files.exists(directory) && !isDirectory(directory);
     }
 
-    public static boolean nonWritable(Path directory) {
-        return !(Files.isWritable(directory) || couldCreate(directory));
-    }
-
     public static void delete(Path path) {
         try {
             Files.delete(path);
@@ -81,15 +77,15 @@ public final class SayFiles {
         }
     }
 
-    private SayFiles() {
-    }
-
-    private static boolean couldCreate(Path directory) {
+    public static boolean couldCreate(Path directory) {
         try {
             Files.createDirectories(directory);
             return true;
         } catch (Exception e) {
             throw new IllegalStateException("Could not create " + directory, e);
         }
+    }
+
+    private SayFiles() {
     }
 }

@@ -21,7 +21,7 @@ final class StreamReader implements Reader<byte[]> {
 
     StreamReader(Path path, InputStream inputStream, int bufferSize) {
         this.path = requireNonNull(path, "path");
-        this.inputStream = requireNonNull(inputStream, "bufferedReader");
+        this.inputStream = requireNonNull(inputStream, "inputStream");
         this.bytesSplitter = new BytesSplitter(inputStream, '\n', bufferSize);
     }
 

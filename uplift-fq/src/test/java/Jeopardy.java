@@ -10,13 +10,17 @@ import com.github.kjetilv.uplift.util.SayFiles;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+@SuppressWarnings("unchecked")
 void main() {
     var downloads = Path.of(System.getenv("HOME")).resolve("Downloads");
     var workDir = downloads.resolve("JEOPARDY");
@@ -32,7 +36,7 @@ void main() {
 
     var fqs = PathFqs.create(
         workDir,
-        json::jsonMap,
+        (ByteBuffer source) -> (Map<String, Object>) json.jsonMap(source),
         value ->
             ByteBuffer.wrap(json.write(value).getBytes()),
         AccessProviders.channelBuffers(),
@@ -43,89 +47,81 @@ void main() {
 
     setupStartFile(workDir, downloads, startFile, 0);
 
-    var flows = FqFlows.builder(
-            () -> startFile.getFileName().toString(),
-            fqs
-        )
-        .fromSource().to(Stage.CAPITALIZE_ANSWER).with(items ->
-            items.map(this::uppercaseAnswer))
-        .then(Stage.REWRITE_CATEGORY).with(items ->
-            items.map(this::rewriteCategory))
-        .then(Stage.REWRITE_SHOW_NO).with(items ->
-            items.map(this::countShowNo))
-        .then(Stage.REWRITE_AIR_DATE).with(items ->
-            items.map(this::airDate))
-        .then(Stage.REWRITE_VALUE).with(items ->
-            items.map(this::revalue))
+    var flows = FqFlows.builder(startFile.getFileName(), fqs)
+        .init(Stage.ANSWER, process(this::uppercaseAnswer))
+        .then(Stage.CATEGORY, process(this::rewriteCategory))
+        .then(Stage.SHOW_NO, process(this::countShowNo))
+        .then(Stage.AIR_DATE, process(this::airDate))
+        .then(Stage.VALUE, process(this::revalue))
         .build();
 
+    Instant now = Instant.now();
     if (flows.start()) {
         var run = flows.run();
-
         System.out.println(run.join().count());
+    } else {
+        throw new IllegalStateException("Not started:" + flows);
     }
+    var timeTaken = Duration.between(now, Instant.now());
+    System.out.println("Time taken: " + timeTaken);
 }
 
-@SuppressWarnings("unchecked")
-private <K, V> Map<K, V> uppercaseAnswer(Map<K, V> item) {
-    var answer = item.get((K) "answer").toString();
+private FqFlows.Processor<Map<String, Object>> process(
+    Function<Map<String, Object>, Map<String, Object>> process
+) {
+    return items -> items.map(process);
+}
+
+private Map<String, Object> uppercaseAnswer(Map<String, Object> item) {
+    var answer = item.get("answer").toString();
     var kvMap = new HashMap<>(item);
     kvMap.put(
-        (K) "answer",
-        (V) upcase(answer)
+        "answer",
+        upcase(answer)
     );
-    return Map.copyOf(kvMap);
+    return kvMap;
 }
 
-@SuppressWarnings("unchecked")
-private <K, V> Map<K, V> rewriteCategory(Map<K, V> item) {
-    var category = item.get((K) "category").toString();
+private Map<String, Object> rewriteCategory(Map<String, Object> item) {
+    var category = item.get("category").toString();
     var kvMap = new HashMap<>(item);
     kvMap.put(
-        (K) "category",
-        (V) Arrays.stream(category.split("\\s+"))
+        "category",
+        Arrays.stream(category.split("\\s+"))
             .map(this::downcase)
             .collect(Collectors.joining(" "))
     );
-    return Map.copyOf(kvMap);
+    return kvMap;
 }
 
-@SuppressWarnings("unchecked")
-private <K, V> Map<K, V> countShowNo(Map<K, V> item) {
-    var showNo = item.get((K) "show_number").toString();
+private Map<String, Object> countShowNo(Map<String, Object> item) {
+    var showNo = item.get("show_number").toString();
     var kvMap = new HashMap<>(item);
-    kvMap.remove((K) "show_number");
+    kvMap.remove("show_number");
     kvMap.put(
-        (K) "showNumber",
-        (V) Integer.valueOf(Integer.parseInt(showNo))
+        "showNumber",
+        Integer.parseInt(showNo)
     );
-    return Map.copyOf(kvMap);
+    return kvMap;
 }
 
-@SuppressWarnings("unchecked")
-private <K, V> Map<K, V> airDate(Map<K, V> item) {
-    var val = item.get((K) "air_date").toString();
+private Map<String, Object> airDate(Map<String, Object> item) {
+    var val = item.get("air_date").toString();
     var kvMap = new HashMap<>(item);
-    kvMap.remove((K) "air_date");
+    kvMap.remove("air_date");
     kvMap.put(
-        (K) "airDate",
-        (V) val
+        "airDate",
+        val
     );
-    return Map.copyOf(kvMap);
+    return kvMap;
 }
 
-@SuppressWarnings("unchecked")
-private <K, V> Map<K, V> revalue(Map<K, V> item) {
-    var val = Optional.ofNullable(item.get((K) "value"))
+private Map<String, Object> revalue(Map<String, Object> item) {
+    var val = Optional.ofNullable(item.get("value"))
         .map(Object::toString).orElse("0");
-    var cleaned =
-        val.replaceAll("\\$", "").replaceAll(",", "");
     var kvMap = new HashMap<>(item);
-    kvMap.put(
-        (K) "value",
-        (V) Integer.valueOf(Integer.parseInt(cleaned))
-    );
-    return Map.copyOf(kvMap);
+    kvMap.put("value", computeValue(val));
+    return kvMap;
 }
 
 private String upcase(String str) {
@@ -136,6 +132,12 @@ private String upcase(String str) {
 private String downcase(String str) {
     return str == null || str.isBlank() ? str
         : str.charAt(0) + str.substring(1).toLowerCase();
+}
+
+private static int computeValue(String val) {
+    var cleaned =
+        val.replaceAll("\\$", "").replaceAll(",", "");
+    return Integer.parseInt(cleaned);
 }
 
 private static void setupStartFile(Path workDir, Path downloads, Path startFile, int size) {
@@ -180,9 +182,9 @@ private static void setupStartFile(Path workDir, Path downloads, Path startFile,
 
 enum Stage implements Name {
 
-    CAPITALIZE_ANSWER,
-    REWRITE_CATEGORY,
-    REWRITE_SHOW_NO,
-    REWRITE_AIR_DATE,
-    REWRITE_VALUE
+    ANSWER,
+    CATEGORY,
+    SHOW_NO,
+    AIR_DATE,
+    VALUE
 }

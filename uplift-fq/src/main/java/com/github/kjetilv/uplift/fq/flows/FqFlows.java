@@ -4,27 +4,32 @@ import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
+
 public interface FqFlows<T> {
+
+    static <T> Builder<T> builder(Object name, Fqs<T> fqs) {
+        return builder(name::toString, fqs);
+    }
 
     static <T> Builder<T> builder(Name name, Fqs<T> fqs) {
         return new DefaultBuilder<>(name, fqs);
     }
-
-    /// Start the flow
-    ///
-    /// @return True if flow started, false if already started
-    boolean start();
 
     /// Feed a single source item
     ///
     /// @param item Item, may not be null
     /// @return Number of items fed so far
     default long feed(T item) {
-        return feed(List.of(Objects.requireNonNull(item, "item")));
+        return feed(List.of(requireNonNull(item, "item")));
     }
+
+    /// Start the flow
+    ///
+    /// @return True if flow started, false if already started
+    boolean start();
 
     /// Feed the source items
     ///
@@ -72,6 +77,10 @@ public interface FqFlows<T> {
 
     interface Builder<T> {
 
+        default Builder<T> init(Name name, Processor<T> processor) {
+            return fromSource().to(name).with(processor);
+        }
+
         default To<T> fromSource() {
             return from((Name) null);
         }
@@ -84,7 +93,13 @@ public interface FqFlows<T> {
             return then(() -> to);
         }
 
-        With<T> then(Name to);
+        default Builder<T> then(String name, Processor<T> processor) {
+            return then(() -> name, processor);
+        }
+
+        default Builder<T> then(Name name, Processor<T> processor) {
+            return then(name).with(processor);
+        }
 
         default With<T> fromSource(Name to) {
             return fromSource().to(to);
@@ -101,6 +116,8 @@ public interface FqFlows<T> {
         default To<T> from(String name) {
             return from(() -> name);
         }
+
+        With<T> then(Name to);
 
         To<T> from(Name name);
 

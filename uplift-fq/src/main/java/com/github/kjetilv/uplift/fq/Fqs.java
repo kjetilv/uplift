@@ -7,4 +7,6 @@ public interface Fqs<T> {
     FqReader<T> reader(Name name);
 
     FqWriter<T> writer(Name name);
+
+    void init(Name name);
 }

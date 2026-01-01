@@ -5,8 +5,9 @@ import com.github.kjetilv.uplift.fq.Fqs;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
 
 final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
@@ -23,8 +24,8 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
     private final List<Flow<T>> flows = new ArrayList<>();
 
     DefaultBuilder(Name name, Fqs<T> fqs) {
-        this.name = Objects.requireNonNull(name, "name");
-        this.fqs = Objects.requireNonNull(fqs, "fqs");
+        this.name = requireNonNull(name, "name");
+        this.fqs = requireNonNull(fqs, "fqs");
     }
 
     @Override
@@ -32,7 +33,7 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
         if (this.timeout != null) {
             throw new IllegalStateException("Timeout already set");
         }
-        this.timeout = Objects.requireNonNull(timeout, "timeout");
+        this.timeout = requireNonNull(timeout, "timeout");
         return this;
     }
 
@@ -41,7 +42,7 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
         if (handler != null) {
             throw new IllegalStateException("Error handler already set");
         }
-        this.handler = Objects.requireNonNull(errorHandler, "errorHandler");
+        this.handler = requireNonNull(errorHandler, "errorHandler");
         return this;
     }
 

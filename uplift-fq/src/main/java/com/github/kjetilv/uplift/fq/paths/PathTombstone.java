@@ -6,14 +6,14 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
-import java.util.Objects;
 
 import static java.nio.file.Files.exists;
+import static java.util.Objects.requireNonNull;
 
 public record PathTombstone(Path value) implements Tombstone<Path> {
 
     public PathTombstone {
-        Objects.requireNonNull(value, "value");
+        requireNonNull(value, "value");
     }
 
     @Override

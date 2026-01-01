@@ -14,10 +14,10 @@ import java.lang.foreign.MemorySegment;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.Function;
 
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
+import static java.util.Objects.requireNonNull;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
 class ChannelReader<T> implements Reader<T> {
@@ -43,10 +43,10 @@ class ChannelReader<T> implements Reader<T> {
     private VectorMask<Byte> mask = ZERO;
 
     ChannelReader(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
-        this.path = Objects.requireNonNull(path, "path");
+        this.path = requireNonNull(path, "path");
         this.separator = separator;
-        Objects.requireNonNull(arena, "arena");
-        this.mapper = Objects.requireNonNull(mapper, "mapper");
+        requireNonNull(arena, "arena");
+        this.mapper = requireNonNull(mapper, "mapper");
 
         this.size = SayFiles.sizeOf(path);
         if (this.size < LENGTH) {
