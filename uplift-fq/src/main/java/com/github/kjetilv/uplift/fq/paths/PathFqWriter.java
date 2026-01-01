@@ -75,16 +75,32 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     private void writeItem(O item) {
         var count = lineCount.longValue();
+        var value = parse(item, count);
+        var ledge = dimensions.ledge(count);
+        updateWriter(ledge);
+        write(value, count);
+    }
+
+    private I parse(O item, long count) {
         I line;
         try {
             line = toOutput(item);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }
-        var ledge = dimensions.ledge(count);
+        return line;
+    }
+
+    private void updateWriter(Ledge ledge) {
         if (!ledge.equals(currentLedge)) {
-            switchWriter(ledge);
+            if (currentWriter != null) {
+                currentWriter.close();
+            }
+            currentWriter = nextWriter(ledge);
         }
+    }
+
+    private void write(I line, long count) {
         try {
             currentWriter.write(line);
         } catch (Exception e) {
@@ -94,13 +110,10 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
         }
     }
 
-    private void switchWriter(Ledge ledge) {
-        if (currentWriter != null) {
-            currentWriter.close();
-        }
+    private Writer<I> nextWriter(Ledge ledge) {
         currentPath = path(ledge);
-        currentWriter = newWriter.apply(currentPath);
         currentLedge = ledge;
+        return newWriter.apply(currentPath);
     }
 
     private Path path(Ledge ledge) {

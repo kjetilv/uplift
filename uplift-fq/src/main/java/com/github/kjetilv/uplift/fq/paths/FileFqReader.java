@@ -26,12 +26,13 @@ final class FileFqReader<I, O> implements FqReader<O> {
         if (nextLine == null) {
             return null;
         }
+        O o;
         try {
-            return fio.read(nextLine);
+            o = fio.read(nextLine);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse #" + count, e);
-        } finally {
-            count.increment();
         }
+        count.increment();
+        return o;
     }
 }

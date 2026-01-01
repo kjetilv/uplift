@@ -98,13 +98,14 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
     }
 
     private O nextLine(I nextLine) {
+        O o;
         try {
-            return fromInput(nextLine);
+            o = fromInput(nextLine);
         } catch (Exception e) {
             throw new IllegalStateException(this + " failed to parse #" + count + ": " + nextLine, e);
-        } finally {
-            count.increment();
         }
+        count.increment();
+        return o;
     }
 
     private void set(Path first) {

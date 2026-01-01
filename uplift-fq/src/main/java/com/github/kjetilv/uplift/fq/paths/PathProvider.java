@@ -23,7 +23,11 @@ public record PathProvider(Path root, String suffix) implements SourceProvider<P
 
     @Override
     public Path source(Name name) {
-        var path = Path.of(name.name() + (suffix == null ? "" : suffix));
+        var post = "." + suffix;
+        var appended = suffix == null || name.name().endsWith(post)
+            ? ""
+            : post;
+        var path = Path.of(name.name() + appended);
         if (path.isAbsolute()) {
             throw new IllegalStateException("Expected non-absolute path, relative to " + root + ", got: " + name);
         }

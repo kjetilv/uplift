@@ -20,10 +20,9 @@ import static java.nio.file.Files.*;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-@SuppressWarnings("unchecked")
 void main() {
     var downloads = Path.of(System.getenv("HOME")).resolve("Downloads");
-    var workDir = downloads.resolve("JEOPARDY");
+    var workDir = downloads.resolve("JEOPARDY.jsonl");
 
     try {
         createDirectories(workDir);
