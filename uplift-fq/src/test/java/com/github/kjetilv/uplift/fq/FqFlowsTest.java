@@ -140,7 +140,9 @@ class FqFlowsTest {
             check
         );
 
-        var count = feed(flows, 100_000).join().count();
+        var feed = feed(flows, 100_000);
+        feed.join();
+        var count = feed.count();
         assertThat(count).isEqualTo(100_000);
     }
 
@@ -171,7 +173,9 @@ class FqFlowsTest {
             strings.forEach(writer::write);
         }
         flows.start();
-        var count = flows.run().join().count();
+        var run = flows.run();
+        run.join();
+        var count = run.count();
         assertThat(count).isEqualTo(0);
     }
 
@@ -225,7 +229,7 @@ class FqFlowsTest {
         contents(tmp, gz, "X", "inX", firstSize, lastSize);
     }
 
-    private static FqFlows.Run feed(FqFlows<String> flows, int count) {
+    private static FqFlows.Run<String> feed(FqFlows<String> flows, int count) {
         var strings = IntStream.range(0, count).mapToObj(String::valueOf);
         return flows.feed(strings);
     }
@@ -246,11 +250,11 @@ class FqFlowsTest {
                 check.andThen(items ->
                     items.map(add("in2"))
                 ))
-            .from("in2").to(() -> "in4").with(
+            .from("in2").to(Name.of("in4")).with(
                 check.andThen(items ->
                     items.map(add("in4"))
                 ))
-            .from(() -> "in1").to("in3").with(
+            .from(Name.of("in1")).to("in3").with(
                 check.andThen(items ->
                     items.map(add("in3"))
                 ))

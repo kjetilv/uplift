@@ -68,15 +68,21 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
-        var tokenResolver = resolve(callbacks);
-        Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
-        return JSON_PULL_PARSER.pull(tokens, callbacks);
+        return JSON_PULL_PARSER.pull(
+            new BytesSourceTokens(
+                bytesSource,
+                TokenResolver.orDefault(callbacks)
+            ),
+            callbacks
+        );
     }
 
     @Override
     public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
-        var tokenResolver = resolve(callbacks);
-        Tokens tokens = new BytesSourceTokens(bytesSource, tokenResolver);
+        Tokens tokens = new BytesSourceTokens(
+            bytesSource,
+            TokenResolver.orDefault(callbacks)
+        );
         var walker = callbacks;
         while (true) {
             walker = JSON_PULL_PARSER.pull(tokens, walker);
@@ -130,34 +136,10 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     }
 
     private Object process(BytesSource bytesSource) {
-        var reference = new AtomicReference<>();
-        parse(bytesSource, jsonSession.callbacks(reference::set));
-        return reference.get();
+        var ref = new AtomicReference<>();
+        parse(bytesSource, jsonSession.callbacks(ref::set));
+        return ref.get();
     }
 
     private static final PullParser JSON_PULL_PARSER = new DefaultPullParser();
-
-    private static final TokenResolver ALLOCATOR = new Allocator();
-
-    private static TokenResolver resolve(Callbacks callbacks) {
-        return callbacks.tokenResolver().orElse(ALLOCATOR);
-    }
-
-    private static class Allocator implements TokenResolver {
-
-        @Override
-        public Token.Field get(byte[] bytes, int offset, int length) {
-            return new Token.Field(bytes);
-        }
-
-        @Override
-        public Token.Field get(IntUnaryOperator get, int offset, int length) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[}";
-        }
-    }
 }

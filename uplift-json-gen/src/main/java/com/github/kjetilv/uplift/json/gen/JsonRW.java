@@ -39,6 +39,17 @@ public interface JsonRW<T extends Record> {
         return new InputStreamJsonReader<>(callbacks(), jsonSession);
     }
 
+    default <K, V> T read(Map<K, V> userMap, Class<T> type) {
+        var ref = new AtomicReference<T>();
+        read(userMap, ref::set);
+        return ref.get();
+    }
+
+    default <K, V> void read(Map<K, V> userMap, Consumer<T> set) {
+        new FromMap(callbacks().apply(set))
+            .accept(userMap);
+    }
+
     Callbacks callbacks(Consumer<T> onDone);
 
     Function<Consumer<T>, Callbacks> callbacks();

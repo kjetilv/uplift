@@ -124,6 +124,10 @@ public sealed interface Token permits
 
     record Str(byte[] bytes) implements Token {
 
+        public Str(String str) {
+            this(str.getBytes(UTF_8));
+        }
+
         public String value() {
             return new String(bytes, UTF_8);
         }
@@ -148,6 +152,10 @@ public sealed interface Token permits
     }
 
     record Field(byte[] bytes, int length, int hash) implements Token {
+
+        public Field(String string) {
+            this(string.getBytes(UTF_8));
+        }
 
         public Field(byte[] bytes) {
             this(

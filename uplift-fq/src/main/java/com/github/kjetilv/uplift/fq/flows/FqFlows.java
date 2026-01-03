@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 public interface FqFlows<T> {
 
     static <T> Builder<T> builder(Object name, Fqs<T> fqs) {
@@ -45,24 +46,26 @@ public interface FqFlows<T> {
     ///
     /// @param items Items stream
     /// @return Completed run
-    Run feed(Stream<T> items);
+    Run<T> feed(Stream<T> items);
 
     /// Complete the run
     ///
     /// @return Completed run
-    Run run();
+    Run<T> run();
 
-    interface Run {
+    interface Run<T> {
 
-        default Run join() {
-            return this;
-        }
+        List<FlowRun<T>> join();
 
         long count();
     }
 
     interface Processor<T> {
 
+        default Processor<T> compose(Processor<T> previous) {
+            return items -> process(previous.process(items));
+        }
+        
         default Processor<T> andThen(Processor<T> next) {
             return items -> next.process(process(items));
         }
@@ -86,15 +89,15 @@ public interface FqFlows<T> {
         }
 
         default With<T> fromSource(String to) {
-            return fromSource(() -> to);
+            return fromSource(Name.of(to));
         }
 
         default With<T> then(String to) {
-            return then(() -> to);
+            return then(Name.of(to));
         }
 
         default Builder<T> then(String name, Processor<T> processor) {
-            return then(() -> name, processor);
+            return then(Name.of(name), processor);
         }
 
         default Builder<T> then(Name name, Processor<T> processor) {
@@ -106,7 +109,7 @@ public interface FqFlows<T> {
         }
 
         default With<T> from(String from, String to) {
-            return from(() -> from).to(() -> to);
+            return from(Name.of(from)).to(Name.of(to));
         }
 
         default With<T> from(Name from, Name to) {
@@ -114,12 +117,14 @@ public interface FqFlows<T> {
         }
 
         default To<T> from(String name) {
-            return from(() -> name);
+            return from(Name.of(name));
         }
 
         With<T> then(Name to);
 
         To<T> from(Name name);
+
+        Builder<T> suffix(String suffix);
 
         Builder<T> timeout(Duration timeout);
 
@@ -132,7 +137,7 @@ public interface FqFlows<T> {
         interface To<T> {
 
             default With<T> to(String name) {
-                return to(() -> name);
+                return to(Name.of(name));
             }
 
             With<T> to(Name name);

@@ -72,7 +72,7 @@ class JsonSessionTest {
                 """;
         Json.instance().parse(string, jsonSession.callbacks(reference::set));
 
-        var sharedSessionList = json.jsonArray(string);
+        var sharedSessionList = json.array(string);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.LIST)
                 .satisfies(list ->
@@ -146,7 +146,7 @@ class JsonSessionTest {
             }
             """;
         Json.instance().parse(json, jsonSession.callbacks(reference::set));
-        var sharedSessionMap = Json.instance(jsonSession).jsonMap(json);
+        var sharedSessionMap = Json.instance(jsonSession).map(json);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
                 .satisfies(map ->

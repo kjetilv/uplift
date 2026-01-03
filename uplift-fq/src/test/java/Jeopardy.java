@@ -35,7 +35,7 @@ void main() {
 
     var fqs = PathFqs.create(
         workDir,
-        json::jsonMap,
+        json::map,
         value ->
             ByteBuffer.wrap(json.write(value).getBytes()),
         AccessProviders.channelBuffers(),
@@ -47,19 +47,34 @@ void main() {
     setupStartFile(workDir, downloads, startFile, 0);
 
     var flows = FqFlows.builder(startFile.getFileName(), fqs)
-        .init(Stage.ANSWER, process(this::uppercaseAnswer))
-        .then(Stage.CATEGORY, process(this::rewriteCategory))
-        .then(Stage.SHOW_NO, process(this::countShowNo))
-        .then(Stage.AIR_DATE, process(this::airDate))
-        .then(Stage.VALUE, process(this::revalue))
-        .batchSize(10)
         .timeout(Duration.ofSeconds(30))
+        .batchSize(10)
+        .init(
+            Stage.ANSWER,
+            process(this::uppercaseAnswer)
+        )
+        .then(
+            Stage.CATEGORY,
+            process(this::rewriteCategory)
+        )
+        .then(
+            Stage.SHOW_NO,
+            process(this::countShowNo)
+        )
+        .then(
+            Stage.AIR_DATE,
+            process(this::airDate)
+        )
+        .then(
+            Stage.VALUE,
+            process(this::revalue)
+        )
         .build();
 
     Instant now = Instant.now();
     if (flows.start()) {
         var run = flows.run();
-        System.out.println(run.join().count());
+        run.join().forEach(System.out::println);
     } else {
         throw new IllegalStateException("Not started:" + flows);
     }

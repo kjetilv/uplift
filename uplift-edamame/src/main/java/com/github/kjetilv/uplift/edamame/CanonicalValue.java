@@ -57,7 +57,6 @@ public sealed interface CanonicalValue<H extends HashKind<H>> {
             return null;
         }
 
-        @Override
         public Hash<H> hash() {
             return kind.blank();
         }

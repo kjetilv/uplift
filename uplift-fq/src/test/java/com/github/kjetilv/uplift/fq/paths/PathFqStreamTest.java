@@ -61,7 +61,7 @@ class PathFqStreamTest {
             new StreamAccessProvider(compress, null),
             new Dimensions(1, 2, 4)
         );
-        Name foo = () -> "foo.txt";
+        Name foo = Name.of("foo.txt");
         pfq.init(foo);
 
         var expected = IntStream.range(0, INT).boxed()

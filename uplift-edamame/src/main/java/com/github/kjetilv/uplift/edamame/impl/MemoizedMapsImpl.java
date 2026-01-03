@@ -5,6 +5,9 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.util.Map;
+import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMaps<I, K> {
 
@@ -21,9 +24,9 @@ final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMap
         Map<Hash<H>, Map<K, Object>> objects,
         Map<I, Map<K, Object>> overflow
     ) {
-        this.hashes = hashes;
-        this.objects = objects;
-        this.overflow = overflow;
+        this.hashes = requireNonNull(hashes, "hashes");
+        this.objects = requireNonNull(objects, "objects");
+        this.overflow = requireNonNull(overflow, "overflow");
         this.size = hashes.size() + overflow.size();
     }
 

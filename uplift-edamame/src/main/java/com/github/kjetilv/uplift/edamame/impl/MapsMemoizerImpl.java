@@ -74,7 +74,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
             new MemoizedMapsImpl<>(
                 copy ? copyOf(hashes) : unmodifiableMap(hashes),
                 copy ? copyOf(objects) : unmodifiableMap(objects),
-                overflow.isEmpty() ? Map.of()
+                overflow.isEmpty() ? Collections.emptyMap()
                     : copy ? copyOf(overflow)
                         : unmodifiableMap(overflow)
             ));
@@ -87,22 +87,34 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         var hashedTree = treeHasher.tree(value);
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
-            case CanonicalValue.Node<?, H> node -> write(() ->
-                putCanonical(identifier, node, requireAbsent)
+            case CanonicalValue.Node<?, H>(Hash<H> hash, Map<?, Object> node) -> write(() ->
+                putCanonical(
+                    identifier,
+                    hash,
+                    (Map<K, Object>) node,
+                    requireAbsent
+                )
             );
             case CanonicalValue.Collision<H> _ -> write(() ->
-                putOverflow(identifier, (Map<K, Object>) value)
+                putOverflow(
+                    identifier,
+                    (Map<K, Object>) value
+                )
             );
             case CanonicalValue<H> other -> fail("Unexpected canonical value: " + other);
         };
     }
 
-    private boolean putCanonical(I identifier, CanonicalValue.Node<?, H> valueNode, boolean requireAbsent) {
+    private boolean putCanonical(
+        I identifier,
+        Hash<H> hash,
+        Map<K, Object> value,
+        boolean requireAbsent
+    ) {
         return write(() -> {
-            var existingHash = hashes.putIfAbsent(identifier, valueNode.hash());
+            var existingHash = hashes.putIfAbsent(identifier, hash);
             if (existingHash == null) {
-                var value = (Map<K, Object>) valueNode.value();
-                var existingValue = objects.putIfAbsent(valueNode.hash(), value);
+                var existingValue = objects.putIfAbsent(hash, value);
                 if (existingValue == null || existingValue.equals(value)) {
                     return true;
                 }

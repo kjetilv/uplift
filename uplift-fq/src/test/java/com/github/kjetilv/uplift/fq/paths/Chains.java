@@ -71,13 +71,13 @@ final class Chains {
     }
 
     static void assertSimpleWriteRead(PathFqs<?, String> pfq) {
-        try (var w = pfq.writer(() -> "foo.txt")) {
+        try (var w = pfq.writer(Name.of("foo.txt"))) {
             for (var i = 0; i < 10; i++) {
                 w.write(List.of("foo" + i, "bar" + i));
             }
         }
 
-        var puller = pfq.reader(() -> "foo.txt");
+        var puller = pfq.reader(Name.of("foo.txt"));
         for (var i = 0; i < 10; i++) {
             assertThat(puller.next()).isEqualTo("foo" + i);
             assertThat(puller.next()).isEqualTo("bar" + i);

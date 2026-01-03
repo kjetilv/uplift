@@ -15,6 +15,8 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     private final Fqs<T> fqs;
 
+    private String suffix;
+
     private Integer batchSize;
 
     private Duration timeout;
@@ -26,6 +28,22 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
     DefaultBuilder(Name name, Fqs<T> fqs) {
         this.name = requireNonNull(name, "name");
         this.fqs = requireNonNull(fqs, "fqs");
+    }
+
+    @Override
+    public FqFlows.Builder<T> suffix(String suffix) {
+        requireNonNull(suffix, "suffix");
+        if (suffix.isBlank()) {
+            throw new IllegalArgumentException("Suffix must not be blank");
+        }
+        if (suffix.startsWith(".")) {
+            throw new IllegalArgumentException("Suffix must not start with '.'");
+        }
+        if (this.suffix != null) {
+            throw new IllegalArgumentException("suffix already set");
+        }
+        this.suffix = suffix;
+        return this;
     }
 
     @Override

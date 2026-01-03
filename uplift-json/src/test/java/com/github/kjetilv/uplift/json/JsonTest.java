@@ -689,7 +689,7 @@ class JsonTest {
         var bytesSource = """
             {"uri":"https://www.vg.no","url":"https://www.db.no","whatever":"ENUM","oops":null}
             """.trim();
-        var parsed = JSON.jsonMap(bytesSource);
+        var parsed = JSON.map(bytesSource);
         var expected = JSON.write(parsed);
         assertThat(expected).isEqualTo(bytesSource);
         var actual = JSON.write(written);

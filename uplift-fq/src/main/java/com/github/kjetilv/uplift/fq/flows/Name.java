@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.fq.flows;
 public interface Name {
 
     static Name of(String name) {
-        return () -> name;
+        return new NameImpl(name);
     }
 
     String name();

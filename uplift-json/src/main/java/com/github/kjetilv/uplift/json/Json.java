@@ -17,39 +17,39 @@ public interface Json {
         return jsonSession == null ? INSTANCE : new JsonImpl(jsonSession);
     }
 
-    default Map<String, Object> jsonMap(InputStream source) {
+    default Map<String, Object> map(InputStream source) {
         return asMap(source, read(source));
     }
 
-    default Map<String, Object> jsonMap(ByteBuffer source) {
+    default Map<String, Object> map(ByteBuffer source) {
         return asMap(source, read(source));
     }
 
-    default Map<String, Object> jsonMap(byte[] source) {
+    default Map<String, Object> map(byte[] source) {
         return asMap(source, read(new String(source, UTF_8)));
     }
 
-    default Map<String, Object> jsonMap(char[] source) {
+    default Map<String, Object> map(char[] source) {
         return asMap(source, read(source));
     }
 
-    default Map<String, Object> jsonMap(BytesSource source) {
+    default Map<String, Object> map(BytesSource source) {
         return asMap(source, read(source));
     }
 
-    default Map<String, Object> jsonMap(String source) {
+    default Map<String, Object> map(String source) {
         return asMap(source, read(source));
     }
 
-    default List<?> jsonArray(String source) {
+    default List<?> array(String source) {
         return asList(source, read(source));
     }
 
-    default List<?> jsonArray(BytesSource source) {
+    default List<?> array(BytesSource source) {
         return asList(source, read(source));
     }
 
-    default List<?> jsonArray(InputStream source) {
+    default List<?> array(InputStream source) {
         return asList(source, read(source));
     }
 
@@ -61,10 +61,6 @@ public interface Json {
         return read(new String(bytes, UTF_8));
     }
 
-    default byte[] writeBytes(Object object) {
-        return write(object).getBytes(UTF_8);
-    }
-
     default Object read(String string) {
         try (
             InputStream in = new ByteArrayInputStream(
@@ -74,6 +70,10 @@ public interface Json {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read string of " + string.length() + " chars", e);
         }
+    }
+
+    default byte[] writeBytes(Object object) {
+        return write(object).getBytes(UTF_8);
     }
 
     default String write(Object object) {

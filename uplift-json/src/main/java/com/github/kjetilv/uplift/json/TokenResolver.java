@@ -7,6 +7,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @FunctionalInterface
 public interface TokenResolver {
 
+    static TokenResolver orDefault(Callbacks callbacks) {
+        return callbacks.tokenResolver().orElse(DEFAULT);
+    }
+
     default Token.Field get(Token.Field token) {
         return get(token.bytes());
     }
@@ -24,4 +28,6 @@ public interface TokenResolver {
     }
 
     Token.Field get(IntUnaryOperator get, int offset, int length);
+
+    TokenResolver DEFAULT = new DefaultTokenResolver();
 }

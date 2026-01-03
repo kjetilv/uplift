@@ -5,6 +5,8 @@ import com.github.kjetilv.uplift.fq.Fqs;
 
 import java.io.Closeable;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.StructuredTaskScope;
@@ -37,7 +39,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
 
     private final AtomicReference<Phase> phase = new AtomicReference<>(NEW);
 
-    private CompletableFuture<Void> flowsFuture;
+    private CompletableFuture<List<FlowRun<T>>> flowsFuture;
 
     DefaultFqFlows(
         Name name,
@@ -77,7 +79,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
     }
 
     @Override
-    public Run feed(Stream<T> items) {
+    public Run<T> feed(Stream<T> items) {
         started();
         return run(() -> {
             try (this) {
@@ -89,7 +91,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
     }
 
     @Override
-    public Run run() {
+    public Run<T> run() {
         return run(() -> {
             try (this) {
                 started();
@@ -131,7 +133,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
     }
 
     private void startFlow() {
-        this.flowsFuture = CompletableFuture.runAsync(() -> {
+        this.flowsFuture = CompletableFuture.supplyAsync(() -> {
             try (
                 var scope = StructuredTaskScope.open(
                     allSuccessfulOrThrow(),
@@ -141,11 +143,14 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
                             .withThreadFactory(threadFactory(name)))
                 )
             ) {
+                List<FlowRun<T>> flowRuns = new ArrayList<>(flows.size());
                 for (var flow : this.flows) {
                     init(flow);
-                    scope.fork(execute(flow));
+                    scope.fork(() ->
+                        flowRuns.add(execute(flow)));
                 }
                 scope.join();
+                return flowRuns;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException("Flow execution interrupted", e);
@@ -168,20 +173,22 @@ final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
         }
     }
 
-    private Runnable execute(Flow<T> flow) {
+    private FlowRun<T> execute(Flow<T> flow) {
         var runnableFlow = flow.isFromSource()
             ? flow.from(this.name)
             : flow;
         try {
-            return () ->
-                runner.run(fqs, runnableFlow);
+            Instant start = Instant.now();
+            runner.run(fqs, runnableFlow);
+            var end = Instant.now();
+            return new FlowRun<>(runnableFlow, start, end);
         } catch (Exception e) {
             throw new IllegalStateException(runner + " failed to execute " + runnableFlow, e);
         }
     }
 
-    private DefaultRun run(LongSupplier itemCount) {
-        return new DefaultRun(flowsFuture, itemCount);
+    private DefaultRun<T> run(LongSupplier itemCount) {
+        return new DefaultRun<>(flowsFuture, itemCount);
     }
 
     private Configuration withTimeout(Configuration named) {
