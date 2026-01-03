@@ -53,7 +53,15 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     @Override
     public void write(List<O> items) {
-        items.forEach(this::writeItem);
+        for (O item : items) {
+            var count = lineCount.longValue();
+            var value = parse(item, count);
+            var ledge = dimensions.ledge(count);
+            if (currentLedge == null || currentLedge.ledge() != ledge.ledge()) {
+                updateWriter(ledge);
+            }
+            write(value, count);
+        }
     }
 
     @Override
@@ -73,31 +81,21 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
         builder.append("current: ").append(currentPath);
     }
 
-    private void writeItem(O item) {
-        var count = lineCount.longValue();
-        var value = parse(item, count);
-        var ledge = dimensions.ledge(count);
-        updateWriter(ledge);
-        write(value, count);
-    }
-
     private I parse(O item, long count) {
-        I line;
         try {
-            line = toOutput(item);
+            return toOutput(item);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write #" + count + ": " + item, e);
         }
-        return line;
     }
 
     private void updateWriter(Ledge ledge) {
-        if (!ledge.equals(currentLedge)) {
-            if (currentWriter != null) {
-                currentWriter.close();
-            }
-            currentWriter = nextWriter(ledge);
+        if (currentWriter != null) {
+            currentWriter.close();
         }
+        currentPath = path(ledge.asSegment());
+        currentLedge = ledge;
+        currentWriter = newWriter.apply(currentPath);
     }
 
     private void write(I line, long count) {
@@ -110,14 +108,8 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
         }
     }
 
-    private Writer<I> nextWriter(Ledge ledge) {
-        currentPath = path(ledge);
-        currentLedge = ledge;
-        return newWriter.apply(currentPath);
-    }
-
-    private Path path(Ledge ledge) {
-        var formatted = "%s-%s.%s".formatted(this.prefix, ledge.asSegment(), this.suffix);
+    private Path path(String segment) {
+        var formatted = "%s-%s.%s".formatted(this.prefix, segment, this.suffix);
         return directory().resolve(Path.of(formatted));
     }
 
