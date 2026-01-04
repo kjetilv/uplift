@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.fq.paths.ffm;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
+import com.github.kjetilv.uplift.util.SayFiles;
+import jdk.incubator.vector.VectorSpecies;
 
 import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
@@ -43,8 +45,12 @@ public final class ChannelAccessProvider<T>
 
     @Override
     public Reader<T> reader(Path source) {
+        var size = SayFiles.sizeOf(source);
+        if (size < LENGTH) {
+            throw new IllegalStateException(
+                "File too small, must be at least " + LENGTH + " bytes: " + source + " (" + size + " bytes)");
+        }
         return new ChannelReader<>(
-            source,
             randomAccess(source, "r"),
             separator,
             arena.get(),
@@ -55,12 +61,16 @@ public final class ChannelAccessProvider<T>
     @Override
     public Writer<T> writer(Path source) {
         return new ChannelWriter<>(
-            source,
             randomAccess(source, "rw"),
             toByteBuffer,
             linebreak
         );
     }
+
+    private static final VectorSpecies<Byte> SPECIES =
+        VectorSpecies.ofPreferred(byte.class);
+
+    private static final int LENGTH = SPECIES.length();
 
     private static <T> RandomAccessFile randomAccess(Path source, String mode) {
         try {

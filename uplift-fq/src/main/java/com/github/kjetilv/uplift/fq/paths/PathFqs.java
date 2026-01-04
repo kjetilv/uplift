@@ -4,13 +4,11 @@ import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.util.SayFiles;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
 import static com.github.kjetilv.uplift.util.SayFiles.couldCreate;
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.isWritable;
+import static java.nio.file.Files.*;
 import static java.util.Objects.requireNonNull;
 
 public final class PathFqs<I, O> implements Fqs<O> {
@@ -88,8 +86,11 @@ public final class PathFqs<I, O> implements Fqs<O> {
     @Override
     public FqReader<O> reader(Name name) {
         var path = sourceProvider.source(name);
-        if (Files.isRegularFile(path)) {
-            return new FileFqReader<>(fio, accessProvider.reader(path));
+        if (isRegularFile(path)) {
+            return new FileFqReader<>(
+                fio,
+                accessProvider.reader(path)
+            );
         }
         return new PathFqReader<>(
             path,

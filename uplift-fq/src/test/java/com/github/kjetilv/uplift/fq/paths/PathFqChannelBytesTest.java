@@ -30,7 +30,6 @@ class PathFqChannelBytesTest {
                 path -> {
                     try {
                         return new ChannelWriter<>(
-                            path,
                             new RandomAccessFile(path.toFile(), "rw"),
                             ByteBuffer::wrap,
                             () -> ByteBuffer.wrap(new byte[] {'\n'})

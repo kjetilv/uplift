@@ -32,7 +32,6 @@ class PathFqChannelBufferTest {
                 path -> {
                     try {
                         return new ChannelWriter<>(
-                            path,
                             new RandomAccessFile(path.toFile(), "rw"),
                             Function.identity(),
                             () -> ByteBuffer.wrap(new byte[] {'\n'})

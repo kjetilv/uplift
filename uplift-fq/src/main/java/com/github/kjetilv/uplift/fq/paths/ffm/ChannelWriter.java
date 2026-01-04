@@ -5,15 +5,12 @@ import com.github.kjetilv.uplift.fq.paths.Writer;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
 public class ChannelWriter<T> implements Writer<T> {
-
-    private final Path path;
 
     private final RandomAccessFile randomAccessFile;
 
@@ -24,12 +21,10 @@ public class ChannelWriter<T> implements Writer<T> {
     private final Supplier<ByteBuffer> linebreak;
 
     public ChannelWriter(
-        Path path,
         RandomAccessFile randomAccessFile,
         Function<T, ByteBuffer> byteBuffer,
         Supplier<ByteBuffer> linebreak
     ) {
-        this.path = requireNonNull(path, "path");
         this.byteBuffer = requireNonNull(byteBuffer, "byteBuffer");
         this.linebreak = requireNonNull(linebreak, "linebreak");
         this.randomAccessFile = requireNonNull(randomAccessFile, "randomAccessFile");
@@ -50,7 +45,7 @@ public class ChannelWriter<T> implements Writer<T> {
         try {
             randomAccessFile.close();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to close " + path, e);
+            throw new IllegalStateException("Failed to close " + randomAccessFile, e);
         }
     }
 
@@ -60,7 +55,7 @@ public class ChannelWriter<T> implements Writer<T> {
             try {
                 written += fileChannel.write(byteBuffer);
             } catch (Exception e) {
-                throw new IllegalStateException("Could not write to " + path, e);
+                throw new IllegalStateException("Could not write to " + randomAccessFile, e);
             }
         }
     }

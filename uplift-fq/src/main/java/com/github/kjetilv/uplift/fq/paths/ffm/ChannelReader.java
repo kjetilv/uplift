@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
 import com.github.kjetilv.uplift.fq.paths.Reader;
-import com.github.kjetilv.uplift.util.SayFiles;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
@@ -11,7 +10,6 @@ import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteOrder;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -20,8 +18,6 @@ import static java.util.Objects.requireNonNull;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
 class ChannelReader<T> implements Reader<T> {
-
-    private final Path path;
 
     private final MemorySegment segment;
 
@@ -42,25 +38,23 @@ class ChannelReader<T> implements Reader<T> {
     private VectorMask<Byte> mask = ZERO;
 
     ChannelReader(
-        Path path,
         RandomAccessFile randomAccessFile,
         byte separator,
         Arena arena,
         Function<MemorySegment, T> mapper
     ) {
-        this.path = requireNonNull(path, "path");
         this.separator = separator;
         requireNonNull(arena, "arena");
         this.mapper = requireNonNull(mapper, "mapper");
-
-        this.size = SayFiles.sizeOf(path);
-        if (this.size < LENGTH) {
-            throw new IllegalStateException(
-                "File too small, must be at least " + LENGTH + " bytes: " + path + " (" + size + " bytes)"
-            );
+        this.randomAccessFile = requireNonNull(randomAccessFile, "randomAccessFile");
+        try {
+            this.size = randomAccessFile.length();
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not find size of " + randomAccessFile, e);
         }
-
-        this.randomAccessFile = randomAccessFile;
+        if (this.size < LENGTH) {
+            throw new IllegalArgumentException("Invalid size of " + randomAccessFile + ": " + size + "<" + LENGTH);
+        }
         this.segment = segment(randomAccessFile, this.size, arena);
         this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
     }
@@ -92,7 +86,7 @@ class ChannelReader<T> implements Reader<T> {
         try {
             randomAccessFile.close();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to close " + path, e);
+            throw new IllegalStateException("Failed to close " + randomAccessFile, e);
         }
     }
 
@@ -156,6 +150,6 @@ class ChannelReader<T> implements Reader<T> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + path + "]";
+        return getClass().getSimpleName() + "[" + randomAccessFile + "]";
     }
 }
