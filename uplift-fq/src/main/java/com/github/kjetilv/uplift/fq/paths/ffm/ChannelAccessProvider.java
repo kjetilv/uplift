@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.fq.paths.ffm;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
-import com.github.kjetilv.uplift.util.SayFiles;
 import jdk.incubator.vector.VectorSpecies;
 
 import java.io.RandomAccessFile;
@@ -14,6 +13,7 @@ import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.github.kjetilv.uplift.util.SayFiles.sizeOf;
 import static java.util.Objects.requireNonNull;
 
 public final class ChannelAccessProvider<T>
@@ -45,7 +45,7 @@ public final class ChannelAccessProvider<T>
 
     @Override
     public Reader<T> reader(Path source) {
-        var size = SayFiles.sizeOf(source);
+        var size = sizeOf(source);
         if (size < LENGTH) {
             throw new IllegalStateException(
                 "File too small, must be at least " + LENGTH + " bytes: " + source + " (" + size + " bytes)");
