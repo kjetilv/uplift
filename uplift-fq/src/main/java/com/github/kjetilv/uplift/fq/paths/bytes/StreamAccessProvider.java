@@ -3,8 +3,6 @@ package com.github.kjetilv.uplift.fq.paths.bytes;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
-import com.github.kjetilv.uplift.util.GzipUtils;
-import com.github.kjetilv.uplift.util.SayFiles;
 import com.github.kjetilv.uplift.util.Sleeper;
 
 import java.io.InputStream;
@@ -13,6 +11,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.function.BiConsumer;
 import java.util.zip.GZIPInputStream;
+
+import static com.github.kjetilv.uplift.util.GzipUtils.*;
+import static com.github.kjetilv.uplift.util.SayFiles.*;
 
 public final class StreamAccessProvider implements AccessProvider<Path, byte[]> {
 
@@ -36,32 +37,32 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
     }
 
     private OutputStream newBufferedWriter(Path path) {
-        var gzipFile = GzipUtils.gzipFile(path, gzipped);
-        var out = SayFiles.newFileOutputStream(gzipFile);
-        return gzipped ? GzipUtils.zip(path, out) : out;
+        var gzipFile = gzipFile(path, gzipped);
+        var out = newFileOutputStream(gzipFile);
+        return gzipped ? zip(path, out) : out;
     }
 
     private InputStream inputStream(Path path) {
         return gzipped
             ? gzipInputStream(path)
-            : SayFiles.fileInputStream(path);
+            : fileInputStream(path);
     }
 
     private GZIPInputStream gzipInputStream(Path path) {
-        var in = SayFiles.fileInputStream(GzipUtils.gzipFile(path, true));
+        var in = fileInputStream(gzipFile(path, true));
         var sleeper = Sleeper.deferred(
             () -> "Unzip " + path.getFileName(),
             onMax == null ? null : state ->
                 onMax.accept(path, state.duration())
         );
-        while (SayFiles.sizeOf(path) <= GZIP_HEADER_SIZE) {
+        while (sizeOf(path) <= GZIP_HEADER_SIZE) {
             sleeper.get().sleep();
         }
         while (true) {
             try {
-                return GzipUtils.unzip(path, in);
+                return unzip(path, in);
             } catch (Exception e) {
-                if (GzipUtils.incompleteGZipHeader(e)) {
+                if (incompleteGZipHeader(e)) {
                     sleeper.get().sleep();
                 } else {
                     throw new IllegalStateException("Failed to unzip " + path, e);

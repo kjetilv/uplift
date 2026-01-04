@@ -726,7 +726,7 @@ class JsonTest {
     }
 
     private static void assertReadException(ReadException e, String lexeme) {
-        assertThat(e.toString()).contains("`" + lexeme + "`");
+        assertThat(e.toString()).contains("<" + lexeme + ">");
     }
 
     private static Object roundtrip(

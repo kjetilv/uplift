@@ -55,11 +55,11 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
     public void write(List<O> items) {
         for (O item : items) {
             var count = lineCount.longValue();
-            var value = parse(item, count);
             var ledge = dimensions.ledge(count);
             if (currentLedge == null || currentLedge.ledge() != ledge.ledge()) {
                 updateWriter(ledge);
             }
+            var value = parse(item, count);
             write(value, count);
         }
     }

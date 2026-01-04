@@ -17,8 +17,10 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private int index;
 
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     public AbstractIntsBytesSource() {
-        initialize();
+        this.next1 = nextByte();
+        this.next2 = next1 > 0 ? nextByte() : 0;
     }
 
     @Override
@@ -113,7 +115,8 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 "but got '" + (char) next2 + "'/'" + (char) next3 + "'"
             );
         }
-        initialize();
+        this.next1 = nextByte();
+        this.next2 = next1 > 0 ? nextByte() : 0;
     }
 
     @Override
@@ -130,7 +133,8 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 "Expected '" + c3 + "' but got '" + (char) next2 + "'"
             );
         }
-        initialize();
+        this.next1 = nextByte();
+        this.next2 = next1 > 0 ? nextByte() : 0;
     }
 
     @Override
@@ -173,11 +177,6 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return new Bytes(currentLexeme, 0, index);
     }
 
-    protected final void initialize() {
-        this.next1 = nextByte();
-        this.next2 = next1 > 0 ? nextByte() : 0;
-    }
-
     protected abstract byte nextByte();
 
     private void save() {
@@ -212,7 +211,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     private void fail(String msg) {
-        throw new ReadException(msg, "`" + lexeme().string() + "`");
+        throw new ReadException(msg, "<" + lexeme().string() + ">");
     }
 
     private static String print(int c) {

@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.json;
 
 import module java.base;
-import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
-import com.github.kjetilv.uplift.json.bytes.ByteBufferIntsBytesSource;
-import com.github.kjetilv.uplift.json.bytes.BytesSourceTokens;
-import com.github.kjetilv.uplift.json.bytes.InputStreamIntsBytesSource;
+import com.github.kjetilv.uplift.json.bytes.*;
 import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
 import com.github.kjetilv.uplift.json.io.JsonWrites;
 import com.github.kjetilv.uplift.json.io.Sink;
@@ -22,8 +19,8 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     }
 
     @Override
-    public Object read(BytesSource bytesSource) {
-        return process(bytesSource);
+    public Object read(MemorySegment memorySegment) {
+        return process(new MemorySegmentIntsBytesSource(memorySegment));
     }
 
     @Override
@@ -34,6 +31,11 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public Object read(InputStream inputStream) {
         return process(new InputStreamIntsBytesSource(inputStream));
+    }
+
+    @Override
+    public Object read(BytesSource bytesSource) {
+        return process(bytesSource);
     }
 
     @Override
@@ -79,10 +81,8 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public Callbacks parseMulti(BytesSource bytesSource, Callbacks callbacks) {
-        Tokens tokens = new BytesSourceTokens(
-            bytesSource,
-            TokenResolver.orDefault(callbacks)
-        );
+        var knownTokens = TokenResolver.orDefault(callbacks);
+        Tokens tokens = new BytesSourceTokens(bytesSource, knownTokens);
         var walker = callbacks;
         while (true) {
             walker = JSON_PULL_PARSER.pull(tokens, walker);

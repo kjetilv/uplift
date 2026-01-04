@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -50,7 +51,10 @@ public final class SayFiles {
     }
 
     public static long sizeOf(Path path) {
-        if (Files.exists(path)) {
+        if (isDirectory(path)) {
+            throw new IllegalStateException("Not a file: " + path);
+        }
+        if (exists(path)) {
             try {
                 return Files.size(path);
             } catch (Exception e) {
@@ -66,7 +70,7 @@ public final class SayFiles {
     }
 
     public static boolean nonDirectory(Path directory) {
-        return Files.exists(directory) && !isDirectory(directory);
+        return exists(directory) && !isDirectory(directory);
     }
 
     public static void delete(Path path) {

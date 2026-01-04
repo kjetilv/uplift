@@ -4,6 +4,7 @@ import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 
+import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
@@ -42,12 +43,31 @@ public final class ChannelAccessProvider<T>
 
     @Override
     public Reader<T> reader(Path source) {
-        return new ChannelReader<>(source, separator, arena.get(), fromMemorySegment);
+        return new ChannelReader<>(
+            source,
+            randomAccess(source, "r"),
+            separator,
+            arena.get(),
+            fromMemorySegment
+        );
     }
 
     @Override
     public Writer<T> writer(Path source) {
-        return new ChannelWriter<>(source, toByteBuffer, linebreak);
+        return new ChannelWriter<>(
+            source,
+            randomAccess(source, "rw"),
+            toByteBuffer,
+            linebreak
+        );
+    }
+
+    private static <T> RandomAccessFile randomAccess(Path source, String mode) {
+        try {
+            return new RandomAccessFile(source.toFile(), mode);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed " + mode + ": " + source, e);
+        }
     }
 
     @Override

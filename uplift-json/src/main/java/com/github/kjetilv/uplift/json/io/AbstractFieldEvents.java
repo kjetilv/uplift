@@ -25,7 +25,7 @@ public abstract class AbstractFieldEvents implements FieldEvents {
         var unescaped = escaped
             ? ESCAPE.matcher(value).replaceAll("\\")
             : value;
-        var quoted = value.indexOf('"') >= 0;
+        var quoted = unescaped.indexOf('"') >= 0;
         var unquoted = quoted
             ? QUOTE.matcher(value).replaceAll("\\\\\"")
             : value;

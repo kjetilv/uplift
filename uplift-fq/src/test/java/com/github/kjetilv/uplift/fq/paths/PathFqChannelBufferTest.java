@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
@@ -32,6 +33,7 @@ class PathFqChannelBufferTest {
                     try {
                         return new ChannelWriter<>(
                             path,
+                            new RandomAccessFile(path.toFile(), "rw"),
                             Function.identity(),
                             () -> ByteBuffer.wrap(new byte[] {'\n'})
                         );

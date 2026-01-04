@@ -89,6 +89,8 @@ public interface Json {
 
     Object read(ByteBuffer inputStream);
 
+    Object read(MemorySegment memorySegment);
+
     Object read(BytesSource bytesSource);
 
     void write(Object object, OutputStream outputStream);

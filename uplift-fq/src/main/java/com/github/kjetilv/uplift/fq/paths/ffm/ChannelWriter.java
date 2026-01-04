@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import static java.util.Objects.requireNonNull;
 
 public class ChannelWriter<T> implements Writer<T> {
+
     private final Path path;
 
     private final RandomAccessFile randomAccessFile;
@@ -24,31 +25,29 @@ public class ChannelWriter<T> implements Writer<T> {
 
     public ChannelWriter(
         Path path,
+        RandomAccessFile randomAccessFile,
         Function<T, ByteBuffer> byteBuffer,
         Supplier<ByteBuffer> linebreak
     ) {
         this.path = requireNonNull(path, "path");
         this.byteBuffer = requireNonNull(byteBuffer, "byteBuffer");
         this.linebreak = requireNonNull(linebreak, "linebreak");
-        try {
-            this.randomAccessFile = new RandomAccessFile(this.path.toFile(), "rw");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write to " + this.path, e);
-        }
+        this.randomAccessFile = requireNonNull(randomAccessFile, "randomAccessFile");
         this.fileChannel = this.randomAccessFile.getChannel();
     }
 
     @Override
     public Writer<T> write(T line) {
-        doWrite(byteBuffer.apply(line));
-        doWrite(linebreak.get());
+        var byteBuffer = this.byteBuffer.apply(line);
+        var linebreak = this.linebreak.get();
+        doWrite(byteBuffer);
+        doWrite(linebreak);
         return this;
     }
 
     @Override
     public void close() {
         try {
-            fileChannel.close();
             randomAccessFile.close();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to close " + path, e);

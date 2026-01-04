@@ -6,7 +6,6 @@ import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
@@ -42,7 +41,13 @@ class ChannelReader<T> implements Reader<T> {
 
     private VectorMask<Byte> mask = ZERO;
 
-    ChannelReader(Path path, byte separator, Arena arena, Function<MemorySegment, T> mapper) {
+    ChannelReader(
+        Path path,
+        RandomAccessFile randomAccessFile,
+        byte separator,
+        Arena arena,
+        Function<MemorySegment, T> mapper
+    ) {
         this.path = requireNonNull(path, "path");
         this.separator = separator;
         requireNonNull(arena, "arena");
@@ -55,12 +60,8 @@ class ChannelReader<T> implements Reader<T> {
             );
         }
 
-        this.randomAccessFile = randomAccessFile(this.path);
-        this.segment = segment(
-            randomAccessFile,
-            this.size,
-            arena
-        );
+        this.randomAccessFile = randomAccessFile;
+        this.segment = segment(randomAccessFile, this.size, arena);
         this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
     }
 
@@ -134,14 +135,6 @@ class ChannelReader<T> implements Reader<T> {
         UNSET = new VectorMask[LENGTH];
         for (var i = 0; i < LENGTH; i++) {
             UNSET[i] = VectorMask.fromValues(SPECIES, withFalse(i));
-        }
-    }
-
-    protected static RandomAccessFile randomAccessFile(Path path) {
-        try {
-            return new RandomAccessFile(path.toFile(), "r");
-        } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Failed to read " + path, e);
         }
     }
 
