@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.fq.paths.Writer;
 
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -14,7 +14,7 @@ public class ChannelWriter<T> implements Writer<T> {
 
     private final RandomAccessFile randomAccessFile;
 
-    private final FileChannel fileChannel;
+    private final WritableByteChannel byteChannel;
 
     private final Function<T, ByteBuffer> byteBuffer;
 
@@ -28,7 +28,7 @@ public class ChannelWriter<T> implements Writer<T> {
         this.byteBuffer = requireNonNull(byteBuffer, "byteBuffer");
         this.linebreak = requireNonNull(linebreak, "linebreak");
         this.randomAccessFile = requireNonNull(randomAccessFile, "randomAccessFile");
-        this.fileChannel = this.randomAccessFile.getChannel();
+        this.byteChannel = this.randomAccessFile.getChannel();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ChannelWriter<T> implements Writer<T> {
         var written = 0;
         while (written < byteBuffer.capacity()) {
             try {
-                written += fileChannel.write(byteBuffer);
+                written += byteChannel.write(byteBuffer);
             } catch (Exception e) {
                 throw new IllegalStateException("Could not write to " + randomAccessFile, e);
             }

@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqReader;
-import com.github.kjetilv.uplift.util.Sleeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +27,8 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
 
     private final Function<Path, Reader<I>> readerFactory;
 
+    private final Runnable awaitNext;
+
     private final boolean deleting;
 
     private final LongAdder count = new LongAdder();
@@ -36,29 +37,23 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
         Path path,
         Fio<I, O> fio,
         Function<Path, Reader<I>> readerFactory,
+        Runnable awaitNext,
         Tombstone<Path> tombstone,
         boolean deleting
     ) {
         super(path, fio, tombstone);
         this.readerFactory = requireNonNull(readerFactory, "readerFactory");
+        this.awaitNext = awaitNext;
         this.deleting = deleting;
     }
 
     @Override
     public O next() {
-        var nextLine = currentReader == null
-            ? null
-            : currentReader.read();
+        var nextLine = currentReader == null ? null : readNext();
 
         if (nextLine != null) {
             return nextLine(nextLine);
         }
-
-        var sleeper = Sleeper.deferred(
-            this::name,
-            state ->
-                log.warn("No files found after {}: {}", state.duration(), name())
-        );
 
         while (true) {
             if (currentReader != null) {
@@ -75,13 +70,11 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
                     if (foundTombstone()) {
                         return null;
                     }
-                    sleeper.get().sleep();
+                    awaitNext.run();
                 }
             }
 
-            nextLine = currentReader == null
-                ? null
-                : currentReader.read();
+            nextLine = currentReader == null ? null : readNext();
             if (nextLine != null) {
                 return nextLine(nextLine);
             }
@@ -91,6 +84,14 @@ final class PathFqReader<I, O> extends AbstractPathFq<I, O>
     @Override
     protected void subToString(StringBuilder builder) {
         builder.append("processed: ").append(processed.size());
+    }
+
+    private I readNext() {
+        try {
+            return currentReader.read();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read #" + count + " from " + currentPath, e);
+        }
     }
 
     private boolean fileReady(List<Path> available) {

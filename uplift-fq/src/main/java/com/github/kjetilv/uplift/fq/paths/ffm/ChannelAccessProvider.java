@@ -1,11 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
 import com.github.kjetilv.uplift.fq.AccessProvider;
+import com.github.kjetilv.uplift.fq.io.ChannelIO;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
@@ -51,7 +51,7 @@ public final class ChannelAccessProvider<T>
                 "File too small, must be at least " + LENGTH + " bytes: " + source + " (" + size + " bytes)");
         }
         return new ChannelReader<>(
-            randomAccess(source, "r"),
+            ChannelIO.randomAccessFile(source),
             separator,
             arena.get(),
             fromMemorySegment
@@ -61,7 +61,7 @@ public final class ChannelAccessProvider<T>
     @Override
     public Writer<T> writer(Path source) {
         return new ChannelWriter<>(
-            randomAccess(source, "rw"),
+            ChannelIO.randomAccessFile(source, true),
             toByteBuffer,
             linebreak
         );
@@ -71,14 +71,6 @@ public final class ChannelAccessProvider<T>
         VectorSpecies.ofPreferred(byte.class);
 
     private static final int LENGTH = SPECIES.length();
-
-    private static <T> RandomAccessFile randomAccess(Path source, String mode) {
-        try {
-            return new RandomAccessFile(source.toFile(), mode);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed " + mode + ": " + source, e);
-        }
-    }
 
     @Override
     public String toString() {

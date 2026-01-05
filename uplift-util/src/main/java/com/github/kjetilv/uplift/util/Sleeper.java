@@ -3,20 +3,44 @@ package com.github.kjetilv.uplift.util;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 
-public record Sleeper(State state, Object lock, Consumer<State> onMax) {
+public record Sleeper(State state, LongConsumer doze, Consumer<State> onMax) {
 
     public static Supplier<Sleeper> deferred(Supplier<String> description) {
         return deferred(description, (Consumer<State>) null);
     }
 
     public static Supplier<Sleeper> deferred(Supplier<String> description, Consumer<State> onMax) {
-        return deferred(description, null, onMax);
+        return deferred(description, null, null, onMax);
     }
 
     public static Supplier<Sleeper> deferred(Supplier<String> description, Duration timeout) {
-        return deferred(description, timeout, null);
+        return deferred(description, timeout, null, null);
+    }
+
+    public static Supplier<Sleeper> deferred(
+        Supplier<String> description,
+        LongConsumer doze
+    ) {
+        return deferred(description, null, doze, null);
+    }
+
+    public static Supplier<Sleeper> deferred(
+        Supplier<String> description,
+        LongConsumer doze,
+        Consumer<State> onMax
+    ) {
+        return deferred(description, null, doze, onMax);
+    }
+
+    public static Supplier<Sleeper> deferred(
+        Supplier<String> description,
+        LongConsumer doze,
+        Duration timeout
+    ) {
+        return deferred(description, timeout, doze, null);
     }
 
     public static Supplier<Sleeper> deferred(
@@ -24,11 +48,21 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         Duration timeout,
         Consumer<State> onMax
     ) {
+        return deferred(description, timeout, null, onMax);
+    }
+
+    public static Supplier<Sleeper> deferred(
+        Supplier<String> description,
+        Duration timeout,
+        LongConsumer doze,
+        Consumer<State> onMax
+    ) {
         return StableValue.supplier(() ->
             new Sleeper(
                 description.get(),
                 0L,
                 0L,
+                doze,
                 timeout,
                 onMax
             ));
@@ -38,6 +72,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
         String description,
         double time,
         long maxTime,
+        LongConsumer doze,
         Duration timeout,
         Consumer<State> onMax
     ) {
@@ -51,18 +86,11 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
             now,
             deadline
         );
-        this(state, newLock(), onMax);
+        this(state, doze == null ? defaultDoze() : doze, onMax);
     }
 
     public void sleep() {
-        synchronized (lock) {
-            try {
-                lock.wait(Math.round(state.time));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted", e);
-            }
-        }
+        doze.accept(Math.round(state.time));
         if (state.onMaxTime()) {
             return;
         }
@@ -73,7 +101,7 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
                 onMax.accept(nextState);
             }
         }
-        new Sleeper(nextState, lock, onMax);
+        new Sleeper(nextState, doze, onMax);
     }
 
     private static final double MAX_SLEEP = 10d;
@@ -82,8 +110,18 @@ public record Sleeper(State state, Object lock, Consumer<State> onMax) {
 
     private static final double SQRT_2 = Math.sqrt(2d);
 
-    private static Object newLock() {
-        return new boolean[0];
+    private static LongConsumer defaultDoze() {
+        var lock = new boolean[0];
+        return ms -> {
+            synchronized (lock) {
+                try {
+                    lock.wait(ms);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted", e);
+                }
+            }
+        };
     }
 
     public record State(

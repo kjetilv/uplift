@@ -1,11 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
+import com.github.kjetilv.uplift.fq.io.ChannelIO;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -13,7 +13,6 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.Function;
 
-import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 import static java.util.Objects.requireNonNull;
 import static jdk.incubator.vector.VectorOperators.EQ;
 
@@ -55,7 +54,7 @@ class ChannelReader<T> implements Reader<T> {
         if (this.size < LENGTH) {
             throw new IllegalArgumentException("Invalid size of " + randomAccessFile + ": " + size + "<" + LENGTH);
         }
-        this.segment = segment(randomAccessFile, this.size, arena);
+        this.segment = ChannelIO.memorySegment(randomAccessFile, arena);
         this.endSlice = Math.toIntExact(LENGTH - size % LENGTH);
     }
 
@@ -129,15 +128,6 @@ class ChannelReader<T> implements Reader<T> {
         UNSET = new VectorMask[LENGTH];
         for (var i = 0; i < LENGTH; i++) {
             UNSET[i] = VectorMask.fromValues(SPECIES, withFalse(i));
-        }
-    }
-
-    protected static MemorySegment segment(RandomAccessFile file, long size, Arena arena) {
-        try {
-            return file.getChannel()
-                .map(READ_ONLY, 0, size, arena);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to map " + file, e);
         }
     }
 

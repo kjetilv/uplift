@@ -19,6 +19,8 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     private final Function<Path, Writer<I>> newWriter;
 
+    private final Runnable next;
+
     private final LongAdder lineCount = new LongAdder();
 
     private final String suffix;
@@ -35,12 +37,14 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
         Path directory,
         Dimensions dimensions,
         Function<Path, Writer<I>> newWriter,
+        Runnable next,
         Fio<I, O> fio,
         Tombstone<Path> tombstone
     ) {
         super(directory, fio, tombstone);
         this.dimensions = requireNonNull(dimensions, "dims");
         this.newWriter = requireNonNull(newWriter, "newWriter");
+        this.next = next;
 
         var fileName = directory.getFileName().toString();
         var lastDot = fileName.lastIndexOf('.');
@@ -66,19 +70,23 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     @Override
     public void close() {
-        if (currentWriter != null) {
-            try {
-                currentWriter.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to close", e);
-            }
-        }
+        closeCurrent();
         setTombstone(Instant.now().atZone(UTC).toString());
     }
 
     @Override
     protected void subToString(StringBuilder builder) {
         builder.append("current: ").append(currentPath);
+    }
+
+    private void closeCurrent() {
+        try {
+            if (currentWriter != null) {
+                currentWriter.close();
+            }
+        } finally {
+            next.run();
+        }
     }
 
     private I parse(O item, long count) {
@@ -90,9 +98,7 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
     }
 
     private void updateWriter(Ledge ledge) {
-        if (currentWriter != null) {
-            currentWriter.close();
-        }
+        closeCurrent();
         currentPath = path(ledge.asSegment());
         currentLedge = ledge;
         currentWriter = newWriter.apply(currentPath);

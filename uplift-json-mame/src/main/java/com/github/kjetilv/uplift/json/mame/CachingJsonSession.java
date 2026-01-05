@@ -79,7 +79,6 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
         public String normalize(Object key) {
             return keys.computeIfAbsent(key, _ -> ((Token.Field) key).value());
         }
-
     }
 
     @Override

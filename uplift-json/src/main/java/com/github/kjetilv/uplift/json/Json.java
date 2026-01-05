@@ -21,6 +21,10 @@ public interface Json {
         return asMap(source, read(source));
     }
 
+    default Map<String, Object> map(MemorySegment source) {
+        return asMap(source, read(source));
+    }
+
     default Map<String, Object> map(ByteBuffer source) {
         return asMap(source, read(source));
     }

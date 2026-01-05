@@ -38,6 +38,7 @@ class PathFqChannelBytesTest {
                         throw new RuntimeException(e);
                     }
                 },
+                () -> {},
                 new BytesStringFio(),
                 new PathTombstone(fooTxt.resolve("done"))
             )

@@ -52,8 +52,10 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
         var in = fileInputStream(gzipFile(path, true));
         var sleeper = Sleeper.deferred(
             () -> "Unzip " + path.getFileName(),
-            onMax == null ? null : state ->
-                onMax.accept(path, state.duration())
+            onMax == null
+                ? null
+                : (Sleeper.State state) ->
+                    onMax.accept(path, state.duration())
         );
         while (sizeOf(path) <= GZIP_HEADER_SIZE) {
             sleeper.get().sleep();

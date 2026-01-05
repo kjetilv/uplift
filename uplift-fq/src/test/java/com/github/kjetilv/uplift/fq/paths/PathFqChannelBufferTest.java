@@ -40,6 +40,7 @@ class PathFqChannelBufferTest {
                         throw new RuntimeException(e);
                     }
                 },
+                () -> {},
                 new ByteBufferStringFio(),
                 new PathTombstone(fooTxt.resolve("done"))
             )

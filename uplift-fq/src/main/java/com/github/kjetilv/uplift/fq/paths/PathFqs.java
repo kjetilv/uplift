@@ -3,13 +3,21 @@ package com.github.kjetilv.uplift.fq.paths;
 import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.util.SayFiles;
+import com.github.kjetilv.uplift.util.Sleeper;
 
 import java.nio.file.Path;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.util.SayFiles.couldCreate;
 import static java.nio.file.Files.*;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class PathFqs<I, O> implements Fqs<O> {
 
@@ -71,6 +79,8 @@ public final class PathFqs<I, O> implements Fqs<O> {
 
     private final SourceProvider<Path> sourceProvider;
 
+    private final ConcurrentMap<Name, DirSynch> filesCreated = new ConcurrentHashMap<>();
+
     public PathFqs(
         Fio<I, O> fio,
         SourceProvider<Path> sourceProvider,
@@ -96,6 +106,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
             path,
             fio,
             accessProvider::reader,
+            filesCreated.computeIfAbsent(name, DirSynch::new)::awaitNext,
             new PathTombstone(path.resolve("done")),
             false
         );
@@ -108,6 +119,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
             directory,
             dimensions,
             accessProvider::writer,
+            filesCreated.computeIfAbsent(name, DirSynch::new)::next,
             fio,
             new PathTombstone(directory.resolve("done"))
         );
@@ -143,5 +155,40 @@ public final class PathFqs<I, O> implements Fqs<O> {
                 return write.apply(value);
             }
         };
+    }
+
+    private record DirSynch(Name name, Lock lock, Condition condition, Supplier<Sleeper> sleeper) {
+
+        private DirSynch(Name name) {
+            var lock = new ReentrantLock();
+            var condition = lock.newCondition();
+            this(name, lock, condition, Sleeper.deferred
+                (() -> "Wait for " + name,
+                    (long ms) -> {
+                        lock.lock();
+                        try {
+                            condition.await(ms, MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new IllegalStateException("Interrupted", e);
+                        } finally {
+                            lock.unlock();
+                        }
+
+                    }));
+        }
+
+        private void next() {
+            lock.lock();
+            try {
+                condition.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        private void awaitNext() {
+            sleeper.get().sleep();
+        }
     }
 }

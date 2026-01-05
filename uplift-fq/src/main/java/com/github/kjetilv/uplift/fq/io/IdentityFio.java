@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.fq.io;
 
 import com.github.kjetilv.uplift.fq.Fio;
 
-public record IdentityFio<T>(Class<T> type) implements Fio<T,T> {
+public record IdentityFio<T>() implements Fio<T,T> {
 
     @Override
     public T read(T line) {

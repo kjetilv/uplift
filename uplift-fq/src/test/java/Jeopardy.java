@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.nio.file.Files.*;
@@ -33,14 +34,27 @@ void main() {
     var jsonSessions = CachingJsonSessions.create(HashKind.K256);
     var json = Json.instance(jsonSessions);
 
-    var fqs = PathFqs.create(
-        workDir,
-        json::map,
-        value ->
-            ByteBuffer.wrap(json.write(value).getBytes()),
-        AccessProviders.channelBuffers(),
-        new Dimensions(2, 4, 6)
-    );
+    var dimensions = new Dimensions(2, 4, 6);
+
+    var fqs =
+        PathFqs.create(
+            workDir,
+            json::map,
+            value ->
+                ByteBuffer.wrap(json.write(value).getBytes()),
+            AccessProviders.channelBuffers(),
+            dimensions
+        );
+//        PathFqs.create(
+//        workDir,
+//        new IdentityFio<>(),
+//        new JsonAccessProvider(
+//            json,
+//            Arena::ofAuto,
+//            (byte) '\n'
+//        ),
+//        dimensions
+//    );
 
     var startFile = Path.of("JEOPARDY_QUESTIONS1.jsonl");
 
@@ -74,7 +88,8 @@ void main() {
     Instant now = Instant.now();
     if (flows.start()) {
         var run = flows.run();
-        run.join().forEach(System.out::println);
+        run.join()
+            .forEach(System.out::println);
     } else {
         throw new IllegalStateException("Not started:" + flows);
     }
@@ -86,6 +101,10 @@ private FqFlows.Processor<Map<String, Object>> process(
     Function<Map<String, Object>, Map<String, Object>> process
 ) {
     return items -> items.map(process);
+}
+
+private static Map<String, Object> roundtrip(Map<String, Object> map) {
+    return Json.INSTANCE.map(Json.INSTANCE.write(map));
 }
 
 private Map<String, Object> uppercaseAnswer(Map<String, Object> item) {
@@ -103,7 +122,7 @@ private Map<String, Object> rewriteCategory(Map<String, Object> item) {
     var kvMap = new HashMap<>(item);
     kvMap.put(
         "category",
-        Arrays.stream(category.split("\\s+"))
+        Arrays.stream(WS.split(category))
             .map(this::downcase)
             .collect(Collectors.joining(" "))
     );
@@ -149,6 +168,8 @@ private String downcase(String str) {
     return str == null || str.isBlank() ? str
         : str.charAt(0) + str.substring(1).toLowerCase();
 }
+
+private static final Pattern WS = Pattern.compile("\\s+");
 
 private static int computeValue(String val) {
     var cleaned =
