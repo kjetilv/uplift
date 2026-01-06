@@ -141,12 +141,10 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     public boolean done() {
         while (true) {
             switch (next1) {
-                case 0 -> {
-                    return true;
-                }
-                case ' ', '\n', '\t', '\r', '\f' -> advance();
+                case ' ', '\n', '\t', '\r', '\f' ->
+                    advance();
                 default -> {
-                    return false;
+                    return next1 == 0;
                 }
             }
         }

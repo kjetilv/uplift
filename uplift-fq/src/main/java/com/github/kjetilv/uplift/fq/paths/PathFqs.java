@@ -157,25 +157,34 @@ public final class PathFqs<I, O> implements Fqs<O> {
         };
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void waitFor(ReentrantLock lock, Condition condition, long ms) {
+        lock.lock();
+        try {
+            condition.await(ms, MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted", e);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     private record DirSynch(Name name, Lock lock, Condition condition, Supplier<Sleeper> sleeper) {
 
         private DirSynch(Name name) {
             var lock = new ReentrantLock();
             var condition = lock.newCondition();
-            this(name, lock, condition, Sleeper.deferred
-                (() -> "Wait for " + name,
-                    (long ms) -> {
-                        lock.lock();
-                        try {
-                            condition.await(ms, MILLISECONDS);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new IllegalStateException("Interrupted", e);
-                        } finally {
-                            lock.unlock();
-                        }
+            this(
+                name, lock, condition, Sleeper.deferred(
+                    () -> "Wait for " + name,
+                    (long ms) -> waitFor(lock, condition, ms)
+                )
+            );
+        }
 
-                    }));
+        private void awaitNext() {
+            sleeper.get().sleep();
         }
 
         private void next() {
@@ -185,10 +194,6 @@ public final class PathFqs<I, O> implements Fqs<O> {
             } finally {
                 lock.unlock();
             }
-        }
-
-        private void awaitNext() {
-            sleeper.get().sleep();
         }
     }
 }
