@@ -5,6 +5,7 @@ import jdk.incubator.vector.VectorSpecies;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -12,7 +13,6 @@ public final class Http {
 
     public static Request parse(ReadableByteChannel channel) {
         ByteVector.fromArray(SPECIES, new byte['\n'], 0);
-
         var extracted = extracted(channel);
         return new Request() {
 
@@ -49,6 +49,10 @@ public final class Http {
         };
     }
 
+    public static void write(Response response, WritableByteChannel out) {
+
+    }
+
     private Http() {
     }
 
@@ -64,7 +68,7 @@ public final class Http {
         return byteBuffer;
     }
 
-    interface Request {
+    public interface Request {
 
         Line requestLine();
 
@@ -80,33 +84,37 @@ public final class Http {
 
             Protocol protocol();
         }
+    }
 
-        interface Headers {
+    public interface Response {
 
-            default int count() {
-                return Math.toIntExact(names().count());
-            }
+    }
 
-            Optional<String> value(String header);
+    public interface Headers {
 
-            Stream<String> values(String header);
-
-            Stream<String> names();
+        default int count() {
+            return Math.toIntExact(names().count());
         }
 
-        enum Method {
+        Optional<String> value(String header);
 
-            GET,
-            POST,
-            PUT,
-            DELETE,
-            HEAD,
-            OPTIONS
-        }
+        Stream<String> values(String header);
 
-        enum Protocol {
+        Stream<String> names();
+    }
 
-            HTTP_1_1;
-        }
+    public enum Method {
+
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        HEAD,
+        OPTIONS
+    }
+
+    public enum Protocol {
+
+        HTTP_1_1;
     }
 }

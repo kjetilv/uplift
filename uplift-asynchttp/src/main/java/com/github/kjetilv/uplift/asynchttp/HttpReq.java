@@ -68,20 +68,21 @@ public record HttpReq(
         return body == null || body.length >= contentLength();
     }
 
-    @Override
-    public String toString() {
-        var base = new StringBuilder().append(getClass().getSimpleName())
-            .append("[").append(id).append(" ").append(method).append(" ").append(path);
-        if (!queryParams.isEmpty()) {
-            ToStrings.print(base, queryParams);
-        }
-        if (!headers.isEmpty()) {
-            ToStrings.print(base, headers);
-        }
-        if (body != null && body.length > 0) {
-            ToStrings.print(base, body);
-        }
-        return base.append("]").toString();
+    public String host() {
+        return requiredSingle("host");
+    }
+
+    public String origin() {
+        return requiredSingle("origin");
+    }
+
+    private String requiredSingle(String host) {
+        return Optional.ofNullable(headers.get(host))
+            .stream()
+            .flatMap(Collection::stream)
+            .findAny()
+            .orElseThrow(() ->
+                new IllegalStateException("%s: No %s header".formatted(this, host)));
     }
 
     private Integer contentLength() {
@@ -144,5 +145,21 @@ public record HttpReq(
             throw new IllegalStateException("Failed to parse, " + queryStart + "/" + urlEnd + ": " + reqLine, e);
         }
         return QueryParams.read(query);
+    }
+
+    @Override
+    public String toString() {
+        var base = new StringBuilder().append(getClass().getSimpleName())
+            .append("[").append(id).append(" ").append(method).append(" ").append(path);
+        if (!queryParams.isEmpty()) {
+            ToStrings.print(base, queryParams);
+        }
+        if (!headers.isEmpty()) {
+            ToStrings.print(base, headers);
+        }
+        if (body != null && body.length > 0) {
+            ToStrings.print(base, body);
+        }
+        return base.append("]").toString();
     }
 }

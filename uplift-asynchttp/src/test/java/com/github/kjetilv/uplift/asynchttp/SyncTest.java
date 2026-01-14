@@ -76,7 +76,12 @@ public class SyncTest {
 
         System.out.println(body);
 
-        run.join();
+        server.close();
+        try {
+            run.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     static final VectorSpecies<Byte> SPECIES = ByteVector.SPECIES_PREFERRED;

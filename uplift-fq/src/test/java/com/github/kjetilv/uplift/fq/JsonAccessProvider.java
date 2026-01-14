@@ -8,6 +8,7 @@ import com.github.kjetilv.uplift.json.bytes.MemorySegmentIntsBytesSource;
 import com.github.kjetilv.uplift.json.io.ReadException;
 
 import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -23,11 +24,7 @@ public class JsonAccessProvider implements AccessProvider<Path, Map<String, Obje
 
     private final byte[] ln;
 
-    public JsonAccessProvider(
-        Json json,
-        Supplier<Arena> arena,
-        byte separator
-    ) {
+    public JsonAccessProvider(Json json, Supplier<Arena> arena, byte separator) {
         this.json = Objects.requireNonNull(json, "json");
         this.arena = Objects.requireNonNull(arena, "arena");
         this.ln = new byte[] {separator};
@@ -35,25 +32,41 @@ public class JsonAccessProvider implements AccessProvider<Path, Map<String, Obje
 
     @Override
     public Reader<Map<String, Object>> reader(Path source) {
-        var randomAccessFile = ChannelIO.randomAccessFile(source);
-        var memorySegment = ChannelIO.memorySegment(randomAccessFile, arena.get());
-        var bytesSource = new MemorySegmentIntsBytesSource(memorySegment);
-        return new Reader<>() {
+        try (var randomAccessFile = ChannelIO.randomAccessFile(source)) {
+            MemorySegment result;
+            Arena arena1 = arena.get();
+            try {
+                result = randomAccessFile.getChannel()
+                    .map(
+                        FileChannel.MapMode.READ_ONLY,
+                        0,
+                        randomAccessFile.length(),
+                        arena1 == null ? Arena.ofAuto() : arena1
+                    );
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to map " + randomAccessFile, e);
+            }
+            var memorySegment = result;
+            var bytesSource = new MemorySegmentIntsBytesSource(memorySegment);
+            return new Reader<>() {
 
-            @Override
-            public Map<String, Object> read() {
-                try {
-                    return json.map(bytesSource);
-                } catch (ReadException e) {
-                    return null;
+                @Override
+                public Map<String, Object> read() {
+                    try {
+                        return json.map(bytesSource);
+                    } catch (ReadException e) {
+                        return null;
+                    }
                 }
-            }
 
-            @Override
-            public void close() {
-                ChannelIO.close(randomAccessFile, source);
-            }
-        };
+                @Override
+                public void close() {
+                    ChannelIO.close(randomAccessFile, source);
+                }
+            };
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings("resource")

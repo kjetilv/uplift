@@ -14,7 +14,7 @@ record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> cor
         this(
             Objects.requireNonNull(handler, "handler"),
             CaseInsensitiveHashMap.wrap(Map.of(
-                "Access-Control-Allow-Origin", List.of(corsHeaders.originValue()),
+                "Access-Control-Allow-Origin", List.of("*"),
                 "Access-Control-Allow-Methods", List.of(corsHeaders.methodsValue()),
                 "Access-Control-Allow-Headers", List.of(corsHeaders.headersValue()),
                 "Access-Control-Max-Age", List.of("86400"),

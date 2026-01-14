@@ -15,6 +15,10 @@ public record CorsSettings(
         this.headers = headers == null || headers.isEmpty() ? List.of("content-type") : List.copyOf(headers);
     }
 
+    public boolean accepts(String origin) {
+        return this.origins.stream().anyMatch(origin::equals);
+    }
+
     String headersValue() {
         return value(headers());
     }

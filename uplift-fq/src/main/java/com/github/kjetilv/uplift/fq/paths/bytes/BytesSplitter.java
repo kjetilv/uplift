@@ -99,13 +99,12 @@ public final class BytesSplitter {
             }
         } else {
             // Need to fill the tail and then the head
-            var tail = buffer.length - index;
-            var tailLoad = load(index, tail);
-            if (tailLoad == -1) {
+            var loaded = load(index, buffer.length - index);
+            if (loaded == -1) {
                 exhausted = true;
             } else {
-                end = tailLoad < tail
-                    ? end + tailLoad
+                end = loaded < buffer.length - index
+                    ? end + loaded
                     : 0;
             }
         }

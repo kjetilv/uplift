@@ -29,20 +29,12 @@ final class LocalLambdaHandler implements HttpAsyncChannelHandler.Server, Closea
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    private final Map<String, List<String>> corsHeaders;
+    private final CorsSettings cors;
 
     LocalLambdaHandler(LocalLambdaSettings settings) {
         Objects.requireNonNull(settings, "settings");
         this.lambdaRequestQueue = new ArrayBlockingQueue<>(settings.queueLength());
-
-        var cors = settings.cors();
-        this.corsHeaders = CaseInsensitiveHashMap.wrap(Map.of(
-            "Access-Control-Allow-Origin", List.of(cors.originValue()),
-            "Access-Control-Allow-Methods", List.of(cors.methodsValue()),
-            "Access-Control-Allow-Headers", List.of(cors.headersValue()),
-            "Access-Control-Max-Age", List.of("86400"),
-            "Access-Control-Allow-Credentials", List.of(cors.credentialsValue())
-        ));
+        this.cors = settings.cors();
     }
 
     @Override
@@ -81,7 +73,21 @@ final class LocalLambdaHandler implements HttpAsyncChannelHandler.Server, Closea
             );
         }
         if (req.isCORS()) {
-            return new HttpRes(OK, corsHeaders, req.id());
+            var origin = req.origin();
+            if (cors.accepts(origin)) {
+                return new HttpRes(
+                    OK,
+                    CaseInsensitiveHashMap.wrap(Map.of(
+                        "Access-Control-Allow-Origin", List.of(origin),
+                        "Access-Control-Allow-Methods", List.of(cors.methodsValue()),
+                        "Access-Control-Allow-Headers", List.of(cors.headersValue()),
+                        "Access-Control-Max-Age", List.of("86400"),
+                        "Access-Control-Allow-Credentials", List.of(cors.credentialsValue())
+                    )),
+                    req.id()
+                );
+            }
+            return new HttpRes(403, req.id());
         }
         return new HttpRes(400, req.id());
     }
@@ -139,12 +145,13 @@ final class LocalLambdaHandler implements HttpAsyncChannelHandler.Server, Closea
     private static LambdaResponse lambdaResponse(byte[] response) {
         try (var source = new ByteArrayInputStream(response)) {
             var responseIn = ResponseIn.read(source);
+            var digest = responseIn.reqId();
             return new LambdaResponse(
                 responseIn.statusCode(),
                 Maps.mapValues(responseIn.headers(), String::valueOf),
                 responseIn.body(),
                 responseIn.isBase64Encoded(),
-                Hash.from(responseIn.reqId())
+                digest == null ? null : Hash.from(digest)
             );
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read response: " + response.length + " bytes", e);
