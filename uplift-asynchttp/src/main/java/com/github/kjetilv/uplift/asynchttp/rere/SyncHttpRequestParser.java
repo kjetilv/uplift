@@ -74,21 +74,28 @@ public final class SyncHttpRequestParser implements Closeable {
                 if (linePos == LENGTH) {
                     continue;
                 }
-                lineMask = unset(lineMask, 1 + linePos);
-                var lineBreak = Math.toIntExact(maskStart - LENGTH + linePos);
-                lineStart = lineBreak + 1;
-                return new RequestLine(
-                    memorySegment,
-                    urlIndex + 1,
-                    bytesFound + 1,
-                    lineBreak + 1
-                );
+                return requestLine(linePos, urlIndex, bytesFound);
             }
         }
     }
 
+    private RequestLine requestLine(int linePos, int urlIndex, int bytesFound) {
+        lineMask = unset(lineMask, 1 + linePos);
+        var lineBreak = Math.toIntExact(maskStart - LENGTH + linePos);
+        lineStart = lineBreak + 1;
+        return new RequestLine(
+            memorySegment,
+            urlIndex + 1,
+            bytesFound + 1,
+            lineBreak + 1
+        );
+    }
+
     public RequestHeader parseHeader() {
         while (true) {
+            if (lineStart == available && done) {
+                return null;
+            }
             if (lineMask.firstTrue() == LENGTH) {
                 // Drained mask
                 nextLineMask();

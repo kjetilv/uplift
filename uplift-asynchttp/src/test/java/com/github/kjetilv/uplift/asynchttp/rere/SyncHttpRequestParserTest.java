@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.nio.channels.Channels;
 
@@ -13,8 +14,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SyncHttpRequestParserTest {
 
     @Test
-    void request() throws Exception {
-        var headers = """
+    void shortRequest() throws Exception {
+        assertSelf("""
+            GET foo/bar HTTP/1.1
+            foo: bar
+            """);
+    }
+
+    @Test
+    void shortRequestWLineBreaks() throws Exception {
+        assertSelf("""
+            GET foo/bar HTTP/1.1
+            foo: bar
+            
+            """);
+    }
+
+    @Test
+    void shortRequestW2LineBreaks() throws Exception {
+        assertSelf("""
+            GET foo/bar HTTP/1.1
+            foo: bar
+            
+            
+            """);
+    }
+
+    @Test
+    void okRequest() throws Exception {
+        var req = """
             GET /foo/bar HTTP/1.1
             foo: bar
             zipp: zoot
@@ -27,7 +55,7 @@ class SyncHttpRequestParserTest {
             
             """;
 
-        try (var channel = Channels.newChannel(new ByteArrayInputStream(headers.getBytes()))) {
+        try (var channel = Channels.newChannel(new ByteArrayInputStream(req.getBytes()))) {
             var parser = new SyncHttpRequestParser(channel, Arena.ofShared(), 2048);
             var httpRequest = parser.parse();
             assertThat(httpRequest.requestLine()).hasToString("GET /foo/bar HTTP/1.1");
@@ -38,7 +66,10 @@ class SyncHttpRequestParserTest {
             assertThat(httpRequest.headers().get(2)).isNotNull().satisfies(hdr ->
                 assertHeader(hdr, "Content-Type: application:json"));
             assertThat(httpRequest.headers().getLast()).isNotNull().satisfies(hdr ->
-                assertHeader(hdr, "veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x"));
+                assertHeader(
+                    hdr,
+                    "veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x"
+                ));
             try (var linesReader = new BufferedReader(Channels.newReader(httpRequest.body(), UTF_8))) {
                 assertThat(linesReader.readLine()).isEqualTo("sdf");
                 assertThat(linesReader.readLine()).isEqualTo("sdf");
@@ -46,6 +77,13 @@ class SyncHttpRequestParserTest {
                 assertThat(linesReader.readLine()).isBlank();
                 assertThat(linesReader.readLine()).isNull();
             }
+        }
+    }
+
+    private static void assertSelf(String req) throws IOException {
+        try (var channel = Channels.newChannel(new ByteArrayInputStream(req.getBytes()))) {
+            var request = new SyncHttpRequestParser(channel, Arena.ofAuto(), 2048).parse();
+            assertThat(request).hasToString(req.trim() + "\n");
         }
     }
 
