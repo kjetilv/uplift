@@ -42,11 +42,50 @@ public final class SyncHttpRequestParser implements Closeable {
     }
 
     public HttpRequest parse() {
-        return new HttpRequest(
-            parseRequestLine(),
-            parseHeaders(),
-            body()
-        );
+        return new HttpRequest(parseRequestLine(), parseHeaders(), body());
+    }
+
+    public RequestHeader parseHeader() {
+        while (true) {
+            if (lineStart == available && done) {
+                bodyStart = Math.toIntExact(lineStart + bodyStart + 1);
+                return null;
+            }
+            if (lineMask.firstTrue() == LENGTH) {
+                // Drained mask
+                nextLineMask();
+            }
+            var maskPosition = lineMask.firstTrue();
+            if (maskPosition == LENGTH) {
+                // Drained mask
+                continue;
+            }
+            var bytesFound = maskStart + maskPosition - LENGTH - lineStart;
+            if (bytesFound == 0) {
+                // Empty line, end of headers section
+                bodyStart = Math.toIntExact(lineStart + bodyStart + 1);
+                return null;
+            }
+            var separatorOffset = separatorOffset();
+            var httpHeader = new RequestHeader(
+                memorySegment,
+                Math.toIntExact(lineStart),
+                Math.toIntExact(separatorOffset),
+                Math.toIntExact(bytesFound)
+            );
+            lineStart += bytesFound + 1;
+            lineMask = unset(lineMask, 1 + maskPosition);
+            return httpHeader;
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            channel.close();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to close " + channel, e);
+        }
     }
 
     private RequestLine parseRequestLine() {
@@ -91,93 +130,14 @@ public final class SyncHttpRequestParser implements Closeable {
         );
     }
 
-    public RequestHeader parseHeader() {
-        while (true) {
-            if (lineStart == available && done) {
-                return null;
-            }
-            if (lineMask.firstTrue() == LENGTH) {
-                // Drained mask
-                nextLineMask();
-            }
-            var maskPosition = lineMask.firstTrue();
-            if (maskPosition == LENGTH) {
-                // Drained mask
-                continue;
-            }
-            var bytesFound = maskStart + maskPosition - LENGTH - lineStart;
-            if (bytesFound == 0) {
-                // Empty line, end of headers section
-                bodyStart = Math.toIntExact(lineStart + bodyStart + 1);
-                return null;
-            }
-            var separatorOffset = separatorOffset();
-            var httpHeader = new RequestHeader(
-                memorySegment,
-                Math.toIntExact(lineStart),
-                Math.toIntExact(separatorOffset),
-                Math.toIntExact(bytesFound)
-            );
-            lineStart += bytesFound + 1;
-            lineMask = unset(lineMask, 1 + maskPosition);
-            return httpHeader;
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            channel.close();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to close " + channel, e);
-        }
-    }
-
     private ReadableByteChannel body() {
         int bufferedBodyBytes = available - bodyStart;
-        if (bufferedBodyBytes <= 0) {
-            return channel;
-        }
-        var bufferedBody = memorySegment.asSlice(bodyStart, bufferedBodyBytes).asByteBuffer();
-        return new ReadableByteChannel() {
-
-            @Override
-            public int read(ByteBuffer dst) {
-                if (bufferedBody.hasRemaining()) {
-                    int toWrite = getToWrite(dst, bufferedBody);
-                    if (toWrite > 0) {
-                        int oldLimit = bufferedBody.limit();
-                        bufferedBody.limit(bufferedBody.position() + toWrite);
-                        dst.put(bufferedBody);
-                        bufferedBody.limit(oldLimit);
-                        return toWrite;
-                    }
-                }
-                try {
-                    return channel.read(dst);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to read from " + channel, e);
-                }
-            }
-
-            @Override
-            public boolean isOpen() {
-                return bufferedBody.hasRemaining() || channel.isOpen();
-            }
-
-            @Override
-            public void close() {
-                try {
-                    channel.close();
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to close " + channel, e);
-                }
-            }
-        };
-    }
-
-    private static int getToWrite(ByteBuffer dst, ByteBuffer bufferedBody) {
-        return Math.min(dst.remaining(), bufferedBody.remaining());
+        return bufferedBodyBytes <= 0
+            ? channel
+            : new BodyBytes(
+                channel,
+                memorySegment.asSlice(bodyStart, bufferedBodyBytes).asByteBuffer()
+            );
     }
 
     private List<RequestHeader> parseHeaders() {

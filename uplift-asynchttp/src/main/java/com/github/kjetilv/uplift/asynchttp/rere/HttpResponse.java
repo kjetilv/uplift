@@ -5,7 +5,19 @@ import java.util.List;
 
 public record HttpResponse(
     int statusCode,
-    List<ResponseHeader> headers,
+    ResponseHeader[] headers,
     ReadableByteChannel body
 ) {
+
+    public HttpResponse(
+        int statusCode,
+        List<ResponseHeader> headers,
+        ReadableByteChannel body
+    ) {
+        this(
+            statusCode,
+            headers.toArray(ResponseHeader[]::new),
+            body
+        );
+    }
 }
