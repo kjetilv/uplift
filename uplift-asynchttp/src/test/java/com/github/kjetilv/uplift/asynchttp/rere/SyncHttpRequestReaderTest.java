@@ -12,7 +12,7 @@ import java.nio.channels.ReadableByteChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SyncHttpRequestParserTest {
+class SyncHttpRequestReaderTest {
 
     @Test
     void shortRequest() {
@@ -154,7 +154,7 @@ class SyncHttpRequestParserTest {
     }
 
     private static HttpRequest parse(ReadableByteChannel channel) {
-        return new SyncHttpRequestParser(channel, Arena.ofShared(), 2048).parse();
+        return new SyncHttpRequestReader(channel, Arena.ofShared(), 2048).parse();
     }
 
     private static BufferedReader reader(HttpRequest httpRequest) {
@@ -163,7 +163,7 @@ class SyncHttpRequestParserTest {
 
     private static void assertSelf(String req) {
         try (var channel = channel(req)) {
-            var request = new SyncHttpRequestParser(channel, Arena.ofAuto(), 2048).parse();
+            var request = new SyncHttpRequestReader(channel, Arena.ofAuto(), 2048).parse();
             assertThat(request).hasToString(req.trim() + "\n");
         } catch (Exception e) {
             throw new IllegalStateException(e);

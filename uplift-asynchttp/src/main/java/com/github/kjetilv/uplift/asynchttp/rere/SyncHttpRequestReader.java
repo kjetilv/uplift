@@ -5,7 +5,7 @@ import module jdk.incubator.vector;
 
 import static jdk.incubator.vector.VectorOperators.EQ;
 
-public final class SyncHttpRequestParser implements Closeable {
+public final class SyncHttpRequestReader implements Closeable {
 
     private long lineStart;
 
@@ -33,7 +33,7 @@ public final class SyncHttpRequestParser implements Closeable {
 
     private int bodyStart;
 
-    public SyncHttpRequestParser(ReadableByteChannel channel, Arena arena, int bufferSize) {
+    public SyncHttpRequestReader(ReadableByteChannel channel, Arena arena, int bufferSize) {
         this.channel = Objects.requireNonNull(channel, "channel");
         this.arena = Objects.requireNonNull(arena, "arena");
         this.bufferSize = bufferSize / 4;
@@ -169,14 +169,6 @@ public final class SyncHttpRequestParser implements Closeable {
         this.buffer.position(Math.toIntExact(maskStart));
     }
 
-    private int read() {
-        try {
-            return this.channel.read(this.buffer);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to read from " + this.channel, e);
-        }
-    }
-
     private long separatorOffset() {
         long start = lineStart;
         while (true) {
@@ -222,13 +214,25 @@ public final class SyncHttpRequestParser implements Closeable {
 
     private void fillBuffer() {
         while (available < bufferSize && !done) {
-            switch (read()) {
+            switch (readIntoBuffer()) {
                 case -1 -> {
                     done = true;
                     return;
                 }
-                case int read -> available += read;
+                case 0 -> {}
+                case int read -> {
+                    available += read;
+                    return;
+                }
             }
+        }
+    }
+
+    private int readIntoBuffer() {
+        try {
+            return this.channel.read(this.buffer);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read from " + this.channel, e);
         }
     }
 

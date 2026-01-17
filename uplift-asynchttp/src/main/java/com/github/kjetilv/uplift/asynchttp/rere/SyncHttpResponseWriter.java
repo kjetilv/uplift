@@ -1,83 +1,91 @@
 package com.github.kjetilv.uplift.asynchttp.rere;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SyncHttpResponseWriter {
-
-    public static final ByteBuffer LN = ByteBuffer.wrap("\n".getBytes());
 
     private final WritableByteChannel out;
 
     public SyncHttpResponseWriter(WritableByteChannel out) {
         this.out = Objects.requireNonNull(out, "out");
-        write(VERSION);
     }
 
     public void write(HttpResponse response) {
-        try (var body = response.body()) {
+        try (this.out; var body = response.body()) {
+            write(ByteBuffer.wrap(VERSION));
 
             var statusCode = statusCode(response);
 
             write(statusCode);
 
+            var wroteContentLength = false;
             for (var header : response.headers()) {
-                write(header.buf());
+                if (header.isContentLength()) {
+                    wroteContentLength = true;
+                }
+                write(header.buffer());
             }
 
-            write(LN);
-
-            writeBody(body);
+            if (body != null) {
+                if (!wroteContentLength) {
+                    write(response.contentLengthHeader().buffer());
+                }
+                write(ByteBuffer.wrap(LN));
+                var written = writeBody(body);
+                if (written != response.contentLength()) {
+                    throw new IllegalStateException(
+                        "Expected " + response.contentLength() + " bytes, but wrote " + written + ": " + response);
+                }
+            }
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write to " + out, e);
+            throw new IllegalStateException("Failed to write " + response, e);
         }
     }
 
-    private void writeBody(ReadableByteChannel body) {
+    private int writeBody(ReadableByteChannel body) {
+        int written = 0;
         ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-        while (true) {
-            if (read(body, buffer)) {
-                return;
-            }
-            write(buffer);
-            buffer.flip();
-            buffer.compact();
+        while (readInto(body, buffer)) {
+            written += write(buffer);
+            buffer.position(0);
         }
+        return written;
     }
 
-    private void write(ByteBuffer buffer) {
+    private int write(ByteBuffer buffer) {
+        int written = 0;
         try {
-            out.write(buffer);
+            while (buffer.hasRemaining()) {
+                written += out.write(buffer);
+            }
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to write " + buffer, e);
         }
+        return written;
     }
 
-    private static final Map<Integer, ByteBuffer> STATUS_CODES = new ConcurrentHashMap<>();
+    private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
 
-    private static final ByteBuffer VERSION = ByteBuffer.wrap("HTTP/1.1 ".getBytes());
+    private static final byte[] LN = {'\n'};
 
     private static ByteBuffer statusCode(HttpResponse response) {
-        return STATUS_CODES.computeIfAbsent(
-            response.statusCode(),
-            SyncHttpResponseWriter::statusBuffer
-        );
+        return ByteBuffer.wrap(((Integer) response.statusCode() + "\n").getBytes());
     }
 
-    private static boolean read(ReadableByteChannel body, ByteBuffer buffer) {
+    private static boolean readInto(ReadableByteChannel body, ByteBuffer buffer) {
         try {
-            return body.read(buffer) == -1 && buffer.position() <= 0;
-        } catch (IOException e) {
+            var read = body.read(buffer);
+            if (read == -1) {
+                return false;
+            }
+            buffer.flip();
+            return true;
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to write body " + body, e);
         }
     }
 
-    private static ByteBuffer statusBuffer(Integer code) {
-        return ByteBuffer.wrap((code + "\n").getBytes());
-    }
 }

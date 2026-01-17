@@ -3,7 +3,6 @@ package com.github.kjetilv.uplift.asynchttp;
 import com.github.kjetilv.uplift.hash.HashKind;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorSpecies;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -11,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -36,7 +36,6 @@ public class SyncTest {
         System.out.println(byteVector2.eq((byte) '\n'));
     }
 
-    @Disabled
     @Test
     void test() {
         var server = SyncIOServer.create();
@@ -67,10 +66,45 @@ public class SyncTest {
         });
         System.out.println(run.port());
 
-        var future = HttpClient.newHttpClient().sendAsync(
-            HttpRequest.newBuilder(URI.create("http://localhost:" + run.port())).build(),
-            HttpResponse.BodyHandlers.ofString()
-        );
+        CompletableFuture<HttpResponse<String>> future;
+        try (var httpClient = HttpClient.newHttpClient()) {
+            future = httpClient.sendAsync(
+                HttpRequest.newBuilder(URI.create("http://localhost:" + run.port())).build(),
+                HttpResponse.BodyHandlers.ofString()
+            );
+        }
+
+        var body = future.join().body();
+
+        System.out.println(body);
+
+        server.close();
+        try {
+            run.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHttp() {
+        var handler = new HttpSyncHandler((_, _) ->
+            new com.github.kjetilv.uplift.asynchttp.rere.HttpResponse(
+                200,
+                "world\n"
+            ));
+        var server = SyncIOServer.create();
+        var run = server.run(handler);
+        System.out.println(run.port());
+
+        CompletableFuture<HttpResponse<String>> future;
+        try (var httpClient = HttpClient.newHttpClient()) {
+            future =
+                httpClient.sendAsync(
+                    HttpRequest.newBuilder(URI.create("http://localhost:" + run.port())).build(),
+                    HttpResponse.BodyHandlers.ofString()
+                );
+        }
 
         var body = future.join().body();
 

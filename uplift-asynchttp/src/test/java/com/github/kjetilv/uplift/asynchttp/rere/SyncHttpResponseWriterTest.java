@@ -1,0 +1,63 @@
+package com.github.kjetilv.uplift.asynchttp.rere;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
+class SyncHttpResponseWriterTest {
+
+    @Test
+    void writeSimple() {
+        var baos = new ByteArrayOutputStream();
+        var channel = Channels.newChannel(baos);
+        new SyncHttpResponseWriter(channel)
+            .write(new HttpResponse(
+                200,
+                new ResponseHeader("foo", "bar")
+            ));
+        assertThat(baos.toString(UTF_8)).isEqualTo(
+            """
+                HTTP/1.1 200
+                foo: bar
+                """
+        );
+    }
+
+    @Test
+    void writeWithBody() throws IOException {
+        ByteArrayOutputStream baos;
+        try (
+            var in = new ByteArrayInputStream("foobar\n".getBytes(UTF_8));
+            var body = Channels.newChannel(in)
+        ) {
+            baos = new ByteArrayOutputStream();
+            var out = Channels.newChannel(baos);
+
+            new SyncHttpResponseWriter(out)
+                .write(new HttpResponse(
+                    200,
+                    7,
+                    List.of(
+                        new ResponseHeader("foo", "bar")
+                    ),
+                    body
+                ));
+        }
+        assertThat(baos.toString(UTF_8)).isEqualTo(
+            """
+                HTTP/1.1 200
+                foo: bar
+                content-length: 7
+                
+                foobar
+                """
+        );
+    }
+}
