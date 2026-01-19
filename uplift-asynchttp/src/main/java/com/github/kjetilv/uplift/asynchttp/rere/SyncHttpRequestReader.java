@@ -38,11 +38,11 @@ public final class SyncHttpRequestReader implements Closeable {
         if (this.bufferSize % LENGTH != 0) {
             throw new IllegalStateException("Require bufferSize/4 divisible by " + LENGTH + ": " + bufferSize);
         }
-        init();
-        fillBuffer();
     }
 
     public HttpRequest read() {
+        init();
+        fillBuffer();
         var requestLine = parseRequestLine();
         var headers = parseHeaders();
         var body = body();
@@ -245,7 +245,10 @@ public final class SyncHttpRequestReader implements Closeable {
         while (available < bufferSize && !done) {
             switch (readIntoBuffer()) {
                 case -1 -> done = true;
-                case int read -> available += read;
+                case int read -> {
+                    available += read;
+                    return;
+                }
             }
         }
     }

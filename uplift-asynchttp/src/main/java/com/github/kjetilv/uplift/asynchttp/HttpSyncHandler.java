@@ -45,7 +45,8 @@ public class HttpSyncHandler implements SyncIOServer.Handler {
     public void run(ReadableByteChannel in, WritableByteChannel out) {
         HttpRequest httpReq;
         try {
-            httpReq = new SyncHttpRequestReader(in, arena, maxRequestLength).read();
+            var reader = new SyncHttpRequestReader(in, arena, maxRequestLength);
+            httpReq = reader.read();
         } catch (Exception e) {
             log.error("Failed to handle request", e);
             new SyncHttpResponseWriter(out).write(new HttpResponse(500));
