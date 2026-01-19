@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.lang.foreign.Arena;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,8 +22,22 @@ class SyncHttpRequestReaderTest {
     }
 
     @Test
+    void shortRequestTrimmed() {
+        assertSelf(SHORT_REQ.trim());
+    }
+
+    @Test
     void shortRequestNoBody() throws Exception {
         try (var channel = channel(SHORT_REQ)) {
+            var request = parse(channel);
+            try (var reader = reader(request)) {
+                assertThat(reader.readLine()).isNull();
+            }
+        }
+    }
+    @Test
+    void shortRequestTrimmedNoBody() throws Exception {
+        try (var channel = channel(SHORT_REQ.trim())) {
             var request = parse(channel);
             try (var reader = reader(request)) {
                 assertThat(reader.readLine()).isNull();
@@ -109,44 +125,41 @@ class SyncHttpRequestReaderTest {
         }
     }
 
-    private static final String HTTP_2_LINE_BREAKS =
-        """
-            GET foo/bar HTTP/1.1
-            foo: bar
-            
-            
-            """;
+    private static final String GET_CONTENT_LEN = """
+        GET foo/bar HTTP/1.1\r
+        Content-Length: 10\r
+        \r
+        """;
 
-    private static final String LONG_REQ =
-        """
-            GET /foo/bar HTTP/1.1
-            foo: bar
-            zipp: zoot
-            Content-Type: application:json
-            veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x
-            
-            sdf
-            sdf
-            
-            
-            """;
-
-    private static final String SHORT_REQ =
-        """
-            GET foo/bar HTTP/1.1
-            foo: bar
-            """;
-
-    private static final String HTTP_LINE_BREAKS = """
-        GET foo/bar HTTP/1.1
-        foo: bar
+    private static final String HTTP_2_LINE_BREAKS = """
+        GET foo/bar HTTP/1.1\r
+        foo: bar\r
+        \r
         
         """;
 
-    public static final String GET_CONTENT_LEN = """
-        GET foo/bar HTTP/1.1
-        Content-Length: 10
+    private static final String LONG_REQ = """
+        GET /foo/bar HTTP/1.1\r
+        foo: bar\r
+        zipp: zoot\r
+        Content-Type: application:json\r
+        veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x\r
+        \r
+        sdf
+        sdf
         
+        
+        """;
+
+    private static final String SHORT_REQ = """
+        GET foo/bar HTTP/1.1\r
+        foo: bar\r
+        """;
+
+    private static final String HTTP_LINE_BREAKS = """
+        GET foo/bar HTTP/1.1\r
+        foo: bar\r
+        \r
         """;
 
     private static ReadableByteChannel channel(String str) {
@@ -154,7 +167,7 @@ class SyncHttpRequestReaderTest {
     }
 
     private static HttpRequest parse(ReadableByteChannel channel) {
-        return new SyncHttpRequestReader(channel, Arena.ofShared(), 2048).parse();
+        return new SyncHttpRequestReader(channel, Arena.ofShared(), 2048).read();
     }
 
     private static BufferedReader reader(HttpRequest httpRequest) {
@@ -163,11 +176,19 @@ class SyncHttpRequestReaderTest {
 
     private static void assertSelf(String req) {
         try (var channel = channel(req)) {
-            var request = new SyncHttpRequestReader(channel, Arena.ofAuto(), 2048).parse();
-            assertThat(request).hasToString(req.trim() + "\n");
+            var request = new SyncHttpRequestReader(channel, Arena.ofAuto(), 2048).read();
+            assertThat(request).hasToString(req.trim() + "\r\n");
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static String cr(String str) {
+        return Arrays.stream(str.split("\n"))
+            .map(s -> s.endsWith("\r")
+                ? s + "\n"
+                : s + "\r\n")
+            .collect(Collectors.joining());
     }
 
     private static void assertHeader(RequestHeader hdr, String expected) {

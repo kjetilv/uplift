@@ -24,8 +24,8 @@ class SyncHttpResponseWriterTest {
             ));
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200
-                foo: bar
+                HTTP/1.1 200\r
+                foo: bar\r
                 """
         );
     }
@@ -34,7 +34,7 @@ class SyncHttpResponseWriterTest {
     void writeWithBody() throws IOException {
         ByteArrayOutputStream baos;
         try (
-            var in = new ByteArrayInputStream("foobar\n".getBytes(UTF_8));
+            var in = new ByteArrayInputStream("foobar\nzotzit".getBytes(UTF_8));
             var body = Channels.newChannel(in)
         ) {
             baos = new ByteArrayOutputStream();
@@ -43,7 +43,7 @@ class SyncHttpResponseWriterTest {
             new SyncHttpResponseWriter(out)
                 .write(new HttpResponse(
                     200,
-                    7,
+                    13,
                     List.of(
                         new ResponseHeader("foo", "bar")
                     ),
@@ -52,12 +52,12 @@ class SyncHttpResponseWriterTest {
         }
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200
-                foo: bar
-                content-length: 7
-                
+                HTTP/1.1 200\r
+                foo: bar\r
+                content-length: 13\r
+                \r
                 foobar
-                """
+                zotzit"""
         );
     }
 }

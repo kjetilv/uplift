@@ -16,7 +16,7 @@ public record ResponseHeader(String name, String value) {
     }
 
     public ByteBuffer buffer() {
-        String line = "%s: %s\n".formatted(name, value);
+        String line = "%s: %s\r\n".formatted(name, value);
         return ByteBuffer.wrap(line.getBytes());
     }
 

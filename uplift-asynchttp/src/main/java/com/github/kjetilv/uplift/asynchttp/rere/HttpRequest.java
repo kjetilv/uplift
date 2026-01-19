@@ -39,8 +39,8 @@ public record HttpRequest(RequestLine requestLine, RequestHeader[] headers, Read
     public String toString() {
         var headers = Arrays.stream(this.headers)
             .map(RequestHeader::toString)
-            .collect(Collectors.joining("\n"));
-        return requestLine + "\n" +
-               headers + "\n";
+            .collect(Collectors.joining("\r\n"));
+        return requestLine + "\r\n" +
+               headers + "\r\n";
     }
 }

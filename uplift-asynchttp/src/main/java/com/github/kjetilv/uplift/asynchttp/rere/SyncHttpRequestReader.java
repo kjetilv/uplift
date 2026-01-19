@@ -3,13 +3,11 @@ package com.github.kjetilv.uplift.asynchttp.rere;
 import module java.base;
 import module jdk.incubator.vector;
 
-import static jdk.incubator.vector.VectorOperators.EQ;
-
 public final class SyncHttpRequestReader implements Closeable {
 
-    private long lineStart;
+    private int lineStart;
 
-    private long maskStart;
+    private int maskEnd;
 
     private VectorMask<Byte> lineMask = ZERO;
 
@@ -37,46 +35,22 @@ public final class SyncHttpRequestReader implements Closeable {
         this.channel = Objects.requireNonNull(channel, "channel");
         this.arena = Objects.requireNonNull(arena, "arena");
         this.bufferSize = bufferSize / 4;
+        if (this.bufferSize % LENGTH != 0) {
+            throw new IllegalStateException("Require bufferSize/4 divisible by " + LENGTH + ": " + bufferSize);
+        }
         init();
         fillBuffer();
     }
 
-    public HttpRequest parse() {
-        return new HttpRequest(parseRequestLine(), parseHeaders(), body());
-    }
-
-    public RequestHeader parseHeader() {
-        while (true) {
-            if (lineStart == available && done) {
-                bodyStart = Math.toIntExact(lineStart + bodyStart + 1);
-                return null;
-            }
-            if (lineMask.firstTrue() == LENGTH) {
-                // Drained mask
-                nextLineMask();
-            }
-            var maskPosition = lineMask.firstTrue();
-            if (maskPosition == LENGTH) {
-                // Drained mask
-                continue;
-            }
-            var bytesFound = maskStart + maskPosition - LENGTH - lineStart;
-            if (bytesFound == 0) {
-                // Empty line, end of headers section
-                bodyStart = Math.toIntExact(lineStart + bodyStart + 1);
-                return null;
-            }
-            var separatorOffset = separatorOffset();
-            var httpHeader = new RequestHeader(
-                memorySegment,
-                Math.toIntExact(lineStart),
-                Math.toIntExact(separatorOffset),
-                Math.toIntExact(bytesFound)
-            );
-            lineStart += bytesFound + 1;
-            lineMask = unset(lineMask, 1 + maskPosition);
-            return httpHeader;
-        }
+    public HttpRequest read() {
+        var requestLine = parseRequestLine();
+        var headers = parseHeaders();
+        var body = body();
+        return new HttpRequest(
+            requestLine,
+            headers,
+            body
+        );
     }
 
     @Override
@@ -94,40 +68,93 @@ public final class SyncHttpRequestReader implements Closeable {
             if (spaceMask.firstTrue() == LENGTH) {
                 nextSpaceMask();
             }
-            var maskPosition = spaceMask.firstTrue();
-            if (maskPosition == LENGTH) {
+            var spaceMaskPos = spaceMask.firstTrue();
+            if (spaceMaskPos == LENGTH) {
                 continue;
             }
-            var bytesFound = Math.toIntExact(maskStart + maskPosition - LENGTH);
+            var bytesFound = Math.toIntExact(maskEnd + spaceMaskPos - LENGTH);
             if (urlIndex == 0) {
                 urlIndex = bytesFound;
-                lineMask = unset(lineMask, 1 + maskPosition);
-                spaceMask = unset(spaceMask, 1 + maskPosition);
+                spaceMask = unset(spaceMask, 1 + spaceMaskPos);
                 continue;
             }
             while (true) {
                 if (lineMask.firstTrue() == LENGTH) {
                     nextLineMask();
                 }
-                var linePos = lineMask.firstTrue();
-                if (linePos == LENGTH) {
+                var lineMaskPos = lineMask.firstTrue();
+                if (lineMaskPos == LENGTH) {
                     continue;
                 }
-                return requestLine(linePos, urlIndex, bytesFound);
+                return requestLine(
+                    lineMaskPos,
+                    urlIndex,
+                    bytesFound
+                );
             }
         }
     }
 
-    private RequestLine requestLine(int linePos, int urlIndex, int bytesFound) {
-        lineMask = unset(lineMask, 1 + linePos);
-        var lineBreak = Math.toIntExact(maskStart - LENGTH + linePos);
+    private RequestHeader parseHeader() {
+        while (true) {
+            if (lineStart >= available && done) {
+                bodyStart = Math.toIntExact(lineStart + 1);
+                return null;
+            }
+            int lineMaskPos = lineMask.firstTrue();
+            int bytesFound;
+            if (lineMaskPos == LENGTH) {
+                // No hits in mask
+                if (maskEnd >= available && done) {
+                    // All data read,
+                    bytesFound = available - lineStart;
+                } else {
+                    // Drained mask
+                    nextLineMask();
+                    lineMaskPos = lineMask.firstTrue();
+                    if (lineMaskPos == LENGTH) {
+                        // Drained mask
+                        continue;
+                    }
+                    bytesFound = maskEnd + lineMaskPos - LENGTH - lineStart;
+                }
+            } else {
+                bytesFound = maskEnd + lineMaskPos - LENGTH - lineStart;
+            }
+            var cr = isCr(lineStart + bytesFound - 1) ? 1 : 0;
+            if (bytesFound - cr == 0) {
+                // Empty line, end of headers section
+                bodyStart = Math.toIntExact(lineStart + 1 + cr);
+                return null;
+            }
+            var separatorOffset = separatorOffset();
+            var httpHeader = new RequestHeader(
+                memorySegment,
+                Math.toIntExact(lineStart),
+                Math.toIntExact(separatorOffset),
+                Math.toIntExact(bytesFound - cr)
+            );
+            lineStart += bytesFound + 1;
+            lineMask = unset(lineMask, 1 + lineMaskPos);
+            return httpHeader;
+        }
+    }
+
+    private RequestLine requestLine(int lineMaskPos, int urlIndex, int bytesFound) {
+        lineMask = unset(lineMask, lineMaskPos + 1);
+        var lineBreak = Math.toIntExact(maskEnd - LENGTH + lineMaskPos);
         lineStart = lineBreak + 1;
+        var cr = isCr(lineBreak - 1) ? 1 : 0;
         return new RequestLine(
             memorySegment,
             urlIndex + 1,
             bytesFound + 1,
-            lineBreak + 1
+            lineBreak + 1 - cr
         );
+    }
+
+    private boolean isCr(long offset) {
+        return memorySegment.get(ValueLayout.JAVA_BYTE, offset) == '\r';
     }
 
     private ReadableByteChannel body() {
@@ -166,14 +193,14 @@ public final class SyncHttpRequestReader implements Closeable {
         this.memorySegment = arena.allocate(ValueLayout.JAVA_BYTE, bufferSize);
         this.memorySegment.copyFrom(oldSegment);
         this.buffer = memorySegment.asByteBuffer();
-        this.buffer.position(Math.toIntExact(maskStart));
+        this.buffer.position(Math.toIntExact(maskEnd));
     }
 
     private long separatorOffset() {
         long start = lineStart;
         while (true) {
             var byteVector = vectorFrom(start);
-            var vectorMask = byteVector.compare(EQ, ':');
+            var vectorMask = byteVector.compare(VectorOperators.EQ, ':');
             var firstTrue = vectorMask.firstTrue();
             if (firstTrue != LENGTH) {
                 return start + firstTrue;
@@ -188,17 +215,17 @@ public final class SyncHttpRequestReader implements Closeable {
 
     private void nextSpaceMask() {
         refill();
-        var lineVector = vectorFrom(maskStart); //atEnd() ? endSlice() : slice();
-        spaceMask = lineVector.compare(EQ, ' ');
-        lineMask = lineVector.compare(EQ, (byte) '\n');
-        maskStart += LENGTH;
+        var vector = vectorFrom(maskEnd); //atEnd() ? endSlice() : slice();
+        spaceMask = vector.compare(VectorOperators.EQ, ' ');
+        lineMask = vector.compare(VectorOperators.EQ, (byte) '\n');
+        maskEnd += LENGTH;
     }
 
     private void nextLineMask() {
         refill();
-        var lineVector = vectorFrom(maskStart); //atEnd() ? endSlice() : slice();
-        lineMask = lineVector.compare(EQ, (byte) '\n');
-        maskStart += LENGTH;
+        var lineVector = vectorFrom(maskEnd); //atEnd() ? endSlice() : slice();
+        lineMask = lineVector.compare(VectorOperators.EQ, (byte) '\n');
+        maskEnd += LENGTH;
     }
 
     private ByteVector vectorFrom(long maskStart) {
@@ -206,8 +233,10 @@ public final class SyncHttpRequestReader implements Closeable {
     }
 
     private void refill() {
-        if (maskStart == bufferSize) {
+        if (maskEnd >= bufferSize) {
             expand();
+        }
+        if (maskEnd >= available) {
             fillBuffer();
         }
     }
@@ -215,15 +244,8 @@ public final class SyncHttpRequestReader implements Closeable {
     private void fillBuffer() {
         while (available < bufferSize && !done) {
             switch (readIntoBuffer()) {
-                case -1 -> {
-                    done = true;
-                    return;
-                }
-                case 0 -> {}
-                case int read -> {
-                    available += read;
-                    return;
-                }
+                case -1 -> done = true;
+                case int read -> available += read;
             }
         }
     }

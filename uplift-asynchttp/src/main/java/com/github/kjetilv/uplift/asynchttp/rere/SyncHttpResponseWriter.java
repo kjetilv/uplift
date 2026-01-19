@@ -17,9 +17,7 @@ public class SyncHttpResponseWriter {
         try (this.out; var body = response.body()) {
             write(ByteBuffer.wrap(VERSION));
 
-            var statusCode = statusCode(response);
-
-            write(statusCode);
+            write(statusCode(response));
 
             var wroteContentLength = false;
             for (var header : response.headers()) {
@@ -69,10 +67,11 @@ public class SyncHttpResponseWriter {
 
     private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
 
-    private static final byte[] LN = {'\n'};
+    private static final byte[] LN = {'\r', '\n'};
 
     private static ByteBuffer statusCode(HttpResponse response) {
-        return ByteBuffer.wrap(((Integer) response.statusCode() + "\n").getBytes());
+        var statusCode = response.statusCode() + "\r\n";
+        return ByteBuffer.wrap(statusCode.getBytes());
     }
 
     private static boolean readInto(ReadableByteChannel body, ByteBuffer buffer) {
