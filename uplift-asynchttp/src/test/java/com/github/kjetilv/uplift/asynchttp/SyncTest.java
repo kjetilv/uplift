@@ -13,22 +13,21 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class SyncTest {
 
     @Test
     void vectors() {
-
-        var parsed =
-            """
-                foo
-                bar
-                zot
-                
-                
-                
-                sdfsdfsdfsdf
-                2345""";
+        var parsed = """
+            foo
+            bar
+            zot
+            
+            
+            
+            sdfsdfsdfsdf
+            2345""";
         var byteVector1 = ByteVector.fromArray(SPECIES, parsed.getBytes(), 0);
         var byteVector2 = ByteVector.fromArray(SPECIES, parsed.getBytes(), byteVector1.length());
 
@@ -91,11 +90,10 @@ public class SyncTest {
         var handler = new HttpSyncHandler((_, _) ->
             new com.github.kjetilv.uplift.asynchttp.rere.HttpResponse(
                 200,
-                "world\n"
+                "world"
             ));
         var server = SyncIOServer.create();
         var run = server.run(handler);
-        System.out.println(run.port());
 
         CompletableFuture<HttpResponse<String>> future;
         try (var httpClient = HttpClient.newHttpClient()) {
@@ -105,17 +103,12 @@ public class SyncTest {
                     HttpResponse.BodyHandlers.ofString()
                 );
         }
-
-        var body = future.join().body();
-
-        System.out.println(body);
+        assertThat(future)
+            .isCompletedWithValueMatching(response ->
+                response.body().equals("world"));
 
         server.close();
-        try {
-            run.join();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        run.join();
     }
 
     static final VectorSpecies<Byte> SPECIES = ByteVector.SPECIES_PREFERRED;
