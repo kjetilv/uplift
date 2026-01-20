@@ -1,13 +1,17 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-import com.github.kjetilv.uplift.lambda.*;
+import com.github.kjetilv.uplift.lambda.Lambda;
+import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
+import com.github.kjetilv.uplift.lambda.LambdaHandler;
+import com.github.kjetilv.uplift.lambda.LambdaLooper;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @SuppressWarnings("unused")
-public class LambdaHarness implements Closeable {
+public class LambdaHarness implements RuntimeCloseable {
 
     public static final CorsSettings CORS_DEFAULTS = new CorsSettings(
         List.of("*"),
@@ -77,12 +81,12 @@ public class LambdaHarness implements Closeable {
     public LambdaHarness(
         String name,
         LambdaHandler lambdaHandler,
-        LocalLambdaSettings localLambdaSettings
+        FlambdaSettings flambdaSettings
     ) {
         this(
             name,
             lambdaHandler,
-            localLambdaSettings,
+            flambdaSettings,
             null
         );
     }
@@ -90,13 +94,13 @@ public class LambdaHarness implements Closeable {
     public LambdaHarness(
         String name,
         LambdaHandler lambdaHandler,
-        LocalLambdaSettings localLambdaSettings,
+        FlambdaSettings flambdaSettings,
         LambdaClientSettings lambdaClientSettings
     ) {
         this(
             name,
             lambdaHandler,
-            localLambdaSettings,
+            flambdaSettings,
             lambdaClientSettings,
             null,
             null
@@ -107,7 +111,7 @@ public class LambdaHarness implements Closeable {
     private LambdaHarness(
         String name,
         LambdaHandler lambdaHandler,
-        LocalLambdaSettings localLambdaSettings,
+        FlambdaSettings flambdaSettings,
         LambdaClientSettings lambdaClientSettings,
         CorsSettings corsSettings,
         Supplier<Instant> time
@@ -120,13 +124,13 @@ public class LambdaHarness implements Closeable {
         this.lambdaExec = executor;
         this.testExec = executor;
 
-        var settings = localLambdaSettings == null
-            ? settings(localLambdaSettings, corsSettings, time)
-            : localLambdaSettings;
+        var settings = flambdaSettings == null
+            ? settings(flambdaSettings, corsSettings, time)
+            : flambdaSettings;
 
         this.localLambda = new LocalLambda(settings);
         this.testExec.submit(localLambda);
-        this.localLambda.awaitStarted(Duration.ofMinutes(1));
+//        this.localLambda.awaitStarted(Duration.ofMinutes(1));
         this.looper = Lambda.managed(
             this.localLambda.getLambdaUri(),
             adjustedSettings(lambdaClientSettings, settings.time()),
@@ -165,25 +169,25 @@ public class LambdaHarness implements Closeable {
             : new LambdaClientSettings(settings.env(), settings.connectTimeout(), settings.responseTimeout(), time);
     }
 
-    private static LocalLambdaSettings settings(
-        LocalLambdaSettings localLambdaSettings,
+    private static FlambdaSettings settings(
+        FlambdaSettings flambdaSettings,
         CorsSettings cors,
         Supplier<Instant> time
     ) {
-        return new LocalLambdaSettings(
-            localLambdaSettings == null ? null : localLambdaSettings.lambdaPort(),
-            localLambdaSettings == null ? null : localLambdaSettings.apiPort(),
-            localLambdaSettings == null
+        return new FlambdaSettings(
+            flambdaSettings == null ? null : flambdaSettings.lambdaPort(),
+            flambdaSettings == null ? null : flambdaSettings.apiPort(),
+            flambdaSettings == null
                 ? K_64
-                : localLambdaSettings.requestBufferSize(),
-            localLambdaSettings == null
+                : flambdaSettings.requestBufferSize(),
+            flambdaSettings == null
                 ? SHORT_Q
-                : localLambdaSettings.queueLength(),
+                : flambdaSettings.queueLength(),
             cors != null ? cors
-                : localLambdaSettings != null ? localLambdaSettings.cors()
+                : flambdaSettings != null ? flambdaSettings.cors()
                     : CORS_DEFAULTS,
             resolve(time != null ? time
-                : localLambdaSettings != null ? localLambdaSettings.time()
+                : flambdaSettings != null ? flambdaSettings.time()
                     : null)
         );
     }

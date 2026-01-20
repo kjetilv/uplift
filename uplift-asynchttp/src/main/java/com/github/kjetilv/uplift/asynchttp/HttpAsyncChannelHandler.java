@@ -13,7 +13,11 @@ public class HttpAsyncChannelHandler extends AbstractAsyncChannelHandler<HttpCha
 
     private final Server server;
 
-    public HttpAsyncChannelHandler(Server server, int maxRequestLength, Supplier<Instant> time) {
+    public HttpAsyncChannelHandler(
+        Server server,
+        int maxRequestLength,
+        Supplier<Instant> time
+    ) {
         this(server, maxRequestLength, null, time);
     }
 

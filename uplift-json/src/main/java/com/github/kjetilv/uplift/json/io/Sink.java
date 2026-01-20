@@ -1,10 +1,14 @@
 package com.github.kjetilv.uplift.json.io;
 
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
+
+import java.io.Closeable;
 import java.io.OutputStream;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 
-public sealed interface Sink permits ByteChannelSink, StreamSink, StringSink {
+public sealed interface Sink extends RuntimeCloseable
+    permits BufferedByteChannelSink, ByteChannelSink, ChunkedTransferByteChannelSink, StreamSink, StringSink {
 
     static Sink stream(OutputStream outputStream) {
         return stream(outputStream, null);
@@ -14,15 +18,15 @@ public sealed interface Sink permits ByteChannelSink, StreamSink, StringSink {
         return new StreamSink(outputStream, charset);
     }
 
-    static Sink build(StringBuilder stringBuilder) {
+    static Sink string(StringBuilder stringBuilder) {
         return new StringSink(stringBuilder);
     }
 
-    static Sink buffer(WritableByteChannel byteChannel) {
-        return buffer(byteChannel, null);
+    static Sink channel(WritableByteChannel byteChannel) {
+        return channel(byteChannel, null);
     }
 
-    static Sink buffer(WritableByteChannel byteChannel, Charset charset) {
+    static Sink channel(WritableByteChannel byteChannel, Charset charset) {
         return new ByteChannelSink(byteChannel, charset);
     }
 
@@ -38,11 +42,18 @@ public sealed interface Sink permits ByteChannelSink, StreamSink, StringSink {
         return accept(number.toString());
     }
 
+    @Override
+    default void close() {
+    }
+
     Sink accept(String str);
 
-    Mark mark();
+    default Mark mark() {
+        var length = length();
+        return () -> length != length();
+    }
 
-    int length();
+    long length();
 
     @FunctionalInterface
     interface Mark {

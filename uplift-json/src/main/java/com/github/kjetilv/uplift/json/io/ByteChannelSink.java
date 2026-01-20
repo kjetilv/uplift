@@ -23,7 +23,8 @@ public final class ByteChannelSink implements Sink {
     public Sink accept(String str) {
         try {
             var bytes = str.getBytes(charset);
-            byteChannel.write(ByteBuffer.wrap(bytes));
+            var byteBuffer = ByteBuffer.wrap(bytes);
+            byteChannel.write(byteBuffer);
             bytesWritten.add(bytes.length);
             return this;
         } catch (Exception e) {
@@ -38,7 +39,7 @@ public final class ByteChannelSink implements Sink {
     }
 
     @Override
-    public int length() {
+    public long length() {
         return 0;
     }
 

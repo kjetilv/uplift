@@ -94,9 +94,15 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
     }
 
     private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
-        String id, HttpResponse<InputStream> response
+        String id,
+        HttpResponse<InputStream> response
     ) {
-        var payload = LambdaPayload.parse(response.body());
+        LambdaPayload payload;
+        try {
+            payload = LambdaPayload.parse(response.body());
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse " + response, e);
+        }
         return Invocation.create(id, request, payload, this.time.get());
     }
 

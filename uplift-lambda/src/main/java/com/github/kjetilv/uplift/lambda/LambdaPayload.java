@@ -21,14 +21,14 @@ public record LambdaPayload(
 ) {
 
     public static LambdaPayload parse(String json) {
-        return payload(json, RequestInRW.INSTANCE.stringReader().read(json));
+        return payload(json, RequestOutRW.INSTANCE.stringReader().read(json));
     }
 
     public static LambdaPayload parse(InputStream json) {
-        return payload(json, RequestInRW.INSTANCE.streamReader().read(json));
+        return payload(json, RequestOutRW.INSTANCE.streamReader().read(json));
     }
 
-    private static LambdaPayload payload(Object json, RequestIn req) {
+    private static LambdaPayload payload(Object json, RequestOut req) {
         var version = req.version();
         if (version == null) {
             return lambda10(req);
@@ -106,7 +106,7 @@ public record LambdaPayload(
 
     private static final String BLANK = "";
 
-    private static LambdaPayload lambda10(RequestIn req) {
+    private static LambdaPayload lambda10(RequestOut req) {
         return new LambdaPayload(
             req.httpMethod(),
             req.path(),
@@ -117,7 +117,7 @@ public record LambdaPayload(
         );
     }
 
-    private static LambdaPayload lambda20(RequestIn req) {
+    private static LambdaPayload lambda20(RequestOut req) {
         return new LambdaPayload(
             req.requestContext().http().method(),
             req.requestContext().http().path(),
@@ -128,7 +128,7 @@ public record LambdaPayload(
         );
     }
 
-    private static String reqBody(RequestIn req) {
+    private static String reqBody(RequestOut req) {
         if (req.body() == null || req.body().isEmpty()) {
             return null;
         }

@@ -1,6 +1,6 @@
 import com.github.kjetilv.uplift.flambda.CorsSettings;
 import com.github.kjetilv.uplift.flambda.LocalLambda;
-import com.github.kjetilv.uplift.flambda.LocalLambdaSettings;
+import com.github.kjetilv.uplift.flambda.FlambdaSettings;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ void main(String[] args) {
         .map(Integer::parseInt)
         .findFirst().orElse(API_PORT);
 
-    var settings = new LocalLambdaSettings(
+    var settings = new FlambdaSettings(
         lambdaPort,
         apiPort,
         REQUEST_BUFFER_SIZE,

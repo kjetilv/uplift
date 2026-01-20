@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-public final class LambdaLooper<Q, R> implements Runnable, Closeable {
+public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaLooper.class);
 

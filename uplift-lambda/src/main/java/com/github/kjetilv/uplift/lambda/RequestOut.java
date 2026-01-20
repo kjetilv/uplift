@@ -4,21 +4,17 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import java.util.Map;
 
-@JsonRecord
+ @JsonRecord
 public record RequestOut(
     String version,
     String httpMethod,
     String path,
     Map<String, Object> headers,
     Map<String, Object> queryStringParameters,
-    RequestContextOut requestContext,
+    RequestContext requestContext,
     boolean isBase64Encoded,
     String body
 ) {
-
-    public static byte[] write(RequestOut requestOut) {
-        return RequestOutRW.INSTANCE.bytesWriter().write(requestOut);
-    }
 
     public RequestOut {
         if (version != null && !version.equals(VERSION)) {
@@ -39,8 +35,8 @@ public record RequestOut(
             path,
             headers,
             queryStringParameters,
-            new RequestContextOut(
-                new RequestContextOut.HttpOut(httpMethod, path)
+            new RequestContext(
+                new RequestContext.Http(httpMethod, path)
             ),
             true,
             body
@@ -49,10 +45,9 @@ public record RequestOut(
 
     private static final String VERSION = "2.0";
 
-    public record RequestContextOut(HttpOut http) {
+    public record RequestContext(Http http) {
 
-        public record HttpOut(String method, String path) {
-
+        public record Http(String method, String path) {
         }
     }
 }

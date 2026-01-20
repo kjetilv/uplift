@@ -24,7 +24,7 @@ record StringSink(StringBuilder sb) implements Sink {
     }
 
     @Override
-    public int length() {
+    public long length() {
         return sb.length();
     }
 }

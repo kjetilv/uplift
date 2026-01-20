@@ -111,7 +111,9 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     @Override
     public String write(Object object) {
         var sb = new StringBuilder();
-        JsonWrites.write(Sink.build(sb), object);
+        try (var string = Sink.string(sb)) {
+            JsonWrites.write(string, object);
+        }
         return sb.toString();
     }
 
@@ -127,12 +129,16 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public void write(Object object, OutputStream outputStream) {
-        JsonWrites.write(Sink.stream(outputStream), object);
+        try (var stream = Sink.stream(outputStream)) {
+            JsonWrites.write(stream, object);
+        }
     }
 
     @Override
     public void write(Object object, WritableByteChannel byteChannel) {
-        JsonWrites.write(Sink.buffer(byteChannel), object);
+        try (var channel = Sink.channel(byteChannel)) {
+            JsonWrites.write(channel, object);
+        }
     }
 
     private Object process(BytesSource bytesSource) {

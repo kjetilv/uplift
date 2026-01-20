@@ -10,8 +10,8 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
 
     public DefaultFieldEvents(FieldEvents parent, Sink sink) {
         super(parent, sink);
-        sink().accept("{");
-        this.mark = sink().mark();
+        sink.accept("{");
+        this.mark = sink.mark();
     }
 
     @Override
@@ -84,11 +84,13 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         return writeArray(field, value, toBool, this::value);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void done() {
         sink().accept("}");
     }
 
+    @SuppressWarnings("resource")
     protected <T, V> FieldEvents writeArray(
         String field,
         List<? extends T> values,
@@ -104,10 +106,12 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         }
         field(field);
         sink.accept("[");
-        var arrayMark = sink.mark();
+        boolean first = true;
         try {
             for (var value : values) {
-                if (arrayMark.moved()) {
+                if (first) {
+                    first = false;
+                } else {
                     sink.accept(",");
                 }
                 setter.accept(map.apply(value));
@@ -118,7 +122,13 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         return this;
     }
 
-    private <T, R> FieldEvents writeField(String field, T value, Function<T, R> writer, Consumer<R> setter) {
+    @SuppressWarnings("resource")
+    private <T, R> FieldEvents writeField(
+        String field,
+        T value,
+        Function<T, R> writer,
+        Consumer<R> setter
+    ) {
         if (value == null) {
             return this;
         }

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.Closeable;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -8,7 +9,7 @@ import java.net.http.HttpResponse;
 
 @SuppressWarnings("unused")
 public interface LamdbdaManaged
-    extends Runnable, Closeable {
+    extends Runnable, RuntimeCloseable {
 
     @Override
     default void run() {

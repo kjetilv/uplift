@@ -83,9 +83,11 @@ public final class JsonWrites {
             return;
         }
         sink.accept("{");
-        var mark = sink.mark();
+        boolean first = true;
         for (var value : map.entrySet()) {
-            if (mark.moved()) {
+            if (first) {
+                first = false;
+            } else {
                 sink.accept(",");
             }
             sink.accept("\"").accept(value.getKey()).accept("\":");
@@ -132,9 +134,11 @@ public final class JsonWrites {
 
     private static void writeNonEmptyArray(Sink sink, Iterator<?> iterator) {
         sink.accept("[");
-        var mark = sink.mark();
+        boolean first = true;
         while (iterator.hasNext()) {
-            if (mark.moved()) {
+            if (first) {
+                first = false;
+            } else {
                 sink.accept(",");
             }
             write(sink, iterator.next());

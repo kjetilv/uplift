@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
 import com.github.kjetilv.uplift.json.io.Sink;
 
-abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<R, T, B> {
+abstract class AbstractJsonWriter<R, T extends Record, B> implements JsonWriter<R, T, B> {
 
     private final ObjectWriter<T> objectWriter;
 
@@ -23,14 +23,20 @@ abstract class AbstractJsonWriter<T extends Record, B, R> implements JsonWriter<
 
     @Override
     public final void write(T t, B out) {
-        write(t, output(out));
+        try (var output = output(out)) {
+            write(t, output);
+        }
     }
 
-    protected abstract B builder();
+    protected B builder() {
+        throw new IllegalStateException(this + " does not support returned values");
+    }
 
     protected abstract Sink output(B out);
 
-    protected abstract R result(B out);
+    protected  R result(B out) {
+        throw new IllegalStateException(this + " does not support returned values");
+    }
 
     private void write(T t, Sink sink) {
         objectWriter.write(t, new DefaultFieldEvents(null, sink));

@@ -9,6 +9,10 @@ public record CorsSettings(
     List<String> headers
 ) {
 
+    public CorsSettings(List<String> origins, List<String> methods) {
+        this(origins, methods, null);
+    }
+
     public CorsSettings(List<String> origins, List<String> methods, List<String> headers) {
         this.origins = origins == null || origins.isEmpty() ? List.of("*") : List.copyOf(origins);
         this.methods = methods == null || methods.isEmpty() ? List.of("GET") : List.copyOf(methods);

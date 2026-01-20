@@ -37,7 +37,7 @@ final class StreamSink implements Sink {
     }
 
     @Override
-    public int length() {
+    public long length() {
         return Math.toIntExact(lengthCounter.longValue());
     }
 
@@ -47,7 +47,6 @@ final class StreamSink implements Sink {
 
     @Override
     public String toString() {
-        return "StreamSink[->" + outputStream + ']';
+        return getClass().getSimpleName() + "[->" + outputStream + ']';
     }
-
 }

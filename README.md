@@ -44,7 +44,7 @@ taken to start up a Java-based runtime.
 ### Testing libraries
 
 * [`uplift-flambda`](./uplift-flambda) contains a faked lambda service, which can be used for testing.
-* [`uplift-asynchttp`](./uplift-asynchttp) contains a *cough* async http server, because the world needed one more of
+* [`uplift-asynchttp`](./uplift-asynchttp) contains a *cough* async http httpHandler, because the world needed one more of
   those.
 
 None of these are required, but I use them. Personal learning opportunities may have trumped conventional choices in

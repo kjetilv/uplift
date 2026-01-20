@@ -3,9 +3,11 @@ package com.github.kjetilv.uplift.fq.io;
 import module java.base;
 import module jdk.incubator.vector;
 
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
+
 import static java.nio.channels.FileChannel.MapMode.READ_ONLY;
 
-public final class LinesReader implements Supplier<MemorySegment>, Closeable {
+public final class LinesReader implements Supplier<MemorySegment>, RuntimeCloseable {
 
     private final MemorySegment segment;
 

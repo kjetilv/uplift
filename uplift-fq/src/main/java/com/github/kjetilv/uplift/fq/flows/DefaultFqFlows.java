@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.fq.flows;
 
 import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 import java.io.Closeable;
 import java.time.Duration;
@@ -21,7 +22,7 @@ import static com.github.kjetilv.uplift.fq.flows.DefaultFqFlows.Phase.*;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
-final class DefaultFqFlows<T> implements FqFlows<T>, Closeable {
+final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
     private final Name name;
 

@@ -12,11 +12,11 @@ public class ChannelIntSource extends AbstractIntsBytesSource {
 
     private int i;
 
-    public ChannelIntSource(
-        ReadableByteChannel channel,
-        int len
-    ) {
+    public ChannelIntSource(ReadableByteChannel channel, int len) {
         this.channel = Objects.requireNonNull(channel, "channel");
+        if (len < 0) {
+            throw new IllegalArgumentException("len must be >= 0: " + len);
+        }
         this.len = len;
     }
 

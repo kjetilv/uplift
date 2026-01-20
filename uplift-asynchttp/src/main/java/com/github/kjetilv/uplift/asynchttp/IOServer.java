@@ -1,11 +1,13 @@
 package com.github.kjetilv.uplift.asynchttp;
 
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
+
 import java.io.Closeable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 
-public interface IOServer extends Closeable {
+public interface IOServer extends RuntimeCloseable {
 
     String ALL = "0.0.0.0";
 

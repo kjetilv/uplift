@@ -13,7 +13,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 import static java.time.Instant.now;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public final class DirectoryObserver implements Closeable {
+public final class DirectoryObserver implements RuntimeCloseable {
 
     public static final int MAX_WAIT_TIME = 1000;
 

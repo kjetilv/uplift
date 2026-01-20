@@ -4,7 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.Sink;
 
-public final class BytesJsonWriter<T extends Record> extends AbstractJsonWriter<T, ByteArrayOutputStream, byte[]> {
+public final class BytesJsonWriter<T extends Record> extends AbstractJsonWriter<byte[], T, ByteArrayOutputStream> {
 
     public BytesJsonWriter(ObjectWriter<T> objectWriter) {
         super(objectWriter);

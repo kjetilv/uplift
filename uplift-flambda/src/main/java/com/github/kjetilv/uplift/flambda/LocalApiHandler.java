@@ -1,47 +1,51 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-import com.github.kjetilv.uplift.asynchttp.HttpAsyncChannelHandler;
-import com.github.kjetilv.uplift.asynchttp.HttpReq;
-import com.github.kjetilv.uplift.asynchttp.HttpRes;
-import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
+import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
+import com.github.kjetilv.uplift.synchttp.req.HttpReq;
+import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 
-record LocalApiHandler(LocalLambdaHandler handler, Map<String, List<String>> corsHeaders)
-    implements HttpAsyncChannelHandler.Server {
+record LocalApiHandler(LocalLambdaHandler handler, Map<String, Object> corsHeaders)
+    implements HttpCallbackProcessor.HttpHandler {
 
     LocalApiHandler(LocalLambdaHandler handler, CorsSettings corsHeaders) {
         Objects.requireNonNull(corsHeaders, "cors");
         this(
             Objects.requireNonNull(handler, "handler"),
-            CaseInsensitiveHashMap.wrap(Map.of(
-                "Access-Control-Allow-Origin", List.of("*"),
-                "Access-Control-Allow-Methods", List.of(corsHeaders.methodsValue()),
-                "Access-Control-Allow-Headers", List.of(corsHeaders.headersValue()),
-                "Access-Control-Max-Age", List.of("86400"),
-                "Access-Control-Allow-Credentials", List.of(corsHeaders.credentialsValue())
-            ))
+            Map.of(
+                "access-control-allow-origin", "*",
+                "access-control-allow-methods", corsHeaders.methodsValue(),
+                "access-control-allow-headers", corsHeaders.headersValue(),
+                "access-control-max-age", "86400",
+                "access-control-allow-credentials", corsHeaders.credentialsValue()
+            )
         );
     }
 
     @Override
-    public HttpRes handle(HttpReq req) {
-        if (req.isCORS()) {
-            return new HttpRes(OK, corsHeaders, null, req.id());
+    public void handle(
+        HttpReq httpReq,
+        HttpResponseCallback callback
+    ) {
+        if (httpReq.isCors()) {
+            callback.status(200).headers(corsHeaders);
+        } else {
+            respond(
+                callback,
+                null
+//                handler.lambdaResponse(new LambdaReq(httpReq))
+            );
         }
-        var lambdaResponse = handler.lambdaResponse(new LambdaRequest(req));
-        return lambdaResponse.toHttpResponse().updateHeaders(this::withCors);
     }
 
-    private Map<String, List<String>> withCors(Map<String, ? extends List<String>> headers) {
-        if (headers == null || headers.isEmpty()) {
-            return corsHeaders;
-        }
-        Map<String, List<String>> combined = new HashMap<>(corsHeaders);
-        combined.putAll(headers);
-        return CaseInsensitiveHashMap.wrap(combined);
+    private void respond(HttpResponseCallback callback, LambdaRes lambdaRes) {
+        var in = lambdaRes.in();
+        callback.status(in.statusCode())
+            .headers(in.headers())
+            .headers(corsHeaders)
+            .content()
+            .body(in.body());
     }
-
-    private static final int OK = 200;
 
     @Override
     public String toString() {

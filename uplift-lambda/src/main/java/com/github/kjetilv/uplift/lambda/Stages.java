@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.Closeable;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -9,7 +10,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-final class Stages<T> implements Closeable {
+final class Stages<T> implements RuntimeCloseable {
 
     private final AtomicBoolean opened = new AtomicBoolean();
 

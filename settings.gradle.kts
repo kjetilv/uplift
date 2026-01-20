@@ -32,6 +32,7 @@ include("uplift-json-samplegen")
 include("uplift-kernel")
 include("uplift-lambda")
 include("uplift-s3")
+include("uplift-synchttp")
 include("uplift-util")
 
 include("uplift-hash")

@@ -3,15 +3,19 @@ package com.github.kjetilv.uplift.kernel.io;
 import com.github.kjetilv.uplift.hash.Hash;
 
 import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.BaseStream;
 import java.util.stream.IntStream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
@@ -152,6 +156,17 @@ public final class BytesIO {
 
     public static byte[] nonNull(byte[] body) {
         return body == null || body.length == 0 ? NOBODY : body;
+    }
+
+    public static String toBase64(InputStream body) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        var base64Encoder = Base64.getEncoder().wrap(byteArrayOutputStream);
+        try {
+            body.transferTo(base64Encoder);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to transfer body to base64", e);
+        }
+        return byteArrayOutputStream.toString(US_ASCII);
     }
 
     private BytesIO() {

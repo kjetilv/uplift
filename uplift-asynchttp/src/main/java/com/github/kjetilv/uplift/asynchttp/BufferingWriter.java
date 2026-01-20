@@ -1,9 +1,10 @@
 package com.github.kjetilv.uplift.asynchttp;
 
 import module java.base;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 @FunctionalInterface
-public interface BufferingWriter<B> extends Closeable {
+public interface BufferingWriter<B> extends RuntimeCloseable {
 
     @Override
     default void close() {
