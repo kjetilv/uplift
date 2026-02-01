@@ -57,6 +57,7 @@ subprojects {
     if (project.name in listOf(
             "gradle-plugins",
             "asynchttp",
+            "synchttp",
             "edam",
             "edamame",
             "flambda",
@@ -89,6 +90,7 @@ subprojects {
     if (project.name in listOf(
             "gradle-plugins",
             "asynchttp",
+            "synchttp",
             "edam",
             "edamame",
             "flambda",

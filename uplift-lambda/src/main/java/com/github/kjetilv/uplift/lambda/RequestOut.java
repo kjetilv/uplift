@@ -16,12 +16,6 @@ public record RequestOut(
     String body
 ) {
 
-    public RequestOut {
-        if (version != null && !version.equals(VERSION)) {
-            throw new IllegalStateException("Version can only be set to " + VERSION + ": " + version);
-        }
-    }
-
     public RequestOut(
         String httpMethod,
         String path,

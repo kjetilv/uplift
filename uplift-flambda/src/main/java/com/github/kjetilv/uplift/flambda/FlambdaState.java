@@ -44,8 +44,4 @@ class FlambdaState {
     void submitResponse(LambdaRes lambdaRes) {
         responses.put(lambdaRes.id(), lambdaRes);
     }
-
-    record Exchange(Hash<K128> id, LambdaReq req, LambdaRes res) {
-
-    }
 }

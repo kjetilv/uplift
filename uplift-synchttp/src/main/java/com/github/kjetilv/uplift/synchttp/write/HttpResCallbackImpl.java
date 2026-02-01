@@ -146,4 +146,11 @@ final class HttpResCallbackImpl implements
     private static ByteBuffer statusCode(int code) {
         return ByteBuffer.wrap((code + "\r\n").getBytes());
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" +
+               out + (contentLength >= 0 ? " bytes:" + contentLength : "") +
+               "]";
+    }
 }

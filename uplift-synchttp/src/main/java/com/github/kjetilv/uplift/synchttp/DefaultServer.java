@@ -59,7 +59,11 @@ final class DefaultServer implements Server {
     @Override
     public Server run(Processor processor) {
         requireNotRunning();
-        return new DefaultServer(address, openServer(), processor);
+        var serverSocketChannel = openServer();
+        var address = new InetSocketAddress(
+            this.address.getAddress(), serverSocketChannel.socket().getLocalPort()
+        );
+        return new DefaultServer(address, serverSocketChannel, processor);
     }
 
     @Override
@@ -75,7 +79,7 @@ final class DefaultServer implements Server {
             try {
                 serverSocketChannel.close();
             } catch (Exception e) {
-                throw new IllegalStateException("Failed to close " + serverSocketChannel, e);
+                throw new IllegalStateException(this + " failed to close " + serverSocketChannel, e);
             }
             log.info("{} closed", this);
         }
@@ -92,7 +96,7 @@ final class DefaultServer implements Server {
         try {
             return ServerSocketChannel.open().bind(address);
         } catch (Exception e) {
-            throw new IllegalStateException("Could not open server @ " + address, e);
+            throw new IllegalStateException(this + " could not open server @ " + address, e);
         }
     }
 
@@ -108,16 +112,16 @@ final class DefaultServer implements Server {
             return serverSocketChannel.accept();
         } catch (AsynchronousCloseException e) {
             if (closed.get()) {
-            log.debug("{} closed", this);
-            return null;
+                log.debug("{} closed", this);
+                return null;
             }
-            throw new IllegalStateException("Failed to accept socket channel @ " + serverSocketChannel, e);
+            throw new IllegalStateException(this + " failed to accept socket channel @ " + serverSocketChannel, e);
         } catch (Exception e) {
             if (closed.get()) {
                 log.debug("{} closed, did not accept", this, e);
                 return null;
             }
-            throw new IllegalStateException("Failed to accept socket channel @ " + serverSocketChannel, e);
+            throw new IllegalStateException(this + " failed to accept socket channel @ " + serverSocketChannel, e);
         }
     }
 
@@ -134,7 +138,7 @@ final class DefaultServer implements Server {
                     try {
                         channel.close();
                     } catch (Exception e) {
-                        log.error("Failed to close {}", channel, e);
+                        log.error("{} failed to close {}", this, channel, e);
                     }
                 }
             });
@@ -157,11 +161,19 @@ final class DefaultServer implements Server {
         }
     }
 
-    private static void handleOutcome(SocketChannel channel, Throwable throwable) {
+    private void handleOutcome(SocketChannel channel, Throwable throwable) {
         if (throwable != null) {
-            log.error("Failed to process request", throwable);
+            log.error("{} failed to process request", this, throwable);
         } else {
-            log.info("Processed request: {}", channel);
+            log.info("{} processed request: {}", this, channel);
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" +
+               "@" + address +
+               (closed.get() ? " open" : " closed") +
+               "]";
     }
 }

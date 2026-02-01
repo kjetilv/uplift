@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.flambda;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.lambda.RequestOut;
+import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
@@ -23,7 +24,7 @@ import java.util.concurrent.StructuredTaskScope;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
-final class Flambda implements RuntimeCloseable {
+public final class Flambda implements RuntimeCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(Flambda.class);
 
@@ -33,7 +34,7 @@ final class Flambda implements RuntimeCloseable {
 
     private final Server apiServer;
 
-    Flambda(FlambdaSettings settings) {
+    public Flambda(FlambdaSettings settings) {
         this.flambdaState = new FlambdaState(
             Objects.requireNonNull(settings, "settings").queueLength());
 
@@ -58,19 +59,19 @@ final class Flambda implements RuntimeCloseable {
         }
     }
 
-    URI lambdaUri() {
+    public URI lambdaUri() {
         return uri(lambdaServer.address());
     }
 
-    URI apiUri() {
+    public URI apiUri() {
         return uri(apiServer.address());
     }
 
-    InetSocketAddress lambda() {
+    public InetSocketAddress lambda() {
         return lambdaServer.address();
     }
 
-    InetSocketAddress api() {
+    public InetSocketAddress api() {
         return apiServer.address();
     }
 
@@ -97,10 +98,11 @@ final class Flambda implements RuntimeCloseable {
             switch (httpReq.method()) {
                 case GET -> {
                     var lambdaReq = flambdaState.fetchRequest();
-                    var body = lambdaReq.out().body();
+                    var body = RequestOutRW.INSTANCE.stringWriter().write(lambdaReq.out());
+                    var contentLength = length(body);
                     callback.status(200)
                         .headers(idHeaders(lambdaReq))
-                        .contentLength(length(body))
+                        .contentLength(contentLength)
                         .body(body);
                 }
                 case POST -> {
@@ -145,6 +147,7 @@ final class Flambda implements RuntimeCloseable {
         );
     }
 
+    @SuppressWarnings("HttpUrlsUsage")
     private static URI uri(InetSocketAddress address) {
         return URI.create("http://%s:%d".formatted(address.getHostString(), address.getPort()));
     }
