@@ -21,9 +21,9 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final String name;
 
-    private final ExecutorService testExec;
+    private final Flambda flambda;
 
-    private final LocalLambda localLambda;
+    private final ExecutorService testExec;
 
     private final ExecutorService lambdaExec;
 
@@ -33,10 +33,7 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final Reqs reqs;
 
-    public LambdaHarness(
-        String name,
-        LambdaHandler lambdaHandler
-    ) {
+    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
         this(
             name,
             lambdaHandler,
@@ -44,21 +41,6 @@ public class LambdaHarness implements RuntimeCloseable {
             null,
             null,
             null
-        );
-    }
-
-    public LambdaHarness(
-        String name,
-        LambdaHandler lambdaHandler,
-        Supplier<Instant> time
-    ) {
-        this(
-            name,
-            lambdaHandler,
-            null,
-            null,
-            null,
-            time
         );
     }
 
@@ -75,35 +57,6 @@ public class LambdaHarness implements RuntimeCloseable {
             null,
             cors,
             time
-        );
-    }
-
-    public LambdaHarness(
-        String name,
-        LambdaHandler lambdaHandler,
-        FlambdaSettings flambdaSettings
-    ) {
-        this(
-            name,
-            lambdaHandler,
-            flambdaSettings,
-            null
-        );
-    }
-
-    public LambdaHarness(
-        String name,
-        LambdaHandler lambdaHandler,
-        FlambdaSettings flambdaSettings,
-        LambdaClientSettings lambdaClientSettings
-    ) {
-        this(
-            name,
-            lambdaHandler,
-            flambdaSettings,
-            lambdaClientSettings,
-            null,
-            null
         );
     }
 
@@ -125,70 +78,50 @@ public class LambdaHarness implements RuntimeCloseable {
         this.testExec = executor;
 
         var settings = flambdaSettings == null
-            ? settings(flambdaSettings, corsSettings, time)
+            ? settings(corsSettings, time)
             : flambdaSettings;
 
-        this.localLambda = new LocalLambda(settings);
-        this.testExec.submit(localLambda);
-//        this.localLambda.awaitStarted(Duration.ofMinutes(1));
+        var clientSettings = lambdaClientSettings == null
+            ? new LambdaClientSettings(new EmptyEnv(), time)
+            : lambdaClientSettings.time(time);
+
+        this.flambda = new Flambda(settings);
+        Supplier<Instant> time1 = settings.time();
         this.looper = Lambda.managed(
-            this.localLambda.getLambdaUri(),
-            adjustedSettings(lambdaClientSettings, settings.time()),
+            this.flambda.lambdaUri(),
+            clientSettings,
             lambdaHandler
         ).looper();
         this.testExec.submit(this.looper);
-        this.reqs = this.localLambda.reqs();
+        this.reqs = flambda.reqs();
+        this.flambda.join();
     }
 
     @Override
     public void close() {
-        this.localLambda.close();
+        this.flambda.close();
         Stream.of(this.serverExec, this.lambdaExec, this.testExec)
             .forEach(ExecutorService::shutdown);
-
         this.looper.close();
-        this.localLambda.run();
     }
 
     public Reqs reqs() {
         return this.reqs;
     }
 
-    private static final int K_64 = 8 * 8192;
+    private static final int _64K = 65536;
 
     private static final int SHORT_Q = 10;
 
     private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
 
-    private static LambdaClientSettings adjustedSettings(
-        LambdaClientSettings settings,
-        Supplier<Instant> time
-    ) {
-        return settings == null
-            ? new LambdaClientSettings(new EmptyEnv(), time)
-            : new LambdaClientSettings(settings.env(), settings.connectTimeout(), settings.responseTimeout(), time);
-    }
-
-    private static FlambdaSettings settings(
-        FlambdaSettings flambdaSettings,
-        CorsSettings cors,
-        Supplier<Instant> time
-    ) {
+    private static FlambdaSettings settings(CorsSettings cors, Supplier<Instant> time) {
         return new FlambdaSettings(
-            flambdaSettings == null ? null : flambdaSettings.lambdaPort(),
-            flambdaSettings == null ? null : flambdaSettings.apiPort(),
-            flambdaSettings == null
-                ? K_64
-                : flambdaSettings.requestBufferSize(),
-            flambdaSettings == null
-                ? SHORT_Q
-                : flambdaSettings.queueLength(),
+            65536,
+            10,
             cors != null ? cors
-                : flambdaSettings != null ? flambdaSettings.cors()
-                    : CORS_DEFAULTS,
-            resolve(time != null ? time
-                : flambdaSettings != null ? flambdaSettings.time()
-                    : null)
+                : CORS_DEFAULTS,
+            resolve(time)
         );
     }
 
@@ -198,6 +131,6 @@ public class LambdaHarness implements RuntimeCloseable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + name + " @ " + localLambda.getLambdaUri() + "]";
+        return getClass().getSimpleName() + "[" + name + " @ " + flambda.apiUri() + " -> " + flambda.lambdaUri() + "]";
     }
 }

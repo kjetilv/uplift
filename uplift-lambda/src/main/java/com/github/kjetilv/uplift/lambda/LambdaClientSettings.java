@@ -40,6 +40,10 @@ public record LambdaClientSettings(
         return connectTimeout.compareTo(Duration.ZERO) > 0;
     }
 
+    public LambdaClientSettings time(Supplier<Instant> time) {
+        return new LambdaClientSettings(env(), connectTimeout(), responseTimeout(), time);
+    }
+
     private static Duration sane(Duration timeout) {
         return timeout == null || timeout.isNegative() || timeout.isZero() ? Duration.ZERO : timeout;
     }

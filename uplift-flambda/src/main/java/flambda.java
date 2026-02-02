@@ -1,5 +1,5 @@
 import com.github.kjetilv.uplift.flambda.CorsSettings;
-import com.github.kjetilv.uplift.flambda.LocalLambda;
+import com.github.kjetilv.uplift.flambda.Flambda;
 import com.github.kjetilv.uplift.flambda.FlambdaSettings;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
@@ -30,14 +30,10 @@ void main(String[] args) {
         new CorsSettings(ORIGINS, METHODS, HEADERS),
         UTC_CLOCK::instant
     );
-    try (
-        var localLambda = new LocalLambda(settings)
-    ) {
-        var logger = LoggerFactory.getLogger("flambda");
-        logger.info("Lambda: {}", localLambda);
-        localLambda.run();
-        logger.info("Done: {}", localLambda);
-    }
+    var flambda = new Flambda(settings);
+    var logger = LoggerFactory.getLogger("flambda");
+    logger.info("Lambda: {}", flambda);
+    flambda.join();
 }
 
 private static final int LAMBDA_PORT = 8081;

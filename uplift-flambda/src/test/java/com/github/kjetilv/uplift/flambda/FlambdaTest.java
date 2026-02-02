@@ -2,11 +2,9 @@ package com.github.kjetilv.uplift.flambda;
 
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
-import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -19,9 +17,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 public class FlambdaTest {
 
     @Test
@@ -63,7 +61,7 @@ public class FlambdaTest {
             for (int i = 0; i < 2; i++) {
 
                 var lambdaGet = getRequest(client, lambdaUri);
-
+                assertThat(lambdaGet.statusCode()).isEqualTo(200);
                 System.out.println("Lambda GET status: " + lambdaGet.statusCode());
                 System.out.println("Lambda GET headers: " + lambdaGet.headers()
                     .map());
@@ -91,13 +89,16 @@ public class FlambdaTest {
         }
 
         var apiResponse1 = fooFuture.get();
-        assertEquals(200, apiResponse1.statusCode());
-        assertEquals("Hello /foo", apiResponse1.body());
+        assertThat(apiResponse1.statusCode()).isEqualTo(200);
+        assertThat(apiResponse1.body()).isEqualTo("Hello /foo");
 
         var apiResponse2 = barFuture.get();
-        assertEquals(200, apiResponse2.statusCode());
-        assertEquals("Hello /bar", apiResponse2.body());
+        assertThat(apiResponse2.statusCode()).isEqualTo(200);
+        assertThat(apiResponse2.body()).isEqualTo("Hello /bar");
+    }
 
+    static {
+        Flogs.initialize(LogLevel.DEBUG);
     }
 
     private static HttpResponse<String> getRequest(HttpClient client, URI lambdaUri)
@@ -109,10 +110,6 @@ public class FlambdaTest {
             HttpResponse.BodyHandlers.ofString()
         );
         return lambdaGet;
-    }
-
-    static {
-        Flogs.initialize(LogLevel.DEBUG);
     }
 
     private static void postResponse(HttpClient client, URI lambdaUri, ResponseIn response)

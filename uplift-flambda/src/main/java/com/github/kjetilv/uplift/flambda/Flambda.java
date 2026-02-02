@@ -20,6 +20,8 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.StructuredTaskScope;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
@@ -28,35 +30,29 @@ public final class Flambda implements RuntimeCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(Flambda.class);
 
-    private final FlambdaState flambdaState;
-
     private final Server lambdaServer;
 
     private final Server apiServer;
 
     public Flambda(FlambdaSettings settings) {
-        this.flambdaState = new FlambdaState(
-            Objects.requireNonNull(settings, "settings").queueLength());
+        Objects.requireNonNull(settings, "settings");
 
-        var apiServerHandler = new HttpCallbackProcessor(apiHandler());
-        var apiPort = settings.apiPort();
-        this.apiServer = Server.create(apiPort).run(apiServerHandler);
+        var flambdaState = new FlambdaState(settings.queueLength());
 
-        var lambdaServerHandler = new HttpCallbackProcessor(lambdaHandler());
-        var lambdaPort = settings.lambdaPort();
-        this.lambdaServer = Server.create(lambdaPort).run(lambdaServerHandler);
+        this.apiServer = Server.create(settings.apiPort())
+            .run(new HttpCallbackProcessor(apiHandler(flambdaState)));
+
+        this.lambdaServer = Server.create(settings.lambdaPort())
+            .run(new HttpCallbackProcessor(lambdaHandler(flambdaState)));
+    }
+
+    public void join() {
+        await(server -> server::join);
     }
 
     @Override
     public void close() {
-        try (var scope = StructuredTaskScope.open(allSuccessfulOrThrow())) {
-            scope.fork(lambdaServer::close);
-            scope.fork(apiServer::close);
-            scope.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted", e);
-        }
+        await(server -> server::close);
     }
 
     public URI lambdaUri() {
@@ -75,25 +71,27 @@ public final class Flambda implements RuntimeCloseable {
         return apiServer.address();
     }
 
-    private HttpCallbackProcessor.HttpHandler apiHandler() {
-        return (httpReq, callback) -> {
-            var method = httpReq.method();
-            var requestOut = requestOut(httpReq, method);
-            flambdaState.exchange(
-                new LambdaReq(requestOut),
-                lambdaRes -> {
-                    var body = lambdaRes.in().body();
-                    var in = lambdaRes.in();
-                    callback.status(in.statusCode())
-                        .headers(in.headers())
-                        .contentLength(in.body().length())
-                        .body(body);
-                }
-            );
-        };
+    public Reqs reqs() {
+        return new ReqsImpl(apiUri());
     }
 
-    private HttpCallbackProcessor.HttpHandler lambdaHandler() {
+    private void await(Function<Server, Runnable> task) {
+        try (var scope = newScope()) {
+            scope.fork(task.apply(lambdaServer));
+            scope.fork(task.apply(apiServer));
+            scope.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted", e);
+        }
+
+    }
+
+    private static @NonNull StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
+        return StructuredTaskScope.open(allSuccessfulOrThrow());
+    }
+
+    private static HttpCallbackProcessor.HttpHandler lambdaHandler(FlambdaState flambdaState) {
         return (httpReq, callback) -> {
             switch (httpReq.method()) {
                 case GET -> {
@@ -113,6 +111,24 @@ public final class Flambda implements RuntimeCloseable {
                 }
                 default -> log.error("Unsupported method: {}", httpReq);
             }
+        };
+    }
+
+    private static HttpCallbackProcessor.HttpHandler apiHandler(FlambdaState flambdaState) {
+        return (httpReq, callback) -> {
+            var method = httpReq.method();
+            var requestOut = requestOut(httpReq, method);
+            flambdaState.exchange(
+                new LambdaReq(requestOut),
+                lambdaRes -> {
+                    var body = lambdaRes.in().body();
+                    var in = lambdaRes.in();
+                    callback.status(in.statusCode())
+                        .headers(in.headers())
+                        .contentLength(in.body().length())
+                        .body(body);
+                }
+            );
         };
     }
 
@@ -155,7 +171,7 @@ public final class Flambda implements RuntimeCloseable {
     private static Hash<HashKind.K128> id(String path) {
         try {
             var split = path.split("/");
-            for (int i = 0; i < split.length; i++) {
+            for (var i = 0; i < split.length; i++) {
                 if (split[i] == null || split[i].isBlank()) {
                     continue;
                 }
@@ -170,5 +186,10 @@ public final class Flambda implements RuntimeCloseable {
             throw new IllegalStateException("Failed to parse id from " + path, e);
         }
         throw new IllegalStateException("Failed to parse id from " + path);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + lambdaServer + " <=> " + apiServer + "]";
     }
 }
