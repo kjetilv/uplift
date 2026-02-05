@@ -109,13 +109,13 @@ class HttpReqReaderTest {
             var httpRequest = parse(channel);
             assertThat(httpRequest.method()).isSameAs(HttpMethod.GET);
             assertThat(httpRequest.reqLine()).hasToString("GET /foo/bar HTTP/1.1");
-            assertThat(httpRequest.headers()[0]).isNotNull().satisfies(hdr ->
+            assertThat(httpRequest.header(0)).isNotNull().satisfies(hdr ->
                 assertHeader(hdr, "foo: bar"));
-            assertThat(httpRequest.headers()[1]).isNotNull().satisfies(hdr ->
+            assertThat(httpRequest.header(1)).isNotNull().satisfies(hdr ->
                 assertHeader(hdr, "zipp: zoot"));
-            assertThat(httpRequest.headers()[2]).isNotNull().satisfies(hdr ->
+            assertThat(httpRequest.header(2)).isNotNull().satisfies(hdr ->
                 assertHeader(hdr, "Content-Type: application:json"));
-            assertThat(httpRequest.headers()[3]).isNotNull().satisfies(hdr ->
+            assertThat(httpRequest.header(3)).isNotNull().satisfies(hdr ->
                 assertHeader(
                     hdr,
                     "veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x"
@@ -147,8 +147,13 @@ class HttpReqReaderTest {
     @Test
     void qp2() throws Exception {
         try (var channel = channel(HTTP_LINE_BREAKS_QP_2)) {
-            var httpRequest = parse(channel);
-            var withQp = httpRequest.withQueryParameters();
+            var req = parse(channel);
+            assertThat(req.reqLine().urlLength()).isEqualTo(49);
+            var withQp = req.withQueryParameters();
+            assertThat(withQp.reqLine().urlLength()).isEqualTo(7);
+
+            assertThat(req.path()).startsWith(withQp.path() + "?");
+            assertThat(withQp.path()).isEqualTo("foo/bar");
 
             var qps = withQp.reqLine().queryParameters().parameters();
             assertThat(qps[0].name()).isEqualTo("president");

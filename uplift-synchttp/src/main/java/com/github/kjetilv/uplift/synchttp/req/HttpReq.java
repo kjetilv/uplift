@@ -6,10 +6,15 @@ import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import static com.github.kjetilv.uplift.synchttp.HttpMethod.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public record HttpReq(ReqLine reqLine, ReqHeader[] headers, ReadableByteChannel body) {
+@SuppressWarnings("unused")
+public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel body) {
 
     public HttpReq(ReqLine reqLine, List<ReqHeader> headers, ReadableByteChannel body) {
-        this(reqLine, headers.toArray(ReqHeader[]::new), body);
+        this(reqLine, new ReqHeaders(headers.toArray(ReqHeader[]::new)), body);
+    }
+
+    public ReqHeader header(int index) {
+        return headers().get(index);
     }
 
     public String bodyString() {
@@ -60,6 +65,10 @@ public record HttpReq(ReqLine reqLine, ReqHeader[] headers, ReadableByteChannel 
         return reqLine.url();
     }
 
+    public String path(String skip) {
+        return reqLine.url().substring(skip.length());
+    }
+
     public boolean isGet() {
         return method() == GET;
     }
@@ -82,7 +91,7 @@ public record HttpReq(ReqLine reqLine, ReqHeader[] headers, ReadableByteChannel 
     }
 
     public Map<String, Object> headerMap() {
-        return Arrays.stream(headers)
+        return headers.stream()
             .map(header ->
                 Map.entry(header.name(), header.value()))
             .collect(Collectors.toMap(
@@ -97,9 +106,6 @@ public record HttpReq(ReqLine reqLine, ReqHeader[] headers, ReadableByteChannel 
 
     @Override
     public String toString() {
-        var headers = Arrays.stream(this.headers)
-            .map(ReqHeader::toString)
-            .collect(Collectors.joining("\r\n"));
         return reqLine + "\r\n" +
                headers + "\r\n";
     }

@@ -8,16 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public record QueryParameters(QueryParameter[] parameters) {
+@SuppressWarnings("unused")
+public record QueryParameters(int startIndex, QueryParameter[] parameters) {
 
     public static final QueryParameter[] NONE = new QueryParameter[0];
-
-    public static final QueryParameters EMPTY = new QueryParameters(NONE);
 
     static QueryParameters parse(MemorySegment segment, int offset, int length) {
         var paramStart = Utils.indexOf((byte) '?', segment, offset, length);
         if (paramStart < 0) {
-            return EMPTY;
+            return new QueryParameters(offset, NONE);
         }
 
         var offsets = new Offsets(
@@ -32,8 +31,8 @@ public record QueryParameters(QueryParameter[] parameters) {
         offsets.scan(state);
         var queryParameters = state.finish();
         return queryParameters.length == 0
-            ? EMPTY
-            : new QueryParameters(queryParameters);
+            ? new QueryParameters(paramStart, NONE)
+            : new QueryParameters(paramStart, queryParameters);
     }
 
     public List<String> pars(String name) {

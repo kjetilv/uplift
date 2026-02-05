@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
-public final class Flambda implements RuntimeCloseable {
+public final class Flambda implements RuntimeCloseable, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(Flambda.class);
 
@@ -48,6 +48,11 @@ public final class Flambda implements RuntimeCloseable {
 
     public void join() {
         await(server -> server::join);
+    }
+
+    @Override
+    public void run() {
+        join();
     }
 
     @Override

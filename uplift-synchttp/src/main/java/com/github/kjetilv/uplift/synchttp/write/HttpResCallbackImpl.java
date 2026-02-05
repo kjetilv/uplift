@@ -19,7 +19,7 @@ final class HttpResCallbackImpl implements
 
     private final WritableByteChannel out;
 
-    private int contentLength = -1;
+    private long contentLength = -1;
 
     HttpResCallbackImpl(WritableByteChannel out) {
         this.out = Objects.requireNonNull(out, "out");
@@ -59,15 +59,18 @@ final class HttpResCallbackImpl implements
             access-control-allow-origin: %s\r
             access-control-allow-methods: %s\r
             """.formatted(
-            host,
+            host == null || host.isBlank()
+                ? "*"
+                : host,
             Stream.of(methods)
+                .filter(Objects::nonNull)
                 .map(HttpMethod::name)
                 .collect(Collectors.joining(", "))
         ));
     }
 
     @Override
-    public Body contentLength(int contentLength) {
+    public Body contentLength(long contentLength) {
         this.contentLength = contentLength;
         var value = String.valueOf(this.contentLength);
         header("content-length", value);

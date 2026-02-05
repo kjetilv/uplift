@@ -67,14 +67,14 @@ class HashTest {
     @Test
     void uuidsAsString() {
         var string = UUID.randomUUID().toString();
-        var hash = Hash.fromUUID(string);
+        var hash = Hash.fromUuid(string);
         assertEquals(string, hash.asUuid().toString());
     }
 
     @Test
     void uuidsAsDigests() {
         var string = UUID.randomUUID().toString();
-        var hash = Hash.fromUUID(string);
+        var hash = Hash.fromUuid(string);
 
         var digest = hash.digest();
         var hash1 = Hash.from(digest);

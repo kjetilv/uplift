@@ -38,9 +38,13 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
 
         Headers contentType(String contentType);
 
+        default Headers cors(HttpMethod... methods) {
+            return cors(null, methods);
+        }
+
         Headers cors(String host, HttpMethod... methods);
 
-        Body contentLength(int contentLength);
+        Body contentLength(long contentLength);
 
         Body content();
 

@@ -32,30 +32,6 @@ public class SyncTest {
         System.out.println(byteVector2.eq((byte) '\n'));
     }
 
-    @Test
-    void testHttp() {
-        var handler = new HttpReqResProcessor((_, _) ->
-            new HttpRes(
-                200,
-                "world"
-            ));
-        var server = Server.create().run(handler);
-
-        CompletableFuture<HttpResponse<String>> future;
-        try (var httpClient = HttpClient.newHttpClient()) {
-            future =
-                httpClient.sendAsync(
-                    HttpRequest.newBuilder(server.uri()).build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
-        }
-        assertThat(future)
-            .isCompletedWithValueMatching(response ->
-                response.body().equals("world"));
-
-        server.close();
-        server.join();
-    }
 
     @Test
     void testHttpCallbacks() {

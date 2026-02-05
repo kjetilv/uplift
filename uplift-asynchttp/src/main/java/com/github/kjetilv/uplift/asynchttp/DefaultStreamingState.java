@@ -21,11 +21,6 @@ record DefaultStreamingState(ByteBuffer requestBuffer, Long transferred, Throwab
         return new DefaultStreamingState(requestBuffer, transferred, requireNonNull(error, "error"));
     }
 
-    @Override
-    public boolean isOK() {
-        return error == null;
-    }
-
     private static final String CLASS_NAME = StreamingState.class.getSimpleName();
 
     private static final String EMPTY = CLASS_NAME + "[<none>]";

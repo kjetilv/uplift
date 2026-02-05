@@ -11,6 +11,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 public record ReqLine(
     MemorySegment segment,
     int urlIndex,
+    int urlLength,
     int versionIndex,
     int lineBreak,
     Supplier<HttpMethod> methodSupplier,
@@ -25,27 +26,11 @@ public record ReqLine(
     ) {
         this(
             segment,
-            lineBreak,
-            versionIndex,
-            urlIndex,
-            null
-        );
-    }
-
-    public ReqLine(
-        MemorySegment segment,
-        int lineBreak,
-        int versionIndex,
-        int urlIndex,
-        QueryParameters queryParameters
-    ) {
-        this(
-            segment,
             urlIndex,
             versionIndex,
             lineBreak,
             null,
-            queryParameters
+            null
         );
     }
 
@@ -57,8 +42,29 @@ public record ReqLine(
         Supplier<HttpMethod> methodSupplier,
         QueryParameters queryParameters
     ) {
+        this(
+            segment,
+            urlIndex,
+            versionIndex - urlIndex - 1,
+            versionIndex,
+            lineBreak,
+            null,
+            queryParameters
+        );
+    }
+
+    public ReqLine(
+        MemorySegment segment,
+        int urlIndex,
+        int urlLength,
+        int versionIndex,
+        int lineBreak,
+        Supplier<HttpMethod> methodSupplier,
+        QueryParameters queryParameters
+    ) {
         this.segment = segment;
         this.urlIndex = urlIndex;
+        this.urlLength = urlLength;
         this.versionIndex = versionIndex;
         this.lineBreak = lineBreak;
         this.methodSupplier = methodSupplier == null ? this::parseMethod : methodSupplier;
@@ -82,13 +88,16 @@ public record ReqLine(
     }
 
     public ReqLine withQueryParameters() {
-        return queryParameters != null ? this : new ReqLine(
+        var queryParameters = parseQueryParameters();
+        var urlLength = queryParameters.startIndex() - urlIndex;
+        return this.queryParameters != null ? this : new ReqLine(
             segment,
             urlIndex,
+            urlLength,
             versionIndex,
             lineBreak,
             methodSupplier,
-            parseQueryParameters()
+            queryParameters
         );
     }
 
@@ -129,10 +138,6 @@ public record ReqLine(
 
     private int methodLength() {
         return urlIndex - 1;
-    }
-
-    private int urlLength() {
-        return versionIndex - urlIndex - 1;
     }
 
     private int versionLength() {

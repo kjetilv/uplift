@@ -14,5 +14,7 @@ public interface StreamingState extends ChannelState {
 
     Throwable error();
 
-    boolean isOK();
+    default boolean isOK() {
+        return error() == null;
+    }
 }

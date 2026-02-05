@@ -44,8 +44,11 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
     }
 
-    static Hash<K128> fromUUID(String uuidString) {
-        var uuid = UUID.fromString(uuidString);
+    static Hash<K128> fromUuid(String uuidString) {
+        return fromUuid(UUID.fromString(uuidString));
+    }
+
+    static Hash<K128> fromUuid(UUID uuid) {
         return of(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
     }
 
