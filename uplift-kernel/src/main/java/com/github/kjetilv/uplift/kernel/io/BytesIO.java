@@ -101,8 +101,8 @@ public final class BytesIO {
 
     public static int writeHash128(DataOutput output, Hash<K128> hash) {
         requireNonNull(hash, "hash");
-        return writeLong(output, hash.ls()[1]) +
-               writeLong(output, hash.ls()[0]);
+        return writeLong(output, hash.ls()[0]) +
+               writeLong(output, hash.ls()[1]);
     }
 
     public static int writeHashes128(DataOutput output, List<? extends Hash<K128>> list) {
@@ -116,10 +116,10 @@ public final class BytesIO {
 
     public static int writeHash256(DataOutput output, Hash<K256> hash) {
         requireNonNull(hash, "hash");
-        return writeLong(output, hash.ls()[3]) +
-               writeLong(output, hash.ls()[2]) +
+        return writeLong(output, hash.ls()[0]) +
                writeLong(output, hash.ls()[1]) +
-               writeLong(output, hash.ls()[0]);
+               writeLong(output, hash.ls()[2]) +
+               writeLong(output, hash.ls()[3]);
     }
 
     public static int writeWritables(DataOutput output, Collection<? extends BinaryWritable> list) {
