@@ -17,4 +17,8 @@ public record ResponseIn(
     public static ResponseIn read(InputStream bytes) {
         return ResponseInRW.INSTANCE.streamReader().read(bytes);
     }
+
+    public long bodyLength() {
+        return body == null ? 0 : body.length();
+    }
 }

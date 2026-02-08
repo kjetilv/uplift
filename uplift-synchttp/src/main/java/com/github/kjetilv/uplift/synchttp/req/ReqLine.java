@@ -48,7 +48,7 @@ public record ReqLine(
             versionIndex - urlIndex - 1,
             versionIndex,
             lineBreak,
-            null,
+            methodSupplier,
             queryParameters
         );
     }
@@ -88,9 +88,23 @@ public record ReqLine(
     }
 
     public ReqLine withQueryParameters() {
+        if (this.queryParameters != null) {
+            return this;
+        }
         var queryParameters = parseQueryParameters();
+        if (queryParameters.isEmpty()) {
+            return new ReqLine(
+                segment,
+                urlIndex,
+                urlLength,
+                versionIndex,
+                lineBreak,
+                methodSupplier,
+                queryParameters
+            );
+        }
         var urlLength = queryParameters.startIndex() - urlIndex;
-        return this.queryParameters != null ? this : new ReqLine(
+        return new ReqLine(
             segment,
             urlIndex,
             urlLength,

@@ -18,7 +18,8 @@ public abstract class LambdaHandlerSupport implements LambdaHandler {
 
     @Override
     public final LambdaResult handle(LambdaPayload lambdaPayload) {
-        return lambdaResult(lambdaPayload).orElseGet(() ->
+        var lambdaResult = lambdaResult(lambdaPayload);
+        return lambdaResult.orElseGet(() ->
             error(lambdaPayload, BAD_REQUEST, "{}: No result: {} {}", this, lambdaPayload)
         );
     }

@@ -38,7 +38,8 @@ record ReqsImpl(URI uri) implements Reqs {
     ) {
         Objects.requireNonNull(method, "method");
         try {
-            var builder = HttpRequest.newBuilder(resolve(uri));
+            var resolvedUri = resolve(uri);
+            var builder = HttpRequest.newBuilder(resolvedUri);
             if (headers != null) {
                 headers.forEach(builder::header);
             }

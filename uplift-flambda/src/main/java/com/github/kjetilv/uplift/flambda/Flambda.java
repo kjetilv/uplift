@@ -130,7 +130,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     var in = lambdaRes.in();
                     callback.status(in.statusCode())
                         .headers(in.headers())
-                        .contentLength(in.body().length())
+                        .contentLength(in.bodyLength())
                         .body(body);
                 }
             );
@@ -156,14 +156,15 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         HttpReq httpReq,
         HttpMethod method
     ) {
+        var req = httpReq.withQueryParameters();
         return new RequestOut(
             method.name(),
-            httpReq.path(),
-            httpReq.headerMap(),
-            httpReq.queryParametersMap(),
+            req.path(),
+            req.headerMap(),
+            req.queryParametersMap(),
             switch (method) {
-                case GET, HEAD, OPTIONS, DELETE -> null;
-                default -> httpReq.bodyString(UTF_8);
+                case GET, HEAD, OPTIONS -> null;
+                default -> req.bodyString(UTF_8);
             }
         );
     }

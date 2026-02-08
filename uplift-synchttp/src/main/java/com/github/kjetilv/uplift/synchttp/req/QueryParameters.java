@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
-public record QueryParameters(int startIndex, QueryParameter[] parameters) {
+public record QueryParameters(int startIndex, QueryParameter... parameters) {
 
     public static final QueryParameter[] NONE = new QueryParameter[0];
 
@@ -33,6 +33,10 @@ public record QueryParameters(int startIndex, QueryParameter[] parameters) {
         return queryParameters.length == 0
             ? new QueryParameters(paramStart, NONE)
             : new QueryParameters(paramStart, queryParameters);
+    }
+
+    public boolean isEmpty() {
+        return parameters.length == 0;
     }
 
     public List<String> pars(String name) {

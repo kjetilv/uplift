@@ -94,7 +94,6 @@ public class LambdaHarness implements RuntimeCloseable {
         ).looper();
         this.testExec.submit(this.looper);
         this.reqs = flambda.reqs();
-        this.flambda.join();
     }
 
     @Override
