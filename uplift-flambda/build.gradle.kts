@@ -2,7 +2,6 @@
 //import com.github.kjetilv.uplift.bld.Native.runCommand
 
 dependencies {
-    implementation(project(":uplift-asynchttp"))
     implementation(project(":uplift-synchttp"))
     implementation(project(":uplift-flogs"))
     implementation(project(":uplift-json"))

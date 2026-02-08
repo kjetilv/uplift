@@ -14,7 +14,6 @@ pluginManagement {
     }
 }
 
-include("uplift-asynchttp")
 include("uplift-edam")
 include("uplift-edamame")
 include("uplift-flambda")

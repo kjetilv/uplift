@@ -8,7 +8,6 @@ dependencies {
     annotationProcessor(project(":uplift-json-gen"))
 
     testImplementation(project(":uplift-json-mame"))
-    testImplementation(project(":uplift-asynchttp"))
     testImplementation(project(":uplift-synchttp"))
     testImplementation(project(":uplift-hash"))
 }
