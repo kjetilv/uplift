@@ -20,14 +20,17 @@ class FlambdaState {
     }
 
     void exchange(LambdaReq lambdaReq, Consumer<LambdaRes> responseHandler) {
+        LambdaRes polled = null;
         try {
             reqQueue.put(lambdaReq);
+            polled = responses.get(lambdaReq.id());
+            responseHandler.accept(polled);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Failed to put " + lambdaReq, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to put " + lambdaReq + " -> " + polled, e);
         }
-        LambdaRes polled = responses.get(lambdaReq.id());
-        responseHandler.accept(polled);
     }
 
     LambdaReq fetchRequest() {

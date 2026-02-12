@@ -129,7 +129,8 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
     private Invocation<Q, R> executeLambda(Invocation<Q, R> invocation) {
         try {
             return invocation.result(
-                () -> lambdaHandler.handle(invocation.payload()),
+                () ->
+                    lambdaHandler.handle(invocation.payload()),
                 time
             );
         } catch (Exception e) {

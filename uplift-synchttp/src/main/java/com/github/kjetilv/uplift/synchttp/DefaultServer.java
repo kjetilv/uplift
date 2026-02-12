@@ -165,15 +165,12 @@ final class DefaultServer implements Server {
         if (throwable != null) {
             log.error("{} failed to process request", this, throwable);
         } else {
-            log.info("{} processed request: {}", this, channel);
+            log.debug("{} processed request: {}", this, channel);
         }
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" +
-               "@" + address +
-               (closed.get() ? " open" : " closed") +
-               "]";
+        return getClass().getSimpleName() + "[@" + address + " " + (closed.get() ? "open" : "closed") + "]";
     }
 }

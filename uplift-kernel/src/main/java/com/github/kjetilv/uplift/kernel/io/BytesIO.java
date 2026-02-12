@@ -41,6 +41,22 @@ public final class BytesIO {
         );
     }
 
+    public static Hash<K128> readHash128(DataInput input) {
+        requireNonNull(input, "inputStream");
+        var l1 = readLong(input);
+        var l2 = readLong(input);
+        return Hash.of(l1, l2);
+    }
+
+    public static Hash<K256> readHash256(DataInput input) {
+        requireNonNull(input, "inputStream");
+        var l1 = readLong(input);
+        var l2 = readLong(input);
+        var l3 = readLong(input);
+        var l4 = readLong(input);
+        return Hash.of(l1, l2, l3, l4);
+    }
+
     public static String readString(DataInput input) {
         var userIdLength = readInt(input);
         var bytes = new byte[userIdLength];
@@ -175,6 +191,14 @@ public final class BytesIO {
     private static int readInt(DataInput input) {
         try {
             return input.readInt();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read count", e);
+        }
+    }
+
+    private static long readLong(DataInput input) {
+        try {
+            return input.readLong();
         } catch (IOException e) {
             throw new IllegalStateException("Could not read count", e);
         }

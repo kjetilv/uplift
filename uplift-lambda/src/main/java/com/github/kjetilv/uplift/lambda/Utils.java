@@ -4,8 +4,15 @@ import com.github.kjetilv.uplift.kernel.io.BytesIO;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 final class Utils {
+
+    public static String printQueryParams(Map<String, Object> params) {
+        return params == null ? "{}"
+            : params.size() > 3 ? "{" + params.size() + " qpars}"
+                : params.toString();
+    }
 
     static String printBody(byte[] body, boolean bin) {
         if (body == null || body.length == 0) {
@@ -32,6 +39,12 @@ final class Utils {
 
     static String encodeResponseBody(byte[] body, boolean binary) {
         return binary ? BytesIO.toBase64(body) : toPlainString(body);
+    }
+
+    static String headers(Map<?, ?> headers) {
+        return headers == null ? "{}"
+            : headers.size() > 5 ? "{" + headers.size() + " headers}"
+                : headers.toString();
     }
 
     private Utils() {

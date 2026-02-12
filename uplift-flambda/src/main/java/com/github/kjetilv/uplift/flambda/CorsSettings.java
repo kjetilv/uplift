@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
+import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
+
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -19,8 +21,20 @@ public record CorsSettings(
         this.headers = headers == null || headers.isEmpty() ? List.of("content-type") : List.copyOf(headers);
     }
 
+    public HttpResponseCallback.Headers applyTo(HttpResponseCallback.Headers headers) {
+        return headers
+            .header("access-control-allow-origin", originValue())
+            .header("access-control-allow-methods", methodsValue())
+            .header("access-control-allow-headers", headersValue())
+            .header("access-control-allow-credentials", credentialsValue());
+    }
+
     public boolean accepts(String origin) {
         return this.origins.stream().anyMatch(origin::equals);
+    }
+
+    public String toHeaderSection() {
+        return null;
     }
 
     String headersValue() {

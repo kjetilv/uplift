@@ -47,7 +47,8 @@ public final class HttpCallbackProcessor implements Server.Processor {
         try {
             httpHandler.handle(
                 httpReq,
-                HttpResponseCallback.create(out));
+                HttpResponseCallback.create(out)
+            );
         } catch (Exception e) {
             log.error("Failed to handle request", e);
             new HttpResWriter(out).write(new HttpRes(500));

@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import java.util.Map;
 
- @JsonRecord
+@JsonRecord
 public record RequestOut(
     String version,
     String httpMethod,
@@ -43,5 +43,15 @@ public record RequestOut(
 
         public record Http(String method, String path) {
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + httpMethod + " " + path +
+               " q:" + Utils.printQueryParams(queryStringParameters) +
+               " h:" + Utils.headers(headers) +
+               " b:" + Utils.printBody(body) +
+               (isBase64Encoded ? " base64" : "") +
+               "]";
     }
 }

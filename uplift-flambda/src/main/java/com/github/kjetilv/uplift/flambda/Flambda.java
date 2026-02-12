@@ -10,6 +10,7 @@ import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Server;
 import com.github.kjetilv.uplift.synchttp.req.HttpReq;
+import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -40,10 +41,10 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         var flambdaState = new FlambdaState(settings.queueLength());
 
         this.apiServer = Server.create(settings.apiPort())
-            .run(new HttpCallbackProcessor(apiHandler(flambdaState)));
+            .run(new HttpCallbackProcessor(apiHandler(settings, flambdaState)));
 
         this.lambdaServer = Server.create(settings.lambdaPort())
-            .run(new HttpCallbackProcessor(lambdaHandler(flambdaState)));
+            .run(new HttpCallbackProcessor(lambdaHandler(settings, flambdaState)));
     }
 
     public void join() {
@@ -96,14 +97,17 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         return StructuredTaskScope.open(allSuccessfulOrThrow());
     }
 
-    private static HttpCallbackProcessor.HttpHandler lambdaHandler(FlambdaState flambdaState) {
+    private static HttpCallbackProcessor.HttpHandler lambdaHandler(
+        FlambdaSettings settings,
+        FlambdaState flambdaState
+    ) {
         return (httpReq, callback) -> {
             switch (httpReq.method()) {
                 case GET -> {
                     var lambdaReq = flambdaState.fetchRequest();
-                    var body = RequestOutRW.INSTANCE.stringWriter().write(lambdaReq.out());
+                    var body = toString(lambdaReq.out());
                     var contentLength = length(body);
-                    callback.status(200)
+                    statusWithCors(200, callback, settings)
                         .headers(idHeaders(lambdaReq))
                         .contentLength(contentLength)
                         .body(body);
@@ -112,28 +116,49 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     var id = id(httpReq.path());
                     var body = httpReq.bodyBytes();
                     flambdaState.submitResponse(new LambdaRes(id, responseIn(body)));
-                    callback.status(204).nobody();
+                    statusWithCors(204, callback, settings)
+                        .nobody();
                 }
+                case OPTIONS -> statusWithCors(200, callback, settings);
                 default -> log.error("Unsupported method: {}", httpReq);
             }
         };
     }
 
-    private static HttpCallbackProcessor.HttpHandler apiHandler(FlambdaState flambdaState) {
+    private static String toString(RequestOut request) {
+        return RequestOutRW.INSTANCE.stringWriter().write(request);
+    }
+
+    private static HttpResponseCallback.Headers statusWithCors(
+        int statusCode,
+        HttpResponseCallback callback,
+        FlambdaSettings settings
+    ) {
+        return settings.cors().applyTo(callback.status(statusCode));
+    }
+
+    private static HttpCallbackProcessor.HttpHandler apiHandler(FlambdaSettings settings, FlambdaState flambdaState) {
         return (httpReq, callback) -> {
-            var method = httpReq.method();
-            var requestOut = requestOut(httpReq, method);
-            flambdaState.exchange(
-                new LambdaReq(requestOut),
-                lambdaRes -> {
-                    var body = lambdaRes.in().body();
-                    var in = lambdaRes.in();
-                    callback.status(in.statusCode())
-                        .headers(in.headers())
-                        .contentLength(in.bodyLength())
-                        .body(body);
+            switch (httpReq.method()) {
+                case OPTIONS -> {
+                    statusWithCors(200, callback, settings);
                 }
-            );
+                case HttpMethod method -> {
+                    var requestOut = requestOut(httpReq, method);
+                    flambdaState.exchange(
+                        new LambdaReq(requestOut),
+                        lambdaRes -> {
+                            var body = lambdaRes.in().body();
+                            var in = lambdaRes.in();
+                            byte[] bodyBytes  = in.bytes();
+                            statusWithCors(in.statusCode(), callback, settings)
+                                .headers(in.headers())
+                                .contentLength(bodyBytes.length)
+                                .body(bodyBytes);
+                        }
+                    );
+                }
+            }
         };
     }
 
