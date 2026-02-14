@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.synchttp;
 
-import com.github.kjetilv.uplift.synchttp.util.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.lang.foreign.MemorySegment;

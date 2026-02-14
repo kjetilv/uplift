@@ -15,15 +15,25 @@ final class LambdaLoopers {
     private static final Logger log = LoggerFactory.getLogger(LambdaLoopers.class);
 
     static LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper(
+        String name,
         LambdaHandler handler,
         InvocationSource<HttpRequest, HttpResponse<InputStream>> source,
         InvocationSink<HttpRequest, HttpResponse<InputStream>> sink,
         Supplier<Instant> time
     ) {
-        return looper(source, handler, toResponsePost(), sink, resultLog(), time);
+        return looper(
+            name,
+            source,
+            handler,
+            toResponsePost(),
+            sink,
+            resultLog(),
+            time
+        );
     }
 
     static <Q, R> LambdaLooper<Q, R> looper(
+        String name,
         InvocationSource<Q, R> source,
         LambdaHandler handler,
         LambdaLooper.ResponseResolver<Q, R> resolver,
@@ -31,7 +41,15 @@ final class LambdaLoopers {
         LambdaLooper.ResultLog<R> resultLog,
         Supplier<Instant> time
     ) {
-        return new LambdaLooper<>(source, handler, resolver, sink, resultLog, time);
+        return new LambdaLooper<>(
+            name,
+            source,
+            handler,
+            resolver,
+            sink,
+            resultLog,
+            time
+        );
     }
 
     private LambdaLoopers() {

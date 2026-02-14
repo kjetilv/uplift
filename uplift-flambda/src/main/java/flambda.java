@@ -1,4 +1,4 @@
-import com.github.kjetilv.uplift.flambda.CorsSettings;
+import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.flambda.Flambda;
 import com.github.kjetilv.uplift.flambda.FlambdaSettings;
 import com.github.kjetilv.uplift.flogs.Flogs;
@@ -23,6 +23,7 @@ void main(String[] args) {
         .findFirst().orElse(API_PORT);
 
     var settings = new FlambdaSettings(
+        "flambda",
         lambdaPort,
         apiPort,
         REQUEST_BUFFER_SIZE,

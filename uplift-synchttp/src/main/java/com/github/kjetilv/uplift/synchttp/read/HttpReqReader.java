@@ -2,9 +2,9 @@ package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
 import module jdk.incubator.vector;
-import com.github.kjetilv.uplift.synchttp.req.HttpReq;
-import com.github.kjetilv.uplift.synchttp.req.ReqHeader;
-import com.github.kjetilv.uplift.synchttp.req.ReqLine;
+import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
+import com.github.kjetilv.uplift.synchttp.rere.ReqHeader;
+import com.github.kjetilv.uplift.synchttp.rere.ReqLine;
 
 public final class HttpReqReader {
 

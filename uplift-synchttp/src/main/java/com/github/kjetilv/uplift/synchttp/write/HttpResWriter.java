@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.res.HttpRes;
-import com.github.kjetilv.uplift.synchttp.util.Utils;
+import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
+import com.github.kjetilv.uplift.synchttp.Utils;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;

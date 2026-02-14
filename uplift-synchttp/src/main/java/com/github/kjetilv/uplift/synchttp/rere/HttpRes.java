@@ -1,6 +1,4 @@
-package com.github.kjetilv.uplift.synchttp.res;
-
-import com.github.kjetilv.uplift.synchttp.req.ResHeader;
+package com.github.kjetilv.uplift.synchttp.rere;
 
 import java.io.ByteArrayInputStream;
 import java.nio.channels.Channels;

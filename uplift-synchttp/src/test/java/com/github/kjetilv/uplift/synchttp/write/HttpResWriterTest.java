@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.req.ResHeader;
-import com.github.kjetilv.uplift.synchttp.res.HttpRes;
+import com.github.kjetilv.uplift.synchttp.rere.ResHeader;
+import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

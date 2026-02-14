@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.synchttp.req;
+package com.github.kjetilv.uplift.synchttp.rere;
 
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;

@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.synchttp.util;
+package com.github.kjetilv.uplift.synchttp;
 
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;

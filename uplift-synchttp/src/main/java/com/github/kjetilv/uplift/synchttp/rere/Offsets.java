@@ -1,6 +1,6 @@
-package com.github.kjetilv.uplift.synchttp.req;
+package com.github.kjetilv.uplift.synchttp.rere;
 
-import com.github.kjetilv.uplift.synchttp.util.Utils;
+import com.github.kjetilv.uplift.synchttp.Utils;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorOperators;
 

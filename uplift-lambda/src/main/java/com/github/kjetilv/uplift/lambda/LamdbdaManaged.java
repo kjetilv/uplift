@@ -6,19 +6,20 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public interface LamdbdaManaged
-    extends Runnable, RuntimeCloseable {
+    extends Consumer<String>, RuntimeCloseable {
 
     @Override
-    default void run() {
-        try (var looper = looper()) {
+    default void accept(String name) {
+        try (var looper = looper(name)) {
             looper.run();
         }
     }
 
     URI lambdaUri();
 
-    LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper();
+    LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper(String name);
 }

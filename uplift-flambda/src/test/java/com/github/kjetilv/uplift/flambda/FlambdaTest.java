@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.flogs.LogLevel;
 import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
+import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class FlambdaTest {
     @Test
     void startAndRun() throws Exception {
         var settings = new FlambdaSettings(
+            "flambdaTest",
             new CorsSettings(
                 List.of("*"),
                 List.of("GET")

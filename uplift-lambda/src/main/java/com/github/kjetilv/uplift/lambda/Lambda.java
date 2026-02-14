@@ -15,11 +15,12 @@ public final class Lambda {
 
     public static final int PARALLELLISM = 4;
 
-    public static void simply(LambdaHandler lambdaHandler) {
-        simply(lambdaHandler, null, null, 0);
+    public static void simply(String name, LambdaHandler lambdaHandler) {
+        simply(name, lambdaHandler, null, null, 0);
     }
 
     public static void simply(
+        String name,
         LambdaHandler handler,
         Duration connectTimeout,
         Duration responseTimeout,
@@ -28,7 +29,7 @@ public final class Lambda {
         try (
             var managed = managed(handler, connectTimeout, responseTimeout)
         ) {
-            managed.run();
+            managed.accept(name);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to run lambda: " + handler, e);
         }

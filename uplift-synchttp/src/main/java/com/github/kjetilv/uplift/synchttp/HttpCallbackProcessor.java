@@ -2,8 +2,8 @@ package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.read.HttpReqReader;
-import com.github.kjetilv.uplift.synchttp.req.HttpReq;
-import com.github.kjetilv.uplift.synchttp.res.HttpRes;
+import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
+import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import com.github.kjetilv.uplift.synchttp.write.HttpResWriter;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import org.slf4j.Logger;
@@ -57,8 +57,4 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     private static final int DEFAULT_MAX_REQUEST_LENGTH = 8192;
 
-    public interface HttpHandler {
-
-        void handle(HttpReq httpReq, HttpResponseCallback callback);
-    }
 }

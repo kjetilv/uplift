@@ -21,6 +21,7 @@ class LambdaLoopTest {
         var failed = new AtomicReference<Throwable>();
         var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
         LambdaLoopers.looper(
+            "test",
             () ->
                 responses.size() > 3
                     ? Optional.empty()

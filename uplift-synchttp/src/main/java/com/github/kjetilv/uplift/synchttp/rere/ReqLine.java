@@ -1,7 +1,7 @@
-package com.github.kjetilv.uplift.synchttp.req;
+package com.github.kjetilv.uplift.synchttp.rere;
 
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
-import com.github.kjetilv.uplift.synchttp.util.Utils;
+import com.github.kjetilv.uplift.synchttp.Utils;
 
 import java.lang.foreign.MemorySegment;
 import java.util.function.Supplier;

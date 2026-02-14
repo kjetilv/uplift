@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.synchttp;
 
-import com.github.kjetilv.uplift.synchttp.res.HttpRes;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorSpecies;
 import org.junit.jupiter.api.Test;

@@ -5,7 +5,6 @@ import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.net.ConnectException;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
@@ -23,6 +22,8 @@ import static java.util.Objects.requireNonNull;
 public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaLooper.class);
+
+    private final String name;
 
     private final InvocationSource<Q, R> source;
 
@@ -53,6 +54,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
     private final AtomicReference<Throwable> lastException = new AtomicReference<>();
 
     LambdaLooper(
+        String name,
         InvocationSource<Q, R> source,
         LambdaHandler lambdaHandler,
         ResponseResolver<Q, R> responseResolver,
@@ -60,6 +62,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         ResultLog<R> resultLog,
         Supplier<Instant> time
     ) {
+        this.name = requireNonNull(name, "name");
         this.source = requireNonNull(source, "source");
         this.lambdaHandler = requireNonNull(lambdaHandler, "handler");
         this.responseResolver = requireNonNull(responseResolver, "responseResolver");
@@ -71,7 +74,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
 
     @Override
     public void run() {
-        log.info("Loop started");
+        log.info("{}: Loop started", name);
         try (
             var stages = new Stages<>(source::next);
             var stream = stages.stages()
@@ -104,9 +107,9 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         if (qr.requestFailure() == null && throwable == null) {
             if (lastException.get() != null) {
                 var last = lastException.getAndSet(null);
-                log.info("Service restored, last exception: {}", last.toString());
+                log.info("{}: Service restored, last exception: {}", name, last.toString());
             } else {
-                log.debug("Completed: {}", qr, throwable);
+                log.debug("{}: Completed: {}", name, qr, throwable);
             }
             return;
         }
@@ -117,7 +120,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
                 log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
                 sleep(WAIT_MS);
             } else {
-                log.warn("Request failed: {}", qr, combined);
+                log.warn("{}: Request failed: {}", name, qr, combined);
             }
         } else {
             var combined = combine(throwable, qr.requestFailure());
@@ -228,7 +231,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
     public String toString() {
         var count = completedOk.longValue() + completedFail.longValue();
         return "%s[%s@%s: init:%s ok:%s fail:%s avg:%s]".formatted(
-            getClass().getSimpleName(),
+            name,
             lambdaHandler,
             startTime,
             initiated,

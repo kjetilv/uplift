@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.synchttp;
 
 import com.github.kjetilv.uplift.synchttp.read.HttpReqReader;
-import com.github.kjetilv.uplift.synchttp.req.HttpReq;
-import com.github.kjetilv.uplift.synchttp.req.ReqHeader;
+import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
+import com.github.kjetilv.uplift.synchttp.rere.ReqHeader;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;

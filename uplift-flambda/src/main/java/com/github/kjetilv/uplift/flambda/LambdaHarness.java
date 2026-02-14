@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.lambda.Lambda;
 import com.github.kjetilv.uplift.lambda.LambdaClientSettings;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaLooper;
+import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 import java.net.http.HttpRequest;
@@ -78,7 +79,7 @@ public class LambdaHarness implements RuntimeCloseable {
         this.testExec = executor;
 
         var settings = flambdaSettings == null
-            ? settings(corsSettings, time)
+            ? settings(name, corsSettings, time)
             : flambdaSettings;
 
         var clientSettings = lambdaClientSettings == null
@@ -91,7 +92,7 @@ public class LambdaHarness implements RuntimeCloseable {
             this.flambda.lambdaUri(),
             clientSettings,
             lambdaHandler
-        ).looper();
+        ).looper(name);
         this.testExec.submit(this.looper);
         this.reqs = flambda.reqs();
     }
@@ -114,8 +115,9 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
 
-    private static FlambdaSettings settings(CorsSettings cors, Supplier<Instant> time) {
+    private static FlambdaSettings settings(String name, CorsSettings cors, Supplier<Instant> time) {
         return new FlambdaSettings(
+            name,
             65536,
             10,
             cors != null ? cors

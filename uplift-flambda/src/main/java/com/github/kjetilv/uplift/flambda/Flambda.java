@@ -7,9 +7,10 @@ import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
+import com.github.kjetilv.uplift.synchttp.HttpHandler;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Server;
-import com.github.kjetilv.uplift.synchttp.req.HttpReq;
+import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import org.jspecify.annotations.NonNull;
@@ -35,8 +36,12 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     private final Server apiServer;
 
+    private final String name;
+
     public Flambda(FlambdaSettings settings) {
         Objects.requireNonNull(settings, "settings");
+
+        this.name = settings.name();
 
         var flambdaState = new FlambdaState(settings.queueLength());
 
@@ -45,6 +50,11 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
         this.lambdaServer = Server.create(settings.lambdaPort())
             .run(new HttpCallbackProcessor(lambdaHandler(settings, flambdaState)));
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Shutting down {}", this);
+            close();
+        }));
     }
 
     public void join() {
@@ -97,7 +107,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         return StructuredTaskScope.open(allSuccessfulOrThrow());
     }
 
-    private static HttpCallbackProcessor.HttpHandler lambdaHandler(
+    private static HttpHandler lambdaHandler(
         FlambdaSettings settings,
         FlambdaState flambdaState
     ) {
@@ -137,7 +147,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         return settings.cors().applyTo(callback.status(statusCode));
     }
 
-    private static HttpCallbackProcessor.HttpHandler apiHandler(FlambdaSettings settings, FlambdaState flambdaState) {
+    private static HttpHandler apiHandler(FlambdaSettings settings, FlambdaState flambdaState) {
         return (httpReq, callback) -> {
             switch (httpReq.method()) {
                 case OPTIONS -> {
@@ -150,7 +160,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                         lambdaRes -> {
                             var body = lambdaRes.in().body();
                             var in = lambdaRes.in();
-                            byte[] bodyBytes  = in.bytes();
+                            byte[] bodyBytes = in.bytes();
                             statusWithCors(in.statusCode(), callback, settings)
                                 .headers(in.headers())
                                 .contentLength(bodyBytes.length)
@@ -221,6 +231,6 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + lambdaServer + " <=> " + apiServer + "]";
+        return getClass().getSimpleName() + "[" + name + ": " + lambdaServer + " <=> " + apiServer + "]";
     }
 }
