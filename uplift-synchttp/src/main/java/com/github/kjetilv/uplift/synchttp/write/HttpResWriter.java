@@ -17,7 +17,7 @@ public class HttpResWriter {
     }
 
     public void write(HttpRes response) {
-        try (this.out; var body = response.body()) {
+        try (var body = response.body()) {
             write(ByteBuffer.wrap(VERSION));
             write(statusCode(response));
 

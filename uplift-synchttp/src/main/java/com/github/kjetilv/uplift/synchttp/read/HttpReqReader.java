@@ -44,6 +44,9 @@ public final class HttpReqReader {
         try {
             init();
             fillBuffer(channel);
+            if (available == 0 && done) {
+                return null;
+            }
             var requestLine = parseRequestLine(channel);
             var headers = parseHeaders(channel);
             var body = body(channel);

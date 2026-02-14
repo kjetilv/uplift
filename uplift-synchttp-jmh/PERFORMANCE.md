@@ -18,6 +18,21 @@ The accept loop dispatches each connection to process exactly one request.
 Netty keeps connections alive per HTTP/1.1 defaults.
 Uplift pays TCP handshake + teardown on every request; Netty amortizes one connection across many.
 
+**Fix:** `Server.Processor.process()` should loop on the same channel, reading successive requests
+until the channel closes or a `Connection: close` header is received. Currently `DefaultServer`
+dispatches one virtual thread per accepted socket and closes the socket in `whenComplete` --
+instead the virtual thread should own the socket for its lifetime and loop:
+
+```
+while (channel.isOpen()) {
+    processor.process(channel, channel);  // read one request, write one response
+}
+```
+
+`HttpCallbackProcessor` must not close the output channel after writing. The response writer
+should write `Connection: keep-alive` (or omit `Connection: close`, which is the HTTP/1.1 default).
+Close the socket only when `read()` returns -1 or the client sends `Connection: close`.
+
 ### 2. Per-request Arena + MemorySegment allocation
 
 `HttpCallbackProcessor.process()` creates a `new HttpReqReader` every request.

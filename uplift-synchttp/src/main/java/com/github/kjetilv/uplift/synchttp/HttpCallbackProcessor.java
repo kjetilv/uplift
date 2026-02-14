@@ -35,14 +35,17 @@ public final class HttpCallbackProcessor implements Server.Processor {
     }
 
     @Override
-    public void process(ReadableByteChannel in, WritableByteChannel out) {
+    public boolean process(ReadableByteChannel in, WritableByteChannel out) {
         HttpReq httpReq;
         try {
             httpReq = new HttpReqReader(arena, maxRequestLength).read(in);
         } catch (Exception e) {
-            log.error("Failed to handle request", e);
+            log.error("Failed to read request", e);
             new HttpResWriter(out).write(new HttpRes(500));
-            return;
+            return false;
+        }
+        if (httpReq == null) {
+            return false;
         }
         try {
             httpHandler.handle(
@@ -52,9 +55,17 @@ public final class HttpCallbackProcessor implements Server.Processor {
         } catch (Exception e) {
             log.error("Failed to handle request", e);
             new HttpResWriter(out).write(new HttpRes(500));
+            return true;
         }
+        return !connectionClose(httpReq);
     }
 
     private static final int DEFAULT_MAX_REQUEST_LENGTH = 8192;
 
+    private static boolean connectionClose(HttpReq httpReq) {
+        return httpReq.headers()
+            .header("connection")
+            .map("close"::equalsIgnoreCase)
+            .orElse(false);
+    }
 }

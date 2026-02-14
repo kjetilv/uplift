@@ -145,8 +145,12 @@ final class DefaultServer implements Server {
         return true;
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     private Runnable processChannel(SocketChannel channel) {
-        return () -> processor.process(channel, channel);
+        return () -> {
+            while (channel.isOpen() && processor.process(channel, channel)) {
+            }
+        };
     }
 
     private void requireNotRunning() {

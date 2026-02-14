@@ -42,7 +42,7 @@ public interface Server extends RuntimeCloseable {
 
     interface Processor {
 
-        void process(
+        boolean process(
             ReadableByteChannel in,
             WritableByteChannel out
         );
