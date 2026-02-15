@@ -6,8 +6,9 @@ import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.CorsSettings;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,8 +23,9 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 public class FlambdaTest {
+
+    private static final Logger log = LoggerFactory.getLogger(FlambdaTest.class);
 
     @Test
     void startAndRun() throws Exception {
@@ -119,16 +121,17 @@ public class FlambdaTest {
     private static void postResponse(HttpClient client, URI lambdaUri, ResponseIn response)
         throws IOException, InterruptedException {
         var postUri = lambdaUri.resolve("/2018-06-01/runtime/invocation/" + response.reqId() + "/response");
-        System.out.println("Posting response to: " + postUri);
+        var write = ResponseInRW.INSTANCE.stringWriter().write(response);
+        log.info("Posting response to: {} with body: {}", postUri, write);
         HttpResponse<Void> lambdaPost = client.send(
             HttpRequest.newBuilder()
                 .uri(postUri)
-                .POST(HttpRequest.BodyPublishers.ofString(ResponseInRW.INSTANCE.stringWriter().write(response)))
+                .POST(HttpRequest.BodyPublishers.ofString(write))
                 .header("content-type", "application/json")
                 .build(),
             HttpResponse.BodyHandlers.discarding()
         );
-        System.out.println("Lambda POST status: " + lambdaPost.statusCode());
+        log.info("Lambda POST status: {}", lambdaPost.statusCode());
         assertEquals(204, lambdaPost.statusCode());
     }
 }

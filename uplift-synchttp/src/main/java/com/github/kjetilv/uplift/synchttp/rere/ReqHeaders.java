@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
@@ -35,11 +36,24 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
     }
 
     public Optional<String> header(String name) {
-        return stream().filter(header ->
-                header.is(name.toLowerCase(Locale.ROOT).getBytes(UTF_8)))
+        return header(name.toLowerCase(Locale.ROOT).getBytes(UTF_8));
+    }
+
+    public Optional<String> header(MemorySegment name) {
+        return first(stream()
+            .filter(header ->
+                header.is(name)));
+    }
+
+    private static Optional<String> first(Stream<ReqHeader> reqHeaderStream) {
+        return reqHeaderStream
             .map(ReqHeader::value)
             .flatMap(Stream::ofNullable)
             .findFirst();
+    }
+
+    public Optional<String> header(byte[] bytes) {
+        return first(stream().filter(header -> header.is(bytes)));
     }
 
     @Override

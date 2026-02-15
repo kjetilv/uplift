@@ -161,7 +161,7 @@ final class DefaultServer implements Server {
         }
     }
 
-    private static final ThreadFactory THREAD_FACTORY = Thread.ofVirtual().name().factory();
+    private static final ThreadFactory THREAD_FACTORY = Thread.ofVirtual().name("vt", 0L).factory();
 
     @Override
     public String toString() {

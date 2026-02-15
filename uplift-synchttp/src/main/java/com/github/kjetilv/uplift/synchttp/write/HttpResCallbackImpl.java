@@ -62,11 +62,9 @@ final class HttpResCallbackImpl implements
     @Override
     public Body contentLength(long contentLength) {
         this.contentLength = contentLength;
-        if (this.contentLength == 0) {
-            return flushHeaders();
+        if (this.contentLength > 0) {
+            header("content-length", String.valueOf(this.contentLength));
         }
-        var value = String.valueOf(this.contentLength);
-        header("content-length", value);
         return content();
     }
 

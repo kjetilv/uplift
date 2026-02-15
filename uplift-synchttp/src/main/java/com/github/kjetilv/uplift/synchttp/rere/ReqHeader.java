@@ -24,6 +24,11 @@ public record ReqHeader(
                MemorySegment.ofArray(bytes).mismatch(this.downcasedName().get()) == -1;
     }
 
+    public boolean is(MemorySegment memorySegment) {
+        return nameLength() == memorySegment.byteSize() &&
+               memorySegment.mismatch(this.downcasedName().get()) == -1;
+    }
+
     public boolean isContentLength() {
         return nameLength() == CONTENT_LENGTH.byteSize() && CONTENT_LENGTH.mismatch(this.downcasedName().get()) == -1;
     }

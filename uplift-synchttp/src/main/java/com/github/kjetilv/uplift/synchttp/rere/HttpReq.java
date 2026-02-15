@@ -43,12 +43,10 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     }
 
     public int contentLength() {
-        for (ReqHeader header : headers) {
-            if (header.isContentLength()) {
-                return Integer.parseInt(header.value());
-            }
-        }
-        throw new IllegalStateException("No content-length: " + this);
+        return headers.header(ms("content-length"))
+            .map(Integer::parseInt)
+            .orElseThrow(() ->
+                new IllegalStateException("No content-length: " + this));
     }
 
     public HttpReq withQueryParameters() {
@@ -80,11 +78,11 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     }
 
     public String host() {
-        return get("host");
+        return get(HOST);
     }
 
     public String origin() {
-        return get("origin");
+        return get(ORIGIN);
     }
 
     public Map<String, Object> headerMap() {
@@ -109,8 +107,16 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
         }
     }
 
-    private String get(String name) {
-        return headers.get(name);
+    private String get(MemorySegment name) {
+        return headers.header(name).orElse(null);
+    }
+
+    private static final MemorySegment ORIGIN = ms("origin");
+
+    private static final MemorySegment HOST = ms("host");
+
+    private static MemorySegment ms(String origin) {
+        return MemorySegment.ofArray(origin.getBytes(UTF_8));
     }
 
     @Override

@@ -55,7 +55,6 @@ public final class HttpCallbackProcessor implements Server.Processor {
             new HttpResWriter(out).write(new HttpRes(500));
             return true;
         } finally {
-            resSegments.release(pooled);
             httpReq.close();
         }
         return !connectionClose(httpReq);
@@ -66,9 +65,12 @@ public final class HttpCallbackProcessor implements Server.Processor {
         reqSegments.close();
     }
 
+    private static final MemorySegment CONNECTION =
+        MemorySegment.ofArray("connection".getBytes(StandardCharsets.UTF_8));
+
     private static boolean connectionClose(HttpReq httpReq) {
         return httpReq.headers()
-            .header("connection")
+            .header(CONNECTION)
             .map("close"::equalsIgnoreCase)
             .orElse(false);
     }

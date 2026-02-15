@@ -47,10 +47,10 @@ public final class HttpReqReader {
                 return null;
             }
             var requestLine = parseRequestLine(channel);
-            var headers = parseHeaders(channel);
-            var body = body(channel);
-            var reqHeaders = new ReqHeaders(headers.toArray(ReqHeader[]::new));
-            return new HttpReq(requestLine, reqHeaders, body, this::release);
+            var headersList = parseHeaders(channel);
+            var headers = new ReqHeaders(headersList.toArray(ReqHeader[]::new));
+            var body = body(channel, headers);
+            return new HttpReq(requestLine, headers, body, this::release);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read from " + channel, e);
         }
@@ -151,11 +151,15 @@ public final class HttpReqReader {
         return pooled.segment().get(ValueLayout.JAVA_BYTE, offset) == '\r';
     }
 
-    private ReadableByteChannel body(ReadableByteChannel channel) {
-        int bufferedBodyBytes = available - bodyStart;
-        return bufferedBodyBytes > 0
-            ? bodyBytes(channel, bufferedBodyBytes)
-            : Channels.newChannel(InputStream.nullInputStream());
+    private ReadableByteChannel body(ReadableByteChannel channel, ReqHeaders headers) {
+        var bufferedBodyBytes = available - bodyStart;
+        if (bufferedBodyBytes > 0) {
+            return bodyBytes(channel, bufferedBodyBytes);
+        }
+        if (noContent(headers)) {
+            Channels.newChannel(InputStream.nullInputStream());
+        }
+        return channel;
     }
 
     private BodyBytes bodyBytes(ReadableByteChannel channel, int bufferedBodyBytes) {
@@ -275,6 +279,15 @@ public final class HttpReqReader {
     private static final VectorMask<Byte> ZERO = VectorMask.fromValues(SPECIES, new boolean[LENGTH]);
 
     private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
+
+    private static final MemorySegment CONTENT_LENGTH =
+        MemorySegment.ofArray("content-length".getBytes(StandardCharsets.UTF_8));
+
+    private static boolean noContent(ReqHeaders reqHeaders) {
+        return reqHeaders.header(CONTENT_LENGTH)
+            .filter("0"::equals)
+            .isEmpty();
+    }
 
     @Override
     public String toString() {

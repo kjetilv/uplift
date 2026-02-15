@@ -126,8 +126,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     var id = id(httpReq.path());
                     var body = httpReq.bodyBytes();
                     flambdaState.submitResponse(new LambdaRes(id, responseIn(body)));
-                    settings.cors().applyTo(httpReq.host(), callback.status(204))
-                        .nobody();
+                    callback.status(204).nobody();
                 }
                 case OPTIONS -> settings.cors().applyTo(httpReq.host(), callback.status(200));
                 default -> log.error("Unsupported method: {}", httpReq);
