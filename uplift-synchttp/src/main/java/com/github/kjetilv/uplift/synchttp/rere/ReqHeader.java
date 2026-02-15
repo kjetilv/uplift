@@ -4,10 +4,7 @@ import com.github.kjetilv.uplift.synchttp.Utils;
 
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
-import java.util.Locale;
 import java.util.function.Supplier;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public record ReqHeader(
     MemorySegment segment,
@@ -22,8 +19,7 @@ public record ReqHeader(
         this(segment, supplier, offset, separatorOffset, length);
     }
 
-    public boolean is(String header) {
-        var bytes = header.toLowerCase(Locale.ROOT).getBytes(UTF_8);
+    public boolean is(byte[] bytes) {
         return nameLength() == bytes.length &&
                MemorySegment.ofArray(bytes).mismatch(this.downcasedName().get()) == -1;
     }

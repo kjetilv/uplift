@@ -90,12 +90,7 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     }
 
     private String get(String name) {
-        for (ReqHeader header : headers) {
-            if (header.is(name)) {
-                return header.value();
-            }
-        }
-        return null;
+        return headers.get(name);
     }
 
     public Map<String, Object> headerMap() {
