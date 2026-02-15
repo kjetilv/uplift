@@ -33,7 +33,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
     public boolean process(ReadableByteChannel in, WritableByteChannel out) {
         HttpReq httpReq;
         try {
-            httpReq = HttpReqReader.defaultReader().read(in);
+            httpReq = new HttpReqReader(segments).read(in);
         } catch (Exception e) {
             log.error("Failed to read request", e);
             new HttpResWriter(out).write(new HttpRes(500));
@@ -51,6 +51,8 @@ public final class HttpCallbackProcessor implements Server.Processor {
             log.error("Failed to handle request", e);
             new HttpResWriter(out).write(new HttpRes(500));
             return true;
+        } finally {
+            httpReq.close();
         }
         return !connectionClose(httpReq);
     }

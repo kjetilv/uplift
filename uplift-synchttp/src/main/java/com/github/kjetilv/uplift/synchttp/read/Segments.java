@@ -74,7 +74,7 @@ public final class Segments implements RuntimeCloseable {
     }
 
     /// 512 bytes min
-    private static final int DEFAULT_BASE_SIZE = 1 << 9;
+    private static final int DEFAULT_BASE_SIZE = 1 << 12;
 
     private static final int DEFAULT_BASE_POOL_SIZE = 1 << 24;
 

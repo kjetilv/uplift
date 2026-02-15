@@ -105,7 +105,7 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     @Override
     public void close() {
         if (closer != null) {
-            Objects.requireNonNull(closer, "closer");
+            closer.run();
         }
     }
 

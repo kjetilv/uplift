@@ -11,7 +11,7 @@ Benchmark: uplift-synchttp vs Netty 4.1.118, JMH 1.37, Java 25, GraalVM, single-
 | Throughput (ops/s) | 8,151 | 19,146 | 2.3x slower |
 | Allocation (B/op) | 58,243 | 17,909 | 3.3x more |
 
-### After keep-alive (current)
+### After keep-alive (no pool)
 
 | Benchmark | Score (ops/s) | Error |
 |---|---|---|
@@ -19,7 +19,23 @@ Benchmark: uplift-synchttp vs Netty 4.1.118, JMH 1.37, Java 25, GraalVM, single-
 | upliftSynchttp | 13,518 | +/- 4,674 |
 
 Keep-alive improved throughput from ~8k to ~13.5k ops/s (~69% gain), but high variance
-remains and a ~28% gap to Netty persists. See bottleneck #1 status and #1a below.
+remained and a ~28% gap to Netty persisted.
+
+### After keep-alive + Segments pool + body-channel fix (current)
+
+| Benchmark | Score (ops/s) | Error |
+|---|---|---|
+| netty | 18,952 | +/- 102 |
+| upliftSynchttp | 14,420 | +/- 94 |
+
+| Stage | uplift ops/s | Error | Gap to Netty |
+|---|---|---|---|
+| Baseline (no keep-alive) | 8,151 | - | 2.3x |
+| Keep-alive (no pool) | 13,518 | +/- 4,674 | 1.4x |
+| Keep-alive + pool + body fix | 14,420 | +/- 94 | 1.3x |
+
+Throughput up 77% from baseline. Variance collapsed from ~35% to ~0.7%.
+Remaining gap to Netty is ~24%.
 
 ## Bottlenecks
 
@@ -43,16 +59,19 @@ Files changed:
 were buffered. On keep-alive connections with bodyless requests (GET), this could cause
 the next request's data to be consumed as "body" of the previous request.
 
-Fix: `body()` now returns a static `NO_BODY` channel (`Channels.newChannel(InputStream.nullInputStream())`)
-when `bufferedBodyBytes <= 0`. The static constant avoids per-request allocation.
+Fix: `body()` now returns `Channels.newChannel(InputStream.nullInputStream())`
+when `bufferedBodyBytes <= 0`.
 
-Benchmark should be re-run to measure the effect of this fix on variance and throughput.
+### 2. Per-request Arena + MemorySegment allocation -- FIXED
 
-### 2. Per-request Arena + MemorySegment allocation
+Previously, `HttpCallbackProcessor.process()` created a `new HttpReqReader` every request,
+and `HttpReqReader.init()` called `arena.allocate(ValueLayout.JAVA_BYTE, bufferSize)` for
+a fresh MemorySegment. Native memory allocation per request was expensive.
 
-`HttpCallbackProcessor.process()` creates a `new HttpReqReader` every request.
-`HttpReqReader.init()` calls `arena.allocate(ValueLayout.JAVA_BYTE, bufferSize)` for a fresh MemorySegment.
-Native memory allocation per request is expensive compared to pooled buffers.
+Fix: `Segments` class pools MemorySegment slices from a single pre-allocated arena.
+`HttpReqReader` acquires a pooled segment via `Segments.acquire()` and releases it
+via the `HttpReq.close()` callback. `HttpCallbackProcessor` owns the `Segments` pool
+and closes it when the server shuts down.
 
 ### 3. Per-request direct ByteBuffer allocation in response writing
 
