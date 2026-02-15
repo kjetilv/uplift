@@ -63,17 +63,10 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
             }
         }
 
-        default void body(byte[] bytes) {
-            if (bytes != null && bytes.length != 0) {
-                var in = new ByteArrayInputStream(bytes);
-                var channel = Channels.newChannel(in);
-                body(channel);
-            }
-
-        }
-
-        void channel(Consumer<WritableByteChannel> channelWriter);
+        void body(byte[] bytes);
 
         void body(ReadableByteChannel channel);
+
+        void channel(Consumer<WritableByteChannel> channelWriter);
     }
 }

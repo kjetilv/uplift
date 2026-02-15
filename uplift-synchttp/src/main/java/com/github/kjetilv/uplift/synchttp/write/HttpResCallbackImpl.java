@@ -84,15 +84,19 @@ final class HttpResCallbackImpl implements
     }
 
     @Override
+    public void body(byte[] bytes) {
+        checkDeclaredLength();
+        if (bytes != null && bytes.length != 0) {
+            int written = write(ByteBuffer.wrap(bytes));
+            checkWrittenLength(written);
+        }
+    }
+
+    @Override
     public void body(ReadableByteChannel channel) {
-        if (contentLength == -1) {
-            throw new IllegalStateException("No content length provided");
-        }
+        checkDeclaredLength();
         var written = writeBody(channel);
-        if (written != contentLength) {
-            throw new IllegalStateException(
-                "Expected " + contentLength + " bytes, but wrote " + written);
-        }
+        checkWrittenLength(written);
     }
 
     @Override
@@ -102,6 +106,19 @@ final class HttpResCallbackImpl implements
         }
         write(ByteBuffer.wrap(LN));
         channelWriter.accept(out);
+    }
+
+    private void checkDeclaredLength() {
+        if (contentLength == -1) {
+            throw new IllegalStateException("No content length provided");
+        }
+    }
+
+    private void checkWrittenLength(int written) {
+        if (written != contentLength) {
+            throw new IllegalStateException(
+                "Expected " + contentLength + " bytes, but wrote " + written);
+        }
     }
 
     private HttpResCallbackImpl writeHeaders(String literalHeaders) {
