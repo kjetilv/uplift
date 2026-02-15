@@ -25,8 +25,8 @@ remained and a ~28% gap to Netty persisted.
 
 | Benchmark | Score (ops/s) | Error |
 |---|---|---|
-| netty | 18,962 | +/- 574 |
-| upliftSynchttp | 14,834 | +/- 371 |
+| netty | 19,949 | +/- 151 |
+| upliftSynchttp | 15,301 | +/- 412 |
 
 | Stage | uplift ops/s | Error | Gap to Netty |
 |---|---|---|---|
@@ -37,13 +37,14 @@ remained and a ~28% gap to Netty persisted.
 | + buffered headers | 14,834 | +/- 371 | 1.2x |
 | + string formatting cleanup | 15,115 | +/- 1,773 | 1.3x |
 | + CompletableFuture removal | 14,631 | +/- 209 | 1.3x |
+| + resSegments pool fix | 15,301 | +/- 412 | 1.3x |
 
-Throughput up ~80% from baseline. Gap to Netty stabilizes at ~1.3x (~76% of Netty).
+Throughput up ~88% from baseline. Gap to Netty stabilizes at ~1.3x (~77% of Netty).
 The two most impactful changes were keep-alive (8k -> 13.5k) and Segments pooling
 (13.5k -> 14.4k). Response-side optimizations (body shortcut, buffered headers,
 string formatting, CompletableFuture removal) were all within noise for this workload.
 
-The remaining ~24% gap is likely in the fundamental I/O model: Netty's event loop
+The remaining ~23% gap is likely in the fundamental I/O model: Netty's event loop
 with epoll/kqueue vs blocking NIO reads on virtual threads, plus Netty's optimized
 buffer pooling and zero-copy pipeline.
 

@@ -71,9 +71,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
         MemorySegment.ofArray("connection".getBytes(StandardCharsets.UTF_8));
 
     private static boolean connectionClose(HttpReq httpReq) {
-        return httpReq.headers()
-            .header(CONNECTION)
-            .map("close"::equalsIgnoreCase)
-            .orElse(false);
+        var connection = httpReq.headers().header(CONNECTION);
+        return connection != null && connection.equalsIgnoreCase("close");
     }
 }

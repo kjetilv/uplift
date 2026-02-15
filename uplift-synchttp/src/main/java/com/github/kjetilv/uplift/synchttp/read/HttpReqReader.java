@@ -284,9 +284,8 @@ public final class HttpReqReader {
         MemorySegment.ofArray("content-length".getBytes(StandardCharsets.UTF_8));
 
     private static boolean noContent(ReqHeaders reqHeaders) {
-        return reqHeaders.header(CONTENT_LENGTH)
-            .filter("0"::equals)
-            .isEmpty();
+        var header = reqHeaders.header(CONTENT_LENGTH);
+        return header == null || header.isEmpty() || header.equals("0");
     }
 
     @Override

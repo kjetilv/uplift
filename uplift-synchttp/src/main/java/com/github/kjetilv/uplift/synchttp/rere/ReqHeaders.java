@@ -4,7 +4,6 @@ import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,25 +34,26 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
         return null;
     }
 
-    public Optional<String> header(String name) {
+    public String header(String name) {
         return header(name.toLowerCase(Locale.ROOT).getBytes(UTF_8));
     }
 
-    public Optional<String> header(MemorySegment name) {
-        return first(stream()
-            .filter(header ->
-                header.is(name)));
+    public String header(MemorySegment name) {
+        for (ReqHeader header : headers) {
+            if (header.is(name)) {
+                return header.value();
+            }
+        }
+        return null;
     }
 
-    private static Optional<String> first(Stream<ReqHeader> reqHeaderStream) {
-        return reqHeaderStream
-            .map(ReqHeader::value)
-            .flatMap(Stream::ofNullable)
-            .findFirst();
-    }
-
-    public Optional<String> header(byte[] bytes) {
-        return first(stream().filter(header -> header.is(bytes)));
+    public String header(byte[] bytes) {
+        for (ReqHeader header : headers) {
+            if (header.is(bytes)) {
+                return header.value();
+            }
+        }
+        return null;
     }
 
     @Override
