@@ -2,8 +2,7 @@ package com.github.kjetilv.uplift.synchttp.write;
 
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 
-import java.io.ByteArrayInputStream;
-import java.nio.channels.Channels;
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
@@ -13,8 +12,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
 
-    static HttpResponseCallback create(WritableByteChannel out) {
-        return new HttpResCallbackImpl(out);
+    static HttpResponseCallback create(WritableByteChannel out, ByteBuffer buffer) {
+        return new HttpResCallbackImpl(out, buffer);
     }
 
     default void just(int status) {
@@ -34,23 +33,23 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
             return headers("%s: %s\r\n".formatted(name, value));
         }
 
-        Headers headers(String... literalHeaders);
-
-        Headers contentType(String contentType);
-
         default Headers cors(HttpMethod... methods) {
             return cors(null, methods);
         }
+
+        default void nobody() {
+            contentLength(0);
+        }
+
+        Headers headers(String... literalHeaders);
+
+        Headers contentType(String contentType);
 
         Headers cors(String host, HttpMethod... methods);
 
         Body contentLength(long contentLength);
 
         Body content();
-
-        default void nobody() {
-            contentLength(0);
-        }
 
         void channel(Consumer<WritableByteChannel> channelWriter);
     }

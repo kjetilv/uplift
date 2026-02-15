@@ -18,22 +18,25 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     private final HttpHandler httpHandler;
 
-    private final Segments segments;
+    private final Segments reqSegments;
+
+    private final Segments resSegments;
 
     public HttpCallbackProcessor(HttpHandler httpHandler) {
-        this(httpHandler, null, 0);
+        this(httpHandler, null);
     }
 
-    public HttpCallbackProcessor(HttpHandler httpHandler, Arena arena, int maxRequestLength) {
+    public HttpCallbackProcessor(HttpHandler httpHandler, Arena arena) {
         this.httpHandler = requireNonNull(httpHandler, "server");
-        this.segments = new Segments(arena);
+        this.reqSegments = new Segments(arena);
+        this.resSegments = new Segments(arena);
     }
 
     @Override
     public boolean process(ReadableByteChannel in, WritableByteChannel out) {
         HttpReq httpReq;
         try {
-            httpReq = new HttpReqReader(segments).read(in);
+            httpReq = new HttpReqReader(reqSegments).read(in);
         } catch (Exception e) {
             log.error("Failed to read request", e);
             new HttpResWriter(out).write(new HttpRes(500));
@@ -42,10 +45,12 @@ public final class HttpCallbackProcessor implements Server.Processor {
         if (httpReq == null) {
             return false;
         }
+        var pooled = resSegments.acquire();
         try {
+            var byteBuffer = pooled.segment().asByteBuffer();
             httpHandler.handle(
                 httpReq,
-                HttpResponseCallback.create(out)
+                HttpResponseCallback.create(out, byteBuffer)
             );
         } catch (Exception e) {
             log.error("Failed to handle request", e);
@@ -53,13 +58,14 @@ public final class HttpCallbackProcessor implements Server.Processor {
             return true;
         } finally {
             httpReq.close();
+            resSegments.release(pooled);
         }
         return !connectionClose(httpReq);
     }
 
     @Override
     public void close() {
-        segments.close();
+        reqSegments.close();
     }
 
     private static boolean connectionClose(HttpReq httpReq) {

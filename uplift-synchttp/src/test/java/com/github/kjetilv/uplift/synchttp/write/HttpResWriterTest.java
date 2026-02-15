@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
+import com.github.kjetilv.uplift.synchttp.read.Segments;
 import com.github.kjetilv.uplift.synchttp.rere.ResHeader;
 import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class HttpResWriterTest {
     void writeSimple() {
         var baos = new ByteArrayOutputStream();
         var channel = Channels.newChannel(baos);
-        new HttpResWriter(channel)
+        new HttpResWriter(channel, new Segments())
             .write(new HttpRes(
                 200,
                 new ResHeader("foo", "bar")
@@ -42,7 +43,7 @@ class HttpResWriterTest {
             baos = new ByteArrayOutputStream();
             var out = Channels.newChannel(baos);
 
-            new HttpResWriter(out)
+            new HttpResWriter(out, new Segments())
                 .write(new HttpRes(
                     200,
                     13,

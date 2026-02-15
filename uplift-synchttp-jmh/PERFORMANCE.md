@@ -21,21 +21,25 @@ Benchmark: uplift-synchttp vs Netty 4.1.118, JMH 1.37, Java 25, GraalVM, single-
 Keep-alive improved throughput from ~8k to ~13.5k ops/s (~69% gain), but high variance
 remained and a ~28% gap to Netty persisted.
 
-### After keep-alive + Segments pool + body-channel fix (current)
+### Current (keep-alive + pool + body shortcut + buffered headers)
 
 | Benchmark | Score (ops/s) | Error |
 |---|---|---|
-| netty | 18,952 | +/- 102 |
-| upliftSynchttp | 14,420 | +/- 94 |
+| netty | 18,962 | +/- 574 |
+| upliftSynchttp | 14,834 | +/- 371 |
 
 | Stage | uplift ops/s | Error | Gap to Netty |
 |---|---|---|---|
 | Baseline (no keep-alive) | 8,151 | - | 2.3x |
 | Keep-alive (no pool) | 13,518 | +/- 4,674 | 1.4x |
 | Keep-alive + pool + body fix | 14,420 | +/- 94 | 1.3x |
+| + body(byte[]) shortcut | 15,027 | +/- 221 | 1.2x |
+| + buffered headers | 14,834 | +/- 371 | 1.2x |
 
-Throughput up 77% from baseline. Variance collapsed from ~35% to ~0.7%.
-Remaining gap to Netty is ~24%.
+Throughput up 82% from baseline. Gap to Netty is ~22%.
+The body(byte[]) shortcut was the most effective response-side optimization.
+Buffered headers are neutral for this small-response workload but may help
+with larger header sets.
 
 ## Bottlenecks
 
@@ -73,20 +77,23 @@ Fix: `Segments` class pools MemorySegment slices from a single pre-allocated are
 via the `HttpReq.close()` callback. `HttpCallbackProcessor` owns the `Segments` pool
 and closes it when the server shuts down.
 
-### 3. Per-request direct ByteBuffer allocation in response writing
+### 3. Per-request direct ByteBuffer allocation in response writing -- PARTIALLY FIXED
 
-`HttpResCallbackImpl.writeBody()` and `HttpResWriter.writeBody()` each allocate `ByteBuffer.allocateDirect(8192)` per response.
-Direct buffer allocation involves a native call, much more expensive than heap or pooled buffers.
+`HttpResCallbackImpl.writeBody()` and `HttpResWriter.writeBody()` each allocated
+`ByteBuffer.allocateDirect(8192)` per response.
 
-### 4. Multiple small write syscalls per response
+Fix: `HttpResCallbackImpl.body(byte[])` now writes directly via `ByteBuffer.wrap(bytes)`,
+bypassing the channel wrapping and direct buffer allocation entirely for byte-array bodies.
+The `ReadableByteChannel` path still allocates a direct buffer per call.
 
-`HttpResCallbackImpl` issues separate channel writes for:
-- Status line
-- Each header
-- CRLF separator
-- Body
+### 4. Multiple small write syscalls per response -- IMPLEMENTED, NEUTRAL
 
-Each `out.write()` is a syscall. Netty batches the entire response into a single `writeAndFlush`.
+`HttpResCallbackImpl` now buffers status line, headers, and CRLF into a single `ByteBuffer`
+and flushes once before writing the body. This reduces syscalls from N+3 to 2 (headers + body).
+
+Measured effect: neutral for the benchmark's small response (status + 2 headers + 13-byte body).
+The kernel's TCP stack likely coalesced the small writes already. May show benefit with larger
+header sets.
 
 ### 5. String formatting in the hot path
 

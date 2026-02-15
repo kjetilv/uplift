@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -16,7 +17,7 @@ class HttpResCallbackImplTest {
     void writeSimple() {
         var baos = new ByteArrayOutputStream();
         var channel = Channels.newChannel(baos);
-        var callback = new HttpResCallbackImpl(channel);
+        var callback = new HttpResCallbackImpl(channel, ByteBuffer.allocate(8192));
 
         callback.status(200)
             .header("foo", "bar");
@@ -38,7 +39,7 @@ class HttpResCallbackImplTest {
             baos = new ByteArrayOutputStream();
             var out = Channels.newChannel(baos);
 
-            var callback = new HttpResCallbackImpl(out);
+            var callback = new HttpResCallbackImpl(out, ByteBuffer.allocate(8192));
             callback.status(200)
                 .header("foo", "bar")
                 .contentLength(13)

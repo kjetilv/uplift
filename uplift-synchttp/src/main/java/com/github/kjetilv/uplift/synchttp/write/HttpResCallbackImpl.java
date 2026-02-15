@@ -19,10 +19,15 @@ final class HttpResCallbackImpl implements
 
     private final WritableByteChannel out;
 
+    private final ByteBuffer buffer;
+
+    private boolean headersComplete;
+
     private long contentLength = -1;
 
-    HttpResCallbackImpl(WritableByteChannel out) {
+    HttpResCallbackImpl(WritableByteChannel out, ByteBuffer buffer) {
         this.out = Objects.requireNonNull(out, "out");
+        this.buffer = Objects.requireNonNull(buffer, "buffer");
     }
 
     @Override
@@ -80,6 +85,7 @@ final class HttpResCallbackImpl implements
     @Override
     public Body content() {
         write(ByteBuffer.wrap(LN));
+        flushHeaders();
         return this;
     }
 
@@ -105,6 +111,7 @@ final class HttpResCallbackImpl implements
             header("transfer-encoding", "chunked");
         }
         write(ByteBuffer.wrap(LN));
+        flushHeaders();
         channelWriter.accept(out);
     }
 
@@ -137,15 +144,35 @@ final class HttpResCallbackImpl implements
         return written;
     }
 
-    private int write(ByteBuffer buffer) {
-        try {
-            int written = 0;
-            while (buffer.hasRemaining()) {
-                written += out.write(buffer);
+    private void flushHeaders() {
+        if (!headersComplete) {
+            headersComplete = true;
+            buffer.flip();
+            write(buffer);
+        }
+    }
+
+    private int write(ByteBuffer delta) {
+        if (headersComplete) {
+            try {
+                int written = 0;
+                while (delta.hasRemaining()) {
+                    written += out.write(delta);
+                }
+                return written;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to write " + delta, e);
             }
-            return written;
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to write " + buffer, e);
+        } else {
+            try {
+                this.buffer.put(delta);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                    "Failed to write headers, exceeded buffer size: " + buffer.capacity(),
+                    e
+                );
+            }
+            return delta.position();
         }
     }
 
