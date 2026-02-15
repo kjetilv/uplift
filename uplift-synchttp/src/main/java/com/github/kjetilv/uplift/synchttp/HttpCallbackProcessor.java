@@ -55,6 +55,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
             new HttpResWriter(out).write(new HttpRes(500));
             return true;
         } finally {
+            resSegments.release(pooled);
             httpReq.close();
         }
         return !connectionClose(httpReq);
@@ -63,6 +64,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
     @Override
     public void close() {
         reqSegments.close();
+        resSegments.close();
     }
 
     private static final MemorySegment CONNECTION =
