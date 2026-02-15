@@ -20,7 +20,8 @@ class HttpResCallbackImplTest {
         var callback = new HttpResCallbackImpl(channel, ByteBuffer.allocate(8192));
 
         callback.status(200)
-            .header("foo", "bar");
+            .header("foo", "bar")
+            .nobody();
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
                 HTTP/1.1 200\r

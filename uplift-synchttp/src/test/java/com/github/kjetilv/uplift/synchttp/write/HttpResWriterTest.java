@@ -20,7 +20,7 @@ class HttpResWriterTest {
     void writeSimple() {
         var baos = new ByteArrayOutputStream();
         var channel = Channels.newChannel(baos);
-        new HttpResWriter(channel, new Segments())
+        new HttpResWriter(channel)
             .write(new HttpRes(
                 200,
                 new ResHeader("foo", "bar")
@@ -43,7 +43,7 @@ class HttpResWriterTest {
             baos = new ByteArrayOutputStream();
             var out = Channels.newChannel(baos);
 
-            new HttpResWriter(out, new Segments())
+            new HttpResWriter(out)
                 .write(new HttpRes(
                     200,
                     13,

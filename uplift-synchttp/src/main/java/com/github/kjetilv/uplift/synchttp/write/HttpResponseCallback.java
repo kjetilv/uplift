@@ -1,7 +1,5 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.HttpMethod;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -33,10 +31,6 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
             return headers("%s: %s\r\n".formatted(name, value));
         }
 
-        default Headers cors(HttpMethod... methods) {
-            return cors(null, methods);
-        }
-
         default void nobody() {
             contentLength(0);
         }
@@ -44,8 +38,6 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
         Headers headers(String... literalHeaders);
 
         Headers contentType(String contentType);
-
-        Headers cors(String host, HttpMethod... methods);
 
         Body contentLength(long contentLength);
 

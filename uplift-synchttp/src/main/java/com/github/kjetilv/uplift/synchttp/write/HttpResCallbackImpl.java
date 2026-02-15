@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Utils;
 
 import java.nio.ByteBuffer;
@@ -43,7 +42,11 @@ final class HttpResCallbackImpl implements
 
     @Override
     public Headers header(String name, Object value) {
-        return writeHeaders("%s: %s\r\n".formatted(name, value));
+        write(ByteBuffer.wrap(name.getBytes()));
+        write(ByteBuffer.wrap(COLON));
+        write(ByteBuffer.wrap(value.toString().getBytes()));
+        write(ByteBuffer.wrap(CRLF));
+        return this;
     }
 
     @Override
@@ -53,30 +56,15 @@ final class HttpResCallbackImpl implements
 
     @Override
     public Headers contentType(String contentType) {
-        return writeHeaders("""
-            content-type: %s\r
-            """.formatted(contentType));
-    }
-
-    @Override
-    public Headers cors(String host, HttpMethod... methods) {
-        return writeHeaders("""
-            access-control-allow-origin: %s\r
-            access-control-allow-methods: %s\r
-            """.formatted(
-            host == null || host.isBlank()
-                ? "*"
-                : host,
-            Stream.of(methods)
-                .filter(Objects::nonNull)
-                .map(HttpMethod::name)
-                .collect(Collectors.joining(", "))
-        ));
+        return header("content-type", contentType);
     }
 
     @Override
     public Body contentLength(long contentLength) {
         this.contentLength = contentLength;
+        if (this.contentLength == 0) {
+            return flushHeaders();
+        }
         var value = String.valueOf(this.contentLength);
         header("content-length", value);
         return content();
@@ -85,8 +73,7 @@ final class HttpResCallbackImpl implements
     @Override
     public Body content() {
         write(ByteBuffer.wrap(LN));
-        flushHeaders();
-        return this;
+        return flushHeaders();
     }
 
     @Override
@@ -144,12 +131,13 @@ final class HttpResCallbackImpl implements
         return written;
     }
 
-    private void flushHeaders() {
+    private Body flushHeaders() {
         if (!headersComplete) {
             headersComplete = true;
             buffer.flip();
             write(buffer);
         }
+        return this;
     }
 
     private int write(ByteBuffer delta) {
@@ -179,6 +167,10 @@ final class HttpResCallbackImpl implements
     private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
 
     private static final byte[] LN = {'\r', '\n'};
+
+    private static final byte[] COLON = ": ".getBytes();
+
+    private static final byte[] CRLF = "\r\n".getBytes();
 
     private static String sanitize(String... literalHeaders) {
         return Arrays.stream(literalHeaders)

@@ -9,16 +9,13 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("StatementWithEmptyBody")
 final class DefaultServer implements Server {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServer.class);
-
-    public static final ExecutorService VIRTUAL = Executors.newVirtualThreadPerTaskExecutor();
 
     private final InetSocketAddress address;
 
@@ -135,27 +132,21 @@ final class DefaultServer implements Server {
             log.info("{} closed listening loop", this);
             return false;
         }
-        CompletableFuture.runAsync(processChannel(channel), VIRTUAL)
-            .whenComplete((_, throwable) -> {
-                try {
-                    handleOutcome(channel, throwable);
-                } finally {
-                    try {
-                        channel.close();
-                    } catch (Exception e) {
-                        log.error("{} failed to close {}", this, channel, e);
-                    }
+        THREAD_FACTORY.newThread(() -> {
+            try {
+                while (channel.isOpen() && processor.process(channel, channel)) {
                 }
-            });
-        return true;
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    private Runnable processChannel(SocketChannel channel) {
-        return () -> {
-            while (channel.isOpen() && processor.process(channel, channel)) {
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to process " + channel, e);
+            } finally {
+                try {
+                    channel.close();
+                } catch (Exception e) {
+                    log.error("{} failed to close {}", this, channel, e);
+                }
             }
-        };
+        }).start();
+        return true;
     }
 
     private void requireNotRunning() {
@@ -170,13 +161,7 @@ final class DefaultServer implements Server {
         }
     }
 
-    private void handleOutcome(SocketChannel channel, Throwable throwable) {
-        if (throwable != null) {
-            log.error("{} failed to process request", this, throwable);
-        } else {
-            log.debug("{} processed request: {}", this, channel);
-        }
-    }
+    private static final ThreadFactory THREAD_FACTORY = Thread.ofVirtual().name().factory();
 
     @Override
     public String toString() {

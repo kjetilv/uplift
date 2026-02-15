@@ -35,11 +35,17 @@ remained and a ~28% gap to Netty persisted.
 | Keep-alive + pool + body fix | 14,420 | +/- 94 | 1.3x |
 | + body(byte[]) shortcut | 15,027 | +/- 221 | 1.2x |
 | + buffered headers | 14,834 | +/- 371 | 1.2x |
+| + string formatting cleanup | 15,115 | +/- 1,773 | 1.3x |
+| + CompletableFuture removal | 14,631 | +/- 209 | 1.3x |
 
-Throughput up 82% from baseline. Gap to Netty is ~22%.
-The body(byte[]) shortcut was the most effective response-side optimization.
-Buffered headers are neutral for this small-response workload but may help
-with larger header sets.
+Throughput up ~80% from baseline. Gap to Netty stabilizes at ~1.3x (~76% of Netty).
+The two most impactful changes were keep-alive (8k -> 13.5k) and Segments pooling
+(13.5k -> 14.4k). Response-side optimizations (body shortcut, buffered headers,
+string formatting, CompletableFuture removal) were all within noise for this workload.
+
+The remaining ~24% gap is likely in the fundamental I/O model: Netty's event loop
+with epoll/kqueue vs blocking NIO reads on virtual threads, plus Netty's optimized
+buffer pooling and zero-copy pipeline.
 
 ## Bottlenecks
 
@@ -95,18 +101,18 @@ Measured effect: neutral for the benchmark's small response (status + 2 headers 
 The kernel's TCP stack likely coalesced the small writes already. May show benefit with larger
 header sets.
 
-### 5. String formatting in the hot path
+### 5. String formatting in the hot path -- CLEANED UP, NEUTRAL
 
-- `HttpResCallbackImpl.contentType()` uses `String.formatted()`
-- `HttpResCallbackImpl.header()` uses `String.formatted()`
-- `HttpResCallbackImpl.statusCode()` uses string concatenation + `.getBytes()`
+String formatting in `HttpResCallbackImpl` was cleaned up.
+Measured effect: within noise for this workload.
 
-These generate garbage on every request.
+### 6. CompletableFuture dispatch overhead -- ADDRESSED, NEUTRAL
 
-### 6. CompletableFuture dispatch overhead
+`DefaultServer.processSocket()` previously wrapped each connection in
+`CompletableFuture.runAsync(..., VIRTUAL)` with a `.whenComplete` callback.
 
-`DefaultServer.processSocket()` wraps each connection in `CompletableFuture.runAsync(..., VIRTUAL)` with a `.whenComplete` callback.
-For a single-request-per-connection model, the future machinery adds overhead vs a plain virtual thread submit.
+Measured effect: neutral. With keep-alive, the dispatch happens once per connection
+rather than per request, so it is no longer in the hot path.
 
 ## Running
 
