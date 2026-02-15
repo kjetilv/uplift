@@ -24,9 +24,10 @@ class HttpResCallbackImplTest {
             .nobody();
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200\r
-                foo: bar\r
-                """
+               HTTP/1.1 200\r
+               foo: bar\r
+               \r
+               """
         );
     }
 
