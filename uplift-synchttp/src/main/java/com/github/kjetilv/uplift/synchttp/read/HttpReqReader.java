@@ -4,9 +4,14 @@ import module java.base;
 import module jdk.incubator.vector;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.rere.ReqHeader;
+import com.github.kjetilv.uplift.synchttp.rere.ReqHeaders;
 import com.github.kjetilv.uplift.synchttp.rere.ReqLine;
 
 public final class HttpReqReader {
+
+    public static HttpReqReader defaultReader() {
+        return new HttpReqReader(new Segments());
+    }
 
     private int lineStart;
 
@@ -18,26 +23,20 @@ public final class HttpReqReader {
 
     private int available;
 
-    private int bufferSize;
-
-    private int doubled;
+    private long bufferSize;
 
     private ByteBuffer buffer;
 
-    private MemorySegment memorySegment;
+    private Segments.Pooled pooled;
 
-    private final Arena arena;
+    private final Segments segments;
 
     private boolean done;
 
     private int bodyStart;
 
-    public HttpReqReader(Arena arena, int bufferSize) {
-        this.arena = Objects.requireNonNull(arena, "arena");
-        this.bufferSize = bufferSize / 4;
-        if (this.bufferSize % LENGTH != 0) {
-            throw new IllegalStateException("Require bufferSize/4 divisible by " + LENGTH + ": " + bufferSize);
-        }
+    public HttpReqReader(Segments segments) {
+        this.segments = Objects.requireNonNull(segments, "segments");
     }
 
     public HttpReq read(ReadableByteChannel channel) {
@@ -50,7 +49,8 @@ public final class HttpReqReader {
             var requestLine = parseRequestLine(channel);
             var headers = parseHeaders(channel);
             var body = body(channel);
-            return new HttpReq(requestLine, headers, body);
+            var reqHeaders = new ReqHeaders(headers.toArray(ReqHeader[]::new));
+            return new HttpReq(requestLine, reqHeaders, body, this::release);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read from " + channel, e);
         }
@@ -123,7 +123,7 @@ public final class HttpReqReader {
             }
             var separatorOffset = separatorOffset();
             var httpHeader = new ReqHeader(
-                memorySegment,
+                pooled.segment(),
                 Math.toIntExact(lineStart),
                 Math.toIntExact(separatorOffset),
                 Math.toIntExact(bytesFound - cr)
@@ -140,7 +140,7 @@ public final class HttpReqReader {
         lineStart = lineBreak + 1;
         var cr = isCr(lineBreak - 1) ? 1 : 0;
         return new ReqLine(
-            memorySegment,
+            pooled.segment(),
             urlIndex + 1,
             bytesFound + 1,
             lineBreak + 1 - cr
@@ -148,18 +148,18 @@ public final class HttpReqReader {
     }
 
     private boolean isCr(long offset) {
-        return memorySegment.get(ValueLayout.JAVA_BYTE, offset) == '\r';
+        return pooled.segment().get(ValueLayout.JAVA_BYTE, offset) == '\r';
     }
 
     private ReadableByteChannel body(ReadableByteChannel channel) {
         int bufferedBodyBytes = available - bodyStart;
         return bufferedBodyBytes > 0
             ? bodyBytes(channel, bufferedBodyBytes)
-            : channel;
+            : Channels.newChannel(InputStream.nullInputStream());
     }
 
     private BodyBytes bodyBytes(ReadableByteChannel channel, int bufferedBodyBytes) {
-        var segment = memorySegment.asSlice(bodyStart, bufferedBodyBytes);
+        var segment = this.pooled.segment().asSlice(bodyStart, bufferedBodyBytes);
         return new BodyBytes(channel, segment.asByteBuffer());
     }
 
@@ -175,21 +175,27 @@ public final class HttpReqReader {
     }
 
     private void init() {
-        this.memorySegment = arena.allocate(ValueLayout.JAVA_BYTE, bufferSize);
-        this.buffer = this.memorySegment.asByteBuffer();
+        this.pooled = segments.acquire();
+        this.bufferSize = pooled.size();
+        this.buffer = this.pooled.segment().asByteBuffer();
+    }
+
+    private void release() {
+        segments.release(this.pooled);
+        this.pooled = null;
     }
 
     private void expand() {
-        if (doubled == 2) {
-            throw new IllegalStateException("Buffer size exhausted: " + bufferSize);
-        }
-        bufferSize *= 2;
-        doubled++;
-        var oldSegment = memorySegment;
-        this.memorySegment = arena.allocate(ValueLayout.JAVA_BYTE, bufferSize);
-        this.memorySegment.copyFrom(oldSegment);
-        this.buffer = memorySegment.asByteBuffer();
-        this.buffer.position(Math.toIntExact(maskEnd));
+        throw new UnsupportedOperationException("Not yet implemented");
+//        if (doubled == 2) {
+//            throw new IllegalStateException("Buffer size exhausted: " + bufferSize);
+//        }
+//        doubled++;
+//        var oldSegment = segment;
+//        this.segment = segments.acquire(doubled);
+//        this.segment.copyFrom(oldSegment);
+//        this.buffer = segment.asByteBuffer();
+//        this.buffer.position(Math.toIntExact(maskEnd));
     }
 
     private long separatorOffset() {
@@ -227,7 +233,7 @@ public final class HttpReqReader {
     private ByteVector vectorFrom(long maskStart) {
         return ByteVector.fromMemorySegment(
             SPECIES,
-            memorySegment,
+            pooled.segment(),
             maskStart,
             BYTE_ORDER
         );

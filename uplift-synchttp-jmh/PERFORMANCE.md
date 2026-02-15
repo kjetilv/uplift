@@ -37,22 +37,16 @@ Files changed:
 - `HttpCallbackProcessor.java` -- returns `boolean`, checks `Connection: close`
 - `HttpResWriter.java` -- removed `this.out` from try-with-resources
 
-### 1a. Suspected body-channel leak on bodyless GET requests (OPEN)
+### 1a. Body-channel leak on bodyless GET requests -- FIXED
 
-The benchmark client sends GET requests with no body. `HttpReqReader.body()` returns
-the raw `ReadableByteChannel` (the socket itself) when there are no buffered body bytes
-(`bufferedBodyBytes <= 0`). On a keep-alive connection, the next call to `HttpReqReader.read()`
-may then find its data partially consumed if any code drained bytes from the channel as
-"body" of the previous request.
+`HttpReqReader.body()` previously returned the raw socket channel when no body bytes
+were buffered. On keep-alive connections with bodyless requests (GET), this could cause
+the next request's data to be consumed as "body" of the previous request.
 
-For bodyless requests (no `Content-Length` or `Content-Length: 0`), `body()` should
-return `null` or an empty channel -- never the raw socket channel. This likely explains
-both the high variance and the throughput gap.
+Fix: `body()` now returns a static `NO_BODY` channel (`Channels.newChannel(InputStream.nullInputStream())`)
+when `bufferedBodyBytes <= 0`. The static constant avoids per-request allocation.
 
-**Investigation needed:** trace what happens to the `ReadableByteChannel` returned by
-`body()` when the benchmark handler calls `callback.status(200).contentType(...).body(...)`.
-If `HttpResponseCallback` or the handler ever reads from it, bytes from the next pipelined
-request are consumed and lost.
+Benchmark should be re-run to measure the effect of this fix on variance and throughput.
 
 ### 2. Per-request Arena + MemorySegment allocation
 

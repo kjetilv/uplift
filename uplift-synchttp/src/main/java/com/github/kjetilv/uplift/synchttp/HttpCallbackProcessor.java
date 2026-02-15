@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.read.HttpReqReader;
+import com.github.kjetilv.uplift.synchttp.read.Segments;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import com.github.kjetilv.uplift.synchttp.write.HttpResWriter;
@@ -17,9 +18,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     private final HttpHandler httpHandler;
 
-    private final Arena arena;
-
-    private final int maxRequestLength;
+    private final Segments segments;
 
     public HttpCallbackProcessor(HttpHandler httpHandler) {
         this(httpHandler, null, 0);
@@ -27,18 +26,14 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     public HttpCallbackProcessor(HttpHandler httpHandler, Arena arena, int maxRequestLength) {
         this.httpHandler = requireNonNull(httpHandler, "server");
-        this.arena = arena == null ? Arena.ofAuto() : arena;
-        this.maxRequestLength = maxRequestLength > 0 ? maxRequestLength : DEFAULT_MAX_REQUEST_LENGTH;
-        if (this.maxRequestLength < 1024) {
-            throw new IllegalArgumentException("Request length must be >=1kb: " + maxRequestLength);
-        }
+        this.segments = new Segments(arena);
     }
 
     @Override
     public boolean process(ReadableByteChannel in, WritableByteChannel out) {
         HttpReq httpReq;
         try {
-            httpReq = new HttpReqReader(arena, maxRequestLength).read(in);
+            httpReq = HttpReqReader.defaultReader().read(in);
         } catch (Exception e) {
             log.error("Failed to read request", e);
             new HttpResWriter(out).write(new HttpRes(500));
@@ -60,7 +55,10 @@ public final class HttpCallbackProcessor implements Server.Processor {
         return !connectionClose(httpReq);
     }
 
-    private static final int DEFAULT_MAX_REQUEST_LENGTH = 8192;
+    @Override
+    public void close() {
+        segments.close();
+    }
 
     private static boolean connectionClose(HttpReq httpReq) {
         return httpReq.headers()

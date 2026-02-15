@@ -40,7 +40,7 @@ public interface Server extends RuntimeCloseable {
         return port == null || port <= 0 ? 0 : port;
     }
 
-    interface Processor {
+    interface Processor extends RuntimeCloseable {
 
         boolean process(
             ReadableByteChannel in,

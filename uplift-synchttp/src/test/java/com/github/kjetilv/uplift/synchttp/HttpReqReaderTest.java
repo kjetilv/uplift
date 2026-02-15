@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.lang.foreign.Arena;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import static com.github.kjetilv.uplift.synchttp.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,20 +33,23 @@ class HttpReqReaderTest {
 
     @Test
     void shortRequestNoBody() throws Exception {
-        try (var channel = channel(SHORT_REQ)) {
+        try (
+            var channel = channel(SHORT_REQ);
             var request = parse(channel);
-            try (var reader = reader(request)) {
-                assertThat(reader.readLine()).isNull();
-            }
+            var reader = reader(request)
+        ) {
+            assertThat(reader.readLine()).isNull();
         }
     }
+
     @Test
     void shortRequestTrimmedNoBody() throws Exception {
-        try (var channel = channel(SHORT_REQ.trim())) {
+        try (
+            var channel = channel(SHORT_REQ.trim());
             var request = parse(channel);
-            try (var reader = reader(request)) {
-                assertThat(reader.readLine()).isNull();
-            }
+            var reader = reader(request)
+        ) {
+            assertThat(reader.readLine()).isNull();
         }
     }
 
@@ -57,30 +60,33 @@ class HttpReqReaderTest {
 
     @Test
     void shortRequestWLineBreaksNoBdy() throws Exception {
-        try (var channel = channel(HTTP_LINE_BREAKS)) {
+        try (
+            var channel = channel(HTTP_LINE_BREAKS);
             var request = parse(channel);
-            try (var reader = reader(request)) {
-                assertThat(reader.readLine()).isNull();
-            }
+            var reader = reader(request)
+        ) {
+            assertThat(request.method()).isSameAs(GET);
+            assertThat(reader.readLine()).isNull();
         }
     }
 
     @Test
     void shortRequestWLineBreaksNoBody() throws Exception {
-        try (var channel = channel(HTTP_LINE_BREAKS)) {
+        try (
+            var channel = channel(HTTP_LINE_BREAKS);
             var request = parse(channel);
-            try (var reader = reader(request)) {
-                assertThat(reader.readLine()).isNull();
-            }
+            var reader = reader(request)
+        ) {
+            assertThat(reader.readLine()).isNull();
         }
     }
 
     @Test
     void contentLength() throws Exception {
         try (
-            var channel = channel(GET_CONTENT_LEN)
-        ) {
+            var channel = channel(GET_CONTENT_LEN);
             var request = parse(channel);
+        ) {
             assertThat(request.headers()).singleElement().satisfies(header ->
                 assertThat(header.isContentLength()).isTrue());
             assertThat(request.contentLength()).isEqualTo(10);
@@ -107,7 +113,7 @@ class HttpReqReaderTest {
     void requestWithBody() throws Exception {
         try (var channel = channel(LONG_REQ)) {
             var httpRequest = parse(channel);
-            assertThat(httpRequest.method()).isSameAs(HttpMethod.GET);
+            assertThat(httpRequest.method()).isSameAs(GET);
             assertThat(httpRequest.reqLine()).hasToString("GET /foo/bar HTTP/1.1");
             assertThat(httpRequest.header(0)).isNotNull().satisfies(hdr ->
                 assertHeader(hdr, "foo: bar"));
@@ -226,16 +232,17 @@ class HttpReqReaderTest {
     }
 
     private static HttpReq parse(ReadableByteChannel channel) {
-        return new HttpReqReader(Arena.ofShared(), 2048).read(channel);
+        return HttpReqReader.defaultReader().read(channel);
     }
 
     private static BufferedReader reader(HttpReq httpReq) {
-        return new BufferedReader(Channels.newReader(httpReq.body(), UTF_8));
+        var body = httpReq.body();
+        return new BufferedReader(Channels.newReader(body, UTF_8));
     }
 
     private static void assertSelf(String req) {
         try (var channel = channel(req)) {
-            var request = new HttpReqReader(Arena.ofAuto(), 2048).read(channel);
+            var request = HttpReqReader.defaultReader().read(channel);
             assertThat(request).hasToString(req.trim() + "\r\n");
         } catch (Exception e) {
             throw new IllegalStateException(e);

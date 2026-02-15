@@ -81,6 +81,11 @@ final class DefaultServer implements Server {
             } catch (Exception e) {
                 throw new IllegalStateException(this + " failed to close " + serverSocketChannel, e);
             }
+            try {
+                processor.close();
+            } catch (Exception e) {
+                throw new IllegalStateException(this + " failed to close " + processor, e);
+            }
             log.info("{} closed", this);
         }
     }
@@ -175,6 +180,10 @@ final class DefaultServer implements Server {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[@" + address + " " + (closed.get() ? "open" : "closed") + "]";
+        return getClass().getSimpleName() +
+               "[@" + address +
+               " " + (closed.get() ? "open" : "closed") +
+               " -> " + processor +
+               "]";
     }
 }

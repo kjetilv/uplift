@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public record ReqHeaders(ReqHeader[] headers) implements Iterable<ReqHeader> {
+public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
 
     @Override
     public Iterator<ReqHeader> iterator() {

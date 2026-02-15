@@ -2,16 +2,14 @@ package com.github.kjetilv.uplift.synchttp.rere;
 
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
+import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 import static com.github.kjetilv.uplift.synchttp.HttpMethod.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unused")
-public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel body) {
-
-    public HttpReq(ReqLine reqLine, List<ReqHeader> headers, ReadableByteChannel body) {
-        this(reqLine, new ReqHeaders(headers.toArray(ReqHeader[]::new)), body);
-    }
+public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel body, Runnable closer)
+    implements RuntimeCloseable {
 
     public ReqHeader header(int index) {
         return headers().get(index);
@@ -54,7 +52,7 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     }
 
     public HttpReq withQueryParameters() {
-        return new HttpReq(reqLine.withQueryParameters(), headers, body);
+        return new HttpReq(reqLine.withQueryParameters(), headers, body, closer);
     }
 
     public QueryParameters queryParameters() {
@@ -89,10 +87,6 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
         return get("origin");
     }
 
-    private String get(String name) {
-        return headers.get(name);
-    }
-
     public Map<String, Object> headerMap() {
         return headers.stream()
             .map(header ->
@@ -103,8 +97,20 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
             ));
     }
 
+    @SuppressWarnings("resource")
     public Map<String, Object> queryParametersMap() {
         return withQueryParameters().queryParameters().toMap();
+    }
+
+    @Override
+    public void close() {
+        if (closer != null) {
+            Objects.requireNonNull(closer, "closer");
+        }
+    }
+
+    private String get(String name) {
+        return headers.get(name);
     }
 
     @Override
