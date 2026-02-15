@@ -81,9 +81,17 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
         return method() == OPTIONS;
     }
 
+    public String host() {
+        return get("host");
+    }
+
     public String origin() {
+        return get("origin");
+    }
+
+    private String get(String name) {
         for (ReqHeader header : headers) {
-            if (header.is("origin")) {
+            if (header.is(name)) {
                 return header.value();
             }
         }

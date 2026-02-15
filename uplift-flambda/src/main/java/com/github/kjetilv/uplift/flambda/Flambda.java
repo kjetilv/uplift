@@ -11,7 +11,6 @@ import com.github.kjetilv.uplift.synchttp.HttpHandler;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Server;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
-import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -117,7 +116,8 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     var lambdaReq = flambdaState.fetchRequest();
                     var body = toString(lambdaReq.out());
                     var contentLength = length(body);
-                    statusWithCors(200, callback, settings)
+                    settings.cors()
+                        .applyTo(httpReq.host(), callback.status(200))
                         .headers(idHeaders(lambdaReq))
                         .contentLength(contentLength)
                         .body(body);
@@ -126,10 +126,10 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     var id = id(httpReq.path());
                     var body = httpReq.bodyBytes();
                     flambdaState.submitResponse(new LambdaRes(id, responseIn(body)));
-                    statusWithCors(204, callback, settings)
+                    settings.cors().applyTo(httpReq.host(), callback.status(204))
                         .nobody();
                 }
-                case OPTIONS -> statusWithCors(200, callback, settings);
+                case OPTIONS -> settings.cors().applyTo(httpReq.host(), callback.status(200));
                 default -> log.error("Unsupported method: {}", httpReq);
             }
         };
@@ -139,19 +139,14 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         return RequestOutRW.INSTANCE.stringWriter().write(request);
     }
 
-    private static HttpResponseCallback.Headers statusWithCors(
-        int statusCode,
-        HttpResponseCallback callback,
-        FlambdaSettings settings
-    ) {
-        return settings.cors().applyTo(callback.status(statusCode));
-    }
-
     private static HttpHandler apiHandler(FlambdaSettings settings, FlambdaState flambdaState) {
         return (httpReq, callback) -> {
             switch (httpReq.method()) {
                 case OPTIONS -> {
-                    statusWithCors(200, callback, settings);
+                    settings.cors().applyTo(
+                        httpReq.host(),
+                        callback.status(200)
+                    );
                 }
                 case HttpMethod method -> {
                     var requestOut = requestOut(httpReq, method);
@@ -161,7 +156,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                             var body = lambdaRes.in().body();
                             var in = lambdaRes.in();
                             byte[] bodyBytes = in.bytes();
-                            statusWithCors(in.statusCode(), callback, settings)
+                            settings.cors().applyTo(httpReq.host(), callback.status(in.statusCode()))
                                 .headers(in.headers())
                                 .contentLength(bodyBytes.length)
                                 .body(bodyBytes);
