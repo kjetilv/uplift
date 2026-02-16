@@ -1,30 +1,19 @@
 package com.github.kjetilv.uplift.flambda;
 
-import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
-import com.github.kjetilv.uplift.lambda.RequestOut;
-import com.github.kjetilv.uplift.lambda.RequestOutRW;
-import com.github.kjetilv.uplift.lambda.ResponseIn;
-import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
-import com.github.kjetilv.uplift.synchttp.HttpHandler;
-import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Server;
-import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.Map;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
 public final class Flambda implements RuntimeCloseable, Runnable {
@@ -38,22 +27,21 @@ public final class Flambda implements RuntimeCloseable, Runnable {
     private final String name;
 
     public Flambda(FlambdaSettings settings) {
-        Objects.requireNonNull(settings, "settings");
-
-        this.name = settings.name();
+        this.name = Objects.requireNonNull(settings, "settings").name();
 
         var flambdaState = new FlambdaState(settings.queueLength());
 
         this.apiServer = Server.create(settings.apiPort())
-            .run(new HttpCallbackProcessor(apiHandler(settings, flambdaState)));
+            .run(new HttpCallbackProcessor(new ApiHandler(settings, flambdaState)));
 
         this.lambdaServer = Server.create(settings.lambdaPort())
-            .run(new HttpCallbackProcessor(lambdaHandler(settings, flambdaState)));
+            .run(new HttpCallbackProcessor(new LambdaHandler(settings, flambdaState)));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down {}", this);
             close();
         }));
+        log.info("{} started", this);
     }
 
     public void join() {
@@ -102,125 +90,18 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     }
 
-    private static @NonNull StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
-        return StructuredTaskScope.open(allSuccessfulOrThrow());
-    }
-
-    private static HttpHandler lambdaHandler(
-        FlambdaSettings settings,
-        FlambdaState flambdaState
-    ) {
-        return (httpReq, callback) -> {
-            switch (httpReq.method()) {
-                case GET -> {
-                    var lambdaReq = flambdaState.fetchRequest();
-                    var body = toString(lambdaReq.out());
-                    var contentLength = length(body);
-                    settings.cors()
-                        .applyTo(httpReq.host(), callback.status(200))
-                        .headers(idHeaders(lambdaReq))
-                        .contentLength(contentLength)
-                        .body(body);
-                }
-                case POST -> {
-                    var id = id(httpReq.path());
-                    var body = httpReq.bodyBytes();
-                    flambdaState.submitResponse(new LambdaRes(id, responseIn(body)));
-                    callback.status(204).nobody();
-                }
-                case OPTIONS -> settings.cors().applyTo(httpReq.host(), callback.status(200));
-                default -> log.error("Unsupported method: {}", httpReq);
-            }
-        };
-    }
-
-    private static String toString(RequestOut request) {
-        return RequestOutRW.INSTANCE.stringWriter().write(request);
-    }
-
-    private static HttpHandler apiHandler(FlambdaSettings settings, FlambdaState flambdaState) {
-        return (httpReq, callback) -> {
-            switch (httpReq.method()) {
-                case OPTIONS -> {
-                    settings.cors().applyTo(
-                        httpReq.host(),
-                        callback.status(200)
-                    );
-                }
-                case HttpMethod method -> {
-                    var requestOut = requestOut(httpReq, method);
-                    flambdaState.exchange(
-                        new LambdaReq(requestOut),
-                        lambdaRes -> {
-                            var body = lambdaRes.in().body();
-                            var in = lambdaRes.in();
-                            byte[] bodyBytes = in.bytes();
-                            settings.cors().applyTo(httpReq.host(), callback.status(in.statusCode()))
-                                .headers(in.headers())
-                                .contentLength(bodyBytes.length)
-                                .body(bodyBytes);
-                        }
-                    );
-                }
-            }
-        };
-    }
-
-    private static int length(String body) {
-        return body == null || body.isEmpty() ? 0 : body.length();
-    }
-
-    private static @NonNull Map<String, Object> idHeaders(LambdaReq lambdaReq) {
-        return Map.of(
-            "lambda-runtime-aws-request-id", lambdaReq.id().digest(),
-            "content-type", "application/json"
-        );
-    }
-
-    private static ResponseIn responseIn(byte[] body) {
-        return ResponseInRW.INSTANCE.bytesReader().read(body);
-    }
-
-    private static RequestOut requestOut(
-        HttpReq httpReq,
-        HttpMethod method
-    ) {
-        var req = httpReq.withQueryParameters();
-        return new RequestOut(
-            method.name(),
-            req.path(),
-            req.headerMap(),
-            req.queryParametersMap(),
-            switch (method) {
-                case GET, HEAD, OPTIONS -> null;
-                default -> req.bodyString(UTF_8);
-            }
+    private StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
+        return StructuredTaskScope.open(
+        allSuccessfulOrThrow(), configuration -> configuration
+                .withThreadFactory(Thread.ofVirtual().factory())
+                .withName(name)
+                .withTimeout(Duration.ofMinutes(1))
         );
     }
 
     @SuppressWarnings("HttpUrlsUsage")
     private static URI uri(InetSocketAddress address) {
         return URI.create("http://%s:%d".formatted(address.getHostString(), address.getPort()));
-    }
-
-    private static Hash<HashKind.K128> id(String path) {
-        try {
-            var split = path.split("/");
-            for (var i = 0; i < split.length; i++) {
-                if (split[i] == null || split[i].isBlank()) {
-                    continue;
-                }
-                if (split[i].charAt(0) == 'i' && split[i].equals("invocation")) {
-                    if (i + 1 < split.length) {
-                        var id = split[i + 1];
-                        return Hash.from(id);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse id from " + path, e);
-        }
-        throw new IllegalStateException("Failed to parse id from " + path);
     }
 
     @Override

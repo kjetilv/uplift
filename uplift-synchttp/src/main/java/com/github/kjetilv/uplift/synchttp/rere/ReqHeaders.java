@@ -20,22 +20,12 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
         return Arrays.stream(headers);
     }
 
-    public ReqHeader get(int index) {
+    public ReqHeader header(int index) {
         return headers[index];
     }
 
-    public String get(String name) {
-        var bytes = name.toLowerCase(Locale.ROOT).getBytes(UTF_8);
-        for (ReqHeader header : headers) {
-            if (header.is(bytes)) {
-                return header.value();
-            }
-        }
-        return null;
-    }
-
     public String header(String name) {
-        return header(name.toLowerCase(Locale.ROOT).getBytes(UTF_8));
+        return header(bytes(name));
     }
 
     public String header(MemorySegment name) {
@@ -54,6 +44,10 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
             }
         }
         return null;
+    }
+
+    private static byte[] bytes(String name) {
+        return name.toLowerCase(Locale.ROOT).getBytes(UTF_8);
     }
 
     @Override

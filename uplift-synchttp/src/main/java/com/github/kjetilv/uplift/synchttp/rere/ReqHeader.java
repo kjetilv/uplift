@@ -19,18 +19,16 @@ public record ReqHeader(
         this(segment, supplier, offset, separatorOffset, length);
     }
 
+    public boolean isContentLength() {
+        return is(CONTENT_LENGTH);
+    }
+
     public boolean is(byte[] bytes) {
-        return nameLength() == bytes.length &&
-               MemorySegment.ofArray(bytes).mismatch(this.downcasedName().get()) == -1;
+        return MemorySegment.ofArray(bytes).mismatch(this.downcasedName().get()) == -1;
     }
 
     public boolean is(MemorySegment memorySegment) {
-        return nameLength() == memorySegment.byteSize() &&
-               memorySegment.mismatch(this.downcasedName().get()) == -1;
-    }
-
-    public boolean isContentLength() {
-        return nameLength() == CONTENT_LENGTH.byteSize() && CONTENT_LENGTH.mismatch(this.downcasedName().get()) == -1;
+        return memorySegment.mismatch(this.downcasedName().get()) == -1;
     }
 
     public String name() {
@@ -80,6 +78,10 @@ public record ReqHeader(
 
     @Override
     public String toString() {
-        return name() + ": " + value();
+        try {
+            return name() + ": " + value();
+        } catch (Exception e) {
+            return getClass().getSimpleName() + "[" + segment + "]";
+        }
     }
 }

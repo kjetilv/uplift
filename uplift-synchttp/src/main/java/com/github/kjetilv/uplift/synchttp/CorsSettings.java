@@ -51,19 +51,23 @@ public record CorsSettings(
         this.maxAge = maxAge != null && maxAge > 0 ? maxAge : DEFAULT_MAX_AGE;
     }
 
-    public HttpResponseCallback.Headers applyTo(String host, HttpResponseCallback.Headers headers) {
-        return headers.headers(headerMap(host));
+    public HttpResponseCallback.Headers applyTo(
+        String origin,
+        HttpResponseCallback.Headers headers
+    ) {
+        return headers.headers(headerMap(origin));
     }
 
-    public Map<String, Object> headerMap(String host) {
-        return originValue(host).
-            <Map<String, Object>>map(origin -> Map.of(
-            "access-control-allow-origin", origin,
-            "access-control-allow-methods", methodsValue(),
-            "access-control-allow-headers", headersValue(),
-            "access-control-max-age", maxAge.toString(),
-            "access-control-allow-credentials", credentialsValue()
-        )).orElse(NO_ACCESS);
+    public Map<String, Object> headerMap(String origin) {
+        return originValue(origin).<Map<String, Object>>map(recognizedOrigin ->
+                Map.of(
+                    "access-control-allow-origin", recognizedOrigin,
+                    "access-control-allow-methods", methodsValue(),
+                    "access-control-allow-headers", headersValue(),
+                    "access-control-max-age", maxAge.toString(),
+                    "access-control-allow-credentials", credentialsValue()
+                ))
+            .orElse(NO_ACCESS);
     }
 
     public boolean accepts(String origin) {

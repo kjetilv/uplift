@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
 import com.github.kjetilv.uplift.flogs.Flogs;
+import com.github.kjetilv.uplift.flogs.LogFormatter;
 import com.github.kjetilv.uplift.flogs.LogLevel;
 import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
@@ -24,6 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FlambdaTest {
+
+    static {
+        Flogs.initialize(LogLevel.DEBUG, LogFormatter.BRIEF);
+    }
 
     private static final Logger log = LoggerFactory.getLogger(FlambdaTest.class);
 
@@ -68,10 +73,6 @@ public class FlambdaTest {
 
                 var lambdaGet = getRequest(client, lambdaUri);
                 assertThat(lambdaGet.statusCode()).isEqualTo(200);
-                System.out.println("Lambda GET status: " + lambdaGet.statusCode());
-                System.out.println("Lambda GET headers: " + lambdaGet.headers()
-                    .map());
-                System.out.println("Lambda GET body: `" + lambdaGet.body() + "`");
 
                 var requestOut = RequestOutRW.INSTANCE.stringReader().read(lambdaGet.body());
                 var requestId = lambdaGet.headers()
@@ -87,7 +88,6 @@ public class FlambdaTest {
                     requestId
                 );
 
-                System.out.println("Request ID: " + requestId);
                 postResponse(
                     client, lambdaUri, responseIn
                 );

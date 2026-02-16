@@ -7,7 +7,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SyncPoint<K, V> {
+final class Sync<K, V> {
 
     private final Lock lock = new ReentrantLock();
 
@@ -58,5 +58,10 @@ final class SyncPoint<K, V> {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() +"[" + map.size() + "]";
     }
 }

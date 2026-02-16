@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.synchttp.Utils;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -69,13 +70,30 @@ final class HttpResCallbackImpl implements
     }
 
     @Override
+    public void nobody() {
+        write(ByteBuffer.wrap(LN));
+        flushHeaders();
+    }
+
+    @Override
     public Body content() {
         write(ByteBuffer.wrap(LN));
         return flushHeaders();
     }
 
     @Override
+    public void body(String content) {
+        flushHeaders();
+        checkDeclaredLength();
+        if (content != null && !content.isEmpty()) {
+            int written = write(ByteBuffer.wrap(content.getBytes(StandardCharsets.UTF_8)));
+            checkWrittenLength(written);
+        }
+    }
+
+    @Override
     public void body(byte[] bytes) {
+        flushHeaders();
         checkDeclaredLength();
         if (bytes != null && bytes.length != 0) {
             int written = write(ByteBuffer.wrap(bytes));
@@ -85,6 +103,7 @@ final class HttpResCallbackImpl implements
 
     @Override
     public void body(ReadableByteChannel channel) {
+        flushHeaders();
         checkDeclaredLength();
         var written = writeBody(channel);
         checkWrittenLength(written);

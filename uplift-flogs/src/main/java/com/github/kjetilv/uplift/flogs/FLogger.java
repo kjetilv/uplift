@@ -7,7 +7,11 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings("unused")
 public final class FLogger implements Logger {
 
+    public static final Object[] NO_ARGS = new Object[0];
+
     private final String name;
+
+    private final String shortName;
 
     private final Flogs.Settings settings;
 
@@ -31,14 +35,21 @@ public final class FLogger implements Logger {
         var lastDot = this.sourceName.lastIndexOf('.');
         if (lastDot < 0) {
             this.name = sourceName;
+            this.shortName = sourceName;
         } else {
             this.name = shorten(sourceName);
+            this.shortName = sourceName.substring(lastDot + 1);
         }
     }
 
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public String name(boolean shorten) {
+        return shorten ? shortName : name;
     }
 
     @Override
@@ -49,27 +60,15 @@ public final class FLogger implements Logger {
     @Override
     public void log(LogLevel level, String msg, Object... args) {
         if (settings.isEnabled(level)) {
-            var logEntry = LogEntry.create(settings.time().get(), name, level, msg, args);
-            var logLine = logLine(logEntry);
-            write(logLine);
+            write(logLine(LogEntry.create(
+                settings.time().get(),
+                name,
+                shortName,
+                level,
+                msg,
+                args
+            )));
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sourceName);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj == this ||
-               obj instanceof FLogger logger &&
-               Objects.equals(sourceName, logger.sourceName);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + name + "]";
     }
 
     private void write(String logLine) {
@@ -90,8 +89,6 @@ public final class FLogger implements Logger {
         }
     }
 
-    public static final Object[] NO_ARGS = new Object[0];
-
     private static final PrintStream STDERR = System.err;
 
     private static String shorten(String sourceName) {
@@ -107,5 +104,22 @@ public final class FLogger implements Logger {
                            : p.substring(0, Math.min(len, count.getAndIncrement()));
                    })
                    .collect(Collectors.joining(".")) + "." + className;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this ||
+               obj instanceof FLogger logger &&
+               Objects.equals(sourceName, logger.sourceName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceName);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + name + "]";
     }
 }

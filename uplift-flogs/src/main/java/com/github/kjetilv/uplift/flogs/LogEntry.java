@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 public record LogEntry(
     Instant time,
     String name,
+    String shortName,
     LogLevel logLevel,
     String msg,
     Throwable throwable,
@@ -21,6 +22,7 @@ public record LogEntry(
     static LogEntry create(
         Instant time,
         String name,
+        String shortName,
         LogLevel level,
         String msg,
         Object[] args
@@ -31,6 +33,7 @@ public record LogEntry(
         var logEntry = new LogEntry(
             time,
             name,
+            shortName,
             level,
             msg,
             argumentThrowable,
@@ -45,6 +48,7 @@ public record LogEntry(
     public LogEntry {
         requireNonNull(time, "time");
         requireNonNull(name, "name");
+        requireNonNull(name, "shortName");
         requireNonNull(logLevel, "logLevel");
         requireNonNull(msg, "msg");
         requireNonNull(args, "args");

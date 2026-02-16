@@ -1,15 +1,13 @@
 package com.github.kjetilv.uplift.flogs;
 
-import module java.base;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
-
-    private LogEntryFormatter() {
-    }
+public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEntry> {
 
     @SuppressWarnings("DuplicatedCode")
     @Override
-    String loggableLine(LogEntry entry) {
+    final String loggableLine(LogEntry entry) {
         var dateTime = entry.zuluTime();
         var formattedMessage = formatMessage(
             entry.msg(),
@@ -33,7 +31,7 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
             .append(SPACES, 0, 5 - logLevel.length())
             .append(logLevel)
             .append(' ')
-            .append(entry.name())
+            .append(name(entry))
             .append(": ")
             .append(formattedMessage);
         if (entry.threadName() != null) {
@@ -45,11 +43,11 @@ final class LogEntryFormatter extends AbstractFormatter<LogEntry> {
     }
 
     @Override
-    Throwable throwable(LogEntry entry) {
+    final Throwable throwable(LogEntry entry) {
         return entry.throwable();
     }
 
-    static final LogFormatter<LogEntry> INSTANCE = new LogEntryFormatter();
+    protected abstract String name(LogEntry entry);
 
     private static final String SPACES = IntStream.range(0, 64)
         .mapToObj(_ -> " ")

@@ -74,4 +74,9 @@ public final class HttpCallbackProcessor implements Server.Processor {
         var connection = httpReq.headers().header(CONNECTION);
         return connection != null && connection.equalsIgnoreCase("close");
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + httpHandler + "]";
+    }
 }

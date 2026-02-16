@@ -2,7 +2,11 @@ package com.github.kjetilv.uplift.flogs;
 
 public interface Logger {
 
-    String name();
+    default String name() {
+        return name(false);
+    }
+
+    String name(boolean shorten);
 
     boolean isEnabled(LogLevel logLevel);
 

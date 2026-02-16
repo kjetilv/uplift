@@ -162,6 +162,10 @@ public record ReqLine(
 
     @Override
     public String toString() {
-        return "%s %s %s".formatted(method(), url(), version());
+        try {
+            return "%s %s %s".formatted(method(), url(), version());
+        } catch (Exception e) {
+            return getClass().getSimpleName() + "[" + segment + "]";
+        }
     }
 }

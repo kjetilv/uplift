@@ -31,9 +31,7 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
             return headers("%s: %s\r\n".formatted(name, value));
         }
 
-        default void nobody() {
-            contentLength(0);
-        }
+        void nobody();
 
         Headers headers(String... literalHeaders);
 
@@ -48,11 +46,7 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
 
     interface Body {
 
-        default void body(String content) {
-            if (content != null && !content.isEmpty()) {
-                body(content.getBytes(UTF_8));
-            }
-        }
+        void body(String content);
 
         void body(byte[] bytes);
 

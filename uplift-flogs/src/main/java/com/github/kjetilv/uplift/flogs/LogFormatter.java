@@ -10,4 +10,8 @@ public interface LogFormatter<E> extends Function<E, String> {
     }
 
     String format(E entry);
+
+    LogFormatter<LogEntry> DEFAULT = new DefaultLogEntryFormatter();
+
+    LogFormatter<LogEntry> BRIEF = new BriefLogEntryFormatter();
 }

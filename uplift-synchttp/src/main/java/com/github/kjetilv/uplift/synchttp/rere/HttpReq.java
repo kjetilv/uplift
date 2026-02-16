@@ -12,7 +12,7 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     implements RuntimeCloseable {
 
     public ReqHeader header(int index) {
-        return headers().get(index);
+        return headers().header(index);
     }
 
     public String bodyString() {

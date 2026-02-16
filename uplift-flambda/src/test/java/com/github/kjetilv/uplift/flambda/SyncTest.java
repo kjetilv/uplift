@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SyncPointTest {
+class SyncTest {
 
     @Test
     void putThenGet() {
-        var syncPoint = new SyncPoint<String, String>();
+        var syncPoint = new Sync<String, String>();
         syncPoint.put("key", "value");
         assertEquals(1, syncPoint.size());
         assertEquals("value", syncPoint.get("key"));
@@ -22,7 +22,7 @@ class SyncPointTest {
 
     @Test
     void getThenPut() throws Exception {
-        var syncPoint = new SyncPoint<String, String>();
+        var syncPoint = new Sync<String, String>();
         var result = new AtomicReference<String>();
         var getLatch = new CountDownLatch(1);
         var startedLatch = new CountDownLatch(1);
@@ -47,7 +47,7 @@ class SyncPointTest {
 
     @Test
     void multipleKeys() throws Exception {
-        var syncPoint = new SyncPoint<String, Integer>();
+        var syncPoint = new Sync<String, Integer>();
         var result1 = new AtomicReference<Integer>();
         var result2 = new AtomicReference<Integer>();
         var latch = new CountDownLatch(2);
@@ -74,7 +74,7 @@ class SyncPointTest {
 
     @Test
     void consumeOnce() throws Exception {
-        var syncPoint = new SyncPoint<String, String>();
+        var syncPoint = new Sync<String, String>();
         var result = new AtomicReference<String>();
         var latch = new CountDownLatch(1);
 
@@ -109,7 +109,7 @@ class SyncPointTest {
 
     @Test
     void concurrentPutsAndGets() throws Exception {
-        var syncPoint = new SyncPoint<Integer, Integer>();
+        var syncPoint = new Sync<Integer, Integer>();
         try (var executor = Executors.newFixedThreadPool(10)) {
             var count = 100;
             var latch = new CountDownLatch(count * 2);

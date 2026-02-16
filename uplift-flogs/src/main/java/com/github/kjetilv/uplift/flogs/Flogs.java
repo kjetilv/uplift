@@ -19,6 +19,14 @@ public final class Flogs {
         initialize(logLevel, printer, null, null);
     }
 
+    public static void initialize(LogFormatter<LogEntry> formatter) {
+        initialize(null, formatter);
+    }
+
+    public static void initialize(LogLevel logLevel, LogFormatter<LogEntry> formatter) {
+        initialize(logLevel, null, null, formatter);
+    }
+
     public static void initialize(
         LogLevel logLevel,
         Consumer<String> printer,
@@ -68,7 +76,7 @@ public final class Flogs {
             this.logLevel = logLevel == null ? LogLevel.DEFAULT : logLevel;
             this.printer = printer == null ? System.out::println : printer;
             this.time = time == null ? Instant::now : time;
-            this.formatter = formatter == null ? LogEntryFormatter.INSTANCE : formatter;
+            this.formatter = formatter == null ? LogFormatter.DEFAULT : formatter;
         }
 
         private Settings() {

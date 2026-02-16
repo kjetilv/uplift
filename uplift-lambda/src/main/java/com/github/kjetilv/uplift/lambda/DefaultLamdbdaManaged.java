@@ -43,18 +43,16 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
                 HttpResponse.BodyHandlers.ofInputStream(),
                 null
             );
-        InvocationSource<HttpRequest, HttpResponse<InputStream>> source =
-            new HttpInvocationSource(
-                fetch,
-                lambdaUri,
-                settings.responseTimeout(),
-                settings.time()
-            );
-        InvocationSink<HttpRequest, HttpResponse<InputStream>> sink =
-            new HttpInvocationSink(
-                fetch,
-                settings.time()
-            );
+        InvocationSource<HttpRequest, HttpResponse<InputStream>> source = new HttpInvocationSource(
+            fetch,
+            lambdaUri,
+            settings.responseTimeout(),
+            settings.time()
+        );
+        InvocationSink<HttpRequest, HttpResponse<InputStream>> sink = new HttpInvocationSink(
+            fetch,
+            settings.time()
+        );
         return LambdaLoopers.looper(name, handler, source, sink, settings.time());
     }
 

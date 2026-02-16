@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
 
 @SuppressWarnings("StatementWithEmptyBody")
 final class DefaultServer implements Server {
@@ -26,6 +27,8 @@ final class DefaultServer implements Server {
     private final Runnable serverThread;
 
     private final Processor processor;
+
+    private final LongAdder requests = new LongAdder();
 
     DefaultServer(InetSocketAddress address) {
         this(
@@ -83,7 +86,6 @@ final class DefaultServer implements Server {
             } catch (Exception e) {
                 throw new IllegalStateException(this + " failed to close " + processor, e);
             }
-            log.info("{} closed", this);
         }
     }
 
@@ -105,6 +107,7 @@ final class DefaultServer implements Server {
     private CompletableFuture<Void> server() {
         return CompletableFuture.runAsync(() -> {
             while (processSocket(openSocket())) {
+                requests.increment();
             }
         });
     }
@@ -114,13 +117,12 @@ final class DefaultServer implements Server {
             return serverSocketChannel.accept();
         } catch (AsynchronousCloseException e) {
             if (closed.get()) {
-                log.debug("{} closed", this);
                 return null;
             }
             throw new IllegalStateException(this + " failed to accept socket channel @ " + serverSocketChannel, e);
         } catch (Exception e) {
             if (closed.get()) {
-                log.debug("{} closed, did not accept", this, e);
+                log.debug("{} was closed, rejected connection", this, e);
                 return null;
             }
             throw new IllegalStateException(this + " failed to accept socket channel @ " + serverSocketChannel, e);
@@ -129,7 +131,6 @@ final class DefaultServer implements Server {
 
     private boolean processSocket(SocketChannel channel) {
         if (channel == null) {
-            log.info("{} closed listening loop", this);
             return false;
         }
         THREAD_FACTORY.newThread(() -> {
@@ -166,9 +167,9 @@ final class DefaultServer implements Server {
     @Override
     public String toString() {
         return getClass().getSimpleName() +
-               "[@" + address +
-               " " + (closed.get() ? "open" : "closed") +
-               " -> " + processor +
+               "[" + requests + "@" + address +
+               "->" + processor +
+               (closed.get() ? " CLOSED" : "") +
                "]";
     }
 }
