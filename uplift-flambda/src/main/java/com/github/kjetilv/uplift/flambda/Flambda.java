@@ -35,7 +35,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
             .run(new HttpCallbackProcessor(new ApiHandler(settings, flambdaState)));
 
         this.lambdaServer = Server.create(settings.lambdaPort())
-            .run(new HttpCallbackProcessor(new LambdaHandler(settings, flambdaState)));
+            .run(new HttpCallbackProcessor(new FlambdaHandler(settings, flambdaState)));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down {}", this);

@@ -47,14 +47,14 @@ public final class Utils {
         return prefixed(segment, offset, bytes);
     }
 
-    public static boolean readInto(ReadableByteChannel body, ByteBuffer buffer) {
+    public static boolean didRead(ReadableByteChannel body, ByteBuffer buffer) {
         try {
             var read = body.read(buffer);
-            if (read == -1) {
-                return false;
+            if (read > 0) {
+                buffer.flip();
+                return true;
             }
-            buffer.flip();
-            return true;
+            return false;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write body " + body, e);
         }

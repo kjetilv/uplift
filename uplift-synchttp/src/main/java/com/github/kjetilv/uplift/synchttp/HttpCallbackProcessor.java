@@ -50,15 +50,14 @@ public final class HttpCallbackProcessor implements Server.Processor {
             var byteBuffer = pooled.segment().asByteBuffer();
             var callback = HttpResponseCallback.create(out, byteBuffer);
             httpHandler.handle(httpReq, callback);
+            return !connectionClose(httpReq);
         } catch (Exception e) {
             log.error("Failed to handle request", e);
             new HttpResWriter(out).write(new HttpRes(500));
-            return true;
+            return false;
         } finally {
-            resSegments.release(pooled);
             httpReq.close();
         }
-        return !connectionClose(httpReq);
     }
 
     @Override

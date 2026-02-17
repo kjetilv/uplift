@@ -6,8 +6,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
 
     static HttpResponseCallback create(WritableByteChannel out, ByteBuffer buffer) {
@@ -38,8 +36,6 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
         Headers contentType(String contentType);
 
         Body contentLength(long contentLength);
-
-        Body content();
 
         void channel(Consumer<WritableByteChannel> channelWriter);
     }

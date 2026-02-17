@@ -22,7 +22,7 @@ public record CorsSettings(
 
     public static final List<String> NO_HEADERS = List.of();
 
-    public static final Map<String, Object> NO_ACCESS = Map.of();
+    public static final Map<String, Object> NO_CORS = Map.of();
 
     public CorsSettings(
         List<String> origins,
@@ -51,23 +51,14 @@ public record CorsSettings(
         this.maxAge = maxAge != null && maxAge > 0 ? maxAge : DEFAULT_MAX_AGE;
     }
 
-    public HttpResponseCallback.Headers applyTo(
-        String origin,
-        HttpResponseCallback.Headers headers
-    ) {
+    public HttpResponseCallback.Headers applyTo(String origin, HttpResponseCallback.Headers headers) {
         return headers.headers(headerMap(origin));
     }
 
     public Map<String, Object> headerMap(String origin) {
-        return originValue(origin).<Map<String, Object>>map(recognizedOrigin ->
-                Map.of(
-                    "access-control-allow-origin", recognizedOrigin,
-                    "access-control-allow-methods", methodsValue(),
-                    "access-control-allow-headers", headersValue(),
-                    "access-control-max-age", maxAge.toString(),
-                    "access-control-allow-credentials", credentialsValue()
-                ))
-            .orElse(NO_ACCESS);
+        return originValue(origin)
+            .map(this::corsFor)
+            .orElse(NO_CORS);
     }
 
     public boolean accepts(String origin) {
@@ -92,7 +83,7 @@ public record CorsSettings(
 
     Optional<String> originValue(String host) {
         return isStar()
-            ? Optional.of("*")
+            ? Optional.ofNullable(host)
             : origins.stream()
               .filter(host::equals)
               .findFirst();
@@ -100,6 +91,16 @@ public record CorsSettings(
 
     boolean credentials() {
         return !isStar();
+    }
+
+    private Map<String, Object> corsFor(String origin) {
+        return Map.of(
+            "access-control-allow-origin", origin,
+            "access-control-allow-methods", methodsValue(),
+            "access-control-allow-headers", headersValue(),
+            "access-control-max-age", maxAge.toString(),
+            "access-control-allow-credentials", credentialsValue()
+        );
     }
 
     private boolean isStar() {

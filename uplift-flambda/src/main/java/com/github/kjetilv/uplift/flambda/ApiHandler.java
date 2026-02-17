@@ -16,21 +16,40 @@ record ApiHandler(
     @Override
     public void handle(HttpReq httpReq, HttpResponseCallback callback) {
         switch (httpReq.method()) {
-            case OPTIONS -> settings.cors().applyTo(
-                httpReq.origin(),
-                callback.status(200)
-            ).nobody();
-            case HttpMethod method -> flambdaState.exchange(
-                new LambdaReq(requestOut(httpReq, method)),
-                lambdaRes -> {
-                    var in = lambdaRes.in();
-                    byte[] bodyBytes = in.bytes();
-                    settings.cors().applyTo(httpReq.origin(), callback.status(in.statusCode()))
-                        .headers(in.headers())
-                        .contentLength(bodyBytes.length)
-                        .body(bodyBytes);
-                }
-            );
+            case OPTIONS -> {
+                settings.cors().applyTo(
+                    httpReq.origin(),
+                    callback.status(200)
+                ).nobody();
+            }
+            case HttpMethod method -> {
+                var lambdaReq = new LambdaReq(requestOut(httpReq, method));
+                flambdaState.exchange(
+                    lambdaReq,
+                    lambdaRes ->
+                        respond(httpReq, lambdaRes, callback)
+                );
+            }
+        }
+    }
+
+    private void respond(
+        HttpReq httpReq,
+        LambdaRes lambdaRes,
+        HttpResponseCallback callback
+    ) {
+        var in = lambdaRes.in();
+        var origin = httpReq.origin();
+        var headers = settings.cors()
+            .applyTo(origin, callback.status(in.statusCode()))
+            .headers(in.headers());
+        byte[] bodyBytes = in.bytes();
+        if (bodyBytes.length == 0) {
+            headers.nobody();
+        } else {
+            headers
+                .contentLength(bodyBytes.length)
+                .body(bodyBytes);
         }
     }
 

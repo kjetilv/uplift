@@ -21,9 +21,9 @@ final class HttpResCallbackImpl implements
 
     private final ByteBuffer buffer;
 
-    private boolean headersComplete;
-
     private long contentLength = -1;
+
+    private boolean done;
 
     HttpResCallbackImpl(WritableByteChannel out, ByteBuffer buffer) {
         this.out = Objects.requireNonNull(out, "out");
@@ -33,8 +33,9 @@ final class HttpResCallbackImpl implements
     @Override
     public Headers status(int statusCode) {
         try {
-            write(ByteBuffer.wrap(VERSION));
-            write(statusCode(statusCode));
+            buffer(ByteBuffer.wrap(VERSION));
+            buffer(statusCode(statusCode));
+            buffer(ByteBuffer.wrap(CRLF));
             return this;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to respond " + statusCode, e);
@@ -43,16 +44,18 @@ final class HttpResCallbackImpl implements
 
     @Override
     public Headers header(String name, Object value) {
-        write(ByteBuffer.wrap(name.getBytes()));
-        write(ByteBuffer.wrap(COLON));
-        write(ByteBuffer.wrap(value.toString().getBytes()));
-        write(ByteBuffer.wrap(CRLF));
+        buffer(ByteBuffer.wrap(name.getBytes()));
+        buffer(ByteBuffer.wrap(COLON));
+        buffer(ByteBuffer.wrap(value.toString().getBytes()));
+        buffer(ByteBuffer.wrap(CRLF));
         return this;
     }
 
     @Override
     public Headers headers(String... literalHeaders) {
-        return writeHeaders(sanitize(literalHeaders));
+        var byteBuffer = ByteBuffer.wrap(sanitize(literalHeaders).getBytes());
+        buffer(byteBuffer);
+        return this;
     }
 
     @Override
@@ -63,64 +66,85 @@ final class HttpResCallbackImpl implements
     @Override
     public Body contentLength(long contentLength) {
         this.contentLength = contentLength;
-        if (this.contentLength > 0) {
-            header("content-length", String.valueOf(this.contentLength));
-        }
-        return content();
+        header("content-length", String.valueOf(this.contentLength));
+        return this;
     }
 
     @Override
     public void nobody() {
-        write(ByteBuffer.wrap(LN));
-        flushHeaders();
-    }
-
-    @Override
-    public Body content() {
-        write(ByteBuffer.wrap(LN));
-        return flushHeaders();
-    }
-
-    @Override
-    public void body(String content) {
-        flushHeaders();
-        checkDeclaredLength();
-        if (content != null && !content.isEmpty()) {
-            int written = write(ByteBuffer.wrap(content.getBytes(StandardCharsets.UTF_8)));
-            checkWrittenLength(written);
+        failDone();
+        try {
+            contentLength(0L);
+            flushHeaders();
+        } finally {
+            done = true;
         }
     }
 
     @Override
+    public void body(String content) {
+        failDone();
+        body(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
     public void body(byte[] bytes) {
-        flushHeaders();
-        checkDeclaredLength();
-        if (bytes != null && bytes.length != 0) {
-            int written = write(ByteBuffer.wrap(bytes));
-            checkWrittenLength(written);
+        failDone();
+        try {
+            flushHeaders();
+            if (bytes == null || bytes.length == 0) {
+                checkZeroLength();
+            } else {
+                checkDeclaredLength();
+                var written = stream(ByteBuffer.wrap(bytes));
+                checkWrittenLength(written);
+            }
+        } finally {
+            done = true;
         }
     }
 
     @Override
     public void body(ReadableByteChannel channel) {
-        flushHeaders();
-        checkDeclaredLength();
-        var written = writeBody(channel);
-        checkWrittenLength(written);
+        failDone();
+        try {
+            flushHeaders();
+            checkDeclaredLength();
+            var written = transferFrom(channel);
+            checkWrittenLength(written);
+        } finally {
+            done = true;
+        }
     }
 
     @Override
     public void channel(Consumer<WritableByteChannel> channelWriter) {
-        if (contentLength == -1) {
-            header("transfer-encoding", "chunked");
+        failDone();
+        try {
+            if (contentLength == -1) {
+                header("transfer-encoding", "chunked");
+            }
+            flushHeaders();
+            channelWriter.accept(out);
+        } finally {
+            done = true;
         }
-        write(ByteBuffer.wrap(LN));
-        flushHeaders();
-        channelWriter.accept(out);
+    }
+
+    private void failDone() {
+        if (done) {
+            throw new IllegalStateException("Already done");
+        }
+    }
+
+    private void checkZeroLength() {
+        if (contentLength > 0) {
+            throw new IllegalStateException("No content provided, but content-length is " + contentLength);
+        }
     }
 
     private void checkDeclaredLength() {
-        if (contentLength == -1) {
+        if (contentLength <= 0) {
             throw new IllegalStateException("No content length provided");
         }
     }
@@ -132,52 +156,39 @@ final class HttpResCallbackImpl implements
         }
     }
 
-    private HttpResCallbackImpl writeHeaders(String literalHeaders) {
-        var byteBuffer = ByteBuffer.wrap(literalHeaders.getBytes());
-        write(byteBuffer);
-        return this;
-    }
-
-    private int writeBody(ReadableByteChannel body) {
+    private int transferFrom(ReadableByteChannel body) {
         int written = 0;
         ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-        while (Utils.readInto(body, buffer)) {
-            written += write(buffer);
-            buffer.position(0);
+        while (Utils.didRead(body, buffer)) {
+            written += stream(buffer);
         }
         return written;
     }
 
-    private Body flushHeaders() {
-        if (!headersComplete) {
-            headersComplete = true;
-            buffer.flip();
-            write(buffer);
-        }
-        return this;
+    private void flushHeaders() {
+        buffer(ByteBuffer.wrap(CRLF));
+        buffer.flip();
+        stream(buffer);
     }
 
-    private int write(ByteBuffer delta) {
-        if (headersComplete) {
-            try {
-                int written = 0;
-                while (delta.hasRemaining()) {
-                    written += out.write(delta);
-                }
-                return written;
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Failed to write " + delta, e);
+    private void buffer(ByteBuffer delta) {
+        failDone();
+        try {
+            this.buffer.put(delta);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write headers > buffer size: " + buffer.capacity(), e);
+        }
+    }
+
+    private int stream(ByteBuffer delta) {
+        try {
+            int written = 0;
+            while (delta.hasRemaining()) {
+                written += out.write(delta);
             }
-        } else {
-            try {
-                this.buffer.put(delta);
-            } catch (Exception e) {
-                throw new IllegalStateException(
-                    "Failed to write headers, exceeded buffer size: " + buffer.capacity(),
-                    e
-                );
-            }
-            return delta.position();
+            return written;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to write " + delta, e);
         }
     }
 
@@ -200,7 +211,7 @@ final class HttpResCallbackImpl implements
     }
 
     private static ByteBuffer statusCode(int code) {
-        return ByteBuffer.wrap((code + "\r\n").getBytes());
+        return ByteBuffer.wrap(String.valueOf(code).getBytes());
     }
 
     @Override

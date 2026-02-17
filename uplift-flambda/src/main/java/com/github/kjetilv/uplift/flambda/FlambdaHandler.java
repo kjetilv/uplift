@@ -15,12 +15,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-record LambdaHandler(
+record FlambdaHandler(
     FlambdaSettings settings,
     FlambdaState flambdaState
 ) implements HttpHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(LambdaHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(FlambdaHandler.class);
 
     @Override
     public void handle(HttpReq httpReq, HttpResponseCallback callback) {
@@ -37,7 +37,8 @@ record LambdaHandler(
             case POST -> {
                 var id = id(httpReq.path());
                 var body = httpReq.bodyBytes();
-                flambdaState.submitResponse(new LambdaRes(id, responseIn(body)));
+                var lambdaRes = new LambdaRes(id, responseIn(body));
+                flambdaState.submitResponse(lambdaRes);
                 callback.status(204).nobody();
             }
             case OPTIONS -> settings.cors().applyTo(httpReq.origin(), callback.status(200));

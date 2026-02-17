@@ -51,7 +51,7 @@ public final class Segments implements RuntimeCloseable {
             if (!allocations[i]) {
                 allocations[i] = true;
                 return new Pooled(
-                    memorySegment.asSlice(i * baseSize),
+                    memorySegment.asSlice(i * baseSize, baseSize),
                     baseSize,
                     i
                 );

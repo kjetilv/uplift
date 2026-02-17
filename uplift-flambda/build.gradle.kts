@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":uplift-util"))
     implementation(project(":uplift-hash"))
 
-    implementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
+    implementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
 }
 
 tasks.register<Copy>("copy-libs") {

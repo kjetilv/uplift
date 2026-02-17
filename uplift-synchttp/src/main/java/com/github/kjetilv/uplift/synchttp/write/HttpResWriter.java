@@ -48,7 +48,7 @@ public class HttpResWriter {
     private int writeBody(ReadableByteChannel body) {
         int written = 0;
         ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
-        while (Utils.readInto(body, buffer)) {
+        while (Utils.didRead(body, buffer)) {
             written += write(buffer);
             buffer.position(0);
         }

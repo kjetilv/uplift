@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.synchttp;
 
 import jdk.incubator.vector.ByteVector;
+import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +28,11 @@ public class SyncTest {
         var byteVector1 = ByteVector.fromArray(SPECIES, parsed.getBytes(), 0);
         var byteVector2 = ByteVector.fromArray(SPECIES, parsed.getBytes(), byteVector1.length());
 
-        System.out.println(byteVector1.eq((byte) '\n'));
-        System.out.println(byteVector2.eq((byte) '\n'));
+        var mask1 = byteVector1.eq((byte) '\n');
+        var mark2 = byteVector2.eq((byte) '\n');
+
+        assertThat(mask1).hasToString("Mask[...T...T...TTTT.]");
+        assertThat(mark2).hasToString("Mask[...........T....]");
     }
 
 
