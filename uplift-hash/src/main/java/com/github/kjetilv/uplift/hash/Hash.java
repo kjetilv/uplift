@@ -60,13 +60,17 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     @SuppressWarnings("unchecked")
     static <H extends HashKind<H>> Hash<H> from(String digest) {
         var length = requireNonNull(digest, "digest").length();
-        if (length == K128.digestLength()) {
-            var ls = toLongs(digest, new long[K128.longCount()]);
-            return (Hash<H>) new H128(ls[0], ls[1]);
-        }
-        if (length == K256.digestLength()) {
-            var ls = toLongs(digest, new long[K256.longCount()]);
+        var k256Length = K256.digestLength();
+        if (length >= k256Length) {
+            var substring = length == k256Length ? digest : digest.substring(0, k256Length);
+            var ls = toLongs(substring, new long[K256.longCount()]);
             return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
+        }
+        var k128Length = K128.digestLength();
+        if (length >= k128Length) {
+            var substring = length == k128Length ? digest : digest.substring(0, k128Length);
+            var ls = toLongs(substring, new long[K128.longCount()]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
         }
         var reportedString = digest.substring(0, Math.min(length, 10)) + (length > 10 ? "..." : "");
         throw new IllegalArgumentException("Hash of length " + length + " not recognized: " + reportedString);
@@ -179,12 +183,16 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     long[] ls();
 
     private static long[] toLongs(String raw, long[] ls) {
-        var digest = denormalize(raw);
-        var decoded = Base64.getDecoder().decode(digest);
-        for (var l = 0; l < ls.length; l++) {
-            ls[l] = Bytes.bytesToLong(decoded, l * 8);
+        try {
+            var digest = denormalize(raw);
+            var decoded = Base64.getDecoder().decode(digest);
+            for (var l = 0; l < ls.length; l++) {
+                ls[l] = Bytes.bytesToLong(decoded, l * 8);
+            }
+            return ls;
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse " + raw, e);
         }
-        return ls;
     }
 
     record H128(long long0, long long1) implements Hash<K128> {

@@ -5,6 +5,8 @@ import com.github.kjetilv.uplift.synchttp.HttpHandler;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -12,6 +14,8 @@ record ApiHandler(
     FlambdaSettings settings,
     FlambdaState flambdaState
 ) implements HttpHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiHandler.class);
 
     @Override
     public void handle(HttpReq httpReq, HttpResponseCallback callback) {
@@ -27,7 +31,7 @@ record ApiHandler(
                 flambdaState.exchange(
                     lambdaReq,
                     lambdaRes ->
-                        respond(httpReq, lambdaRes, callback)
+                        respond(httpReq, lambdaReq, lambdaRes, callback)
                 );
             }
         }
@@ -35,21 +39,25 @@ record ApiHandler(
 
     private void respond(
         HttpReq httpReq,
-        LambdaRes lambdaRes,
+        LambdaReq lambdaReq, LambdaRes lambdaRes,
         HttpResponseCallback callback
     ) {
-        var in = lambdaRes.in();
-        var origin = httpReq.origin();
-        var headers = settings.cors()
-            .applyTo(origin, callback.status(in.statusCode()))
-            .headers(in.headers());
-        byte[] bodyBytes = in.bytes();
-        if (bodyBytes.length == 0) {
-            headers.nobody();
-        } else {
-            headers
-                .contentLength(bodyBytes.length)
-                .body(bodyBytes);
+        try {
+            var in = lambdaRes.in();
+            var origin = httpReq.origin();
+            var headers = settings.cors()
+                .applyTo(origin, callback.status(in.statusCode()))
+                .headers(in.headers());
+            byte[] bodyBytes = in.bytes();
+            if (bodyBytes.length == 0) {
+                headers.nobody();
+            } else {
+                headers
+                    .contentLength(bodyBytes.length)
+                    .body(bodyBytes);
+            }
+        } finally {
+            log.info("Handled {} -> {}", lambdaReq, lambdaReq);
         }
     }
 
