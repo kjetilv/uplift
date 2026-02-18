@@ -82,11 +82,12 @@ public record CorsSettings(
     }
 
     Optional<String> originValue(String host) {
-        return isStar()
-            ? Optional.ofNullable(host)
-            : origins.stream()
-              .filter(host::equals)
-              .findFirst();
+        return host == null || host.isBlank()
+            ? Optional.empty()
+            : isStar() ? Optional.of(host)
+                : origins.stream()
+                  .filter(host::equals)
+                  .findFirst();
     }
 
     boolean credentials() {
