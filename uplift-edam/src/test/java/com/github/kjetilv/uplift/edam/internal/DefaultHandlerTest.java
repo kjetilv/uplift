@@ -81,14 +81,14 @@ class DefaultHandlerTest {
         result(re1);
         var handling = result(re2);
 
-        if (handling.analysis() instanceof Analysis.Multiple(
+        if (handling.analysis() instanceof Analysis.Patterns(
             Occurrence<K128> occurred,
             List<PatternMatch<K128>> sequenceOccurrences
         )) {
             assertEquals(hash2, occurred.hash());
             assertEquals(3, sequenceOccurrences.size());
         } else {
-            fail(handling + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handling + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
     }
 
@@ -96,33 +96,33 @@ class DefaultHandlerTest {
     void sdfdsf() {
         var res1 = result(re0);
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             res1.analysis(),
             () -> "? " + res1
         );
         var handle2 = result(re1); // ab
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             handle2.analysis(),
             () -> "? " + handle2
         );
         var handle3 = result(re2); // abc
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             handle3.analysis(),
             () -> "? " + handle3
         );
 
         var handle4 = result(re1); // abcb
-        if (handle4.analysis() instanceof Analysis.Simple<K128>(var times)) {
+        if (handle4.analysis() instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash1, handle4.analysis().trigger().hash());
             assertEquals(2, times.size());
         } else {
-            fail(handle4 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle4 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var handle5 = result(re2); // abcbc
-        if (handle5.analysis() instanceof Analysis.Multiple<K128> repeated) {
+        if (handle5.analysis() instanceof Analysis.Patterns<K128> repeated) {
             assertEquals(
                 2,
                 repeated.matches().size(),
@@ -131,54 +131,54 @@ class DefaultHandlerTest {
             assertEquals(2, repeated.occurrences(hash2).size());
             assertEquals(2, repeated.occurrences(hash1, hash2).size());
         } else {
-            fail(handle5 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle5 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var handle6 = result(re1); // abcbcb
-        if (handle6.analysis() instanceof Analysis.Multiple<K128> repeated) { // b*3, cb*2
+        if (handle6.analysis() instanceof Analysis.Patterns<K128> repeated) { // b*3, cb*2
             assertEquals(2, repeated.matches().size(), () -> "Missing patterns? " + handle6);
             assertEquals(3, repeated.occurrences(hash1).size());
             assertEquals(2, repeated.occurrences(hash2, hash1).size());
         } else {
-            fail(handle6 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle6 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var handle7 = result(re2); // abcbcbc
-        if (handle7.analysis() instanceof Analysis.Multiple<K128> repeated) { // bc*3, c*3
+        if (handle7.analysis() instanceof Analysis.Patterns<K128> repeated) { // bc*3, c*3
             assertEquals(2, repeated.matches().size());
             assertEquals(3, repeated.occurrences(hash1, hash2).size());
             assertEquals(3, repeated.occurrences(hash2).size());
         } else {
-            fail(handle7 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle7 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var handle8 = result(re3); // abcbcbcd
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             handle8.analysis(),
             () -> "? " + handle8
         );
 
         var handle9 = result(re0);
-        if (handle9.analysis() instanceof Analysis.Simple<K128>(var times)) {
+        if (handle9.analysis() instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash0, handle9.analysis().trigger().hash());
             assertEquals(2, times.size());
         } else {
-            fail(handle9 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle9 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var handle10 = result(re0);
-        if (handle10.analysis() instanceof Analysis.Simple<K128>(var times)) {
+        if (handle10.analysis() instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash0, handle10.analysis().trigger().hash());
             assertEquals(3, times.size());
         } else {
-            fail(handle10 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(handle10 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         tick(300);
         var handleX = handler.handling(re0); // a
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             handleX.analysis(),
             () -> "? " + handleX
         );

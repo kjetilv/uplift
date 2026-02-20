@@ -72,12 +72,12 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     String toPatternMatchesString();
 
     /// @return The simple component of this analysis, if any.
-    Optional<Simple<K>> simpleMatch();
+    Optional<Repeats<K>> simpleMatch();
 
     /// No repeats of the item in the given timespan/history length.
     ///
     /// @param trigger Occurrence
-    record None<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K> {
+    record Single<K extends HashKind<K>>(Occurrence<K> trigger) implements Analysis<K> {
 
         @Override
         public Timespan timespan() {
@@ -115,7 +115,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         }
 
         @Override
-        public Optional<Simple<K>> simpleMatch() {
+        public Optional<Repeats<K>> simpleMatch() {
             return Optional.empty();
         }
 
@@ -128,7 +128,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     /// Simple repeats of a single item, in the given timespan/history length.
     ///
     /// @param occurrences The occurrences
-    record Simple<K extends HashKind<K>>(
+    record Repeats<K extends HashKind<K>>(
         List<Occurrence<K>> occurrences
     ) implements Analysis<K> {
 
@@ -158,7 +158,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         }
 
         @Override
-        public Optional<Simple<K>> simpleMatch() {
+        public Optional<Repeats<K>> simpleMatch() {
             return Optional.of(this);
         }
 
@@ -183,16 +183,16 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     }
 
     /// Various repeated sequences involving the item, in the given timespan/history length.  Can be
-    /// [projected][#simple()] onto a [simple][Simple] analysis.
+    /// [projected][#simple()] onto a [simple][Repeats] analysis.
     ///
     /// @param trigger Trigger for the analysis
     /// @param matches The matches
-    record Multiple<K extends HashKind<K>>(
+    record Patterns<K extends HashKind<K>>(
         Occurrence<K> trigger,
         List<PatternMatch<K>> matches
     ) implements Analysis<K> {
 
-        public Multiple {
+        public Patterns {
             requireNonNull(trigger, "occurrence");
             requireNotEmpty(matches, "sequences");
             if (matches.stream()
@@ -248,12 +248,12 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         }
 
         @Override
-        public Optional<Simple<K>> simpleMatch() {
+        public Optional<Repeats<K>> simpleMatch() {
             return matches.stream()
                 .filter(PatternMatch::isSimple)
                 .findFirst()
                 .flatMap(PatternMatch::singleOccurrence)
-                .map(Simple::new);
+                .map(Repeats::new);
         }
 
         @Override
@@ -271,7 +271,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         /// times the [triggers][#trigger()] has occurred
         ///
         /// @return Simple analysis
-        public Simple<K> simple() {
+        public Repeats<K> simple() {
             var simplePattern = matches().stream()
                 .filter(PatternMatch::isSimple)
                 .findFirst()
@@ -282,7 +282,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
                 .map(PatternOccurrence::occurrences)
                 .flatMap(Collection::stream)
                 .toList();
-            return new Simple<>(occurrences);
+            return new Repeats<>(occurrences);
         }
 
         public List<PatternOccurrence<K>> occurrences(List<Hash<K>> hashes) {

@@ -46,13 +46,13 @@ class HashPatternMatchTest {
         assertTrue(patternMatch.occurrences().getLast().match());
     }
 
-    private final static Hash<K128> h0 = K128.random();
+    private static final Hash<K128> h0 = K128.random();
 
-    private final static Hash<K128> h1 = K128.random();
+    private static final Hash<K128> h1 = K128.random();
 
-    private final static Hash<K128> h2 = K128.random();
+    private static final Hash<K128> h2 = K128.random();
 
-    private final static HashPattern<K128> HASH_PATTERN = new HashPattern<>(h0, h1, h2);
+    private static final HashPattern<K128> HASH_PATTERN = new HashPattern<>(h0, h1, h2);
 
     private static Instant ep(int s) {
         return EPOCH.plusSeconds(s);

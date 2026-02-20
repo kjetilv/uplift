@@ -95,7 +95,7 @@ public final class Main {
             info.volume(),
             info.source().toString()
         );
-        if (analysis instanceof Analysis.Multiple<?> multiple) {
+        if (analysis instanceof Analysis.Patterns<?> patterns) {
             log.info(
                 "{} {}\n  {} time{} in {} pattern{} in the last {}: {}",
                 info.causeChain(),
@@ -107,7 +107,7 @@ public final class Main {
                 analysis.duration().truncatedTo(ChronoUnit.MILLIS),
                 analysis.toPatternMatchesString()
             );
-            logSimple(multiple.simple(), info);
+            logSimple(patterns.simple(), info);
         } else {
             logSimple(analysis, info);
         }

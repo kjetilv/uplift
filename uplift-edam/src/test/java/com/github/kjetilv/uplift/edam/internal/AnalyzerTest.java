@@ -74,14 +74,14 @@ class AnalyzerTest {
         analyze(re1);
         var analyis = analyze(re2);
 
-        if (analyis instanceof Analysis.Multiple(
+        if (analyis instanceof Analysis.Patterns(
             Occurrence<K128> occurred,
             List<PatternMatch<K128>> patternMatches
         )) {
             assertEquals(hash2, occurred.hash());
             assertEquals(3, patternMatches.size());
         } else {
-            fail(analyis + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(analyis + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
     }
 
@@ -89,33 +89,33 @@ class AnalyzerTest {
     void sdfdsf() {
         var an1 = analyze(re0);
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             an1,
             () -> "? " + an1
         );
         var an2 = analyze(re1); // ab
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             an2,
             () -> "? " + an2
         );
         var an3 = analyze(re2); // abc
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             an3,
             () -> "? " + an3
         );
 
         var an4 = analyze(re1); // abcb
-        if (an4 instanceof Analysis.Simple<K128>(var times)) {
+        if (an4 instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash1, an4.trigger().hash());
             assertEquals(2, times.size());
         } else {
-            fail(an4 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an4 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var an5 = analyze(re2); // abcbc
-        if (an5 instanceof Analysis.Multiple<K128> repeated) {
+        if (an5 instanceof Analysis.Patterns<K128> repeated) {
             assertEquals(
                 2,
                 repeated.matches().size(),
@@ -124,54 +124,54 @@ class AnalyzerTest {
             assertEquals(2, repeated.occurrences(hash1, hash2).size());
             assertEquals(2, repeated.occurrences(hash2).size());
         } else {
-            fail(an5 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an5 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var an6 = analyze(re1); // abcbcb
-        if (an6 instanceof Analysis.Multiple<K128> repeated) { // b, cb
+        if (an6 instanceof Analysis.Patterns<K128> repeated) { // b, cb
             assertEquals(2, repeated.matches().size(), () -> "Missing patterns? " + an6);
             assertEquals(2, repeated.occurrences(hash2, hash1).size());
             assertEquals(3, repeated.occurrences(hash1).size());
         } else {
-            fail(an6 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an6 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var an7 = analyze(re2); // abcbcbc
-        if (an7 instanceof Analysis.Multiple<K128> repeated) {
+        if (an7 instanceof Analysis.Patterns<K128> repeated) {
             assertEquals(2, repeated.matches().size());
             assertEquals(3, repeated.occurrences(hash1, hash2).size());
             assertEquals(3, repeated.occurrences(hash2).size());
         } else {
-            fail(an7 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an7 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var an8 = analyze(re3); // abcbcbcd
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             an8,
             () -> "? " + an8
         );
 
         var an9 = analyze(re0);
-        if (an9 instanceof Analysis.Simple<K128>(var times)) {
+        if (an9 instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash0, an9.trigger().hash());
             assertEquals(2, times.size());
         } else {
-            fail(an9 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an9 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         var an10 = analyze(re0);
-        if (an10 instanceof Analysis.Simple<K128>(var times)) {
+        if (an10 instanceof Analysis.Repeats<K128>(var times)) {
             assertEquals(hash0, an10.trigger().hash());
             assertEquals(3, times.size());
         } else {
-            fail(an10 + " is not instance of " + Analysis.Multiple.class.getSimpleName());
+            fail(an10 + " is not instance of " + Analysis.Patterns.class.getSimpleName());
         }
 
         tick(300);
         var anX = repeatAnalyzer.analyze(re0); // a
         assertInstanceOf(
-            Analysis.None.class,
+            Analysis.Single.class,
             anX,
             () -> "? " + anX
         );

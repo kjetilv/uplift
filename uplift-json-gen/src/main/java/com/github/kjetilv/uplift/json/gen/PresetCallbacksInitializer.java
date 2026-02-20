@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@SuppressWarnings({"SameParameterValue", "unused", "rawtypes"})
+@SuppressWarnings({"SameParameterValue", "unused"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
 
     private Map<Token.Field, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();

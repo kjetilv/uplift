@@ -26,6 +26,7 @@ class HttpResCallbackImplTest {
             """
                HTTP/1.1 200\r
                foo: bar\r
+               content-length: 0\r
                \r
                """
         );

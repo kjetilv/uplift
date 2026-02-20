@@ -31,7 +31,7 @@ class AnalysisTest {
         var occ4 = new Occurrence<>(ep(4), H2);
         var hashPattern1 = new HashPattern<>(H0, H2, H0, H2);
         var hashPattern2 = new HashPattern<>(H2);
-        var multiple = new Analysis.Multiple<>(
+        var multiple = new Analysis.Patterns<>(
             occ4,
             List.of(
                 new PatternMatch<>(

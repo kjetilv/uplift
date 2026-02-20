@@ -5,8 +5,6 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-import static com.github.kjetilv.uplift.edam.Analysis.Multiple;
-
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @FunctionalInterface
 public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
@@ -46,9 +44,9 @@ public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
     private static <T, P extends Info<T, K>, K extends HashKind<K>> void simple(
         Results<T, K> results,
         Handling<T, P, K> handling,
-        Multiple<K> multiple
+        Analysis.Patterns<K> patterns
     ) {
-        multiple.simpleMatch()
+        patterns.simpleMatch()
             .ifPresent(match ->
                 results.multipleOccurrences(
                     handling.payload().source(),
@@ -59,9 +57,9 @@ public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
     private static <T, P extends Info<T, K>, K extends HashKind<K>> void combined(
         Results<T, K> results,
         Handling<T, P, K> handling,
-        Multiple<K> multiple
+        Analysis.Patterns<K> patterns
     ) {
-        multiple.combinedMatches()
+        patterns.combinedMatches()
             .forEach(match ->
                 results.patternOccurred(handling.payload().source(), match.occurrences()));
     }

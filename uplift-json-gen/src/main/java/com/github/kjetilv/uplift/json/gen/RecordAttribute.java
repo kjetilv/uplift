@@ -44,7 +44,7 @@ record RecordAttribute(
     }
 
     String callbackHandler(TypeElement builderType) {
-        return " on" + callbackEvent + "(" +
+        return "on" + callbackEvent + "(" +
                quote(fieldName(element)) +
                ", " + variant.midTerm(element, internalType)
                    .map(term -> term + ", ")

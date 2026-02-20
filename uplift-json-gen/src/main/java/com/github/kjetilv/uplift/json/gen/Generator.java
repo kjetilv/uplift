@@ -195,8 +195,9 @@ record Generator(
                     .filter(element ->
                         element.getKind() == ElementKind.RECORD_COMPONENT)
                     .map(element ->
-                        "        PRESETS." + RecordAttribute.create(element, roots, enums)
-                            .callbackHandler(te) + ";"
+                        RecordAttribute.create(element, roots, enums).callbackHandler(te))
+                    .map(event ->
+                        "        PRESETS." + event + ";"
                     )
                     .toList()
             );
