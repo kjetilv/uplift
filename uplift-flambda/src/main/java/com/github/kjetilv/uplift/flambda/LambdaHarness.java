@@ -8,9 +8,6 @@ import com.github.kjetilv.uplift.lambda.LambdaLooper;
 import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
 @SuppressWarnings("unused")
 public class LambdaHarness implements RuntimeCloseable {
 
@@ -30,7 +27,7 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final ExecutorService serverExec;
 
-    private final LambdaLooper<HttpRequest, HttpResponse<InputStream>> looper;
+    private final LambdaLooper looper;
 
     private final Reqs reqs;
 

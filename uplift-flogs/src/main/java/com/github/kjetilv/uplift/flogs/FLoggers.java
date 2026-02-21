@@ -22,11 +22,6 @@ final class FLoggers {
     }
 
     FLogger create(String name) {
-        return new FLogger(
-            name,
-            printer,
-            emergencyPrinter,
-            settings
-        );
+        return new FLogger(name, printer, emergencyPrinter, settings);
     }
 }

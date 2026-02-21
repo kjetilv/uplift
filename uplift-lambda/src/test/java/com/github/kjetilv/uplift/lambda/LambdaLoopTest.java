@@ -2,14 +2,20 @@ package com.github.kjetilv.uplift.lambda;
 
 import org.junit.jupiter.api.Test;
 
+import javax.net.ssl.SSLSession;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("MagicNumber")
@@ -20,7 +26,7 @@ class LambdaLoopTest {
         Collection<String> responses = new ArrayList<>();
         var failed = new AtomicReference<Throwable>();
         var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
-        LambdaLoopers.looper(
+        var test = LambdaLoopers.looper(
             "test",
             () ->
                 responses.size() > 3
@@ -35,7 +41,7 @@ class LambdaLoopTest {
                 new LambdaResult(
                     200,
                     Collections.emptyMap(),
-                    "OK".getBytes(StandardCharsets.UTF_8),
+                    "OK".getBytes(UTF_8),
                     false
                 ),
             invocation -> {
@@ -44,10 +50,52 @@ class LambdaLoopTest {
                 return HttpRequest.newBuilder(resolve).GET().build();
             },
             invocation -> {
-                var ok = new String(invocation.result().body(), StandardCharsets.UTF_8);
-                responses.add(ok);
+                InputStream ok = new ByteArrayInputStream(invocation.result().body());
+                responses.add(new String(invocation.result().body(), UTF_8));
                 return invocation.completionFuture(
-                    () -> CompletableFuture.completedStage(ok),
+                    () ->
+                        CompletableFuture.supplyAsync(() -> new HttpResponse<InputStream>() {
+
+                            @Override
+                            public int statusCode() {
+                                return 0;
+                            }
+
+                            @Override
+                            public HttpRequest request() {
+                                return null;
+                            }
+
+                            @Override
+                            public Optional<HttpResponse<InputStream>> previousResponse() {
+                                return Optional.empty();
+                            }
+
+                            @Override
+                            public HttpHeaders headers() {
+                                return null;
+                            }
+
+                            @Override
+                            public InputStream body() {
+                                return ok;
+                            }
+
+                            @Override
+                            public Optional<SSLSession> sslSession() {
+                                return Optional.empty();
+                            }
+
+                            @Override
+                            public URI uri() {
+                                return null;
+                            }
+
+                            @Override
+                            public HttpClient.Version version() {
+                                return null;
+                            }
+                        }),
                     Instant::now
                 );
             },
@@ -56,7 +104,8 @@ class LambdaLoopTest {
                 return throwable == null;
             },
             Instant::now
-        ).run();
+        );
+        test.run();
         assertThat(responses.size()).isGreaterThanOrEqualTo(3);
         assertThat(failed.get()).isNull();
     }

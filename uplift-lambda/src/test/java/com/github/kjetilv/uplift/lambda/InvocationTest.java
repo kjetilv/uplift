@@ -2,6 +2,8 @@ package com.github.kjetilv.uplift.lambda;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +12,7 @@ class InvocationTest {
 
     @Test
     void noneIsEmpty() {
-        assertThat(Invocation.none("str", Instant.now()).empty()).isTrue();
+        assertThat(Invocation.none(REQUEST, Instant.now()).empty()).isTrue();
     }
 
     @Test
@@ -20,6 +22,8 @@ class InvocationTest {
 
     @Test
     void fatalReqIsEmpty() {
-        assertThat(Invocation.failed("sdf", Instant.now(), new Throwable()).empty()).isTrue();
+        assertThat(Invocation.failed(REQUEST, Instant.now(), new Throwable()).empty()).isTrue();
     }
+
+    private static final HttpRequest REQUEST = HttpRequest.newBuilder().uri(URI.create("http://foo")).build();
 }

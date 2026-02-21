@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 record HttpInvocationSink(
     Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send,
     Supplier<Instant> time
-) implements InvocationSink<HttpRequest, HttpResponse<InputStream>> {
+) implements InvocationSink {
 
     HttpInvocationSink(
         Function<? super HttpRequest, ? extends CompletionStage<HttpResponse<InputStream>>> send,
@@ -24,8 +24,8 @@ record HttpInvocationSink(
     }
 
     @Override
-    public Invocation<HttpRequest, HttpResponse<InputStream>> receive(
-        Invocation<HttpRequest, HttpResponse<InputStream>> invocation
+    public Invocation receive(
+        Invocation invocation
     ) {
         return invocation.completionFuture(
             () -> send.apply(invocation.completionRequest()),

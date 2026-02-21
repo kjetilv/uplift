@@ -12,10 +12,9 @@ class NativeLambdaPlugin : Plugin<Project> {
             it.apply {
                 val projectName = project.name
                 val target = project.buildSubDirectory("uplift")
-                val osArch = System.getProperty("os.arch")
-                val javaDistUri = URI.create(
-                    "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.0/graalvm-community-jdk-25.0.0_linux-${osArch}_bin.tar.gz"
-                )
+                val osArch = "os.arch".systemProperty
+                val javaDistUri =
+                    "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-${osArch}_bin.tar.gz".asUri
 
                 classPath %= project.classpath.also { files ->
                     logger.info("$this: Classpath: ${files.joinToString(":")}")
@@ -37,4 +36,8 @@ class NativeLambdaPlugin : Plugin<Project> {
             }
         }
     }
+
+    private val String.systemProperty: String get() = System.getProperty(this)!!
+
+    private val String.asUri: URI get() = URI.create(this)
 }

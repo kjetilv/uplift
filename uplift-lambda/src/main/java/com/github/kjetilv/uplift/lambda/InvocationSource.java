@@ -6,11 +6,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 @FunctionalInterface
-public interface InvocationSource<Q, R> extends RuntimeCloseable {
+public interface InvocationSource extends RuntimeCloseable {
 
     @Override
     default void close() {
     }
 
-    Optional<CompletionStage<Invocation<Q, R>>> next();
+    Optional<CompletionStage<Invocation>> next();
 }

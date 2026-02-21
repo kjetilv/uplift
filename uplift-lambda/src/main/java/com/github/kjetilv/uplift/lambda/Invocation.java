@@ -1,5 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
+import java.io.InputStream;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -9,23 +12,23 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
-public record Invocation<Q, R>(
+public record Invocation(
     Instant created,
-    Q request,
+    HttpRequest request,
     Throwable requestFailure,
     boolean aborted,
     Instant updated,
     String id,
     LambdaPayload payload,
     LambdaResult result,
-    Q completionRequest,
-    CompletionStage<R> completionStage,
-    R completionResponse,
+    HttpRequest completionRequest,
+    CompletionStage<HttpResponse<InputStream>> completionStage,
+    HttpResponse<InputStream> completionResponse,
     Throwable responseFailure
 ) {
 
-    public static <Q, R> Invocation<Q, R> none(Q initRequest, Instant created) {
-        return new Invocation<>(
+    public static Invocation none(HttpRequest initRequest, Instant created) {
+        return new Invocation(
             created,
             initRequest,
             null,
@@ -41,8 +44,8 @@ public record Invocation<Q, R>(
         );
     }
 
-    public static <Q, R> Invocation<Q, R> create(String id, Q initRequest, LambdaPayload payload, Instant created) {
-        return new Invocation<>(
+    public static Invocation create(String id, HttpRequest initRequest, LambdaPayload payload, Instant created) {
+        return new Invocation(
             created,
             initRequest,
             null,
@@ -58,16 +61,16 @@ public record Invocation<Q, R>(
         );
     }
 
-    public static <Q, R> Invocation<Q, R> fatal(Throwable exception, Instant created) {
+    public static Invocation fatal(Throwable exception, Instant created) {
         return failed(null, created, exception);
     }
 
-    public static <Q, R> Invocation<Q, R> failed(Q initRequest, Instant created) {
+    public static Invocation failed(HttpRequest initRequest, Instant created) {
         return failed(initRequest, created, null);
     }
 
-    public static <Q, R> Invocation<Q, R> failed(Q initRequest, Instant created, Throwable exception) {
-        return new Invocation<>(
+    public static Invocation failed(HttpRequest initRequest, Instant created, Throwable exception) {
+        return new Invocation(
             created,
             initRequest,
             exception,
@@ -85,16 +88,16 @@ public record Invocation<Q, R>(
 
     public Invocation(
         Instant created,
-        Q request,
+        HttpRequest request,
         Throwable requestFailure,
         boolean aborted,
         Instant updated,
         String id,
         LambdaPayload payload,
         LambdaResult result,
-        Q completionRequest,
-        CompletionStage<R> completionStage,
-        R completionResponse,
+        HttpRequest completionRequest,
+        CompletionStage<HttpResponse<InputStream>> completionStage,
+        HttpResponse<InputStream> completionResponse,
         Throwable responseFailure
     ) {
         this.created = Objects.requireNonNull(created, "created");
@@ -111,12 +114,12 @@ public record Invocation<Q, R>(
         this.responseFailure = responseFailure;
     }
 
-    public Invocation<Q, R> result(
+    public Invocation result(
         Supplier<LambdaResult> result,
         Throwable requestFailure,
         Supplier<Instant> time
     ) {
-        return empty() ? this : new Invocation<>(
+        return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
@@ -132,8 +135,8 @@ public record Invocation<Q, R>(
         );
     }
 
-    Invocation<Q, R> result(Supplier<LambdaResult> result, Supplier<Instant> time) {
-        return empty() ? this : new Invocation<>(
+    Invocation result(Supplier<LambdaResult> result, Supplier<Instant> time) {
+        return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
@@ -159,8 +162,8 @@ public record Invocation<Q, R>(
         return Duration.between(created, updated);
     }
 
-    Invocation<Q, R> completed(Supplier<Q> completionRequest, Supplier<Instant> time) {
-        return empty() ? this : new Invocation<>(
+    Invocation completed(Supplier<HttpRequest> completionRequest, Supplier<Instant> time) {
+        return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
@@ -176,8 +179,11 @@ public record Invocation<Q, R>(
         );
     }
 
-    Invocation<Q, R> completionFuture(Supplier<CompletionStage<R>> completionStage, Supplier<Instant> time) {
-        return new Invocation<>(
+    Invocation completionFuture(
+        Supplier<CompletionStage<HttpResponse<InputStream>>> completionStage,
+        Supplier<Instant> time
+    ) {
+        return new Invocation(
             created,
             request,
             requestFailure,
@@ -193,24 +199,24 @@ public record Invocation<Q, R>(
         );
     }
 
-    CompletionStage<Invocation<Q, R>> completedAt(Supplier<Instant> time) {
+    CompletionStage<Invocation> completedAt(Supplier<Instant> time) {
         return completionStage == null
             ? CompletableFuture.completedFuture(this)
             : completionStage.thenApply(completion ->
-                new Invocation<>(
-                    created,
-                    request,
-                    requestFailure,
-                    aborted,
-                    time.get(),
-                    id,
-                    payload,
-                    result,
-                    completionRequest,
-                    completionStage,
-                    completion,
-                    responseFailure
-                ));
+                                        new Invocation(
+                                            created,
+                                            request,
+                                            requestFailure,
+                                            aborted,
+                                            time.get(),
+                                            id,
+                                            payload,
+                                            result,
+                                            completionRequest,
+                                            completionStage,
+                                            completion,
+                                            responseFailure
+                                        ));
     }
 
     boolean empty() {
@@ -224,7 +230,7 @@ public record Invocation<Q, R>(
                 : empty() ? "empty"
                     : payload + " / " + result + " => " + (
                         responseFailure != null
-                            ? "responseFailure:" + responseFailure
+                        ? "responseFailure:" + responseFailure
                             : completionResponse
                     )
         ) + "]";

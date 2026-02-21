@@ -17,20 +17,14 @@ public final class FLogger implements Logger {
 
     private final String sourceName;
 
-    private final Consumer<String> linesWriter;
+    private final Consumer<String> writer;
 
     private final Consumer<String> emergencyWriter;
 
-    FLogger(
-        String name,
-        Consumer<String> linesWriter,
-        Consumer<String> emergencyWriter,
-        Flogs.Settings settings,
-        String... knownPrefixes
-    ) {
+    FLogger(String name, Consumer<String> writer, Consumer<String> emergencyWriter, Flogs.Settings settings) {
         this.sourceName = requireNonNull(name, "name");
-        this.linesWriter = requireNonNull(linesWriter, "linesWriter");
-        this.emergencyWriter = emergencyWriter == null ? System.out::println : emergencyWriter;
+        this.writer = requireNonNull(writer, "linesWriter");
+        this.emergencyWriter = emergencyWriter == null ? System.err::println : emergencyWriter;
         this.settings = settings;
         var lastDot = this.sourceName.lastIndexOf('.');
         if (lastDot < 0) {
@@ -60,32 +54,36 @@ public final class FLogger implements Logger {
     @Override
     public void log(LogLevel level, String msg, Object... args) {
         if (settings.isEnabled(level)) {
-            write(logLine(LogEntry.create(
-                settings.time().get(),
-                name,
-                shortName,
-                level,
-                msg,
-                args
-            )));
+            var logEntry = entry(level, msg, args);
+            var logLine = logLine(logEntry);
+            write(logLine);
+        }
+    }
+
+    private LogEntry entry(LogLevel level, String msg, Object[] args) {
+        return LogEntry.create(settings.time().get(), name, shortName, level, msg, args);
+    }
+
+    private String logLine(LogEntry logEntry) {
+        try {
+            return settings.formatter().format(logEntry);
+        } catch (Exception e) {
+            STDERR.println("Logging failed: " + logEntry);
+            e.printStackTrace(STDERR);
+            return "FATAL " + logEntry + ": " + e;
         }
     }
 
     private void write(String logLine) {
         try {
-            linesWriter.accept(logLine);
+            writer.accept(logLine);
         } catch (Exception e) {
-            emergencyWriter.accept(logLine);
-        }
-    }
-
-    private String logLine(LogEntry logEntry) {
-        try {
-            return settings.formatter().apply(logEntry);
-        } catch (Exception ex) {
-            STDERR.println("Logging failed: " + logEntry);
-            ex.printStackTrace(STDERR);
-            return "FATAL " + logEntry + ": " + ex;
+            try {
+                emergencyWriter.accept(logLine);
+            } finally {
+                e.printStackTrace(STDERR);
+                System.err.println("Log line could not be written: " + logLine);
+            }
         }
     }
 

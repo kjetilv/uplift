@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.ConnectException;
 import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,21 +20,21 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
+public final class LambdaLooper implements Runnable, RuntimeCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaLooper.class);
 
     private final String name;
 
-    private final InvocationSource<Q, R> source;
+    private final InvocationSource source;
 
     private final LambdaHandler lambdaHandler;
 
-    private final ResponseResolver<Q, R> responseResolver;
+    private final ResponseResolver responseResolver;
 
-    private final InvocationSink<Q, R> sink;
+    private final InvocationSink sink;
 
-    private final ResultLog<R> resultLog;
+    private final ResultLog resultLog;
 
     private final Supplier<Instant> time;
 
@@ -55,11 +56,11 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
 
     LambdaLooper(
         String name,
-        InvocationSource<Q, R> source,
+        InvocationSource source,
         LambdaHandler lambdaHandler,
-        ResponseResolver<Q, R> responseResolver,
-        InvocationSink<Q, R> sink,
-        ResultLog<R> resultLog,
+        ResponseResolver responseResolver,
+        InvocationSink sink,
+        ResultLog resultLog,
         Supplier<Instant> time
     ) {
         this.name = requireNonNull(name, "name");
@@ -75,14 +76,12 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
     @Override
     public void run() {
         log.info("{}: Loop started", name);
-        try (
-            var stages = new Stages<>(source::next);
-            var stream = stages.stages()
-        ) {
-            stream.map(this::toFuture)
+        try {
+            invocationFutures().map(this::run)
                 .peek(future ->
                     future.whenComplete(this::handleOutcome))
-                .forEach(CompletableFuture::join);
+                .forEach(stage ->
+                    stage.toCompletableFuture().join());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to respond", e);
         }
@@ -93,17 +92,22 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         source.close();
     }
 
-    private CompletableFuture<Invocation<Q, R>> toFuture(CompletionStage<Invocation<Q, R>> stage) {
+    private Stream<CompletionStage<Invocation>> invocationFutures() {
+        return Stream.generate(source::next)
+            .takeWhile(Optional::isPresent)
+            .flatMap(Optional::stream);
+    }
+
+    private CompletionStage<Invocation> run(CompletionStage<Invocation> stage) {
         return stage.thenApply(this::executeLambda)
             .thenApply(this::prepareResponse)
             .thenApply(sink::receive)
             .thenCompose(this::markComplete)
             .whenComplete(this::updateStats)
-            .exceptionally(this::fatalInvocation)
-            .toCompletableFuture();
+            .exceptionally(this::fatalInvocation);
     }
 
-    private void handleOutcome(Invocation<Q, R> qr, Throwable throwable) {
+    private void handleOutcome(Invocation qr, Throwable throwable) {
         if (qr.requestFailure() == null && throwable == null) {
             if (lastException.get() != null) {
                 var last = lastException.getAndSet(null);
@@ -129,7 +133,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         }
     }
 
-    private Invocation<Q, R> executeLambda(Invocation<Q, R> invocation) {
+    private Invocation executeLambda(Invocation invocation) {
         try {
             return invocation.result(
                 () ->
@@ -155,29 +159,29 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         }
     }
 
-    private Invocation<Q, R> prepareResponse(Invocation<Q, R> invocation) {
+    private Invocation prepareResponse(Invocation invocation) {
         return invocation.completed(
             () -> responseResolver.resolve(invocation),
             time
         );
     }
 
-    private CompletionStage<Invocation<Q, R>> markComplete(Invocation<Q, R> invocation) {
+    private CompletionStage<Invocation> markComplete(Invocation invocation) {
         return invocation.completedAt(time);
     }
 
-    private void updateStats(Invocation<Q, R> invocation, Throwable throwable) {
+    private void updateStats(Invocation invocation, Throwable throwable) {
         counter(invocation, throwable).increment();
         if (invocation != null) {
             updateTimes(invocation);
         }
     }
 
-    private Invocation<Q, R> fatalInvocation(Throwable exception) {
+    private Invocation fatalInvocation(Throwable exception) {
         return Invocation.fatal(exception, time.get());
     }
 
-    private void updateTimes(Invocation<Q, R> invocation) {
+    private void updateTimes(Invocation invocation) {
         var timeSinceLast = Duration.between(lastTime.get(), invocation.created());
         if (shouldlog(timeSinceLast, initiated.longValue())) {
             log.info("{} completed {}", this, invocation);
@@ -186,7 +190,7 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         lastTime.set(invocation.created());
     }
 
-    private LongAdder counter(Invocation<Q, R> invocation, Throwable throwable) {
+    private LongAdder counter(Invocation invocation, Throwable throwable) {
         return resultLog.ok(invocation, throwable)
             ? completedOk
             : completedFail;
@@ -241,13 +245,13 @@ public final class LambdaLooper<Q, R> implements Runnable, RuntimeCloseable {
         );
     }
 
-    interface ResponseResolver<Q, R> {
+    interface ResponseResolver {
 
-        Q resolve(Invocation<Q, R> invocation);
+        HttpRequest resolve(Invocation invocation);
     }
 
-    interface ResultLog<R> {
+    interface ResultLog {
 
-        boolean ok(Invocation<?, R> invocation, Throwable throwable);
+        boolean ok(Invocation invocation, Throwable throwable);
     }
 }

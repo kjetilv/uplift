@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpResponse<InputStream>> {
+final class HttpInvocationSource implements InvocationSource {
 
     private static final Logger log = LoggerFactory.getLogger(HttpInvocationSource.class);
 
@@ -71,7 +71,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
     }
 
     @Override
-    public Optional<CompletionStage<Invocation<HttpRequest, HttpResponse<InputStream>>>> next() {
+    public Optional<CompletionStage<Invocation>> next() {
         if (closed.get()) {
             return Optional.empty();
         }
@@ -93,7 +93,7 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
             .findFirst();
     }
 
-    private Invocation<HttpRequest, HttpResponse<InputStream>> invocation(
+    private Invocation invocation(
         String id,
         HttpResponse<InputStream> response
     ) {
@@ -106,14 +106,18 @@ final class HttpInvocationSource implements InvocationSource<HttpRequest, HttpRe
         return Invocation.create(id, request, payload, this.time.get());
     }
 
-    private Invocation<HttpRequest, HttpResponse<InputStream>> failedInvocation() {
+    private Invocation failedInvocation() {
         return Invocation.failed(request, this.time.get());
     }
 
-    private Invocation<HttpRequest, HttpResponse<InputStream>> failedInvocation(Throwable throwable) {
-        return closed.get()
-            ? Invocation.none(request, this.time.get())
-            : Invocation.failed(request, this.time.get(), throwable);
+    private Invocation failedInvocation(Throwable throwable) {
+        try {
+            return closed.get()
+                ? Invocation.none(request, this.time.get())
+                : Invocation.failed(request, this.time.get(), throwable);
+        } finally {
+            log.warn("Failed to fetch: {}", request, throwable);
+        }
     }
 
     @Override
