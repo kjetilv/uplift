@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.fq.flows;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.Fqs;
-
-import java.util.stream.Stream;
 
 final class SequentialBatchRunner<T> extends AbstractSequentialFlowRunner<T> {
 

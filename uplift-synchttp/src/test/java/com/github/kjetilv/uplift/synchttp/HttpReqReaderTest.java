@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.read.HttpReqReader;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.rere.ReqHeader;
 import org.junit.jupiter.api.Test;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 import static com.github.kjetilv.uplift.synchttp.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;

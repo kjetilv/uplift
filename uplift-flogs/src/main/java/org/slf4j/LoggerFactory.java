@@ -1,19 +1,11 @@
 package org.slf4j;
 
+import module java.base;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class LoggerFactory {
-
-    static {
-        Flogs.initialize(LogLevel.INFO);
-    }
 
     public static ILoggerFactory getILoggerFactory() {
         return org.slf4j.LoggerFactory::getLogger;
@@ -35,6 +27,10 @@ public final class LoggerFactory {
 
     @SuppressWarnings("StaticCollection")
     private static final Map<String, Logger> LOGGERS = new HashMap<>();
+
+    static {
+        Flogs.initialize(LogLevel.INFO);
+    }
 
     private static Function<String, Logger> newLogger() {
         return name ->

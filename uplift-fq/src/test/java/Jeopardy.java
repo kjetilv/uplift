@@ -1,3 +1,4 @@
+import module java.base;
 import com.github.kjetilv.uplift.fq.flows.FqFlows;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.paths.AccessProviders;
@@ -7,15 +8,6 @@ import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import com.github.kjetilv.uplift.util.SayFiles;
-
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;

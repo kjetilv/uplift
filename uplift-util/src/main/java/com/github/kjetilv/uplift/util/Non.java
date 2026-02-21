@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.util.Collection;
+import module java.base;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public final class Non {

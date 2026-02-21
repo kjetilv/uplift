@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.paths.Reader;
-
-import java.io.InputStream;
-import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 

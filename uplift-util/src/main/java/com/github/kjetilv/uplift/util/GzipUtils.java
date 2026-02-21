@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import module java.base;
 
 import static com.github.kjetilv.uplift.util.Throwables.chain;
 

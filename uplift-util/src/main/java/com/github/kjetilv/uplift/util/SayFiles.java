@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;

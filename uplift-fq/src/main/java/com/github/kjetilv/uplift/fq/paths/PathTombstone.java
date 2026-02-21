@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.SayFiles;
-
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.file.Path;
 
 import static java.nio.file.Files.exists;
 import static java.util.Objects.requireNonNull;

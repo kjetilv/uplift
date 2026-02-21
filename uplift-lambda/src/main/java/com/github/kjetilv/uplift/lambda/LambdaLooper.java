@@ -1,22 +1,13 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.ConnectException;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 

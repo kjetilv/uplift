@@ -1,19 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.io.CleanupMode.ON_SUCCESS;
@@ -38,7 +30,8 @@ class PathFqChannelBytesTest {
                         throw new RuntimeException(e);
                     }
                 },
-                () -> {},
+                () -> {
+                },
                 new BytesStringFio(),
                 new PathTombstone(fooTxt.resolve("done"))
             )
@@ -119,7 +112,8 @@ class PathFqChannelBytesTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.reader(foo).stream();
+                var fqs = pfq.reader(foo)
+                    .stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
         );

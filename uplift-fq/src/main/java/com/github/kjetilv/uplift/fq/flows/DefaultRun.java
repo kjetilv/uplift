@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.fq.flows;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.function.LongSupplier;
+import module java.base;
 
 import static java.util.Objects.requireNonNull;
 

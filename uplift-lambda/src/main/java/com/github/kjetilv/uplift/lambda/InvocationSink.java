@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.util.function.Consumer;
+import module java.base;
 
 @FunctionalInterface
 public interface InvocationSink extends Consumer<Invocation> {

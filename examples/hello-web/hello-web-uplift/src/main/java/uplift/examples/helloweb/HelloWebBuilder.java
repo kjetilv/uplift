@@ -1,12 +1,10 @@
 package uplift.examples.helloweb;
 
+import module java.base;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.lambda.Runtime;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 import static software.amazon.awscdk.services.lambda.Architecture.ARM_64;
 import static software.amazon.awscdk.services.lambda.HttpMethod.GET;

@@ -1,16 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.Sleeper;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.function.BiConsumer;
-import java.util.zip.GZIPInputStream;
 
 import static com.github.kjetilv.uplift.util.GzipUtils.*;
 import static com.github.kjetilv.uplift.util.SayFiles.*;

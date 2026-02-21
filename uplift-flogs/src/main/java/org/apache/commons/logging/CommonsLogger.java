@@ -1,9 +1,8 @@
 package org.apache.commons.logging;
 
+import module java.base;
 import com.github.kjetilv.uplift.flogs.LogLevel;
 import com.github.kjetilv.uplift.flogs.Logger;
-
-import java.util.Objects;
 
 class CommonsLogger implements Log {
 

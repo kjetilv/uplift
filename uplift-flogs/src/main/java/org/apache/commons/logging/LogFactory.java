@@ -1,12 +1,8 @@
 package org.apache.commons.logging;
 
+import module java.base;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class LogFactory {

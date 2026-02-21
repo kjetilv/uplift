@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.s3.util;
 
-import java.util.Locale;
+import module java.base;
 
 /// Utilities for encoding and decoding binary data to and from different forms.
 public final class BinaryUtils {
@@ -8,11 +8,10 @@ public final class BinaryUtils {
     /// Converts byte data to a Hex-encoded string.
     ///
     /// @param data data to hex encode.
-    ///
     /// @return hex-encoded string.
     public static String toHex(byte[] data) {
         var sb = new StringBuilder(data.length * 2);
-        for (var datum: data) {
+        for (var datum : data) {
             var hex = Integer.toHexString(datum);
             if (hex.length() == 1) {
                 // Append leading zero.

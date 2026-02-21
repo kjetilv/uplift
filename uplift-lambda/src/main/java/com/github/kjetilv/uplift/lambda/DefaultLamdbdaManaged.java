@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.io.InputStream;
-import java.net.URI;
+import module java.base;
+
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
 import static java.util.Objects.requireNonNull;

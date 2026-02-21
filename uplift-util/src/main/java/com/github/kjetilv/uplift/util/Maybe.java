@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.util.Optional;
+import module java.base;
 
 @SuppressWarnings({"unchecked", "OptionalUsedAsFieldOrParameterType"})
 public sealed interface Maybe<T> {

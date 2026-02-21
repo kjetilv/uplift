@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
+import module java.base;
 
 import static java.text.MessageFormat.format;
 

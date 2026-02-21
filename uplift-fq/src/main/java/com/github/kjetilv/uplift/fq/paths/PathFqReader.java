@@ -1,16 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.fq.FqReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 

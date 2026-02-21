@@ -1,13 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.flows.Name;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,7 +58,8 @@ final class Chains {
             .mapToObj(String::valueOf)
             .collect(Collectors.joining("-"));
 
-        assertThat(pathFqs.reader(Name.of("foo-G" + (chainLength - 1) + ".txt")).stream())
+        assertThat(pathFqs.reader(Name.of("foo-G" + (chainLength - 1) + ".txt"))
+            .stream())
             .isNotEmpty()
             .allSatisfy(l ->
                 assertThat(l).isEqualTo(line));

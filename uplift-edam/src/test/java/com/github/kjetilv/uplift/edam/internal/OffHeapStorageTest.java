@@ -1,22 +1,10 @@
 package com.github.kjetilv.uplift.edam.internal;
 
+import module java.base;
 import com.github.kjetilv.uplift.edam.Window;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
-import com.github.kjetilv.uplift.hash.HashKind;
 import org.junit.jupiter.api.Test;
-
-import java.lang.foreign.Arena;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static org.junit.jupiter.api.Assertions.assertEquals;

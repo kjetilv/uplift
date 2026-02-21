@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.read;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
-
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemorySegment;
 
 /// A simple pool of [memory segments][MemorySegment].
 public final class Segments implements RuntimeCloseable {

@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public record CorsSettings(

@@ -1,21 +1,15 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import module java.base;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.lang.foreign.MemorySegment;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.ReadableByteChannel;
-
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class Utils {
-
-    private static final VectorSpecies<Byte> BYTE_SPECIES = VectorSpecies.ofPreferred(byte.class);
 
     public static final int BYTE_VECTOR_LENGTH = BYTE_SPECIES.length();
 
@@ -78,6 +72,8 @@ public final class Utils {
 
     private Utils() {
     }
+
+    private static final VectorSpecies<Byte> BYTE_SPECIES = VectorSpecies.ofPreferred(byte.class);
 
     private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 

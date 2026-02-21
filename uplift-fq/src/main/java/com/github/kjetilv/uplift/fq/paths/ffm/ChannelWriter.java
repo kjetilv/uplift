@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.paths.Writer;
-
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 

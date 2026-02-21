@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.fq.io;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.Fio;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public record BytesStringFio(Charset cs) implements Fio<byte[], String> {
 

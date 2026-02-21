@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.fq.flows;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import module java.base;
 
 final class Flows {
 

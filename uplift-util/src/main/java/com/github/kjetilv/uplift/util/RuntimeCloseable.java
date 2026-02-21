@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.io.Closeable;
+import module java.base;
 
 public interface RuntimeCloseable extends Closeable {
 

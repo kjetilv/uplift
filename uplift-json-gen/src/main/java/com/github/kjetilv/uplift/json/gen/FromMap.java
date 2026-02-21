@@ -1,11 +1,8 @@
 package com.github.kjetilv.uplift.json.gen;
 
+import module java.base;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 final class FromMap implements Consumer<Object> {
 

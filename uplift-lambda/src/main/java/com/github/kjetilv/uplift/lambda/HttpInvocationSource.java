@@ -1,21 +1,11 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -85,14 +75,6 @@ final class HttpInvocationSource implements InvocationSource {
         return Optional.of(stage);
     }
 
-    private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
-        return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id")
-            .stream()
-            .filter(Objects::nonNull)
-            .filter(value -> !value.isBlank())
-            .findFirst();
-    }
-
     private Invocation invocation(
         String id,
         HttpResponse<InputStream> response
@@ -118,6 +100,14 @@ final class HttpInvocationSource implements InvocationSource {
         } finally {
             log.warn("Failed to fetch: {}", request, throwable);
         }
+    }
+
+    private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {
+        return pollResponse.headers().allValues("Lambda-Runtime-Aws-Request-Id")
+            .stream()
+            .filter(Objects::nonNull)
+            .filter(value -> !value.isBlank())
+            .findFirst();
     }
 
     @Override

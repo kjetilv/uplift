@@ -1,12 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.io.ByteArrayInputStream;
-import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;

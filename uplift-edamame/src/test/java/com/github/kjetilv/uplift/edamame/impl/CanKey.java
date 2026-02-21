@@ -1,10 +1,13 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import module java.base;
 
 @SuppressWarnings("NullableProblems")
 public record CanKey(String key) implements Comparable<CanKey> {
+
+    public static CanKey get(String key) {
+        return canon.computeIfAbsent(key, CanKey::new);
+    }
 
     @Override
     public int compareTo(CanKey o) {
@@ -12,10 +15,6 @@ public record CanKey(String key) implements Comparable<CanKey> {
     }
 
     private static final Map<String, CanKey> canon = new ConcurrentHashMap<>();
-
-    public static CanKey get(String key) {
-        return canon.computeIfAbsent(key, CanKey::new);
-    }
 
     @Override
     public String toString() {

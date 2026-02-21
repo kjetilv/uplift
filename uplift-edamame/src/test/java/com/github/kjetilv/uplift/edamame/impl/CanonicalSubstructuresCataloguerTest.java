@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
 import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
@@ -9,15 +10,9 @@ import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 class CanonicalSubstructuresCataloguerTest {
 
     @Test

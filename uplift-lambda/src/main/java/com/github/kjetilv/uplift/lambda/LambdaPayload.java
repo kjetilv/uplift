@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.util.Maps;
-
-import java.io.InputStream;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
 
@@ -26,18 +22,6 @@ public record LambdaPayload(
 
     public static LambdaPayload parse(InputStream json) {
         return payload(json, RequestOutRW.INSTANCE.streamReader().read(json));
-    }
-
-    private static LambdaPayload payload(Object json, RequestOut req) {
-        var version = req.version();
-        if (version == null) {
-            return lambda10(req);
-        }
-        return switch (version) {
-            case "1.0" -> lambda10(req);
-            case "2.0" -> lambda20(req);
-            default -> throw new IllegalArgumentException("Unknown version: " + json);
-        };
     }
 
     public boolean isPost() {
@@ -91,20 +75,24 @@ public record LambdaPayload(
         return body;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + method + " " + path +
-               (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
-               (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
-               "]]";
-    }
-
     @SuppressWarnings("SameParameterValue")
     private boolean isMethod(String method) {
         return method != null && method.equalsIgnoreCase(this.method);
     }
 
     private static final String BLANK = "";
+
+    private static LambdaPayload payload(Object json, RequestOut req) {
+        var version = req.version();
+        if (version == null) {
+            return lambda10(req);
+        }
+        return switch (version) {
+            case "1.0" -> lambda10(req);
+            case "2.0" -> lambda20(req);
+            default -> throw new IllegalArgumentException("Unknown version: " + json);
+        };
+    }
 
     private static LambdaPayload lambda10(RequestOut req) {
         return new LambdaPayload(
@@ -146,5 +134,13 @@ public record LambdaPayload(
 
     private static String base64(String bodyString) {
         return BytesIO.stringFromBase64(bodyString);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + method + " " + path +
+               (queryParameters == null || queryParameters.isEmpty() ? BLANK : "﹖" + queryParameters) +
+               (body == null || body.isBlank() ? BLANK : " ⨁ " + printBody(body)) +
+               "]]";
     }
 }

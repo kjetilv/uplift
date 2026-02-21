@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.lambda.RequestOut;
@@ -12,8 +13,6 @@ import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 record FlambdaHandler(
     FlambdaSettings settings,

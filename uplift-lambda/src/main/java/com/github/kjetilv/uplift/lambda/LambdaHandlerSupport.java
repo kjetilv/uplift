@@ -1,12 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.lambda.LambdaResult.status;
 import static java.util.Map.entry;

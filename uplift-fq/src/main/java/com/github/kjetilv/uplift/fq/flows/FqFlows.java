@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.fq.flows;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.Fqs;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -65,7 +62,7 @@ public interface FqFlows<T> {
         default Processor<T> compose(Processor<T> previous) {
             return items -> process(previous.process(items));
         }
-        
+
         default Processor<T> andThen(Processor<T> next) {
             return items -> next.process(process(items));
         }

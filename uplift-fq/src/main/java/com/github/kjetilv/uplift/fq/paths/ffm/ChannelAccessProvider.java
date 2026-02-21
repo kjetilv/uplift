@@ -1,17 +1,11 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.io.ChannelIO;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import jdk.incubator.vector.VectorSpecies;
-
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemorySegment;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.util.SayFiles.sizeOf;
 import static java.util.Objects.requireNonNull;

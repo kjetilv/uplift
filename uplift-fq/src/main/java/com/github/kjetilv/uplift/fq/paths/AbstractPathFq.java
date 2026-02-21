@@ -1,11 +1,8 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.Fio;
 import com.github.kjetilv.uplift.util.SayFiles;
-
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 import static java.nio.file.Files.delete;
 import static java.util.Objects.requireNonNull;

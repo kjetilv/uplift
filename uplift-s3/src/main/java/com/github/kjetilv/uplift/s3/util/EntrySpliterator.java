@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.s3.util;
 
-import java.util.Map;
-import java.util.Spliterators;
-import java.util.function.Consumer;
+import module java.base;
 
 final class EntrySpliterator extends Spliterators.AbstractSpliterator<Map.Entry<String, String>> {
 

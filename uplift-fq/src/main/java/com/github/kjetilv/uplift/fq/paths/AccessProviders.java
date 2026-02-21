@@ -1,17 +1,9 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelAccessProvider;
-
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 public final class AccessProviders {
 

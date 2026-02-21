@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.kjetilv.uplift.edamame.impl.InternalFactory.create;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,15 +37,16 @@ public class MultiThreadedTest {
                         comparisons++;
                         var cake = map(i, j);
                         assertEquals(cake.keySet(), map.keySet());
-                        cake.keySet().forEach(key -> {
-                            var cakeValue = (Map<CanKey, ?>) cake.get(key);
-                            var mapValue = (Map<CanKey, ?>) map.get(key);
-                            assertEquals(
-                                new TreeMap<>(cakeValue).toString(),
-                                new TreeMap<>(mapValue).toString(),
-                                key::toString
-                            );
-                        });
+                        cake.keySet()
+                            .forEach(key -> {
+                                var cakeValue = (Map<CanKey, ?>) cake.get(key);
+                                var mapValue = (Map<CanKey, ?>) map.get(key);
+                                assertEquals(
+                                    new TreeMap<>(cakeValue).toString(),
+                                    new TreeMap<>(mapValue).toString(),
+                                    key::toString
+                                );
+                            });
                     }
                 }
             }

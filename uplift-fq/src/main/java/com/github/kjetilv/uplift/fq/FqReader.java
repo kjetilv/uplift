@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.fq;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.util.stream.Gatherers.windowFixed;
 

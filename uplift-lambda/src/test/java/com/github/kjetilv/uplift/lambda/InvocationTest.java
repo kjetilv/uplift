@@ -1,10 +1,9 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.net.http.HttpRequest;
-import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,8 +1,7 @@
 package org.slf4j;
 
+import module java.base;
 import org.slf4j.event.Level;
-
-import java.util.Objects;
 
 import static com.github.kjetilv.uplift.flogs.LogLevel.*;
 

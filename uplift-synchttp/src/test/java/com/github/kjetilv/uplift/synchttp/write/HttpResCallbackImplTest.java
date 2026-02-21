@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
+import module java.base;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,11 +19,11 @@ class HttpResCallbackImplTest {
             .nobody();
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-               HTTP/1.1 200\r
-               foo: bar\r
-               content-length: 0\r
-               \r
-               """
+                HTTP/1.1 200\r
+                foo: bar\r
+                content-length: 0\r
+                \r
+                """
         );
     }
 

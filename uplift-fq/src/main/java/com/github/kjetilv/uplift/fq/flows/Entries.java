@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.fq.flows;
 
-import java.util.List;
-import java.util.function.Function;
+import module java.base;
 
 public record Entries<T>(Name name, List<T> items) {
 

@@ -1,21 +1,8 @@
 package com.github.kjetilv.uplift.json.mame;
 
-import com.github.kjetilv.uplift.json.Callbacks;
+import module java.base;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.JsonSession;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 

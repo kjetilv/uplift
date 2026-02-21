@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.partitions;
 
-import java.util.List;
+import module java.base;
 
 public record Partitioneds(List<Partitioned> partitiond) {
 

@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.fq.paths.ffm;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.io.LinesReader;
 import com.github.kjetilv.uplift.fq.paths.Reader;
-
-import java.io.RandomAccessFile;
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemorySegment;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 

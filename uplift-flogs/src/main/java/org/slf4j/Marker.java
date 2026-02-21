@@ -1,6 +1,6 @@
 package org.slf4j;
 
-import java.util.Iterator;
+import module java.base;
 
 @SuppressWarnings("unused")
 public interface Marker {

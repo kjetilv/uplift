@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import module java.base;
 
 final class Params {
 

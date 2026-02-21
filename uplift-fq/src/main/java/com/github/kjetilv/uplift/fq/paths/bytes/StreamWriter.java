@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.paths.Writer;
-
-import java.io.OutputStream;
 
 public record StreamWriter(OutputStream outputStream, byte separator) implements Writer<byte[]> {
 

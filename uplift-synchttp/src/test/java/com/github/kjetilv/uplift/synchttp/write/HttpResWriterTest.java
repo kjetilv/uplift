@@ -1,15 +1,9 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.read.Segments;
-import com.github.kjetilv.uplift.synchttp.rere.ResHeader;
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
+import com.github.kjetilv.uplift.synchttp.rere.ResHeader;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;

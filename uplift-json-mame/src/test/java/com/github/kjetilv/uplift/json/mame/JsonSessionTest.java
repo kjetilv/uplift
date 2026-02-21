@@ -1,14 +1,10 @@
 package com.github.kjetilv.uplift.json.mame;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -140,13 +136,14 @@ class JsonSessionTest {
         var json =
             //language=json
             """
-            {
-              "zip": { "foo": "bar" },
-              "zot": { "foo": "bar" }
-            }
-            """;
+                {
+                  "zip": { "foo": "bar" },
+                  "zot": { "foo": "bar" }
+                }
+                """;
         Json.instance().parse(json, jsonSession.callbacks(reference::set));
-        var sharedSessionMap = Json.instance(jsonSession).map(json);
+        var sharedSessionMap = Json.instance(jsonSession)
+            .map(json);
         assertThat(reference).hasValueSatisfying(value ->
             assertThat(value).asInstanceOf(InstanceOfAssertFactories.MAP)
                 .satisfies(map ->

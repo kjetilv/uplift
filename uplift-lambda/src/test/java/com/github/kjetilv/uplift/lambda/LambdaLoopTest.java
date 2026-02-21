@@ -1,19 +1,12 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import org.junit.jupiter.api.Test;
 
-import javax.net.ssl.SSLSession;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;

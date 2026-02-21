@@ -1,16 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
-
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 final class HttpResCallbackImpl implements
     HttpResponseCallback,

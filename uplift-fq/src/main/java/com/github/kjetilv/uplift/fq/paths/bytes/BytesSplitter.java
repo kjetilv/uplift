@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths.bytes;
 
-import java.io.InputStream;
+import module java.base;
 
 public final class BytesSplitter {
 

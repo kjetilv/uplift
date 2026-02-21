@@ -1,18 +1,10 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.util.SayFiles;
 import com.github.kjetilv.uplift.util.Sleeper;
-
-import java.nio.file.Path;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static com.github.kjetilv.uplift.util.SayFiles.couldCreate;
 import static java.nio.file.Files.*;

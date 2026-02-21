@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizer;
@@ -9,15 +10,6 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 import org.junit.jupiter.api.Test;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.*;
-import java.time.chrono.MinguoEra;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.github.kjetilv.uplift.edamame.impl.InternalFactory.create;
 import static java.util.Map.entry;

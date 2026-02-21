@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.io.Closeable;
-import java.nio.file.*;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
 import static java.nio.file.StandardWatchEventKinds.*;

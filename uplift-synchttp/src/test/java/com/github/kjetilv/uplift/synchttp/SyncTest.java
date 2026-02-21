@@ -1,14 +1,13 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import module java.base;
 import jdk.incubator.vector.ByteVector;
-import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorSpecies;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -34,7 +33,6 @@ public class SyncTest {
         assertThat(mask1).hasToString("Mask[...T...T...TTTT.]");
         assertThat(mark2).hasToString("Mask[...........T....]");
     }
-
 
     @Test
     void testHttpCallbacks() {

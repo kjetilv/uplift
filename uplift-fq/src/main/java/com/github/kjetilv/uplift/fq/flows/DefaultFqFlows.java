@@ -1,22 +1,11 @@
 package com.github.kjetilv.uplift.fq.flows;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
-import java.io.Closeable;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.StructuredTaskScope.Configuration;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.LongSupplier;
-import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.fq.flows.DefaultFqFlows.Phase.*;
 import static java.util.Objects.requireNonNull;

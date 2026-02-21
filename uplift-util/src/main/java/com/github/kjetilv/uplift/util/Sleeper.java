@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.util;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.LongConsumer;
-import java.util.function.Supplier;
+import module java.base;
 
 public record Sleeper(State state, LongConsumer doze, Consumer<State> onMax) {
 

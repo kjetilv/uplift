@@ -1,8 +1,6 @@
 package org.slf4j;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Objects;
+import module java.base;
 
 public record MarkerImpl(String name) implements Marker {
 

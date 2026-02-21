@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.fq.flows;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import module java.base;
 
 public record FlowRun<T>(Flow<T> flow, Instant start, Instant end) {
 

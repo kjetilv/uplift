@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import org.junit.jupiter.api.Test;
-
-import java.lang.foreign.MemorySegment;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

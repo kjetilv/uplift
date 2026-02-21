@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.edam.patterns;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.util.List;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static java.time.Instant.EPOCH;
