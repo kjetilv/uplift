@@ -11,8 +11,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class Utils {
 
-    public static final int BYTE_VECTOR_LENGTH = BYTE_SPECIES.length();
-
     public static String string(MemorySegment memorySegment, long offset, long length) {
         return new String(
             memorySegment.asSlice(offset, length).toArray(JAVA_BYTE),
@@ -74,6 +72,8 @@ public final class Utils {
     }
 
     private static final VectorSpecies<Byte> BYTE_SPECIES = VectorSpecies.ofPreferred(byte.class);
+
+    private static final int BYTE_VECTOR_LENGTH = BYTE_SPECIES.length();
 
     private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 
