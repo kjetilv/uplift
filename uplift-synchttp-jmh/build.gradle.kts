@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":uplift-flogs"))
     implementation(project(":uplift-kernel"))
 
-    implementation("io.netty:netty-all:4.2.5.Final")
+    implementation("io.netty:netty-all:4.2.10.Final")
 
     implementation("org.openjdk.jmh:jmh-core:1.37")
     implementation("org.openjdk.jmh:jmh-generator-annprocess:1.37")

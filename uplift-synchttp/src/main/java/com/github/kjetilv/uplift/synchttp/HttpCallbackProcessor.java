@@ -56,6 +56,7 @@ public final class HttpCallbackProcessor implements Server.Processor {
             new HttpResWriter(out).write(new HttpRes(500));
             return false;
         } finally {
+            resSegments.release(pooled);
             httpReq.close();
         }
     }
