@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.fq.paths.Writer;
 import com.github.kjetilv.uplift.util.Sleeper;
 
 import static com.github.kjetilv.uplift.util.GzipUtils.*;
-import static com.github.kjetilv.uplift.util.SayFiles.*;
+import static com.github.kjetilv.uplift.util.SafeFiles.*;
 
 public final class StreamAccessProvider implements AccessProvider<Path, byte[]> {
 

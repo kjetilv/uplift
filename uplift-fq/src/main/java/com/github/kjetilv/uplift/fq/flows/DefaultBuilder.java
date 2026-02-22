@@ -44,6 +44,7 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     @Override
     public FqFlows.Builder<T> timeout(Duration timeout) {
+        requireNonNull(timeout, "timeout");
         if (this.timeout != null) {
             throw new IllegalStateException("Timeout already set");
         }
@@ -53,6 +54,7 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     @Override
     public FqFlows.Builder<T> onException(FqFlows.ErrorHandler<T> errorHandler) {
+        requireNonNull(errorHandler, "errorHandler");
         if (handler != null) {
             throw new IllegalStateException("Error handler already set");
         }
@@ -74,10 +76,12 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
 
     @Override
     public With<T> then(Name to) {
+        requireNonNull(to, "to");
         return from(flows.isEmpty() ? name : flows.getLast().to(), to);
     }
 
     public FqFlows.Builder.To<T> from(Name from) {
+        requireNonNull(name, "name");
         return to ->
             process -> {
                 var flow = new Flow<>(from, to, process);
@@ -102,6 +106,7 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
     }
 
     private Flow<T> validated(Flow<T> flow) {
+        requireNonNull(flow, "flow");
         var combined = Stream.concat(this.flows.stream(), Stream.of(flow))
             .toList();
         Flows.validate(combined);

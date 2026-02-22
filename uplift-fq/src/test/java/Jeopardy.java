@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.fq.paths.PathFqs;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
-import com.github.kjetilv.uplift.util.SayFiles;
+import com.github.kjetilv.uplift.util.SafeFiles;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
@@ -95,10 +95,6 @@ private FqFlows.Processor<Map<String, Object>> process(
     return items -> items.map(process);
 }
 
-private static Map<String, Object> roundtrip(Map<String, Object> map) {
-    return Json.INSTANCE.map(Json.INSTANCE.write(map));
-}
-
 private Map<String, Object> uppercaseAnswer(Map<String, Object> item) {
     var answer = item.get("answer").toString();
     var kvMap = new HashMap<>(item);
@@ -163,17 +159,27 @@ private String downcase(String str) {
 
 private static final Pattern WS = Pattern.compile("\\s+");
 
+private static final Pattern DOLLAR = Pattern.compile("\\$");
+
+private static Map<String, Object> roundtrip(Map<String, Object> map) {
+    return Json.INSTANCE.map(Json.INSTANCE.write(map));
+}
+
 private static int computeValue(String val) {
-    var cleaned =
-        val.replaceAll("\\$", "").replaceAll(",", "");
-    return Integer.parseInt(cleaned);
+    return Integer.parseInt(dollarSigns(val)
+        .replaceAll("")
+        .replace(",", ""));
+}
+
+private static Matcher dollarSigns(String val) {
+    return DOLLAR.matcher(val);
 }
 
 private static void setupStartFile(Path workDir, Path downloads, Path startFile, int size) {
     try {
         if (exists(workDir)) {
             try (var walk = walk(workDir).sorted(Comparator.reverseOrder())) {
-                walk.forEach(SayFiles::delete);
+                walk.forEach(SafeFiles::delete);
             }
         }
         createDirectories(workDir);
@@ -188,7 +194,7 @@ private static void setupStartFile(Path workDir, Path downloads, Path startFile,
                 );
             } else {
                 try (
-                    var writer = SayFiles.newBufferedWriter(target);
+                    var writer = SafeFiles.newBufferedWriter(target);
                     var lines = lines(source)
                 ) {
                     lines.limit(size)

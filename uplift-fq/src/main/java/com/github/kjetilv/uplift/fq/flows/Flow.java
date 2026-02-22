@@ -28,11 +28,11 @@ public record Flow<T>(
         var procString = processor.toString();
         var lambdaIndex = procString.indexOf("$$Lambda/");
         if (lambdaIndex < 0) {
-            return  procString;
+            return procString;
         }
         var lambdaPrefix = procString.substring(0, lambdaIndex);
         var dotIndex = lambdaPrefix.lastIndexOf(".");
-        return  lambdaPrefix.substring(dotIndex + 1) + "𝛌";
+        return lambdaPrefix.substring(dotIndex + 1) + "𝛌";
     }
 
     @Override

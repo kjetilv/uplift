@@ -6,7 +6,8 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
-public final class SayFiles {
+@SuppressWarnings("unused")
+public final class SafeFiles {
 
     public static OutputStream newFileOutputStream(String path) {
         return newFileOutputStream(Paths.get(path));
@@ -84,6 +85,6 @@ public final class SayFiles {
         }
     }
 
-    private SayFiles() {
+    private SafeFiles() {
     }
 }

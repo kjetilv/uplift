@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.Fio;
-import com.github.kjetilv.uplift.util.SayFiles;
+import com.github.kjetilv.uplift.util.SafeFiles;
 
 import static java.nio.file.Files.delete;
 import static java.util.Objects.requireNonNull;
@@ -56,7 +56,7 @@ abstract class AbstractPathFq<I, T> {
 
     final Stream<Path> sortedFiles() {
         try {
-            var list = SayFiles.list(directory());
+            var list = SafeFiles.list(directory());
             return list.sorted(BY_FILE_NAME);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to list files in " + directory(), e);

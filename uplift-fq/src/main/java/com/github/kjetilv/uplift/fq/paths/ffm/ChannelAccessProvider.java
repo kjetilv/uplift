@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;
 import jdk.incubator.vector.VectorSpecies;
 
-import static com.github.kjetilv.uplift.util.SayFiles.sizeOf;
+import static com.github.kjetilv.uplift.util.SafeFiles.sizeOf;
 import static java.util.Objects.requireNonNull;
 
 public final class ChannelAccessProvider<T>

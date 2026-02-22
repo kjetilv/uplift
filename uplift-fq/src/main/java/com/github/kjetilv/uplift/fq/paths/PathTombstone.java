@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.fq.paths;
 
 import module java.base;
-import com.github.kjetilv.uplift.util.SayFiles;
+import com.github.kjetilv.uplift.util.SafeFiles;
 
 import static java.nio.file.Files.exists;
 import static java.util.Objects.requireNonNull;
@@ -36,7 +36,7 @@ public record PathTombstone(Path value) implements Tombstone<Path> {
 
     private OutputStream tombstoneOutputStream() {
         try {
-            return SayFiles.newFileOutputStream(value);
+            return SafeFiles.newFileOutputStream(value);
         } catch (Exception e) {
             throw new IllegalStateException("Could not write tombstone", e);
         }

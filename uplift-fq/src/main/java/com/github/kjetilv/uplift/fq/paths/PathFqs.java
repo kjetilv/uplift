@@ -3,10 +3,10 @@ package com.github.kjetilv.uplift.fq.paths;
 import module java.base;
 import com.github.kjetilv.uplift.fq.*;
 import com.github.kjetilv.uplift.fq.flows.Name;
-import com.github.kjetilv.uplift.util.SayFiles;
+import com.github.kjetilv.uplift.util.SafeFiles;
 import com.github.kjetilv.uplift.util.Sleeper;
 
-import static com.github.kjetilv.uplift.util.SayFiles.couldCreate;
+import static com.github.kjetilv.uplift.util.SafeFiles.couldCreate;
 import static java.nio.file.Files.*;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -48,7 +48,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
     static Path ensureWritable(Path directory) {
         requireNonNull(directory, "directory");
 
-        if (SayFiles.nonDirectory(directory)) {
+        if (SafeFiles.nonDirectory(directory)) {
             throw new IllegalArgumentException("Path was not a directory: " + directory);
         }
 
