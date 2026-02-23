@@ -1,26 +1,17 @@
 package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
-import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
 /// A simple pool of [memory segments][MemorySegment].
-public final class Segments implements RuntimeCloseable {
+public final class Segments  {
 
     private final long baseSize;
-
-    private final Arena arena;
-
-    private final boolean close;
 
     private final MemorySegment memorySegment;
 
     private final boolean[] allocations;
 
     private final long basePoolSize;
-
-    public Segments() {
-        this(null, 0L, 0L);
-    }
 
     public Segments(Arena arena) {
         this(arena, 0L, 0);
@@ -33,14 +24,8 @@ public final class Segments implements RuntimeCloseable {
             throw new IllegalArgumentException("Base pool size must be multiple of base size");
         }
 
-        if (arena == null) {
-            this.arena = Arena.ofAuto();
-            this.close = false;
-        } else {
-            this.arena = arena;
-            this.close = true;
-        }
-        this.memorySegment = this.arena.allocate(this.basePoolSize);
+        this.memorySegment = Objects.requireNonNull(arena, "arena")
+            .allocate(this.basePoolSize);
         this.allocations = new boolean[(int) (this.basePoolSize / this.baseSize)];
     }
 
@@ -64,16 +49,10 @@ public final class Segments implements RuntimeCloseable {
         }
     }
 
-    @Override
-    public void close() {
-        if (close) {
-            arena.close();
-        }
-    }
-
-    /// 512 bytes min
+    /// 2KiB min
     private static final int DEFAULT_BASE_SIZE = 1 << 12;
 
+    /// 16MiB
     private static final int DEFAULT_BASE_POOL_SIZE = 1 << 24;
 
     public record Pooled(MemorySegment segment, long size, int index) {

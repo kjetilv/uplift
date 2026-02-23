@@ -22,14 +22,20 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     private final Segments resSegments;
 
+    private final boolean close;
+
+    private final Arena arena;
+
     public HttpCallbackProcessor(HttpHandler httpHandler) {
-        this(httpHandler, null);
+        this(httpHandler, null, false);
     }
 
-    public HttpCallbackProcessor(HttpHandler httpHandler, Arena arena) {
+    public HttpCallbackProcessor(HttpHandler httpHandler, Arena arena, boolean close) {
         this.httpHandler = requireNonNull(httpHandler, "server");
-        this.reqSegments = new Segments(arena);
-        this.resSegments = new Segments(arena);
+        this.arena = arena == null ? Arena.ofAuto() : arena;
+        this.close = arena != null && close;
+        this.reqSegments = new Segments(this.arena);
+        this.resSegments = new Segments(this.arena);
     }
 
     @Override
@@ -63,8 +69,9 @@ public final class HttpCallbackProcessor implements Server.Processor {
 
     @Override
     public void close() {
-        reqSegments.close();
-        resSegments.close();
+        if (close) {
+            arena.close();
+        }
     }
 
     private static final MemorySegment CONNECTION =

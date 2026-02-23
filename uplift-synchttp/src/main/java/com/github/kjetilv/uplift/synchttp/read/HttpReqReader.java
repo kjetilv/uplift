@@ -10,7 +10,7 @@ import com.github.kjetilv.uplift.synchttp.rere.ReqLine;
 public final class HttpReqReader {
 
     public static HttpReqReader defaultReader() {
-        return new HttpReqReader(new Segments());
+        return new HttpReqReader(new Segments(Arena.ofAuto()));
     }
 
     private int lineStart;
@@ -254,13 +254,12 @@ public final class HttpReqReader {
 
     private void fillBuffer(ReadableByteChannel channel) {
         while (available < bufferSize && !done) {
-            switch (readIntoBuffer(channel)) {
-                case -1 -> done = true;
-                case int read -> {
-                    available += read;
-                    return;
-                }
+            int read = readIntoBuffer(channel);
+            if (read >= 0) {
+                available += read;
+                return;
             }
+            done = true;
         }
     }
 
