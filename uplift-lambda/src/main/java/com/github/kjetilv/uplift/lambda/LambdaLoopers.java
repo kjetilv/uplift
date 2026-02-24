@@ -18,15 +18,7 @@ final class LambdaLoopers {
         InvocationSink sink,
         Supplier<Instant> time
     ) {
-        return looper(
-            name,
-            source,
-            handler,
-            toResponsePost(),
-            sink,
-            resultLog(),
-            time
-        );
+        return looper(name, source, handler, toResponsePost(), sink, resultLog(), time);
     }
 
     static LambdaLooper looper(
@@ -38,15 +30,7 @@ final class LambdaLoopers {
         LambdaLooper.ResultLog resultLog,
         Supplier<Instant> time
     ) {
-        return new LambdaLooper(
-            name,
-            source,
-            handler,
-            resolver,
-            sink,
-            resultLog,
-            time
-        );
+        return new LambdaLooper(name, source, handler, resolver, sink, resultLog, time);
     }
 
     private LambdaLoopers() {

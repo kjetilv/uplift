@@ -6,7 +6,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import static java.net.http.HttpClient.Version.HTTP_1_1;
 import static java.util.Objects.requireNonNull;
 
 final class DefaultLamdbdaManaged implements LamdbdaManaged {
@@ -23,7 +22,10 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        this.client = httpClient(this.settings).build();
+        var builder = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .executor(Executors.newVirtualThreadPerTaskExecutor());
+        this.client = applyTimeouts(this.settings, builder).build();
     }
 
     @Override
@@ -45,10 +47,7 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
             settings.responseTimeout(),
             settings.time()
         );
-        InvocationSink sink = new HttpInvocationSink(
-            fetch,
-            settings.time()
-        );
+        InvocationSink sink = new HttpInvocationSink(fetch, settings.time());
         return LambdaLoopers.looper(name, handler, source, sink, settings.time());
     }
 
@@ -57,17 +56,12 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         client.close();
     }
 
-    private static final ExecutorService VIRTUAL_THREADS = Executors.newVirtualThreadPerTaskExecutor();
-
-    private static HttpClient.Builder httpClient(LambdaClientSettings settings) {
+    private static HttpClient.Builder applyTimeouts(
+        LambdaClientSettings settings, HttpClient.Builder builder
+    ) {
         return settings.hasConnectTimeout()
-            ? builder().connectTimeout(settings.connectTimeout())
-            : builder();
-    }
-
-    private static HttpClient.Builder builder() {
-        return HttpClient.newBuilder().version(HTTP_1_1)
-            .executor(VIRTUAL_THREADS);
+            ? builder.connectTimeout(settings.connectTimeout())
+            : builder;
     }
 
     @Override

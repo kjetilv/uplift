@@ -33,6 +33,11 @@ final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
         currentDigest().update(bs.bytes(), bs.offset(), bs.length());
     }
 
+    @Override
+    public void digest(ByteBuffer bytes) {
+        currentDigest().update(bytes);
+    }
+
     /// Drain current digest, unset it and offer it to the queue.
     ///
     /// @return Hash of current digest

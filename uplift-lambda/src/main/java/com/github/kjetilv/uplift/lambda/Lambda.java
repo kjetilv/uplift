@@ -26,9 +26,7 @@ public final class Lambda {
         Duration responseTimeout,
         int parallellism
     ) {
-        try (
-            var managed = managed(handler, connectTimeout, responseTimeout)
-        ) {
+        try (var managed = managed(handler, connectTimeout, responseTimeout)) {
             managed.accept(name);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to run lambda: " + handler, e);

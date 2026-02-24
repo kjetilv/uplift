@@ -102,15 +102,6 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
         throw new ClassCastException(this + " is not comparable to " + o);
     }
 
-    default boolean isBlank() {
-        for (var l : ls()) {
-            if (l != 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     default byte byteAt(int index) {
         return bytes()[index];
     }
@@ -125,21 +116,13 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
         return par(digest().substring(0, length - 2));
     }
 
-    /// @return Standard Java [UUID][UUID#toString()], or fails if this is not a [128-bit][H128] hash
-    /// @throws IllegalStateException If this is not a [128-bit][H128] hash
-    default UUID asUuid() {
-        return switch (this) {
-            case H128(var l0, var l1) -> new UUID(l0, l1);
-            case H256 _ -> throw new IllegalStateException("Not a valid UUID: " + this);
-        };
-    }
+    boolean isBlank();
 
-    default K kind() {
-        return (K) switch (this) {
-            case H128 _ -> K128;
-            case H256 _ -> K256;
-        };
-    }
+    /// @return Standard Java [UUID][UUID#toString()], or fails if this is not a [128-bit][H128] hash
+    /// @throws IllegalStateException if this is not a [128-bit][H128] hash
+    UUID asUuid();
+
+    K kind();
 
     /// The longs
     ///
@@ -162,6 +145,21 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
     record H128(long long0, long long1) implements Hash<K128> {
 
         @Override
+        public boolean isBlank() {
+            return this == K128.blank() || long0 == 0L && long1 == 0L;
+        }
+
+        @Override
+        public K128 kind() {
+            return K128;
+        }
+
+        @Override
+        public UUID asUuid() {
+            return new UUID(long0, long1);
+        }
+
+        @Override
         public long[] ls() {
             return new long[] {long0, long1};
         }
@@ -173,6 +171,21 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
     }
 
     record H256(long long0, long long1, long long2, long long3) implements Hash<K256> {
+
+        @Override
+        public K256 kind() {
+            return K256;
+        }
+
+        @Override
+        public boolean isBlank() {
+            return this == K256.blank() || long0 == 0L && long1 == 0L && long2 == 0L && long3 == 0L;
+        }
+
+        @Override
+        public UUID asUuid() {
+            throw new IllegalStateException("Not a valid UUID: " + this);
+        }
 
         @Override
         public long[] ls() {
