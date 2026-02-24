@@ -4,10 +4,10 @@ import module java.base;
 
 /// A hash kind is either
 ///
-/// * [#K128], a 16-byte hash using {@link HashKind.K128#ALGORITHM MD5} hashing, or
-/// * [#K256], a 32 byte one using {@link HashKind.K256#ALGORITHM SHA-256} hashing
+/// * [#K128], a 16-byte hash using MD5 hashing, or
+/// * [#K256], a 32 byte one using SHA3-256 hashing
 ///
-public sealed interface HashKind<H extends HashKind<H>> {
+public sealed interface HashKind<K extends HashKind<K>> {
 
     /// 128-bit hash
     K128 K128 = new K128();
@@ -52,10 +52,13 @@ public sealed interface HashKind<H extends HashKind<H>> {
     int bits();
 
     /// @return The canonical all-zeroes instance
-    Hash<H> blank();
+    Hash<K> blank();
+
+    /// @return Hash from data input
+    Hash<K> from(DataInput dataInput);
 
     /// @return A random hash
-    Hash<H> random();
+    Hash<K> random();
 
     record K128(
         String algorithm,
@@ -66,21 +69,40 @@ public sealed interface HashKind<H extends HashKind<H>> {
     ) implements HashKind<K128> {
 
         private K128() {
-            this(ALGORITHM, 128, 22, "==", BLANK_128);
+            this("MD5", 128, 22, "==", BLANK_128);
+        }
+
+        public Hash<K128> fromUuid(String uuidString) {
+            return fromUuid(UUID.fromString(uuidString));
+        }
+
+        public Hash<K128> fromUuid(UUID uuid) {
+            return of(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+        }
+
+        @Override
+        public Hash<K128> from(DataInput di) {
+            try {
+                return of(di.readLong(), di.readLong());
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to read" + this + " from " + di, e);
+            }
         }
 
         @Override
         public Hash<K128> random() {
             var u = UUID.randomUUID();
-            return Hash.of(
+            return K128.of(
                 u.getMostSignificantBits(),
                 u.getLeastSignificantBits()
             );
         }
 
-        private static final Hash<K128> BLANK_128 = Hash.of(0L, 0L);
+        public Hash<K128> of(long l0, long l1) {
+            return new Hash.H128(l0, l1);
+        }
 
-        private static final String ALGORITHM = "MD5";
+        private static final Hash<K128> BLANK_128 = K128.of(0L, 0L);
     }
 
     record K256(
@@ -92,14 +114,23 @@ public sealed interface HashKind<H extends HashKind<H>> {
     ) implements HashKind<K256> {
 
         private K256() {
-            this(ALGORITHM, 256, 43, "=", BLANK_256);
+            this("SHA3-256", 256, 43, "=", BLANK_256);
+        }
+
+        @Override
+        public Hash<K256> from(DataInput di) {
+            try {
+                return of(di.readLong(), di.readLong(), di.readLong(), di.readLong());
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to read" + this + " from " + di, e);
+            }
         }
 
         @Override
         public Hash<K256> random() {
             var u0 = UUID.randomUUID();
             var u1 = UUID.randomUUID();
-            return Hash.of(
+            return K256.of(
                 u0.getMostSignificantBits(),
                 u0.getLeastSignificantBits(),
                 u1.getMostSignificantBits(),
@@ -107,8 +138,10 @@ public sealed interface HashKind<H extends HashKind<H>> {
             );
         }
 
-        private static final Hash<K256> BLANK_256 = Hash.of(0L, 0L, 0L, 0L);
+        public Hash<K256> of(long l0, long l1, long l2, long l3) {
+            return new Hash.H256(l0, l1, l2, l3);
+        }
 
-        private static final String ALGORITHM = "SHA3-256";
+        private static final Hash<K256> BLANK_256 = K256.of(0L, 0L, 0L, 0L);
     }
 }

@@ -17,16 +17,16 @@ import static java.util.Spliterator.NONNULL;
 /// When done, invoking [#build()] returns the final hash, and resets the underlying hasher.
 ///
 /// @param <T> Hashed type
-/// @param <H> Hash kind
-public interface HashBuilder<T, H extends HashKind<H>> {
+/// @param <K> Hash kind
+public interface HashBuilder<T, K extends HashKind<K>> {
 
     Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
 
-    static <H extends HashKind<H>> HashBuilder<InputStream, H> forInputStream(H kind) {
+    static <K extends HashKind<K>> HashBuilder<InputStream, K> forInputStream(K kind) {
         return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), inputStream2Bytes());
     }
 
-    static <H extends HashKind<H>> HashBuilder<Bytes, H> forKind(H kind) {
+    static <K extends HashKind<K>> HashBuilder<Bytes, K> forKind(K kind) {
         return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), IDENTITY);
     }
 
@@ -42,13 +42,13 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     }
 
     /// @return Hash kind
-    H kind();
+    K kind();
 
     /// Add items
     ///
     /// @param items Items tp add
     /// @return This builder
-    default HashBuilder<T, H> hash(List<T> items) {
+    default HashBuilder<T, K> hash(List<T> items) {
         items.forEach(this::hash);
         return this;
     }
@@ -57,7 +57,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     ///
     /// @param items Items to add
     /// @return This builder
-    default HashBuilder<T, H> hash(Stream<T> items) {
+    default HashBuilder<T, K> hash(Stream<T> items) {
         items.forEach(this::hash);
         return this;
     }
@@ -65,21 +65,21 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     /// Add to the hash
     ///
     /// @param item Item to add
-    HashBuilder<T, H> hash(T item);
+    HashBuilder<T, K> hash(T item);
 
     /// Get the hash, reset the underlying hasher.
     ///
     /// @return Hash
-    Hash<H> build();
+    Hash<K> build();
 
     /// @param transform Transformer for `R` to `T`
     /// @param <R>       Input type to new hasher
     /// @return New hasher that accepts  `R`
-    <R> HashBuilder<R, H> map(Function<R, T> transform);
+    <R> HashBuilder<R, K> map(Function<R, T> transform);
 
     /// @param transform Transformer for `R` to `Stream<T>`
     /// @return New hasher that accepts `R`
-    <R> HashBuilder<R, H> flatMap(Function<R, Stream<T>> transform);
+    <R> HashBuilder<R, K> flatMap(Function<R, Stream<T>> transform);
 
     final class BytesIterator implements Iterator<Bytes> {
 

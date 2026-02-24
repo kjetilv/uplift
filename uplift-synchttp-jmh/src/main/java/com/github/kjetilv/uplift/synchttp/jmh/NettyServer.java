@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
@@ -23,8 +24,9 @@ final class NettyServer implements AutoCloseable {
     private final int port;
 
     NettyServer(byte[] responseBody) {
-        this.bossGroup = new NioEventLoopGroup(1);
-        this.workerGroup = new NioEventLoopGroup();
+        var ioHandlerFactory = NioIoHandler.newFactory();
+        this.bossGroup = new MultiThreadIoEventLoopGroup(ioHandlerFactory);
+        this.workerGroup = new MultiThreadIoEventLoopGroup(ioHandlerFactory);
         try {
             var bootstrap = new ServerBootstrap()
                 .group(bossGroup, workerGroup)

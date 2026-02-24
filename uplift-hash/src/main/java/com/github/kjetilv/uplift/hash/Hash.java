@@ -9,47 +9,31 @@ import static com.github.kjetilv.uplift.hash.StrUtils.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
-/// A hash, of a certain {@link HashKind}.  Can be created with {@link #of(long, long) 128} bits or
-/// {@link #of(long, long, long, long) 256}.
+/// A hash, of a certain [kind][HashKind].  Can be created with [128 bits][K128#of(long, long)] or
+/// [256 bits][K256#of(long, long, long, long)].
 ///
-/// Instances can provide {@link #digest() digest}, which is a compact string representation.
-/// These can be parsed back to hash instances with other {@link Hash#from(String) factory methods}.
-public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
+/// Instances can provide a [digest][#digest()], which is a compact string representation.
+/// These can be parsed back to hash instances with other [factory methods][Hash#from(String)],
+public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> {
 
-    static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
+    static <K extends HashKind<K>> String toShortHashString(List<Hash<K>> hashes) {
         return hashes.stream()
             .map(Hash::toShortString)
             .collect(Collectors.joining("—"));
     }
 
-    static Hash<K128> of(long long0, long long1) {
-        return new H128(long0, long1);
-    }
-
-    static Hash<K256> of(long long0, long long1, long long2, long long3) {
-        return new H256(long0, long1, long2, long3);
-    }
-
     @SuppressWarnings("unchecked")
-    static <H extends HashKind<H>> Hash<H> from(byte[] bytes) {
+    static <K extends HashKind<K>> Hash<K> from(byte[] bytes) {
         requireNonNull(bytes, "bytes");
         if (bytes.length == K128.byteCount()) {
             var ls = Bytes.toLongs(bytes, new long[K128.longCount()]);
-            return (Hash<H>) new H128(ls[0], ls[1]);
+            return (Hash<K>) new H128(ls[0], ls[1]);
         }
         if (bytes.length == K256.byteCount()) {
             var ls = Bytes.toLongs(bytes, new long[K256.longCount()]);
-            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
-    }
-
-    static Hash<K128> fromUuid(String uuidString) {
-        return fromUuid(UUID.fromString(uuidString));
-    }
-
-    static Hash<K128> fromUuid(UUID uuid) {
-        return of(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
     }
 
     /// Parse a digest
@@ -58,42 +42,22 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     /// @return Hash
     /// @throws IllegalArgumentException If the digest was not valid
     @SuppressWarnings("unchecked")
-    static <H extends HashKind<H>> Hash<H> from(String digest) {
+    static <K extends HashKind<K>> Hash<K> from(String digest) {
         var length = requireNonNull(digest, "digest").length();
         var k256Length = K256.digestLength();
         if (length >= k256Length) {
             var substring = length == k256Length ? digest : digest.substring(0, k256Length);
             var ls = toLongs(substring, new long[K256.longCount()]);
-            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         var k128Length = K128.digestLength();
         if (length >= k128Length) {
             var substring = length == k128Length ? digest : digest.substring(0, k128Length);
             var ls = toLongs(substring, new long[K128.longCount()]);
-            return (Hash<H>) new H128(ls[0], ls[1]);
+            return (Hash<K>) new H128(ls[0], ls[1]);
         }
         var reportedString = digest.substring(0, Math.min(length, 10)) + (length > 10 ? "..." : "");
         throw new IllegalArgumentException("Hash of length " + length + " not recognized: " + reportedString);
-    }
-
-    static <H extends HashKind<H>> Hash<H> of(InputStream stream, H kind) {
-        return of((DataInput) new DataInputStream(stream), kind);
-    }
-
-    static <H extends HashKind<H>> Hash<H> of(DataInput input, H kind) {
-        try {
-            return (Hash<H>) switch (kind) {
-                case K128 _ -> of(input.readLong(), input.readLong());
-                case K256 _ -> of(
-                    input.readLong(),
-                    input.readLong(),
-                    input.readLong(),
-                    input.readLong()
-                );
-            };
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to read from " + input, e);
-        }
     }
 
     /// @return Unique string representation
@@ -128,7 +92,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     @Override
-    default int compareTo(Hash<H> o) {
+    default int compareTo(Hash<K> o) {
         if (equals(o)) {
             return 0;
         }
@@ -161,8 +125,8 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         return par(digest().substring(0, length - 2));
     }
 
-    /// @return Standard Java {@link UUID#toString() UUID}, or fails if this is not a {@link H128 128-bit} hash
-    /// @throws IllegalStateException If this is not a {@link H128 128-bit} hash
+    /// @return Standard Java [UUID][UUID#toString()], or fails if this is not a [128-bit][H128] hash
+    /// @throws IllegalStateException If this is not a [128-bit][H128] hash
     default UUID asUuid() {
         return switch (this) {
             case H128(var l0, var l1) -> new UUID(l0, l1);
@@ -170,8 +134,8 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         };
     }
 
-    default H kind() {
-        return (H) switch (this) {
+    default K kind() {
+        return (K) switch (this) {
             case H128 _ -> K128;
             case H256 _ -> K256;
         };

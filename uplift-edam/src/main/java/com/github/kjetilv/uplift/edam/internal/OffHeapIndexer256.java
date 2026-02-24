@@ -6,6 +6,7 @@ import com.github.kjetilv.uplift.edam.HashFun;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind.K256;
 
+import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.sequenceLayout;
 import static java.lang.foreign.MemoryLayout.structLayout;
@@ -41,7 +42,7 @@ final class OffHeapIndexer256 extends AbstractOffHeapIndexer<K256> {
 
         @Override
         public Hash<K256> load() {
-            return Hash.of(
+            return K256.of(
                 (long) H0.get(slice, 0),
                 (long) H1.get(slice, 0),
                 (long) H2.get(slice, 0),

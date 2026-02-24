@@ -37,7 +37,7 @@ final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
 
         @Override
         public Hash<K128> load() {
-            return Hash.of(
+            return K128.of(
                 (long) H0.get(slice, 0),
                 (long) H1.get(slice, 0)
             );

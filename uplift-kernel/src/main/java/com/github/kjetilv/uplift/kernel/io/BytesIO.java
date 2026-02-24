@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.kernel.io;
 
 import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +46,7 @@ public final class BytesIO {
         requireNonNull(input, "inputStream");
         var l1 = readLong(input);
         var l2 = readLong(input);
-        return Hash.of(l1, l2);
+        return K128.of(l1, l2);
     }
 
     public static Hash<K256> readHash256(DataInput input) {
@@ -54,7 +55,7 @@ public final class BytesIO {
         var l2 = readLong(input);
         var l3 = readLong(input);
         var l4 = readLong(input);
-        return Hash.of(l1, l2, l3, l4);
+        return K256.of(l1, l2, l3, l4);
     }
 
     public static String readString(DataInput input) {
@@ -80,10 +81,9 @@ public final class BytesIO {
         return writeLong(output, instant.getEpochSecond());
     }
 
-    public static List<Hash<K128>> readHashes128(DataInput input) {
-        var count = readInt(input);
-        return IntStream.range(0, count)
-            .mapToObj(i -> Hash.of(input, K128))
+    public static <K extends HashKind<K>> List<Hash<K>> readHashes(K kind, DataInput input) {
+        return IntStream.range(0, readInt(input))
+            .mapToObj(_ -> kind.from(input))
             .toList();
     }
 

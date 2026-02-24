@@ -7,23 +7,23 @@ import com.github.kjetilv.uplift.edamame.MapsMemoizer;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 import org.junit.jupiter.api.Test;
 
 import static com.github.kjetilv.uplift.edamame.impl.InternalFactory.create;
+import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MapsMemoizersTest {
 
-    static HashBuilder<Bytes, HashKind.K128> md5HashBuilder() {
-        return HashBuilder.forKind(HashKind.K128);
+    static HashBuilder<Bytes, K128> md5HashBuilder() {
+        return HashBuilder.forKind(K128);
     }
 
-    static Hash<HashKind.K128> random() {
+    static Hash<K128> random() {
         var randomUUID = UUID.randomUUID();
-        return Hash.of(
+        return K128.of(
             randomUUID.getMostSignificantBits(),
             randomUUID.getLeastSignificantBits()
         );
@@ -35,7 +35,7 @@ class MapsMemoizersTest {
         Object bi = new BigInteger("424242");
         var leafHasher = collidingLeafHasher();
 
-        MapsMemoizer<Long, String> mapsMemoizer = create(null, leafHasher, HashKind.K128, null);
+        MapsMemoizer<Long, String> mapsMemoizer = create(null, leafHasher, K128, null);
 
         mapsMemoizer.put(
             42L, Map.of(
@@ -80,7 +80,7 @@ class MapsMemoizersTest {
 
         MapsMemoizer<Long, String> mapsMemoizer = create(
             null,
-            HashKind.K128,
+            K128,
             PojoBytes.TOSTRING
         );
 
@@ -125,14 +125,14 @@ class MapsMemoizersTest {
     @Test
     void shouldHandleCollisions() {
         var collider = random();
-        LeafHasher<HashKind.K128> leafHasher = leaf ->
+        LeafHasher<K128> leafHasher = leaf ->
             leaf.equals("3") || leaf.equals("7")
                 ? collider
                 : new DefaultLeafHasher<>(
                     MapsMemoizersTest::md5HashBuilder,
                     PojoBytes.HASHCODE
                 ).hash(leaf);
-        MapsMemoizer<Long, String> cache = create(null, leafHasher, HashKind.K128, null);
+        MapsMemoizer<Long, String> cache = create(null, leafHasher, K128, null);
 
         for (var i = 0; i < 10; i++) {
             cache.put((long) i, Map.of("foo", String.valueOf(i)));
@@ -147,7 +147,7 @@ class MapsMemoizersTest {
     @Test
     void shouldRespectCanonicalKeys() {
         KeyHandler<CanKey> caKeKeyHandler = s -> CanKey.get(s.toString());
-        MapsMemoizer<Long, CanKey> cache = create(caKeKeyHandler, HashKind.K128);
+        MapsMemoizer<Long, CanKey> cache = create(caKeKeyHandler, K128);
 
         var in42 = mapFoo(mapZot());
         var hh0hh1 = mapHh();
@@ -273,7 +273,7 @@ class MapsMemoizersTest {
 
     @Test
     void shouldStringify() {
-        MapsMemoizer<Long, String> cache = create(Object::toString, HashKind.K128, null);
+        MapsMemoizer<Long, String> cache = create(Object::toString, K128, null);
 
         cache.put(
             42L,
@@ -573,11 +573,11 @@ class MapsMemoizersTest {
     }
 
     private static MapsMemoizer<Long, String> mapsMemoizer() {
-        return create(null, HashKind.K128, null);
+        return create(null, K128, null);
     }
 
-    private static LeafHasher<HashKind.K128> collidingLeafHasher() {
-        var collider = HashKind.K128.random();
+    private static LeafHasher<K128> collidingLeafHasher() {
+        var collider = K128.random();
         return _ -> collider;
     }
 

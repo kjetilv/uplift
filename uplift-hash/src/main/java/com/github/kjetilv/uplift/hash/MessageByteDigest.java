@@ -6,25 +6,25 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// Maintains a simple pool of non-trivially-created instances of [MessageDigest], in the form of a queue.
 /// On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.
 ///
-/// @param <H>
-final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
+/// @param <K>
+final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
 
-    static <H extends HashKind<H>> MessageByteDigest<H> get(H kind) {
+    static <K extends HashKind<K>> MessageByteDigest<K> get(K kind) {
         return new MessageByteDigest<>(kind);
     }
 
-    private final H kind;
+    private final K kind;
 
     private final Lock digestLock = new ReentrantLock();
 
     private MessageDigest messageDigest;
 
-    MessageByteDigest(H kind) {
+    MessageByteDigest(K kind) {
         this.kind = Objects.requireNonNull(kind, "kind");
     }
 
     @Override
-    public H kind() {
+    public K kind() {
         return kind;
     }
 
@@ -37,7 +37,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
     ///
     /// @return Hash of current digest
     @Override
-    public Hash<H> get() {
+    public Hash<K> get() {
         digestLock.lock();
         try {
             if (messageDigest == null) {
@@ -75,7 +75,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
     private static final int DIGEST_POOL_SIZE = 20;
 
-    private static <H extends HashKind<H>> MessageDigest createDigest(H kind) {
+    private static <K extends HashKind<K>> MessageDigest createDigest(K kind) {
         try {
             return MessageDigest.getInstance(kind.algorithm());
         } catch (Exception e) {

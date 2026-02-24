@@ -7,30 +7,32 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.util.UUID;
 
+import static com.github.kjetilv.uplift.hash.HashKind.*;
+import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HashTest {
 
     @Test
     void testNull() {
-        assertEquals(HashKind.K128.blank(), Hash.of(0L, 0L));
+        assertEquals(K128.blank(), K128.of(0L, 0L));
     }
 
     @Test
     void testHash() {
-        var hash = Hash.of(0L, 234L);
+        var hash = K128.of(0L, 234L);
         assertEquals("⟨AAAAAAAA⟩", hash.toString());
     }
 
     @Test
     void string() {
-        var string = HashKind.K128.random().toString();
+        var string = K128.random().toString();
         assertEquals(10, string.length());
     }
 
     @Test
     void byteAt128() {
-        var random = HashKind.K128.random();
+        var random = K128.random();
         var bytes = random.bytes();
         for (var i = 0; i < 16; i++) {
             var finalI = i;
@@ -43,7 +45,7 @@ class HashTest {
 
     @Test
     void byteAt256() {
-        var random = HashKind.K256.random();
+        var random = K256.random();
         var bytes = random.bytes();
         for (var i = 0; i < 32; i++) {
             var finalI = i;
@@ -56,25 +58,25 @@ class HashTest {
 
     @Test
     void backAndForth128() {
-        assertBackAndForth(HashKind.K128);
+        assertBackAndForth(K128);
     }
 
     @Test
     void backAndForth256() {
-        assertBackAndForth(HashKind.K256);
+        assertBackAndForth(K256);
     }
 
     @Test
     void uuidsAsString() {
         var string = UUID.randomUUID().toString();
-        var hash = Hash.fromUuid(string);
+        var hash = K128.fromUuid(string);
         assertEquals(string, hash.asUuid().toString());
     }
 
     @Test
     void uuidsAsDigests() {
         var string = UUID.randomUUID().toString();
-        var hash = Hash.fromUuid(string);
+        var hash = K128.fromUuid(string);
 
         var digest = hash.digest();
         var hash1 = Hash.from(digest);
@@ -84,10 +86,9 @@ class HashTest {
 
     @Test
     void io() {
-        var hash = HashKind.K256.random();
+        var hash = K256.random();
         DataInput dataInput = new DataInputStream(new ByteArrayInputStream(hash.bytes()));
-        var hash1 = Hash.of(dataInput, HashKind.K256);
-        assertEquals(hash, hash1);
+        assertEquals(hash, K256.from(dataInput));
     }
 
     private static <H extends HashKind<H>> void assertBackAndForth(H kind) {
