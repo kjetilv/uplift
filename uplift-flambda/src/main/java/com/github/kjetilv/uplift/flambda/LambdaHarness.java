@@ -31,7 +31,10 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final Reqs reqs;
 
-    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
+    public LambdaHarness(
+        String name,
+        LambdaHandler lambdaHandler
+    ) {
         this(
             name,
             lambdaHandler,
@@ -112,7 +115,11 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
 
-    private static FlambdaSettings settings(String name, CorsSettings cors, Supplier<Instant> time) {
+    private static FlambdaSettings settings(
+        String name,
+        CorsSettings cors,
+        Supplier<Instant> time
+    ) {
         return new FlambdaSettings(
             name,
             65536,

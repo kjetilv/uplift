@@ -17,9 +17,9 @@ import static java.util.Objects.requireNonNull;
 ///
 /// Use [MapsMemoizers#create(HashKind)] and siblings to create instances of this class.
 ///
-/// @param <I> Identifier type.  An identifier identifies exactly one of the cached maps
+/// @param <I>  Identifier type.  An identifier identifies exactly one of the cached maps
 /// @param <MK> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
-/// @param <K> Hash kind
+/// @param <K>  Hash kind
 @SuppressWarnings("unchecked")
 class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
     implements MapsMemoizer<I, MK> {
@@ -86,13 +86,21 @@ class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
         var hashedTree = treeHasher.tree(value);
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
-            case CanonicalValue.Node<?, K>(Hash<K> hash, Map<?, Object> node) -> withWriteLock(() ->
-                putCanonical(identifier, hash, (Map<MK, Object>) node, requireAbsent)
+            case CanonicalValue.Node<?, K>(
+                Hash<K> hash,
+                Map<?, Object> node
+            ) -> withWriteLock(() ->
+                putCanonical(
+                    identifier,
+                    hash,
+                    (Map<MK, Object>) node,
+                    requireAbsent
+                )
             );
-            case CanonicalValue.Collision<K> _ -> withWriteLock(() ->
+            case CanonicalValue.Collision<?, K> _ -> withWriteLock(() ->
                 putOverflow(identifier, (Map<MK, Object>) value)
             );
-            case CanonicalValue<K> other -> fail("Unexpected canonical value: " + other);
+            case CanonicalValue<?, K> other -> fail("Unexpected canonical value: " + other);
         };
     }
 

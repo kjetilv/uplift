@@ -27,9 +27,9 @@ class CanonicalSubstructuresCataloguerTest {
         Supplier<Object> newObject = () -> new BigDecimal("42");
 
         var cv1 = cataloguer.canonical(hasher.tree(newObject.get()));
-        if (cv1 instanceof CanonicalValue.Leaf<K128>(var h1, var o1)) {
+        if (cv1 instanceof CanonicalValue.Leaf<?, K128>(var h1, var o1)) {
             var cv2 = cataloguer.canonical(hasher.tree(newObject.get()));
-            if (cv2 instanceof CanonicalValue.Leaf<K128>(var h2, var o2)) {
+            if (cv2 instanceof CanonicalValue.Leaf<?, K128>(var h2, var o2)) {
                 assertThat(h1).isEqualTo(h2);
                 assertThat(o1).isSameAs(o2);
             } else {

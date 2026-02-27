@@ -33,7 +33,7 @@ final class ValueClimber<H extends HashKind<H>>
     @Override
     protected void done(HashedTree<String, H> tree) {
         var canonical = canonicalizer.canonical(tree);
-        if (canonical instanceof CanonicalValue.Collision<H>(var hash, var value)) {
+        if (canonical instanceof CanonicalValue.Collision<?, H>(var hash, var value)) {
             if (collisionHandler == null) {
                 throw new IllegalStateException("Unhandled collision: " + hash + " -> " + value);
             }

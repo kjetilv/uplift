@@ -43,7 +43,7 @@ final class CanonicalSubstructuresCataloguer<MK, K extends HashKind<K>>
     }
 
     @Override
-    public CanonicalValue<K> canonical(HashedTree<MK, K> hashedTree) {
+    public CanonicalValue<MK, K> canonical(HashedTree<MK, K> hashedTree) {
         return switch (hashedTree) {
             case Node<MK, K>(var hash, var map) -> {
                 var node = transformMap(map, this::canonical);
@@ -53,8 +53,7 @@ final class CanonicalSubstructuresCataloguer<MK, K extends HashKind<K>>
                         transformMap(node, CanonicalValue::value),
                         hash,
                         maps,
-                        t ->
-                            new CanonicalValue.Node<>(hash, t)
+                        t -> new CanonicalValue.Node<>(hash, t)
                     );
             }
             case Nodes<MK, K>(var hash, var list) -> {
@@ -65,8 +64,7 @@ final class CanonicalSubstructuresCataloguer<MK, K extends HashKind<K>>
                         transformList(nodes, CanonicalValue::value),
                         hash,
                         lists,
-                        t ->
-                            new CanonicalValue.Nodes<>(hash, t)
+                        t -> new CanonicalValue.Nodes<>(hash, t)
                     );
             }
             case HashedTree.Leaf<?, K>(var hash, var value) -> canonicalize(
@@ -79,20 +77,20 @@ final class CanonicalSubstructuresCataloguer<MK, K extends HashKind<K>>
         };
     }
 
-    private Collision<K> collision(Iterable<CanonicalValue<K>> values) {
+    private Collision<MK, K> collision(Iterable<CanonicalValue<MK, K>> values) {
         for (var value : values) {
-            if (value instanceof Collision<K> collision) {
+            if (value instanceof Collision<MK, K> collision) {
                 return collision;
             }
         }
         return null;
     }
 
-    private <T> CanonicalValue<K> canonicalize(
+    private <T> CanonicalValue<MK, K> canonicalize(
         T value,
         Hash<K> hash,
         Map<Hash<K>, T> map,
-        Function<T, CanonicalValue<K>> wrap
+        Function<T, CanonicalValue<MK, K>> wrap
     ) {
         var existing = map.putIfAbsent(hash, value);
         return existing == null || collisionsNeverHappen ? wrap.apply(value)
