@@ -10,10 +10,10 @@ import static com.github.kjetilv.uplift.util.Maps.transformMap;
 /// A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
 /// [hash][#hash()].
 @SuppressWarnings("unused")
-public sealed interface HashedTree<K, H extends HashKind<H>> {
+public sealed interface HashedTree<MK, K extends HashKind<K>> {
 
     /// @return The hash of this part of the tree
-    Hash<H> hash();
+    Hash<K> hash();
 
     /// @return The original structure
     Object unwrap();
@@ -22,11 +22,11 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ///
     /// @param hash Hash
     /// @param map  Map
-    /// @param <K>  Type of key in the map
-    record Node<K, H extends HashKind<H>>(
-        Hash<H> hash,
-        Map<K, HashedTree<K, H>> map
-    ) implements HashedTree<K, H> {
+    /// @param <MK>  Type of key in the map
+    record Node<MK, K extends HashKind<K>>(
+        Hash<K> hash,
+        Map<MK, HashedTree<MK, K>> map
+    ) implements HashedTree<MK, K> {
 
         @Override
         public Object unwrap() {
@@ -38,10 +38,10 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ///
     /// @param hash Hash
     /// @param list List
-    record Nodes<K, H extends HashKind<H>>(
-        Hash<H> hash,
-        List<HashedTree<K, H>> list
-    ) implements HashedTree<K, H> {
+    record Nodes<MK, K extends HashKind<K>>(
+        Hash<K> hash,
+        List<HashedTree<MK, K>> list
+    ) implements HashedTree<MK, K> {
 
         @Override
         public Object unwrap() {
@@ -53,10 +53,10 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     ///
     /// @param hash  Hash
     /// @param value Leaf
-    record Leaf<K, H extends HashKind<H>>(
-        Hash<H> hash,
+    record Leaf<MK, K extends HashKind<K>>(
+        Hash<K> hash,
         Object value
-    ) implements HashedTree<K, H> {
+    ) implements HashedTree<MK, K> {
 
         @Override
         public Object unwrap() {
@@ -65,8 +65,8 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
     }
 
     /// Null value, which may occur in a list. Has the [null][HashKind#blank()] hash.
-    record Null<K, H extends HashKind<H>>(HashKind<H> kind)
-        implements HashedTree<K, H> {
+    record Null<MK, K extends HashKind<K>>(HashKind<K> kind)
+        implements HashedTree<MK, K> {
 
         @SuppressWarnings("unchecked")
         public static <K, H extends HashKind<H>> Null<K, H> instanceFor(H kind) {
@@ -77,7 +77,7 @@ public sealed interface HashedTree<K, H extends HashKind<H>> {
         }
 
         @Override
-        public Hash<H> hash() {
+        public Hash<K> hash() {
             return kind.blank();
         }
 

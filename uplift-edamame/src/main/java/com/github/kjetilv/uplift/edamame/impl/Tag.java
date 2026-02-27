@@ -35,7 +35,7 @@ enum Tag {
 
     private final Bytes bytes = new Bytes(new byte[] {(byte) ordinal()});
 
-    <H extends HashKind<H>> HashBuilder<Bytes, H> tag(HashBuilder<Bytes, H> hb) {
+    <K extends HashKind<K>> HashBuilder<Bytes, K> tag(HashBuilder<Bytes, K> hb) {
         return hb.hash(bytes);
     }
 }

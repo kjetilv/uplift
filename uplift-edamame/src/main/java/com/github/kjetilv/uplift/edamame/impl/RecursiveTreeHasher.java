@@ -17,23 +17,23 @@ import static java.util.Objects.requireNonNull;
 
 /// Normalizes input trees and builds [hashed trees][HashedTree]. Stateless and thread-safe.
 ///
-/// @param <K> Identifier type
-record RecursiveTreeHasher<K, H extends HashKind<H>>(
-    Supplier<HashBuilder<Bytes, H>> newBuilder,
-    KeyHandler<K> keyHandler,
-    LeafHasher<H> leafHasher,
-    H kind
-) implements TreeHasher<K, H> {
+/// @param <I> Identifier type
+record RecursiveTreeHasher<I, K extends HashKind<K>>(
+    Supplier<HashBuilder<Bytes, K>> newBuilder,
+    KeyHandler<I> keyHandler,
+    LeafHasher<K> leafHasher,
+    K kind
+) implements TreeHasher<I, K> {
 
     /// @param newBuilder Hash builder, not null
     /// @param keyHandler Key handler, not null
     /// @param leafHasher Hasher, not null
     /// @see MapsMemoizers#create(KeyHandler, HashKind)
     RecursiveTreeHasher(
-        Supplier<HashBuilder<Bytes, H>> newBuilder,
-        KeyHandler<K> keyHandler,
-        LeafHasher<H> leafHasher,
-        H kind
+        Supplier<HashBuilder<Bytes, K>> newBuilder,
+        KeyHandler<I> keyHandler,
+        LeafHasher<K> leafHasher,
+        K kind
     ) {
         this.newBuilder = requireNonNull(newBuilder, "newBuilder");
         this.keyHandler = requireNonNull(keyHandler, "keyHandler");
@@ -42,7 +42,7 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
     }
 
     @Override
-    public HashedTree<K, H> tree(Object value) {
+    public HashedTree<I, K> tree(Object value) {
         return switch (value) {
             case Map<?, ?> map -> {
                 var hashedMap = transformMap(map, keyHandler, this::tree);
@@ -66,9 +66,9 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         };
     }
 
-    private Hash<H> hashMap(Map<K, ? extends HashedTree<K, H>> tree) {
+    private Hash<K> hashMap(Map<I, ? extends HashedTree<I, K>> tree) {
         var hb = newBuilder.get();
-        HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
+        HashBuilder<Hash<K>, K> hashHb = hb.map(Hash::toBytes);
         var keyHb = hb.map(keyHandler::bytes);
         hb.map(Bytes::intBytes).hash(tree.size());
         tree.forEach((key, value) -> {
@@ -78,9 +78,9 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return hb.build();
     }
 
-    private Hash<H> hashList(List<? extends HashedTree<K, H>> trees) {
+    private Hash<K> hashList(List<? extends HashedTree<I, K>> trees) {
         var hb = newBuilder.get();
-        HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
+        HashBuilder<Hash<K>, K> hashHb = hb.map(Hash::toBytes);
         hb.map(Bytes::intBytes).hash(trees.size());
         trees.stream()
             .map(HashedTree::hash)
@@ -88,14 +88,14 @@ record RecursiveTreeHasher<K, H extends HashKind<H>>(
         return hashHb.build();
     }
 
-    private Hash<H> hashLeaf(Object value) {
+    private Hash<K> hashLeaf(Object value) {
         return leafHasher.hash(value);
     }
 
-    private static <K, H extends HashKind<H>> Map<K, HashedTree<K, H>> transformMap(
+    private static <MK, K extends HashKind<K>> Map<MK, HashedTree<MK, K>> transformMap(
         Map<?, ?> value,
-        KeyHandler<K> keyHandler,
-        Function<Object, HashedTree<K, H>> transform
+        KeyHandler<MK> keyHandler,
+        Function<Object, HashedTree<MK, K>> transform
     ) {
         return sizedMap(value.entrySet()
             .stream()

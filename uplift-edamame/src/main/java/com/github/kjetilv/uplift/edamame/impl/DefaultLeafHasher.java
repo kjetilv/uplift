@@ -14,20 +14,20 @@ import static com.github.kjetilv.uplift.edamame.impl.Tag.*;
 /// found in trees.
 ///
 /// @see Tag
-public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Bytes, H>> newBuilder, PojoBytes pojoBytes)
-    implements LeafHasher<H> {
+public record DefaultLeafHasher<K extends HashKind<K>>(Supplier<HashBuilder<Bytes, K>> newBuilder, PojoBytes pojoBytes)
+    implements LeafHasher<K> {
 
-    public DefaultLeafHasher(Supplier<HashBuilder<Bytes, H>> newBuilder, PojoBytes pojoBytes) {
+    public DefaultLeafHasher(Supplier<HashBuilder<Bytes, K>> newBuilder, PojoBytes pojoBytes) {
         this.newBuilder = Objects.requireNonNull(newBuilder, "newBuilder");
         this.pojoBytes = Objects.requireNonNull(pojoBytes, "pojoBytes");
     }
 
     @Override
-    public Hash<H> hash(Object leaf) {
+    public Hash<K> hash(Object leaf) {
         return hashTo(newBuilder.get(), leaf).build();
     }
 
-    private HashBuilder<Bytes, H> hashTo(HashBuilder<Bytes, H> hb, Object leaf) {
+    private HashBuilder<Bytes, K> hashTo(HashBuilder<Bytes, K> hb, Object leaf) {
         return switch (leaf) {
             case String s -> hashString(STRING.tag(hb), s);
             case Boolean b -> hashString(BOOL.tag(hb), Boolean.toString(b));
@@ -40,8 +40,8 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashNumber(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashNumber(
+        HashBuilder<Bytes, K> hb,
         Number n
     ) {
         return switch (n) {
@@ -55,8 +55,8 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashTemporal(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashTemporal(
+        HashBuilder<Bytes, K> hb,
         TemporalAccessor t
     ) {
         return switch (t) {
@@ -76,8 +76,8 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         };
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashLeaf(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashLeaf(
+        HashBuilder<Bytes, K> hb,
         Object leaf,
         PojoBytes anyHash
     ) {
@@ -86,15 +86,15 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
             .hash(anyHash.bytes(leaf));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashString(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashString(
+        HashBuilder<Bytes, K> hb,
         String string
     ) {
         return hb.hash(Bytes.from(string));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashInstant(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashInstant(
+        HashBuilder<Bytes, K> hb,
         Instant instant
     ) {
         hb.map(Bytes::longBytes)
@@ -103,8 +103,8 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         return hb;
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashUuid(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashUuid(
+        HashBuilder<Bytes, K> hb,
         UUID uuid
     ) {
         hb.map(Bytes::longBytes)
@@ -113,16 +113,16 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         return hb;
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigDecimal(
-        HashBuilder<Bytes, H> hb,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashBigDecimal(
+        HashBuilder<Bytes, K> hb,
         BigDecimal bigDecimal
     ) {
         return hb.hash(Bytes.from(bigDecimal))
             .hash(Bytes.intBytes(bigDecimal.scale()));
     }
 
-    private static <H extends HashKind<H>> HashBuilder<Bytes, H> hashBigInteger(
-        HashBuilder<Bytes, H> hashBuilder,
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashBigInteger(
+        HashBuilder<Bytes, K> hashBuilder,
         BigInteger bigInteger
     ) {
         return hashBuilder.hash(Bytes.from(bigInteger));

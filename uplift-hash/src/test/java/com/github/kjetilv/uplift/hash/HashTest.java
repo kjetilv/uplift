@@ -91,10 +91,10 @@ class HashTest {
         assertEquals(hash, K256.from(dataInput));
     }
 
-    private static <H extends HashKind<H>> void assertBackAndForth(H kind) {
+    private static <K extends HashKind<K>> void assertBackAndForth(K kind) {
         var random = kind.random();
         var digest = random.digest();
-        Hash<H> hash = Hash.from(digest);
+        Hash<K> hash = Hash.from(digest);
         assertEquals(random, hash, "Hashing the same digest twice should produce the same hash");
         assertEquals(digest, hash.digest(), "Hashing the same digest twice should produce the same hash");
     }

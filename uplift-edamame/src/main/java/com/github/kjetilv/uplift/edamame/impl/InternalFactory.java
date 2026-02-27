@@ -9,12 +9,12 @@ import static java.util.Objects.requireNonNull;
 public final class InternalFactory {
 
     /// @param <I>        Id type
-    /// @param <K>        Key type
+    /// @param <MK>        Key type
     /// @param keyHandler Key handler, null means default behaviour
     /// @return Map memoizer
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> keyHandler,
-        H kind
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        KeyHandler<MK> keyHandler,
+        K kind
     ) {
         return create(keyHandler, kind, null);
     }
@@ -22,9 +22,9 @@ public final class InternalFactory {
     /// @param keyHandler Key handler, null means default behaviour
     /// @param pojoBytes  Pojo bytes
     /// @return Map memoizer
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> keyHandler,
-        H kind,
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        KeyHandler<MK> keyHandler,
+        K kind,
         PojoBytes pojoBytes
     ) {
         return create(keyHandler, null, kind, pojoBytes);
@@ -32,50 +32,50 @@ public final class InternalFactory {
 
     /// @param pojoBytes Pojo bytes
     /// @return Map memoizer
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        H kind,
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        K kind,
         PojoBytes pojoBytes
     ) {
         return create(null, null, kind, pojoBytes);
     }
 
     /// @param <I>        Id type
-    /// @param <K>        Key type
-    /// @param <H>        Hash kind
+    /// @param <MK>        Key type
+    /// @param <K>        Hash kind
     /// @param keyHandler Key handler, null means default behaviour
     /// @param leafHasher Leaf hasher, for testing purposes
     /// @return Map memoizer
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> keyHandler,
-        LeafHasher<H> leafHasher,
-        H kind,
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        KeyHandler<MK> keyHandler,
+        LeafHasher<K> leafHasher,
+        K kind,
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");
         var treeHasher = mapHasher(kind, keyHandler, leafHasher, pojoBytes);
-        Canonicalizer<K, H> canonicalValues = CanonicalSubstructuresCataloguer.create();
+        Canonicalizer<MK, K> canonicalValues = CanonicalSubstructuresCataloguer.create();
         return new MapsMemoizerImpl<>(treeHasher, canonicalValues);
     }
 
-    public static <H extends HashKind<H>> LeafHasher<H> leafHasher(H kind, PojoBytes pojoBytes) {
+    public static <K extends HashKind<K>> LeafHasher<K> leafHasher(K kind, PojoBytes pojoBytes) {
         return LeafHasher.create(kind, pojoBytes);
     }
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
+    public static <MK, K extends HashKind<K>> Canonicalizer<MK, K> canonicalizer() {
         return canonicalizer(false);
     }
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(boolean collisionsNeverHappen) {
+    public static <MK, K extends HashKind<K>> Canonicalizer<MK, K> canonicalizer(boolean collisionsNeverHappen) {
         return new CanonicalSubstructuresCataloguer<>(collisionsNeverHappen);
     }
 
     private InternalFactory() {
     }
 
-    private static <K, H extends HashKind<H>> TreeHasher<K, H> mapHasher(
-        H kind,
-        KeyHandler<K> keyHandler,
-        LeafHasher<H> leafHasher,
+    private static <MK, K extends HashKind<K>> TreeHasher<MK, K> mapHasher(
+        K kind,
+        KeyHandler<MK> keyHandler,
+        LeafHasher<K> leafHasher,
         PojoBytes pojoBytes
     ) {
         requireNonNull(kind, "kind");

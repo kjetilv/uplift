@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.edamame;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 @FunctionalInterface
-public interface Canonicalizer<K, H extends HashKind<H>> {
+public interface Canonicalizer<MK, K extends HashKind<K>> {
 
-    CanonicalValue<H> canonical(HashedTree<K, H> hashedTree);
+    CanonicalValue<K> canonical(HashedTree<MK, K> hashedTree);
 }

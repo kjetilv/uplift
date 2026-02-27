@@ -5,13 +5,13 @@ import module java.base;
 /// Read-only access to memoized maps.
 ///
 /// @param <I> Id type, used to identify maps
-/// @param <K> Key type, used as keys in stored maps
-public interface MemoizedMaps<I, K> {
+/// @param <MK> Key type, used as keys in stored maps
+public interface MemoizedMaps<I, MK> {
 
     /// @return The number of maps memoized
     int size();
 
     /// @param id Id
     /// @return Stored map, or null of the identifier was unknown
-    Map<K, ?> get(I id);
+    Map<MK, ?> get(I id);
 }

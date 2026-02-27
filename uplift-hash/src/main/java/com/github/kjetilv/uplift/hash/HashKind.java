@@ -7,6 +7,7 @@ import module java.base;
 /// * [#K128], a 16-byte hash using MD5 hashing, or
 /// * [#K256], a 32 byte one using SHA3-256 hashing
 ///
+@SuppressWarnings("unused")
 public sealed interface HashKind<K extends HashKind<K>> {
 
     /// 128-bit hash
@@ -102,7 +103,7 @@ public sealed interface HashKind<K extends HashKind<K>> {
             return new Hash.H128(l0, l1);
         }
 
-        private static final Hash<K128> BLANK_128 = K128.of(0L, 0L);
+        private static final Hash<K128> BLANK_128 = new Hash.H128(0L, 0L);
     }
 
     record K256(
@@ -142,6 +143,6 @@ public sealed interface HashKind<K extends HashKind<K>> {
             return new Hash.H256(l0, l1, l2, l3);
         }
 
-        private static final Hash<K256> BLANK_256 = K256.of(0L, 0L, 0L, 0L);
+        private static final Hash<K256> BLANK_256 = new Hash.H256(0L, 0L, 0L, 0L);
     }
 }

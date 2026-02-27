@@ -6,11 +6,11 @@ import com.github.kjetilv.uplift.hash.HashKind;
 @SuppressWarnings("unused")
 public final class Canonicalizers {
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
+    public static <MK, K extends HashKind<K>> Canonicalizer<MK, K> canonicalizer() {
         return InternalFactory.canonicalizer();
     }
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(
+    public static <MK, K extends HashKind<K>> Canonicalizer<MK, K> canonicalizer(
         boolean collisionsNeverHappen
     ) {
         return InternalFactory.canonicalizer(collisionsNeverHappen);

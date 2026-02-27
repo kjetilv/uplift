@@ -16,10 +16,10 @@ import module java.base;
 /// {@link MapsMemoizer} may then be discarded, leaving these internal structures to be GC-ed.
 ///
 /// @param <I> Top-level id type, used to lookup maps
-/// @param <K> Key type, used as the key type in stored maps
+/// @param <MK> Key type, used as the key type in stored maps
 /// @see MapsMemoizers
 @SuppressWarnings("unused")
-public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
+public interface MapsMemoizer<I, MK> extends MemoizedMaps<I, MK> {
 
     /// Returns a read-only access for canonical maps.  This memoizer should not be invoked with further
     /// calls to {@link #put(Object, Map) put}/{@link #putIfAbsent(Object, Map) putIfAbsent}, as it carries
@@ -29,7 +29,7 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
     /// with the copy flag.
     ///
     /// @return Lookup of canonical maps
-    default MemoizedMaps<I, K> maps() {
+    default MemoizedMaps<I, MK> maps() {
         return maps(false);
     }
 
@@ -52,5 +52,5 @@ public interface MapsMemoizer<I, K> extends MemoizedMaps<I, K> {
     /// @param copy If true, return a copy of the stored maps and leave this memoizer able to accept further
     ///             calls to {@link #put(Object, Map) put}/{@link #putIfAbsent(Object, Map) putIfAbsent}.
     /// @return Lookup of canonical maps
-    MemoizedMaps<I, K> maps(boolean copy);
+    MemoizedMaps<I, MK> maps(boolean copy);
 }

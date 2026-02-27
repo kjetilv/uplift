@@ -11,39 +11,39 @@ public final class MapsMemoizers {
     ///
     /// @param <I> Top-level id type
     /// @return [MapsMemoizer] for String-keyed maps
-    public static <I, H extends HashKind<H>> MapsMemoizer<I, String> create(H kind) {
+    public static <I, K extends HashKind<K>> MapsMemoizer<I, String> create(K kind) {
         return create(null, null, kind);
     }
 
-    /// This method affords control over stored keys. Stored maps will be normalized to use [K]'s
+    /// This method affords control over stored keys. Stored maps will be normalized to use [MK]'s
     /// as map keys, on all levels. The `keyHandler` argument provides a callback that will
-    /// produce [K] instances from keys in incoming maps.
+    /// produce [MK] instances from keys in incoming maps.
     ///
     /// Since [MapsMemoizer] accepts [Map<?, ?>][Map], this function needs to accept any
     /// input, i.e. [?][Object].
     ///
     /// @param <I>        Id type
-    /// @param <K>        Key type
+    /// @param <MK>        Key type
     /// @param keyHandler Key handler
     /// @return Map memoizer
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> keyHandler,
-        H kind
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        KeyHandler<MK> keyHandler,
+        K kind
     ) {
         return InternalFactory.create(keyHandler, kind);
     }
 
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
         PojoBytes pojoBytes,
-        H kind
+        K kind
     ) {
         return create(null, pojoBytes, kind);
     }
 
-    public static <I, K, H extends HashKind<H>> MapsMemoizer<I, K> create(
-        KeyHandler<K> keyHandler,
+    public static <I, MK, K extends HashKind<K>> MapsMemoizer<I, MK> create(
+        KeyHandler<MK> keyHandler,
         PojoBytes pojoBytes,
-        H kind
+        K kind
     ) {
         return InternalFactory.create(keyHandler, kind, pojoBytes);
     }

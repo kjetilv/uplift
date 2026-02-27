@@ -15,14 +15,14 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// [the default memoizer][MapsMemoizers#create(com.github.kjetilv.uplift.hash.HashKind)]
 /// which simply normalizes to strings.
 ///
-/// @param <K> Key type
+/// @param <MK> Key type
 /// @see MapsMemoizers#create(KeyHandler, com.github.kjetilv.uplift.hash.HashKind)
 @FunctionalInterface
-public interface KeyHandler<K> {
+public interface KeyHandler<MK> {
 
     @SuppressWarnings("unchecked")
-    static <K> KeyHandler<K> defaultHandler() {
-        return key -> (K) key.toString();
+    static <MK> KeyHandler<MK> defaultHandler() {
+        return key -> (MK) key.toString();
     }
 
     /// Affects how maps are hashed wrt. their keys.  Default implementation is to get the
@@ -30,7 +30,7 @@ public interface KeyHandler<K> {
     ///
     /// @param key Key
     /// @return byte array for hashing
-    default Bytes bytes(K key) {
+    default Bytes bytes(MK key) {
         return Bytes.from(key.toString());
     }
 
@@ -38,9 +38,9 @@ public interface KeyHandler<K> {
     /// gets the same `K` instance.
     ///
     /// Note that this method must accept [any][Object] value. The [MapsMemoizer] needs to work
-    /// on `Map<?, ?>`, so it is up to the handler to resolve maps' keys into [K]'s.
+    /// on `Map<?, ?>`, so it is up to the handler to resolve maps' keys into [MK]'s.
     ///
     /// @param key Key
     /// @return A K instance
-    K normalize(Object key);
+    MK normalize(Object key);
 }
