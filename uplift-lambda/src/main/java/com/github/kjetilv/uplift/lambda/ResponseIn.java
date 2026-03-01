@@ -34,6 +34,12 @@ public record ResponseIn(
             : body.getBytes(UTF_8);
     }
 
+    public Status status() {
+        return statusCode >= 500 ? Status.PROCESSING_ERROR
+            : statusCode >= 400 ? Status.BAD_REQUEST
+                : Status.OK;
+    }
+
     private static final byte[] EMPTY_BODY = new byte[0];
 
     @Override
@@ -43,5 +49,11 @@ public record ResponseIn(
                " b:" + Utils.printBody(body) +
                (isBase64Encoded ? " base64" : "") +
                "]";
+    }
+
+    public enum Status {
+        OK,
+        BAD_REQUEST,
+        PROCESSING_ERROR
     }
 }

@@ -74,7 +74,7 @@ public final class Flogs {
             LogFormatter<LogEntry> formatter
         ) {
             this.logLevel = logLevel == null ? LogLevel.DEFAULT : logLevel;
-            this.printer = printer == null ? System.out::println : printer;
+            this.printer = printer == null ? IO::println : printer;
             this.time = time == null ? Instant::now : time;
             this.formatter = formatter == null ? LogFormatter.DEFAULT : formatter;
         }

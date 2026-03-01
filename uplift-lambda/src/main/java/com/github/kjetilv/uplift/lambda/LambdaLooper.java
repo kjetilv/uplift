@@ -225,6 +225,9 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
     @Override
     public String toString() {
         var count = completedOk.longValue() + completedFail.longValue();
+        var duration = count > 0
+            ? Duration.ofMillis(this.duration.get().toMillis() / count)
+            : Duration.ZERO;
         return "%s[%s@%s: init:%s ok:%s fail:%s avg:%s]".formatted(
             name,
             lambdaHandler,
@@ -232,7 +235,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
             initiated,
             completedOk,
             completedFail,
-            count > 0 ? Duration.ofMillis(duration.get().toMillis() / count) : Duration.ZERO
+            duration
         );
     }
 

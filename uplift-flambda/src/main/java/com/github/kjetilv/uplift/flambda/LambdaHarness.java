@@ -21,15 +21,11 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final Flambda flambda;
 
-    private final ExecutorService testExec;
-
-    private final ExecutorService lambdaExec;
-
-    private final ExecutorService serverExec;
-
     private final LambdaLooper looper;
 
     private final Reqs reqs;
+
+    private LambdaHandler handler;
 
     public LambdaHarness(
         String name,
@@ -71,37 +67,37 @@ public class LambdaHarness implements RuntimeCloseable {
         Supplier<Instant> time
     ) {
         this.name = Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(lambdaHandler, "lambdaHandler");
+        this.handler = Objects.requireNonNull(lambdaHandler, "lambdaHandler");
 
-        var executor = Executors.newVirtualThreadPerTaskExecutor();
-        this.serverExec = executor;
-        this.lambdaExec = executor;
-        this.testExec = executor;
+        FlambdaSettings settings = flambdaSettings != null ? flambdaSettings
+            : new FlambdaSettings(
+                name,
+                _64K,
+                SHORT_Q,
+                corsSettings != null ? corsSettings
+                    : CORS_DEFAULTS,
+                resolve(time)
+            );
 
-        var settings = flambdaSettings == null
-            ? settings(name, corsSettings, time)
-            : flambdaSettings;
-
-        var clientSettings = lambdaClientSettings == null
-            ? new LambdaClientSettings(new EmptyEnv(), time)
-            : lambdaClientSettings.time(time);
+        var clientSettings = lambdaClientSettings != null
+            ? lambdaClientSettings.time(time)
+            : new LambdaClientSettings(new EmptyEnv(), time);
 
         this.flambda = new Flambda(settings);
-        Supplier<Instant> time1 = settings.time();
-        this.looper = Lambda.managed(
+        var managed = Lambda.managed(
             this.flambda.lambdaUri(),
             clientSettings,
-            lambdaHandler
-        ).looper(name);
-        this.testExec.submit(this.looper);
+            handler
+        );
+
+        this.looper = managed.looper(name);
+        Executors.newVirtualThreadPerTaskExecutor().submit(this.looper);
         this.reqs = flambda.reqs();
     }
 
     @Override
     public void close() {
         this.flambda.close();
-        Stream.of(this.serverExec, this.lambdaExec, this.testExec)
-            .forEach(ExecutorService::shutdown);
         this.looper.close();
     }
 
@@ -115,27 +111,14 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
 
-    private static FlambdaSettings settings(
-        String name,
-        CorsSettings cors,
-        Supplier<Instant> time
-    ) {
-        return new FlambdaSettings(
-            name,
-            65536,
-            10,
-            cors != null ? cors
-                : CORS_DEFAULTS,
-            resolve(time)
-        );
-    }
-
     private static Supplier<Instant> resolve(Supplier<Instant> time) {
         return time == null ? SYSTEM_TIME : time;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + name + " @ " + flambda.apiUri() + " -> " + flambda.lambdaUri() + "]";
+        return getClass().getSimpleName() + "[" +
+               name + "/" + handler + " @ " +
+               flambda.apiUri() + " -> λ" + flambda.lambdaUri().getPort() + "]";
     }
 }

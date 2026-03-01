@@ -9,4 +9,8 @@ public enum LogLevel {
     TRACE;
 
     public static final LogLevel DEFAULT = INFO;
+
+    public int length() {
+        return name().length();
+    }
 }

@@ -1,6 +1,5 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -8,6 +7,7 @@ import java.util.Map;
 
 import static com.github.kjetilv.uplift.lambda.Utils.encodeResponseBody;
 import static com.github.kjetilv.uplift.lambda.Utils.printBody;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public record LambdaResult(
     int statusCode,
@@ -27,7 +27,7 @@ public record LambdaResult(
 
     @SafeVarargs
     public static LambdaResult json(int status, String body, Map.Entry<String, String>... headers) {
-        return json(status, body == null ? NONE : body.getBytes(StandardCharsets.UTF_8), headers);
+        return json(status, body == null ? NONE : body.getBytes(UTF_8), headers);
     }
 
     @SafeVarargs
@@ -37,11 +37,31 @@ public record LambdaResult(
 
     @SafeVarargs
     public static LambdaResult binary(int status, byte[] body, Map.Entry<String, String>... headers) {
-        return new LambdaResult(status, Map.ofEntries(headers), body, true);
+        return new LambdaResult(
+            status,
+            Map.ofEntries(headers),
+            body,
+            true
+        );
+    }
+
+    @SafeVarargs
+    public static LambdaResult string(int status, String body, Map.Entry<String, String>... headers) {
+        return new LambdaResult(
+            status,
+            Map.ofEntries(headers),
+            body.getBytes(UTF_8),
+            true
+        );
     }
 
     public static LambdaResult status(int statusCode) {
-        return new LambdaResult(statusCode, null, null, false);
+        return new LambdaResult(
+            statusCode,
+            null,
+            null,
+            false
+        );
     }
 
     public LambdaResult(int statusCode, Map<String, String> headers, byte[] body, boolean binary) {

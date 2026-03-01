@@ -39,7 +39,8 @@ record ApiHandler(
 
     private void respond(
         HttpReq httpReq,
-        LambdaReq lambdaReq, LambdaRes lambdaRes,
+        LambdaReq lambdaReq,
+        LambdaRes lambdaRes,
         HttpResponseCallback callback
     ) {
         try {
@@ -57,9 +58,21 @@ record ApiHandler(
                     .body(bodyBytes);
             }
         } finally {
-            log.info("Handled {} -> {}", lambdaReq, lambdaReq);
+            switch (lambdaRes.in().status()) {
+                case PROCESSING_ERROR -> log.error(REQ_FORMAT, ERROR_SYMBOL, lambdaReq, lambdaRes);
+                case BAD_REQUEST -> log.warn(REQ_FORMAT, WARN_SYMBOL, lambdaReq, lambdaRes);
+                default -> log.info(REQ_FORMAT, OK_SYMBOL, lambdaReq, lambdaRes);
+            }
         }
     }
+
+    private static final String REQ_FORMAT = "{} {} -> {}";
+
+    private static final String ERROR_SYMBOL = "❌";
+
+    private static final String WARN_SYMBOL = "⚠️";
+
+    private static final String OK_SYMBOL = "✅";
 
     private static RequestOut requestOut(HttpReq httpReq, HttpMethod method) {
         var req = httpReq.withQueryParameters();
