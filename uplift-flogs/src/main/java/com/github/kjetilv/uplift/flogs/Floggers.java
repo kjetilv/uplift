@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.flogs;
 
 import module java.base;
 
-final class FLoggers {
+final class Floggers {
 
     private final Consumer<String> printer;
 
@@ -10,7 +10,7 @@ final class FLoggers {
 
     private final Flogs.Settings settings;
 
-    FLoggers(Consumer<String> printer, Flogs.Settings settings) {
+    Floggers(Consumer<String> printer, Flogs.Settings settings) {
         this.printer = Objects.requireNonNull(printer, "printer");
         this.settings = settings;
         this.emergencyPrinter = System.err::println;
@@ -21,7 +21,7 @@ final class FLoggers {
         return getClass().getSimpleName() + "[" + settings.logLevel() + "]";
     }
 
-    FLogger create(String name) {
-        return new FLogger(name, printer, emergencyPrinter, settings);
+    Flogger create(String name) {
+        return new Flogger(name, printer, emergencyPrinter, settings);
     }
 }

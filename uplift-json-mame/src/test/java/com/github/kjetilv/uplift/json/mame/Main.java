@@ -14,7 +14,7 @@ public final class Main {
 
         var session = new AtomicReference<JsonSession>();
         session.set(CachingJsonSessions.create(K128));
-        System.out.println("Before go: " + Mem.create());
+        IO.println("Before go: " + Mem.create());
         var goStart = Instant.now();
         var callbacks = session.get().callbacks(list::add);
 //        Callbacks callbacks = new ValueCallbacks(list::add);
@@ -35,17 +35,17 @@ public final class Main {
                 });
         }
         var putTime = Duration.between(goStart, Instant.now()).toMillis();
-        System.out.println("After put (" + putTime + "ms): " + Mem.create());
+        IO.println("After put (" + putTime + "ms): " + Mem.create());
         System.gc();
-        System.out.println(list.size());
-        System.out.println(unhashed.size());
-        System.out.println("After parse: " + Mem.create());
+        IO.println(list.size());
+        IO.println(unhashed.size());
+        IO.println("After parse: " + Mem.create());
         var gcStart = Instant.now();
         cachingCallbacks.set(null);
         session.set(null);
         System.gc();
         var gcTime = Duration.between(gcStart, Instant.now()).toMillis();
-        System.out.println("After GC (" + gcTime + "ms): " + Mem.create());
+        IO.println("After GC (" + gcTime + "ms): " + Mem.create());
     }
 
     private Main() {

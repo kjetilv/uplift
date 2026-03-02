@@ -81,12 +81,12 @@ void main() {
     if (flows.start()) {
         var run = flows.run();
         run.join()
-            .forEach(System.out::println);
+            .forEach(IO::println);
     } else {
         throw new IllegalStateException("Not started:" + flows);
     }
     var timeTaken = Duration.between(now, Instant.now());
-    System.out.println("Time taken: " + timeTaken);
+    IO.println("Time taken: " + timeTaken);
 }
 
 private FqFlows.Processor<Map<String, Object>> process(

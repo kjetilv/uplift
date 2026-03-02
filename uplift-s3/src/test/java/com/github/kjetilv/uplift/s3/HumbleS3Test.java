@@ -20,14 +20,14 @@ class HumbleS3Test {
         S3Accessor defaultS3Accessor = new DefaultS3Accessor(
             Env.actual(), HttpClient.newHttpClient(), "taninim-water", null);
 
-        //        humbleS3Accessor.stream("ids.json").map(BytesIO::readUTF8).ifPresent(System.out::println);
+        //        humbleS3Accessor.stream("ids.json").map(BytesIO::readUTF8).ifPresent(IO::println);
         var abc = defaultS3Accessor.remoteInfos("abc");
         assertThat(abc).isNotEmpty().allSatisfy((s, remoteInfo) ->
             assertThat(s).startsWith("abc"));
-        System.out.println(abc);
+        IO.println(abc);
 
         var contents = UUID.randomUUID().toString();
-        defaultS3Accessor.put(contents, "foobar.txt");
+        defaultS3Accessor.put("foobar.txt", contents);
 
         var readFoobar = defaultS3Accessor.stream("foobar.txt")
             .map(BytesIO::readUTF8);

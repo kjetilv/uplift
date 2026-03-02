@@ -27,7 +27,7 @@ class DefaultStructureMatcherTest {
 
         var differ = Structures.differ(json1, Structures.MAPS);
         var diff = differ.subdiff(json2);
-        System.out.println(diff);
-        differ.diff(json2).ifPresent(System.out::println);
+        IO.println(diff);
+        differ.diff(json2).ifPresent(IO::println);
     }
 }

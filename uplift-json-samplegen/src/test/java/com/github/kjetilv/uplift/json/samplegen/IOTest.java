@@ -48,7 +48,7 @@ class IOTest {
             writer.write(USER, channel);
         }
         var userJson = baos.toString();
-        System.out.println(userJson);
+        IO.println(userJson);
     }
 
     public static final User USER = new User(

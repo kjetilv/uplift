@@ -51,12 +51,12 @@ public final class Flogs {
 
     private static final StableValue<Settings> settings = StableValue.of();
 
-    private static final Supplier<FLoggers> floggers = StableValue.supplier(() -> {
+    private static final Supplier<Floggers> floggers = StableValue.supplier(() -> {
         var settings = Flogs.settings.orElseSet(Settings::new);
-        return new FLoggers(settings.printer(), settings);
+        return new Floggers(settings.printer(), settings);
     });
 
-    private static FLogger flogger(String name) {
+    private static Flogger flogger(String name) {
         return floggers.get().create(name);
     }
 

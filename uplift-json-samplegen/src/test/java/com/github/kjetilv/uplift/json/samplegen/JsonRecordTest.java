@@ -104,7 +104,7 @@ public class JsonRecordTest {
                 }
                 """;
         var readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
-        System.out.println(readUser);
+        IO.println(readUser);
 
 //        assertThat(readUser.tags()).containsEntry("good", "evil");
 //        assertThat(readUser.tags()).containsEntry("1", 2L);

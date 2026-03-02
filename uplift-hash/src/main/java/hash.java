@@ -20,7 +20,7 @@ void main(String[] args) {
             .map(path -> inputStream(path))
             .forEach(hashTo(builder));
     }
-    System.out.println(builder.build().digest());
+    IO.println(builder.build().digest());
 }
 
 private static String homeIn(String path) {

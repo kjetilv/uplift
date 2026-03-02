@@ -23,19 +23,17 @@ public interface S3Accessor {
             Optional.ofNullable(
                 EnvLookup.get("taninim.bucket", "TANINIM_BUCKET")
             ).orElse("taninim-water"),
-            null);
+            null
+        );
     }
 
     default Stream<String> list(String prefix) {
-        return listInfos(prefix).stream().map(RemoteInfo::key);
+        return listInfos(prefix).stream()
+            .map(RemoteInfo::key);
     }
 
     default Collection<RemoteInfo> listInfos(String prefix) {
         return remoteInfos(prefix).values();
-    }
-
-    default Optional<? extends InputStream> stream(String name) {
-        return stream(name, null);
     }
 
     default Map<String, Long> remoteSizes() {
@@ -43,10 +41,12 @@ public interface S3Accessor {
     }
 
     default Map<String, Long> remoteSizes(String prefix) {
-        return remoteInfos(prefix).entrySet().stream().collect(Collectors.toMap(
-            Map.Entry::getKey,
-            entry -> entry.getValue().size()
-        ));
+        return remoteInfos(prefix).entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().size()
+            ));
     }
 
     default OptionalLong remoteSize(String name) {
@@ -59,7 +59,8 @@ public interface S3Accessor {
             return Optional.empty();
         }
         if (remoteInfo.size() == 1) {
-            return remoteInfo.values().stream().findAny();
+            return remoteInfo.values()
+                .stream().findAny();
         }
         throw new IllegalArgumentException(remoteInfo.size() + " entries for prefix " + name);
     }
@@ -80,9 +81,11 @@ public interface S3Accessor {
         return Optional.empty();
     }
 
-    Optional<? extends InputStream> stream(String name, Range range);
+    default Optional<? extends InputStream> stream(String name) {
+        return stream(name, null);
+    }
 
-    default void put(String contents, String remoteName) {
+    default void put(String remoteName, String contents) {
         var bytes = contents.getBytes(StandardCharsets.UTF_8);
         put(remoteName, new ByteArrayInputStream(bytes), bytes.length);
     }
@@ -95,13 +98,15 @@ public interface S3Accessor {
         }
     }
 
-    void put(String remoteName, InputStream inputStream, long length);
-
-    Map<String, RemoteInfo> remoteInfos(String prefix);
-
     default void remove(String... objects) {
         remove(Arrays.asList(objects));
     }
+
+    Optional<? extends InputStream> stream(String name, Range range);
+
+    void put(String remoteName, InputStream inputStream, long length);
+
+    Map<String, RemoteInfo> remoteInfos(String prefix);
 
     void remove(Collection<String> objects);
 

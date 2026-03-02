@@ -68,29 +68,29 @@ public class JsonExtractorTest {
         assertThat(extract).hasValueSatisfying(subset -> {
             assertThat(matcher.contains(subset)).isTrue();
             var match = matcher(subset).match(mask);
-            System.out.println("\nPathways\n");
+            IO.println("\nPathways\n");
             match.pathways().stream()
                 .flatMap(probe -> probe.lines("", "  "))
-                .forEach(System.out::println);
-            System.out.println("\nStructure\n");
-            System.out.println("  " + main);
-            System.out.println("\nMask\n");
-            System.out.println("  " + mask);
-            System.out.println("\nSubset\n");
-            System.out.println("  " + subset);
-            System.out.println("\nLeaves\n");
+                .forEach(IO::println);
+            IO.println("\nStructure\n");
+            IO.println("  " + main);
+            IO.println("\nMask\n");
+            IO.println("  " + mask);
+            IO.println("\nSubset\n");
+            IO.println("  " + subset);
+            IO.println("\nLeaves\n");
             match.leaves()
                 .map(l -> "  " + l)
-                .forEach(System.out::println);
+                .forEach(IO::println);
         });
 
         var subdiff = differ.subdiff(mask);
-//        System.out.println(subdiff);
+//        IO.println(subdiff);
 
         subdiff.forEach((jsonNodePointer, jsonNodeDiff) ->
-            System.out.println(jsonNodePointer + " -> " + jsonNodeDiff));
+            IO.println(jsonNodePointer + " -> " + jsonNodeDiff));
 
-        assertThat(differ.diff(mask)).hasValueSatisfying(System.out::println);
+        assertThat(differ.diff(mask)).hasValueSatisfying(IO::println);
     }
 
     private static StructureExtractor<Object> extractor(Object main) {

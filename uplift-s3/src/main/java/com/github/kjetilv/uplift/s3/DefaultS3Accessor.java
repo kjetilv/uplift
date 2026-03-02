@@ -50,11 +50,6 @@ final class DefaultS3Accessor implements S3Accessor {
     }
 
     @Override
-    public Optional<? extends InputStream> stream(String name) {
-        return streamFrom(getObjectRequest(name, null));
-    }
-
-    @Override
     public Optional<URI> presign(String name, Duration timeToLive) {
 
         var endpointUrl = URI.create("https://s3-%s.amazonaws.com/%s/%s".formatted(region, bucket, name));
@@ -95,7 +90,7 @@ final class DefaultS3Accessor implements S3Accessor {
     }
 
     @Override
-    public void put(String contents, String remoteName) {
+    public void put(String remoteName, String contents) {
         streamFrom(putObjectRequest(remoteName, contents.getBytes(StandardCharsets.UTF_8)));
     }
 

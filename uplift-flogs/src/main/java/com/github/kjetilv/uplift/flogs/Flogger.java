@@ -5,7 +5,7 @@ import module java.base;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
-public final class FLogger implements Logger {
+final class Flogger implements Logger {
 
     public static final Object[] NO_ARGS = new Object[0];
 
@@ -21,7 +21,7 @@ public final class FLogger implements Logger {
 
     private final Consumer<String> emergencyWriter;
 
-    FLogger(String name, Consumer<String> writer, Consumer<String> emergencyWriter, Flogs.Settings settings) {
+    Flogger(String name, Consumer<String> writer, Consumer<String> emergencyWriter, Flogs.Settings settings) {
         this.sourceName = requireNonNull(name, "name");
         this.writer = requireNonNull(writer, "linesWriter");
         this.emergencyWriter = emergencyWriter == null ? System.err::println : emergencyWriter;
@@ -107,7 +107,7 @@ public final class FLogger implements Logger {
     @Override
     public boolean equals(Object obj) {
         return obj == this ||
-               obj instanceof FLogger logger &&
+               obj instanceof Flogger logger &&
                Objects.equals(sourceName, logger.sourceName);
     }
 

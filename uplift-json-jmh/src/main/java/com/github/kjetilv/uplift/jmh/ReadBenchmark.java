@@ -23,37 +23,37 @@ public class ReadBenchmark {
         .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
 
     static void main() throws IOException {
-        System.out.println("OK");
+        IO.println("OK");
 
         var lines = Files.readAllLines(PATH_L, UTF_8);
 
         var initTime = Instant.now();
-        System.out.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
+        IO.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())
             .toMillis());
 
         var longAdder = new LongAdder();
         doUplift(lines, longAdder, 4);
         doJackson(lines, longAdder, 4);
 
-        System.out.println("Warmed up");
+        IO.println("Warmed up");
         System.gc();
 
         var jacksonNow = Instant.now();
 
         doJackson(lines, longAdder, 1);
         var jacksonTime = Duration.between(jacksonNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
-        System.out.println("Jackson: " + longAdder + ":" + jacksonTime);
+        IO.println("Jackson: " + longAdder + ":" + jacksonTime);
 
         var upliftNow = Instant.now();
         doUplift(lines, longAdder, 1);
         var upliftTime = Duration.between(upliftNow, Instant.now()).truncatedTo(ChronoUnit.MILLIS);
-        System.out.println("Uplift:" + longAdder + ": " + upliftTime);
+        IO.println("Uplift:" + longAdder + ": " + upliftTime);
         System.gc();
 
         var perc = perc(jacksonTime, upliftTime);
-        System.out.println("Jackson spent " + perc + "% of the time uplift did");
+        IO.println("Jackson spent " + perc + "% of the time uplift did");
         var perc2 = perc(upliftTime, upliftTime.plus(jacksonTime));
-        System.out.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
+        IO.println("Uplift spent " + perc2 + "% of the total " + upliftTime.plus(jacksonTime));
     }
 
     @Benchmark

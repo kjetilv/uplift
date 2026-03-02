@@ -25,7 +25,7 @@ public class HttpTest {
                 HttpRequest.newBuilder(run.uri()).build(),
                 HttpResponse.BodyHandlers.ofString()
             );
-            System.out.println(response.body());
+            IO.println(response.body());
         }
 
         run.close();

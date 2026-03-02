@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -18,13 +17,13 @@ public class DirectoryObserverTest {
         var tmp = tmp();
         try (var fileStream = Files.list(tmp)) {
             var files = fileStream.toList();
-            System.out.println("Going in: " + files);
+            IO.println("Going in: " + files);
             Optional<FileState> update;
             try (var observer = new DirectoryObserver(tmp)) {
                 CompletableFuture.runAsync(() -> bg(observer));
                 update = observer.awaitChange(files, Duration.ofHours(1));
             }
-            update.ifPresentOrElse(System.out::println, () -> System.out.println("N/A"));
+            update.ifPresentOrElse(IO::println, () -> IO.println("N/A"));
         }
 
     }
@@ -32,7 +31,7 @@ public class DirectoryObserverTest {
     private static void bg(DirectoryObserver observer) {
         try {
             new BufferedReader(new InputStreamReader(System.in)).readLine();
-            System.out.println("Closing");
+            IO.println("Closing");
             observer.close();
         } catch (Exception e) {
             throw new RuntimeException(e);

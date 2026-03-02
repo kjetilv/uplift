@@ -58,7 +58,7 @@ public class BytesJsonReaderTest {
 
         var reader = new BytesJsonReader<User>(Users.INSTANCE.callbacks());
         var user = reader.read(json.getBytes(StandardCharsets.UTF_8));
-        System.out.println(user);
+        IO.println(user);
 
         var rwRead = Users.INSTANCE.bytesReader().read(json.getBytes());
         assertThat(rwRead.name()).isEqualTo("Kjetil");
