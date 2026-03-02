@@ -76,8 +76,6 @@ public class ReadBenchmark {
 
     private static final byte[] data;
 
-    private static final byte[][] datas;
-
     private static final JsonReader<String, Tweet> reader;
 
     private static final JsonReader<byte[], Tweet> bReader;
@@ -104,9 +102,6 @@ public class ReadBenchmark {
             var stream = Arrays.stream(out.toString(UTF_8)
                     .split("\n"))
                 .toList();
-            datas = stream.stream()
-                .map(line -> line.getBytes(UTF_8))
-                .toArray(byte[][]::new);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

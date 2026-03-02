@@ -56,7 +56,7 @@ public class BytesJsonReaderTest {
                 }
                 """.formatted(uuid);
 
-        var reader = new BytesJsonReader<User>(Users.INSTANCE.callbacks());
+        var reader = new BytesJsonReader<>(Users.INSTANCE.callbacks());
         var user = reader.read(json.getBytes(StandardCharsets.UTF_8));
         IO.println(user);
 

@@ -161,10 +161,6 @@ private static final Pattern WS = Pattern.compile("\\s+");
 
 private static final Pattern DOLLAR = Pattern.compile("\\$");
 
-private static Map<String, Object> roundtrip(Map<String, Object> map) {
-    return Json.INSTANCE.map(Json.INSTANCE.write(map));
-}
-
 private static int computeValue(String val) {
     return Integer.parseInt(dollarSigns(val)
         .replaceAll("")

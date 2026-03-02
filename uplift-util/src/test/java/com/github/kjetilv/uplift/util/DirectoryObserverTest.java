@@ -11,9 +11,9 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class DirectoryObserverTest {
+public final class DirectoryObserverTest {
 
-    static void main(String[] args) throws IOException {
+    static void main() throws IOException {
         var tmp = tmp();
         try (var fileStream = Files.list(tmp)) {
             var files = fileStream.toList();
@@ -26,6 +26,9 @@ public class DirectoryObserverTest {
             update.ifPresentOrElse(IO::println, () -> IO.println("N/A"));
         }
 
+    }
+
+    private DirectoryObserverTest() {
     }
 
     private static void bg(DirectoryObserver observer) {

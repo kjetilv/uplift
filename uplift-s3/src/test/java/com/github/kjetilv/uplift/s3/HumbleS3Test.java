@@ -22,7 +22,7 @@ class HumbleS3Test {
 
         //        humbleS3Accessor.stream("ids.json").map(BytesIO::readUTF8).ifPresent(IO::println);
         var abc = defaultS3Accessor.remoteInfos("abc");
-        assertThat(abc).isNotEmpty().allSatisfy((s, remoteInfo) ->
+        assertThat(abc).isNotEmpty().allSatisfy((s, _) ->
             assertThat(s).startsWith("abc"));
         IO.println(abc);
 

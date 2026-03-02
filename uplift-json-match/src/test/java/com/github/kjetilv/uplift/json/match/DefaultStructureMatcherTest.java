@@ -2,8 +2,6 @@ package com.github.kjetilv.uplift.json.match;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 class DefaultStructureMatcherTest {
 
     @Test
