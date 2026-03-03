@@ -1,7 +1,10 @@
 package com.github.kjetilv.uplift.synchttp.write;
 
-import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import com.github.kjetilv.uplift.synchttp.Utils;
+import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
+import com.github.kjetilv.uplift.util.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -9,6 +12,8 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 
 public class HttpResWriter {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpResWriter.class);
 
     private final WritableByteChannel out;
 
@@ -41,7 +46,11 @@ public class HttpResWriter {
                 }
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write " + response, e);
+            if (Throwables.clientFailure(e)) {
+                log.warn("Failed to write {}, connection was closed: {}", response, Throwables.summary(e));
+            } else {
+                throw new IllegalStateException("Failed to write " + response, e);
+            }
         }
     }
 

@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.rere.HttpRes;
 import com.github.kjetilv.uplift.synchttp.write.HttpResWriter;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
+import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,14 @@ public final class HttpCallbackProcessor implements Server.Processor {
         try {
             httpReq = new HttpReqReader(reqSegments).read(in);
         } catch (Exception e) {
-            log.error("Failed to read request", e);
-            new HttpResWriter(out).write(new HttpRes(500));
-            return false;
+            if (Throwables.clientFailure(e)) {
+                log.warn("Failed to read request {}, client closed connection", Throwables.summary(e));
+                return false;
+            } else {
+                log.error("Failed to read request", e);
+                new HttpResWriter(out).write(new HttpRes(500));
+                return false;
+            }
         }
         if (httpReq == null) {
             return false;

@@ -2,11 +2,16 @@ package com.github.kjetilv.uplift.synchttp.write;
 
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
+import com.github.kjetilv.uplift.util.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class HttpResCallbackImpl implements
     HttpResponseCallback,
     HttpResponseCallback.Headers,
     HttpResponseCallback.Body {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpResCallbackImpl.class);
 
     private final WritableByteChannel out;
 
@@ -140,18 +145,19 @@ final class HttpResCallbackImpl implements
         }
     }
 
-    private void checkWrittenLength(int written) {
-        if (written != contentLength) {
-            throw new IllegalStateException(
-                "Expected " + contentLength + " bytes, but wrote " + written);
+    private void checkWrittenLength(WriteResult written) {
+        if (written.terminated()) {
+            log.warn("Wrote {} bytes (terminated)", written.count());
+        } else if (written.count() != contentLength) {
+            throw new IllegalStateException("Expected " + contentLength + " bytes, but wrote " + written);
         }
     }
 
-    private int transferFrom(ReadableByteChannel body) {
-        int written = 0;
+    private WriteResult transferFrom(ReadableByteChannel body) {
+        var written = new WriteResult();
         ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
         while (Utils.didRead(body, buffer)) {
-            written += stream(buffer);
+            written = written.add(stream(buffer));
         }
         return written;
     }
@@ -171,21 +177,24 @@ final class HttpResCallbackImpl implements
         }
     }
 
-    private int stream(ByteBuffer delta) {
+    private WriteResult stream(ByteBuffer buffer) {
+        int written = 0;
         try {
-            int written = 0;
-            while (delta.hasRemaining()) {
-                written += out.write(delta);
+            while (buffer.hasRemaining()) {
+                written += out.write(buffer);
             }
-            return written;
+            return new WriteResult(written, false);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to write " + delta, e);
+            if (Throwables.clientFailure(e)) {
+                log.warn("Failed to write {}, connection was closed: {}", buffer, Throwables.summary(e));
+                return new WriteResult(written, true);
+            } else {
+                throw new IllegalArgumentException("Failed to write " + buffer, e);
+            }
         }
     }
 
     private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
-
-    private static final byte[] LN = {'\r', '\n'};
 
     private static final byte[] COLON = ": ".getBytes();
 
@@ -203,6 +212,18 @@ final class HttpResCallbackImpl implements
 
     private static ByteBuffer statusCode(int code) {
         return ByteBuffer.wrap(String.valueOf(code).getBytes());
+    }
+
+    private record WriteResult(int count, boolean terminated) {
+        private WriteResult() {
+            this(0, false);
+        }
+
+        public WriteResult add(WriteResult stream) {
+            return terminated
+                ? this
+                : new WriteResult(count + stream.count(), false);
+        }
     }
 
     @Override
