@@ -89,6 +89,6 @@ class IOTest {
                 Map.Entry::getKey, Map.Entry::getValue, (o, _) -> o,
                 LinkedHashMap::new
             )),
-        new BigDecimal("123.23")
+        "123.23"
     );
 }

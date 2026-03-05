@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.fq.flows;
 
-public record Flow<T>(
-    Name from,
-    Name to,
-    FqFlows.Processor<T> processor
-) {
+public record Flow<T>(Name from, Name to, FqFlows.Processor<T> processor) {
 
     public Name name() {
         return to();
@@ -18,6 +14,10 @@ public record Flow<T>(
 
     public Flow<T> from(Name from) {
         return new Flow<>(from, to, processor);
+    }
+
+    public Entries<T> process(Entries<T> entries) {
+        return processor.process(entries);
     }
 
     boolean isFromSource() {

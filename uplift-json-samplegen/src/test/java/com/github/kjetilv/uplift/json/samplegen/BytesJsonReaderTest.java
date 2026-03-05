@@ -63,7 +63,7 @@ public class BytesJsonReaderTest {
         var rwRead = Users.INSTANCE.bytesReader().read(json.getBytes());
         assertThat(rwRead.name()).isEqualTo("Kjetil");
 
-        var written = Users.INSTANCE.stringWriter().write(user);
+        Users.INSTANCE.stringWriter().write(user);
 //        User read = reader.read(LineSegments.of(written));
 //        assertThat(read).isEqualTo(user);
         var expected = new User(
@@ -105,9 +105,9 @@ public class BytesJsonReaderTest {
             List.of("MrX", "Foo"),
             List.of(50, 60, 70),
             null,
-            new BigDecimal("123.23")
+            "123.23"
         );
-//        assertThat(rwRead).isEqualTo(expected);
+        assertThat(rwRead).isEqualTo(expected);
         assertThat(rwRead.name()).isEqualTo("Kjetil");
 //        assertThat(user).isEqualTo(
 //            expected

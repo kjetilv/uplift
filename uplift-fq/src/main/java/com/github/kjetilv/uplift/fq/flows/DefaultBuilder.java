@@ -93,16 +93,22 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
     @Override
     public FqFlows<T> build() {
         Flows.validateAll(flows);
-
         var handler = this.handler == null
             ? fail()
             : this.handler;
-
-        var runner = batchSize == null
-            ? new SequentialSingleRunner<>(handler)
-            : new SequentialBatchRunner<>(batchSize, handler);
-
-        return new DefaultFqFlows<>(name, fqs, timeout, runner, flows);
+        var runner = new SequentialFlowRunner<>(
+            handler,
+            batchSize == null || batchSize < 2
+                ? singleRunner()
+                : batchRunner()
+        );
+        return new DefaultFqFlows<>(
+            name,
+            fqs,
+            timeout,
+            runner,
+            flows
+        );
     }
 
     private Flow<T> validated(Flow<T> flow) {
@@ -111,6 +117,20 @@ final class DefaultBuilder<T> implements FqFlows.Builder<T> {
             .toList();
         Flows.validate(combined);
         return flow;
+    }
+
+    private SequentialFlowRunner.EntryStreamer<T> singleRunner() {
+        return (flow, reader) ->
+            reader.stream()
+                .map(item ->
+                    Entries.single(flow.to(), item));
+    }
+
+    private SequentialFlowRunner.EntryStreamer<T> batchRunner() {
+        return (flow, reader) ->
+            reader.batches(batchSize)
+                .map(items ->
+                    Entries.of(flow.name(), items));
     }
 
     private FqFlows.ErrorHandler<T> fail() {

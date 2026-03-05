@@ -172,8 +172,6 @@ class FqFlowsTest {
         assertThat(count).isEqualTo(0);
     }
 
-    private static final String GLOB = "glob:**/";
-
     private static final String DONE = "done";
 
     @SuppressWarnings("SameParameterValue")
@@ -215,11 +213,11 @@ class FqFlowsTest {
 
         assertThat(exceptions).isEmpty();
 
-        contents(tmp, gz, "1", "in1", firstSize, lastSize);
-        contents(tmp, gz, "2", "in1in2", firstSize, lastSize);
-        contents(tmp, gz, "3", "in1in3", firstSize, lastSize);
-        contents(tmp, gz, "4", "in1in2in4", firstSize, lastSize);
-        contents(tmp, gz, "X", "inX", firstSize, lastSize);
+        verifyContents(tmp, gz, "1", "in1", firstSize, lastSize);
+        verifyContents(tmp, gz, "2", "in1in2", firstSize, lastSize);
+        verifyContents(tmp, gz, "3", "in1in3", firstSize, lastSize);
+        verifyContents(tmp, gz, "4", "in1in2in4", firstSize, lastSize);
+        verifyContents(tmp, gz, "X", "inX", firstSize, lastSize);
     }
 
     private static FqFlows.Run<String> feed(FqFlows<String> flows, int count) {
@@ -251,7 +249,6 @@ class FqFlowsTest {
                 check.andThen(items ->
                     items.map(add("in3"))
                 ))
-
             .fromSource("in1").with(
                 check.andThen(items ->
                     items.map(add("in1"))
@@ -267,17 +264,17 @@ class FqFlowsTest {
         return i -> i + str;
     }
 
-    private static void contents(Path tmp, String gz, String index, String suffix, int firstSize, int lastSize) {
+    private static void verifyContents(Path tmp, String gz, String index, String suffix, int firstSize, int lastSize) {
         var first = format("in{0}-00000.in{0}{1}", index, gz);
         var last = format("in{0}-00100.in{0}{1}", index, gz);
         var notFound = format("in{0}-00200.in{0}{1}", index, gz);
         var dir = tmp.resolve("in" + index);
 
         assertThat(dir)
-            .isDirectoryContaining(GLOB + DONE)
-            .isDirectoryContaining(GLOB + first)
-            .isDirectoryContaining(GLOB + last)
-            .isDirectoryNotContaining(GLOB + notFound);
+            .isDirectoryContaining(glob(DONE))
+            .isDirectoryContaining(glob(first))
+            .isDirectoryContaining(glob(last))
+            .isDirectoryNotContaining(glob(notFound));
         if (gz.isEmpty()) {
             assertThat(dir.resolve(first))
                 .isRegularFile()
@@ -299,5 +296,9 @@ class FqFlowsTest {
                             assertThat(content.split("\n")).allSatisfy(line ->
                                 assertThat(line).endsWith(suffix))));
         }
+    }
+
+    private static String glob(String str) {
+        return "glob:**/" + str;
     }
 }

@@ -44,11 +44,9 @@ public final class Dimensions {
         if (count > maxValue) {
             throw new IllegalArgumentException("#" + count + " exceeds max " + maxValue);
         }
-        var ledge = ledgeNumber(count);
         return ledges.computeIfAbsent(
-            ledge,
-            _ -> new LedgeImpl(ledge, format)
-        );
+            ledgeNumber(count),
+            Ledge.forFormat(format));
     }
 
     private long ledgeNumber(long no) {
@@ -60,24 +58,6 @@ public final class Dimensions {
 
     private long normalize(long no, int ten) {
         return no / ten * ten;
-    }
-
-    private record LedgeImpl(long ledge, String format) implements Ledge {
-
-        @Override
-        public String asSegment() {
-            return String.format(format, ledge);
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            return object instanceof LedgeImpl l && ledge == l.ledge;
-        }
-
-        @Override
-        public int hashCode() {
-            return Long.hashCode(ledge);
-        }
     }
 
     @Override

@@ -136,8 +136,23 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
                 List<FlowRun<T>> flowRuns = new ArrayList<>(flows.size());
                 for (var flow : this.flows) {
                     init(flow);
-                    scope.fork(() ->
-                        flowRuns.add(execute(flow)));
+                    scope.fork(() -> {
+                            var runnable = flow.isFromSource()
+                                ? flow.from(this.name)
+                                : flow;
+                            FlowRun<T> result;
+                            try {
+                                Instant start = Instant.now();
+                                runner.run(fqs, runnable);
+                                var end = Instant.now();
+                                result = new FlowRun<>(runnable, start, end);
+                            } catch (Exception e) {
+                                throw new IllegalStateException(runner + " failed to execute " + runnable, e);
+                            }
+                            var run = result;
+                            return flowRuns.add(run);
+                        }
+                    );
                 }
                 scope.join();
                 return flowRuns;
@@ -160,20 +175,6 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
                 .write(requireNonNull(item, "item"));
         } finally {
             counter.increment();
-        }
-    }
-
-    private FlowRun<T> execute(Flow<T> flow) {
-        var runnableFlow = flow.isFromSource()
-            ? flow.from(this.name)
-            : flow;
-        try {
-            Instant start = Instant.now();
-            runner.run(fqs, runnableFlow);
-            var end = Instant.now();
-            return new FlowRun<>(runnableFlow, start, end);
-        } catch (Exception e) {
-            throw new IllegalStateException(runner + " failed to execute " + runnableFlow, e);
         }
     }
 

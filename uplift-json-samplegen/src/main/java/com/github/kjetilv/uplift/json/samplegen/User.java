@@ -16,7 +16,7 @@ public record User(
     List<String> aliases,
     List<Integer> misc,
     Map<String, Object> tags,
-    BigDecimal balance
+    String balance
 ) {
 
     public record Address(
