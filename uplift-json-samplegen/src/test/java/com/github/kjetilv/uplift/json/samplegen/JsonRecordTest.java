@@ -7,14 +7,11 @@ import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,8 +103,6 @@ public class JsonRecordTest {
         var readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
         IO.println(readUser);
 
-//        assertThat(readUser.tags()).containsEntry("good", "evil");
-//        assertThat(readUser.tags()).containsEntry("1", 2L);
         assertThat(readUser.tags().get("foos"))
             .asInstanceOf(MAP)
             .containsEntry("foo1", "bar")
@@ -117,8 +112,6 @@ public class JsonRecordTest {
     @Test
     void mapToUser() {
         var uuid = UUID.randomUUID();
-        var atomicReference = new AtomicReference<User>();
-        Consumer<User> set = atomicReference::set;
 
         var userMap = Json.instance().map(JSON_USER.formatted(uuid));
         var user = Users.INSTANCE.read(userMap, User.class);
