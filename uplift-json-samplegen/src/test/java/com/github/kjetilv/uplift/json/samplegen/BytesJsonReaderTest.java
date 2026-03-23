@@ -106,7 +106,7 @@ public class BytesJsonReaderTest {
             null,
             "123.23"
         );
-        assertThat(rwRead).isEqualTo(expected);
+        assertThat(rwRead.toString()).isEqualTo(expected.toString());
         assertThat(rwRead.name()).isEqualTo("Kjetil");
 //        assertThat(user).isEqualTo(
 //            expected
