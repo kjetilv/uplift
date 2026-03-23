@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.nio.file.Files.createDirectories
@@ -11,6 +12,7 @@ import kotlin.io.path.Path
 private const val lambdaName = "bootstrap"
 
 @Suppress("unused")
+@CacheableTask
 open class LambdaTask : DefaultTask() {
 
     @Input

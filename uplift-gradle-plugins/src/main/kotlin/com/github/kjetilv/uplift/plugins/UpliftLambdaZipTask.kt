@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.plugins
 
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -8,6 +9,7 @@ import org.gradle.process.ExecOperations
 import java.nio.file.Path
 import javax.inject.Inject
 
+@CacheableTask
 abstract class UpliftLambdaZipTask @Inject constructor(execOperations: ExecOperations) : UpliftTask(execOperations) {
 
     @get:InputFiles

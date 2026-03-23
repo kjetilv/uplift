@@ -5,6 +5,7 @@ package com.github.kjetilv.uplift.plugins
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
@@ -28,6 +29,7 @@ import java.time.format.DateTimeFormatter.*
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
+@CacheableTask
 @Suppress("unused")
 abstract class UpliftTask @Inject constructor(private var execOperations: ExecOperations) : DefaultTask() {
 

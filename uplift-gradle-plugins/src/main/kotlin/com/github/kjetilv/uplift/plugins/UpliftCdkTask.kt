@@ -7,12 +7,14 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.ExecOperations
+import org.gradle.work.DisableCachingByDefault
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
 import javax.inject.Inject
 
+@DisableCachingByDefault(because = "Deploying a stack is not cacheable")
 abstract class UpliftCdkTask @Inject constructor(execOperations: ExecOperations) :
     UpliftTask(execOperations) {
 
