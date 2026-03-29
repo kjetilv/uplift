@@ -14,11 +14,7 @@ public final class ChannelJsonReader<T extends Record> extends AbstractJsonReade
         Function<Consumer<T>, Callbacks> callbacksInitializer,
         int length
     ) {
-        this(
-            callbacksInitializer,
-            null,
-            length
-        );
+        this(callbacksInitializer, null, length);
     }
 
     public ChannelJsonReader(

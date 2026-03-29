@@ -66,7 +66,7 @@ public interface JsonRW<T extends Record> {
     default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter(Charset charset, int bufferSize) {
         return (t, out) -> {
             try (var sink = new ChunkedTransferByteChannelSink(out, charset, bufferSize)) {
-                var events = new DefaultFieldEvents(null, sink);
+                var events = new DefaultFieldEvents(sink);
                 objectWriter().write(t, events);
             }
         };

@@ -4,13 +4,15 @@ import module java.base;
 import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 
-public class DefaultFieldEvents extends AbstractFieldEvents {
+public final class DefaultFieldEvents implements FieldEvents {
+
+    private final Sink sink;
 
     private final Sink.Mark mark;
 
-    public DefaultFieldEvents(FieldEvents parent, Sink sink) {
-        super(parent, sink);
-        sink.accept("{");
+    public DefaultFieldEvents(Sink sink) {
+        this.sink = Objects.requireNonNull(sink, "sink");
+        this.sink.accept("{");
         this.mark = sink.mark();
     }
 
@@ -20,8 +22,7 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
             field,
             value,
             Function.identity(),
-            map ->
-                writer.write(map, new DefaultFieldEvents(this, sink()))
+            map -> writer.write(map, new DefaultFieldEvents(sink()))
         );
     }
 
@@ -35,8 +36,7 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
             field,
             value,
             Function.identity(),
-            _ ->
-                writer.write(value, new DefaultFieldEvents(this, sink()))
+            _ -> writer.write(value, new DefaultFieldEvents(sink()))
         );
     }
 
@@ -50,7 +50,7 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
             field,
             values,
             Function.identity(),
-            t -> writer.write(t, new DefaultFieldEvents(this, sink()))
+            t -> writer.write(t, new DefaultFieldEvents(sink()))
         );
     }
 
@@ -91,7 +91,7 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
     }
 
     @SuppressWarnings("resource")
-    protected <T, V> FieldEvents writeArray(
+    private <T, V> FieldEvents writeArray(
         String field,
         List<? extends T> values,
         Function<T, V> map,
@@ -122,6 +122,34 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         return this;
     }
 
+    private void field(String field) {
+        sink.accept("\"%s\":".formatted(field));
+    }
+
+    private void value(String value) {
+        var escaped = value.indexOf('\\') >= 0;
+        var unescaped = escaped
+            ? ESCAPE.matcher(value).replaceAll("\\")
+            : value;
+        var quoted = unescaped.indexOf('"') >= 0;
+        var unquoted = quoted
+            ? QUOTE.matcher(value).replaceAll("\\\\\"")
+            : value;
+        sink.accept("\"%s\"".formatted(unquoted));
+    }
+
+    private void value(Number value) {
+        sink.accept(value);
+    }
+
+    private void value(Boolean value) {
+        sink.accept(value);
+    }
+
+    private Sink sink() {
+        return sink;
+    }
+
     @SuppressWarnings("resource")
     private <T, R> FieldEvents writeField(
         String field,
@@ -139,4 +167,8 @@ public class DefaultFieldEvents extends AbstractFieldEvents {
         setter.accept(writer.apply(value));
         return this;
     }
+
+    private static final Pattern QUOTE = Pattern.compile("\"");
+
+    private static final Pattern ESCAPE = Pattern.compile("\\\\");
 }
