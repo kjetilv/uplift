@@ -1,8 +1,8 @@
-import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.flambda.Flambda;
 import com.github.kjetilv.uplift.flambda.FlambdaSettings;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogLevel;
+import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;

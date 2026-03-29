@@ -9,6 +9,7 @@ plugins {
 dependencies {
     implementation("com.github.kjetilv.uplift:uplift-kernel:0.1.1-SNAPSHOT")
     implementation("com.github.kjetilv.uplift:uplift-lambda:0.1.1-SNAPSHOT")
+    implementation("com.github.kjetilv.uplift:uplift-util:0.1.1-SNAPSHOT")
 
     testImplementation("com.github.kjetilv.uplift:uplift-flambda:0.1.1-SNAPSHOT")
 

@@ -6,8 +6,6 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, K> {
 
     private final HashBuilder<Bytes, K> hashBuilder;

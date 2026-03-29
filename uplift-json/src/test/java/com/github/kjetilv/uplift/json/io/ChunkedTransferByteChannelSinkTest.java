@@ -6,8 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.kernel.io;
 
 import com.github.kjetilv.uplift.util.Print;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -10,8 +8,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public record Range(Long start, Long exclusiveEnd, Long length) {
-
-    private static final Logger log = LoggerFactory.getLogger(Range.class);
 
     public static Optional<Range> read(String value) {
         return Optional.ofNullable(value)
@@ -25,7 +21,7 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
                         var range = header.substring(BYTES_PREAMBLE_LENGTH).trim();
                         var dashIndex = range.indexOf('-');
                         if (dashIndex < 0) {
-                            return empty(header);
+                            return Stream.empty();
                         }
                         var start = dashIndex == 0 ? null : Long.parseLong(range.substring(0, dashIndex));
                         var
@@ -38,9 +34,9 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
                         }
                     }
                 } catch (Exception e) {
-                    return empty(header);
+                    throw new IllegalArgumentException("Failed to parse " + header, e);
                 }
-                return empty(header);
+                return Stream.empty();
             })
             .reduce(Range::combine);
     }
@@ -78,11 +74,6 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
     private static final int BYTES_PREAMBLE_LENGTH = BYTES_PREAMBLE.length();
 
     private static final Pattern COMMA = Pattern.compile(",");
-
-    private static Stream<Range> empty(String header) {
-        log.debug("Invalid range header skipped: {}", header);
-        return Stream.empty();
-    }
 
     @Override
     public String toString() {

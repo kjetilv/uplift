@@ -7,7 +7,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.util.UUID;
 
-import static com.github.kjetilv.uplift.hash.HashKind.*;
+import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
