@@ -12,6 +12,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends Record> {
 
+    private final Class<?> host;
+
     private Map<Token.Field, BiConsumer<B, ? extends Number>> numbers = new LinkedHashMap<>();
 
     private Map<Token.Field, BiConsumer<B, String>> strings = new LinkedHashMap<>();
@@ -24,6 +26,10 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     private TokenResolver tokenTrie;
 
+    public PresetCallbacksInitializer(Class<?> host) {
+        this.host = Objects.requireNonNull(host, "host");
+    }
+
     public void sub(PresetCallbacksInitializer<?, ?> sub) {
         subs.add(sub);
     }
@@ -34,6 +40,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
                     .map(Map::keySet)
                     .flatMap(Set::stream),
                 subs.stream()
+                    .distinct()
                     .flatMap(PresetCallbacksInitializer::fields)
             )
             .distinct()
@@ -222,14 +229,26 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         return tokenTrie;
     }
 
-    public void buildTokens(TokenResolver tokenResolver) {
+    public void buildTokens() {
+        buildTokens(null, null);
+    }
+
+    public void buildTokens(TokenResolver tokenResolver, Set<PresetCallbacksInitializer<?, ?>> handled) {
+        if (handled != null && handled.contains(this)) {
+            return;
+        }
         this.tokenTrie = tokenResolver != null ? tokenResolver : newTokenTrie();
         numbers = replace(numbers, this.tokenTrie);
         strings = replace(strings, this.tokenTrie);
         objects = replace(objects, this.tokenTrie);
         booleans = replace(booleans, this.tokenTrie);
+        var newHandled = Stream.concat(
+                Stream.ofNullable(handled).flatMap(Set::stream),
+                Stream.of(this)
+            )
+            .collect(Collectors.toSet());
         for (var sub : subs) {
-            sub.buildTokens(this.tokenTrie);
+            sub.buildTokens(this.tokenTrie, newHandled);
         }
     }
 
@@ -296,11 +315,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() +
-               "[numbers:" + numbers.size() +
-               " strings:" + strings.size() +
-               " booleans:" + booleans.size() +
-               " objects:" + objects.size() +
+        return getClass().getSimpleName() + "[" + host.getSimpleName() +
+               " num:" + numbers.size() +
+               " str:" + strings.size() +
+               " boo:" + booleans.size() +
+               " obj:" + objects.size() +
+               " subs:" + subs.size() +
                "]";
     }
 }

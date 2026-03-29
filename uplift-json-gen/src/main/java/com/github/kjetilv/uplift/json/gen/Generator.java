@@ -188,7 +188,9 @@ record Generator(
             );
             write(bw, "");
             write(bw, "    static {");
-            write(bw, "        PRESETS = new " + PRESET_CALLBACKS_INITIALIZER + "<>();");
+            write(bw, "        PRESETS = new " + PRESET_CALLBACKS_INITIALIZER + "<>(");
+            write(bw, "            " + te.getQualifiedName() + ".class");
+            write(bw, "        );");
             write(
                 bw,
                 te.getRecordComponents()
@@ -221,7 +223,7 @@ record Generator(
             );
 
             if (root) {
-                write(bw, "        PRESETS.buildTokens(null);");
+                write(bw, "        PRESETS.buildTokens();");
             }
             write(bw, "    }", "}");
         } catch (Exception e) {
