@@ -7,6 +7,10 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings("unused")
 public final class Flogs {
 
+    static {
+        JulFormatter.init();
+    }
+
     public static void initialize() {
         initialize(null, null, null, null);
     }

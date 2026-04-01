@@ -20,7 +20,7 @@ public interface FieldEvents {
         return numberArray(field, values, Function.identity());
     }
 
-    default FieldEvents bool(String field, boolean value) {
+    default FieldEvents bool(String field, Boolean value) {
         return bool(field, value, Function.identity());
     }
 

@@ -127,13 +127,9 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     private void value(String value) {
-        var escaped = value.indexOf('\\') >= 0;
-        var unescaped = escaped
-            ? ESCAPE.matcher(value).replaceAll("\\")
-            : value;
-        var quoted = unescaped.indexOf('"') >= 0;
+        var quoted = value.indexOf('"') >= 0;
         var unquoted = quoted
-            ? QUOTE.matcher(value).replaceAll("\\\\\"")
+            ? replaceAll(value)
             : value;
         sink.accept("\"%s\"".formatted(unquoted));
     }
@@ -170,5 +166,11 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     private static final Pattern QUOTE = Pattern.compile("\"");
 
-    private static final Pattern ESCAPE = Pattern.compile("\\\\");
+    private static String replaceAll(String value) {
+        try {
+            return QUOTE.matcher(value).replaceAll("\\\\\"");
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not replace `" + QUOTE.pattern() + "` with `\\\\`: " + value, e);
+        }
+    }
 }

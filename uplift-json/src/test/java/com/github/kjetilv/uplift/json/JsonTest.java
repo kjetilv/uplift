@@ -17,10 +17,10 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.github.kjetilv.uplift.json.TokenType.*;
+import static com.github.kjetilv.uplift.json.TokenType.STRING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
-import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
+import static org.assertj.core.api.InstanceOfAssertFactories.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -176,6 +176,28 @@ class JsonTest {
             { "foo": 0.42 }
             """);
         assertThat(read).asInstanceOf(MAP).containsEntry("foo", new BigDecimal("0.42"));
+    }
+
+    @Test
+    void testExpt() {
+        //language=json
+        var read = JSON.read(
+            """
+                {
+                  "foo": 4.2e-2,
+                  "bar": 5.4e3,
+                  "zot": 1.2e+2
+                }
+                """
+        );
+        assertThat(read)
+            .asInstanceOf(MAP)
+            .anySatisfy((key, value) ->
+                assertDecField(key, "foo", value, "0.042"))
+            .anySatisfy((key, value) ->
+                assertDecField(key, "bar", value, "5400"))
+            .anySatisfy((key, value) ->
+                assertDecField(key, "zot", value, "120"));
     }
 
     @Test
@@ -704,6 +726,15 @@ class JsonTest {
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage()).contains("Bad object");
         }
+    }
+
+    private static void assertDecField(Object key, String foo, Object value, String expected) {
+        assertThat(key).isEqualTo(foo);
+        assertValue(value, expected);
+    }
+
+    private static void assertValue(Object value, String expected) {
+        assertThat(value).asInstanceOf(BIG_DECIMAL).isEqualByComparingTo(expected);
     }
 
     private static void failedRead(

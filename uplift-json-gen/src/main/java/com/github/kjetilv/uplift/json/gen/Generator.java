@@ -41,7 +41,7 @@ record Generator(
                 ")",
                 "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unq(pe, name) + "> {",
                 "",
-                "    public static " + JSON_RW + "<" + unq(pe, name) + "> INSTANCE = new " + factoryClass(te) + "();",
+                "    public static final " + JSON_RW + "<" + unq(pe, name) + "> INSTANCE = new " + factoryClass(te) + "();",
                 "",
                 "    @Override",
                 "    public " + FUNCTION + "<" + CONSUMER + "<" + unq(pe, name) + ">, " + CALLBACKS + "> callbacks() {",

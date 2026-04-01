@@ -9,6 +9,8 @@ import static java.lang.Character.isDigit;
 
 public abstract class AbstractIntsBytesSource implements BytesSource {
 
+    private byte prev = 0;
+
     private byte next1;
 
     private byte next2;
@@ -86,7 +88,12 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     @Override
     public Bytes spoolNumber() {
         index++; // First digit is already in buffer
-        while (digital(next1)) {
+        while (isDigit(next1) ||
+               next1 == '.' ||
+               next1 == 'e' ||
+               next1 == 'E' ||
+               next1 == '-' && (prev == 'e' || prev == 'E') ||
+               next1 == '+' && (prev == 'e' || prev == 'E')) {
             save();
         }
         // Look for a fractional part.
@@ -141,8 +148,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     public boolean done() {
         while (true) {
             switch (next1) {
-                case ' ', '\n', '\t', '\r', '\f' ->
-                    advance();
+                case ' ', '\n', '\t', '\r', '\f' -> advance();
                 default -> {
                     return next1 == 0;
                 }
@@ -183,6 +189,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     }
 
     private void advance() {
+        prev = next1;
         next1 = next2;
         next2 = nextByte();
     }
@@ -202,10 +209,6 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         var biggerLexeme = new byte[index * 2];
         System.arraycopy(currentLexeme, 0, biggerLexeme, 0, index);
         currentLexeme = biggerLexeme;
-    }
-
-    private boolean digital(byte peek) {
-        return isDigit(peek) || peek == '.';
     }
 
     private void fail(String msg) {

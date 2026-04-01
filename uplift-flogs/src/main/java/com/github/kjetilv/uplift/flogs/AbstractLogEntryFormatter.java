@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEntry> {
+public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEntry>  {
 
     @SuppressWarnings("DuplicatedCode")
     @Override

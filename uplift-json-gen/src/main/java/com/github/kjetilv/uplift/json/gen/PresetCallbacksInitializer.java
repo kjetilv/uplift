@@ -35,16 +35,12 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     }
 
     public Stream<Token.Field> fields() {
-        return Stream.concat(
-                Stream.of(numbers, strings, booleans, objects)
-                    .map(Map::keySet)
-                    .flatMap(Set::stream),
-                subs.stream()
-                    .distinct()
-                    .flatMap(PresetCallbacksInitializer::fields)
-            )
+        return fields(new HashSet<>())
+            .stream()
             .distinct()
-            .sorted(Comparator.comparing(Token.Field::value));
+            .sorted(
+                Comparator.comparing(Token.Field::value)
+            );
     }
 
     public void onObject(String name, BiFunction<Callbacks, B, Callbacks> nested) {
@@ -238,10 +234,10 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
             return;
         }
         this.tokenTrie = tokenResolver != null ? tokenResolver : newTokenTrie();
-        numbers = replace(numbers, this.tokenTrie);
-        strings = replace(strings, this.tokenTrie);
-        objects = replace(objects, this.tokenTrie);
-        booleans = replace(booleans, this.tokenTrie);
+        this.numbers = replace(this.numbers, this.tokenTrie);
+        this.strings = replace(this.strings, this.tokenTrie);
+        this.objects = replace(this.objects, this.tokenTrie);
+        this.booleans = replace(this.booleans, this.tokenTrie);
         var newHandled = Stream.concat(
                 Stream.ofNullable(handled).flatMap(Set::stream),
                 Stream.of(this)
@@ -250,6 +246,29 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         for (var sub : subs) {
             sub.buildTokens(this.tokenTrie, newHandled);
         }
+    }
+
+    private List<Token.Field> fields(Collection<Class<?>> known) {
+        if (known.contains(host)) {
+            return List.of();
+        }
+        var primitiveFields = Stream.of(numbers, strings, booleans, objects)
+            .map(Map::keySet)
+            .flatMap(Set::stream)
+            .toList();
+        Collection<Class<?>> expandedKnown = Stream.concat(
+                known.stream(),
+                Stream.of(this.host)
+            )
+            .collect(Collectors.toSet());
+        var subFields = subs.stream()
+            .map(presetCallbacksInitializer ->
+                presetCallbacksInitializer.fields(expandedKnown))
+            .flatMap(Collection::stream)
+            .toList();
+        return Stream.of(primitiveFields, subFields)
+            .flatMap(Collection::stream)
+            .toList();
     }
 
     private TokenTrie newTokenTrie() {
