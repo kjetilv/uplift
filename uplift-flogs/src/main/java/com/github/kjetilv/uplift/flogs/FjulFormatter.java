@@ -7,7 +7,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 @SuppressWarnings("unused")
-public abstract sealed class JulFormatter extends Formatter {
+public abstract sealed class FjulFormatter extends Formatter {
 
     static void init() {
         if (inited.compareAndSet(false, true) && System.getProperty(CONFIG_FILE) == null) {
@@ -21,7 +21,7 @@ public abstract sealed class JulFormatter extends Formatter {
 
     private final LogFormatter<LogEntry> formatter;
 
-    private JulFormatter(LogFormatter<LogEntry> formatter) {
+    protected FjulFormatter(LogFormatter<LogEntry> formatter) {
         this.formatter = formatter;
     }
 
@@ -53,13 +53,13 @@ public abstract sealed class JulFormatter extends Formatter {
         init();
     }
 
-    public static final class Default extends JulFormatter {
+    public static final class Default extends FjulFormatter {
         public Default() {
             super(LogFormatter.DEFAULT);
         }
     }
 
-    public static final class Brief extends JulFormatter {
+    public static final class Brief extends FjulFormatter {
         public Brief() {
             super(LogFormatter.BRIEF);
         }

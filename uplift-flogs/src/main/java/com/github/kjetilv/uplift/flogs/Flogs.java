@@ -8,7 +8,7 @@ import static java.util.Objects.requireNonNull;
 public final class Flogs {
 
     static {
-        JulFormatter.init();
+        FjulFormatter.init();
     }
 
     public static void initialize() {
