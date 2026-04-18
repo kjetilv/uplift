@@ -57,7 +57,7 @@ public final class HttpReqReader {
     }
 
     private ReqLine parseRequestLine(ReadableByteChannel channel) {
-        int urlIndex = 0;
+        var urlIndex = 0;
         while (true) {
             if (spaceMask.firstTrue() == LENGTH) {
                 nextSpaceMask(channel);
@@ -95,7 +95,7 @@ public final class HttpReqReader {
                 bodyStart = Math.toIntExact(lineStart + 1);
                 return null;
             }
-            int lineMaskPos = lineMask.firstTrue();
+            var lineMaskPos = lineMask.firstTrue();
             int bytesFound;
             if (lineMaskPos == LENGTH) {
                 // No hits in mask
@@ -189,19 +189,6 @@ public final class HttpReqReader {
         this.pooled = null;
     }
 
-    private void expand() {
-        throw new UnsupportedOperationException("Not yet implemented");
-//        if (doubled == 2) {
-//            throw new IllegalStateException("Buffer size exhausted: " + bufferSize);
-//        }
-//        doubled++;
-//        var oldSegment = segment;
-//        this.segment = segments.acquire(doubled);
-//        this.segment.copyFrom(oldSegment);
-//        this.buffer = segment.asByteBuffer();
-//        this.buffer.position(Math.toIntExact(maskEnd));
-    }
-
     private long separatorOffset() {
         long start = lineStart;
         while (true) {
@@ -245,7 +232,7 @@ public final class HttpReqReader {
 
     private void refill(ReadableByteChannel channel) {
         if (maskEnd >= bufferSize) {
-            expand();
+            throw new UnsupportedOperationException("Buffer size exhausted: " + maskEnd + " >=" + bufferSize);
         }
         if (maskEnd >= available) {
             fillBuffer(channel);
@@ -254,7 +241,7 @@ public final class HttpReqReader {
 
     private void fillBuffer(ReadableByteChannel channel) {
         while (available < bufferSize && !done) {
-            int read = readIntoBuffer(channel);
+            var read = readIntoBuffer(channel);
             if (read >= 0) {
                 available += read;
                 return;

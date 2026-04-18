@@ -55,8 +55,8 @@ public class HttpResWriter {
     }
 
     private int writeBody(ReadableByteChannel body) {
-        int written = 0;
-        ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
+        var written = 0;
+        var buffer = ByteBuffer.allocateDirect(8192);
         while (Utils.didRead(body, buffer)) {
             written += write(buffer);
             buffer.position(0);
@@ -65,7 +65,7 @@ public class HttpResWriter {
     }
 
     private int write(ByteBuffer buffer) {
-        int written = 0;
+        var written = 0;
         try {
             while (buffer.hasRemaining()) {
                 written += out.write(buffer);

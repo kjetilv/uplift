@@ -15,29 +15,7 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
             .map(COMMA::split)
             .flatMap(Arrays::stream)
             .map(String::trim)
-            .flatMap(header -> {
-                try {
-                    if (header.startsWith(BYTES_PREAMBLE)) {
-                        var range = header.substring(BYTES_PREAMBLE_LENGTH).trim();
-                        var dashIndex = range.indexOf('-');
-                        if (dashIndex < 0) {
-                            return Stream.empty();
-                        }
-                        var start = dashIndex == 0 ? null : Long.parseLong(range.substring(0, dashIndex));
-                        var
-                            exclusiveEnd =
-                            range.endsWith("-")
-                                ? null
-                                : Long.parseLong(range.substring(dashIndex + 1)) + 1;
-                        if (start == null || exclusiveEnd == null || start < exclusiveEnd) {
-                            return Stream.of(new Range(start, exclusiveEnd));
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Failed to parse " + header, e);
-                }
-                return Stream.empty();
-            })
+            .flatMap(Range::ranges)
             .reduce(Range::combine);
     }
 
@@ -74,6 +52,28 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
     private static final int BYTES_PREAMBLE_LENGTH = BYTES_PREAMBLE.length();
 
     private static final Pattern COMMA = Pattern.compile(",");
+
+    private static Stream<Range> ranges(String header) {
+        return header.startsWith(BYTES_PREAMBLE)
+            ? rangeStream(header.substring(BYTES_PREAMBLE_LENGTH).trim())
+            : Stream.empty();
+    }
+
+    private static Stream<Range> rangeStream(String range) {
+        var dashIndex = range.indexOf('-');
+        if (dashIndex < 0) {
+            return Stream.empty();
+        }
+        var start = dashIndex == 0
+            ? null
+            : Long.parseLong(range.substring(0, dashIndex));
+        var exclusiveEnd = range.endsWith("-")
+            ? null
+            : Long.parseLong(range.substring(dashIndex + 1)) + 1;
+        return start == null || exclusiveEnd == null || start < exclusiveEnd
+            ? Stream.of(new Range(start, exclusiveEnd))
+            : Stream.empty();
+    }
 
     @Override
     public String toString() {

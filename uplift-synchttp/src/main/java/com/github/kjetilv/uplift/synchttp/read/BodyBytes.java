@@ -19,9 +19,9 @@ final class BodyBytes implements ReadableByteChannel {
     @Override
     public int read(ByteBuffer dst) {
         if (byteBuffer.hasRemaining()) {
-            int toWrite = Math.min(dst.remaining(), byteBuffer.remaining());
+            var toWrite = Math.min(dst.remaining(), byteBuffer.remaining());
             if (toWrite > 0) {
-                int oldLimit = byteBuffer.limit();
+                var oldLimit = byteBuffer.limit();
                 byteBuffer.limit(byteBuffer.position() + toWrite);
                 dst.put(byteBuffer);
                 byteBuffer.limit(oldLimit);
@@ -48,5 +48,4 @@ final class BodyBytes implements ReadableByteChannel {
             throw new IllegalStateException("Failed to close " + this.channel, e);
         }
     }
-
 }

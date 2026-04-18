@@ -1,11 +1,9 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
 import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorOperators;
-
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
 
 class Offsets {
 
@@ -34,13 +32,13 @@ class Offsets {
     }
 
     void scan(OffsetsCallbacks offsetsCallbacks) {
-        OffsetsCallbacks callbacks = offsetsCallbacks;
+        var callbacks = offsetsCallbacks;
         var walker = offset;
         refreshMasks(walker);
         while (true) {
             var min = Utils.BYTE_VECTOR_LENGTH;
             var smallestMask = NONE;
-            for (int i = 0; i < bytes.length; i++) {
+            for (var i = 0; i < bytes.length; i++) {
                 firsts[i] = masks[i].firstTrue();
                 if (firsts[i] < min) {
                     min = firsts[i];
@@ -63,7 +61,7 @@ class Offsets {
 
     private void refreshMasks(long pos) {
         var byteVector = Utils.vectorFrom(segment, pos);
-        for (int i = 0; i < bytes.length; i++) {
+        for (var i = 0; i < bytes.length; i++) {
             masks[i] = byteVector.compare(VectorOperators.EQ, bytes[i]);
         }
         Arrays.fill(firsts, Utils.BYTE_VECTOR_LENGTH);

@@ -1,18 +1,12 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
-
-import java.lang.foreign.MemorySegment;
 
 public record QueryParameter(MemorySegment segment, long offset, long eqOffset, long length) {
 
     public String name() {
         return Utils.string(segment, offset, nameLength());
-    }
-
-    @Override
-    public String toString() {
-        return name() + "=" + value();
     }
 
     public String value() {
@@ -29,5 +23,10 @@ public record QueryParameter(MemorySegment segment, long offset, long eqOffset, 
 
     private long valueOffset() {
         return eqOffset + 1;
+    }
+
+    @Override
+    public String toString() {
+        return name() + "=" + value();
     }
 }

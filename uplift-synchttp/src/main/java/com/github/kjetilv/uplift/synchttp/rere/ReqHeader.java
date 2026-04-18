@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
-
-import java.lang.foreign.MemorySegment;
-import java.nio.ByteBuffer;
-import java.util.function.Supplier;
 
 public record ReqHeader(
     MemorySegment segment,
@@ -66,7 +63,7 @@ public record ReqHeader(
         var downcased = ByteBuffer.allocateDirect(length);
         var input = segment.asSlice(offset, length).asByteBuffer();
         downcased.put(input);
-        for (int i = 0; i < length; i++) {
+        for (var i = 0; i < length; i++) {
             var c = downcased.get(i);
             if (A <= c && c <= Z) {
                 downcased.put(i, (byte) (c + 32));

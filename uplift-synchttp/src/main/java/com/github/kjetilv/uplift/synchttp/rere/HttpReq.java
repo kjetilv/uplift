@@ -8,8 +8,14 @@ import static com.github.kjetilv.uplift.synchttp.HttpMethod.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unused")
-public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel body, Runnable closer)
-    implements RuntimeCloseable {
+public record HttpReq(
+    ReqLine reqLine,
+    ReqHeaders headers,
+    ReadableByteChannel body,
+    Runnable closer
+) implements RuntimeCloseable {
+
+    public static final MemorySegment CONTENT_LENGTH = ms("content-length");
 
     public ReqHeader header(int index) {
         return headers().header(index);
@@ -115,8 +121,6 @@ public record HttpReq(ReqLine reqLine, ReqHeaders headers, ReadableByteChannel b
     private static final MemorySegment ORIGIN = ms("origin");
 
     private static final MemorySegment HOST = ms("host");
-
-    public static final MemorySegment CONTENT_LENGTH = ms("content-length");
 
     private static MemorySegment ms(String origin) {
         return MemorySegment.ofArray(origin.getBytes(UTF_8));

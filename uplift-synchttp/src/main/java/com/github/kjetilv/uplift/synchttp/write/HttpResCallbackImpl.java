@@ -68,25 +68,22 @@ final class HttpResCallbackImpl implements
 
     @Override
     public void nobody() {
-        failDone();
-        try {
+        complete(() -> {
             contentLength(0L);
             flushHeaders();
-        } finally {
-            done = true;
-        }
+        });
     }
 
     @Override
     public void body(String content) {
-        failDone();
-        body(content.getBytes(StandardCharsets.UTF_8));
+        complete(() ->
+            body(content.getBytes(StandardCharsets.UTF_8))
+        );
     }
 
     @Override
     public void body(byte[] bytes) {
-        failDone();
-        try {
+        complete(() -> {
             flushHeaders();
             if (bytes == null || bytes.length == 0) {
                 checkZeroLength();
@@ -95,41 +92,39 @@ final class HttpResCallbackImpl implements
                 var written = stream(ByteBuffer.wrap(bytes));
                 checkWrittenLength(written);
             }
-        } finally {
-            done = true;
-        }
+        });
     }
 
     @Override
     public void body(ReadableByteChannel channel) {
-        failDone();
-        try {
+        complete(() -> {
             flushHeaders();
             checkDeclaredLength();
             var written = transferFrom(channel);
             checkWrittenLength(written);
-        } finally {
-            done = true;
-        }
+        });
     }
 
     @Override
     public void channel(Consumer<WritableByteChannel> channelWriter) {
-        failDone();
-        try {
+        complete(() -> {
             if (contentLength == -1) {
                 header("transfer-encoding", "chunked");
             }
             flushHeaders();
             channelWriter.accept(out);
-        } finally {
-            done = true;
-        }
+
+        });
     }
 
-    private void failDone() {
+    private void complete(Runnable action) {
         if (done) {
             throw new IllegalStateException("Already done");
+        }
+        try {
+            action.run();
+        } finally {
+            done = true;
         }
     }
 
@@ -155,7 +150,7 @@ final class HttpResCallbackImpl implements
 
     private WriteResult transferFrom(ReadableByteChannel body) {
         var written = new WriteResult();
-        ByteBuffer buffer = ByteBuffer.allocateDirect(8192);
+        var buffer = ByteBuffer.allocateDirect(8192);
         while (Utils.didRead(body, buffer)) {
             written = written.add(stream(buffer));
         }
@@ -169,16 +164,18 @@ final class HttpResCallbackImpl implements
     }
 
     private void buffer(ByteBuffer delta) {
-        failDone();
+        if (done) {
+            throw new IllegalStateException("Already done");
+        }
         try {
             this.buffer.put(delta);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write headers > buffer size: " + buffer.capacity(), e);
+            throw new IllegalStateException("Failed to write " + delta + ", capacity: " + buffer.capacity(), e);
         }
     }
 
     private WriteResult stream(ByteBuffer buffer) {
-        int written = 0;
+        var written = 0;
         try {
             while (buffer.hasRemaining()) {
                 written += out.write(buffer);

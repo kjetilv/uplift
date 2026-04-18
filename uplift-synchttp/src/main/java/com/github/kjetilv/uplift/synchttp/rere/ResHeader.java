@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
-import java.nio.ByteBuffer;
-import java.util.Locale;
-import java.util.Objects;
+import module java.base;
 
 public record ResHeader(String name, String value) {
 
@@ -16,7 +14,7 @@ public record ResHeader(String name, String value) {
     }
 
     public ByteBuffer buffer() {
-        String line = "%s: %s\r\n".formatted(name, value);
+        var line = "%s: %s\r\n".formatted(name, value);
         return ByteBuffer.wrap(line.getBytes());
     }
 

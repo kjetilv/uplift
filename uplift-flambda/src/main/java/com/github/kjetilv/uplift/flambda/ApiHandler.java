@@ -20,12 +20,10 @@ record ApiHandler(
     @Override
     public void handle(HttpReq httpReq, HttpResponseCallback callback) {
         switch (httpReq.method()) {
-            case OPTIONS -> {
-                settings.cors().applyTo(
-                    httpReq.origin(),
-                    callback.status(200)
-                ).nobody();
-            }
+            case OPTIONS -> settings.cors().applyTo(
+                httpReq.origin(),
+                callback.status(200)
+            ).nobody();
             case HttpMethod method -> {
                 var lambdaReq = new LambdaReq(requestOut(httpReq, method));
                 flambdaState.exchange(

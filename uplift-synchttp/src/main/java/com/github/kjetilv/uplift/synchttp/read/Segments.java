@@ -3,7 +3,7 @@ package com.github.kjetilv.uplift.synchttp.read;
 import module java.base;
 
 /// A simple pool of [memory segments][MemorySegment].
-public final class Segments  {
+public final class Segments {
 
     private final long baseSize;
 
@@ -30,7 +30,7 @@ public final class Segments  {
     }
 
     public Pooled acquire() {
-        for (int i = 0; i < allocations.length; i++) {
+        for (var i = 0; i < allocations.length; i++) {
             if (!allocations[i]) {
                 allocations[i] = true;
                 return new Pooled(

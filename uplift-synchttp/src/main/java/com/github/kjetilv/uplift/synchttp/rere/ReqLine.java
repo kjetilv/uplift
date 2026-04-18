@@ -1,10 +1,8 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Utils;
-
-import java.lang.foreign.MemorySegment;
-import java.util.function.Supplier;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 

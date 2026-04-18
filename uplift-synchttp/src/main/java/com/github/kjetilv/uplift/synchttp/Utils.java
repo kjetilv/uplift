@@ -78,7 +78,7 @@ public final class Utils {
     }
 
     private static boolean prefixed(MemorySegment segment, long offset, byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
+        for (var i = 0; i < bytes.length; i++) {
             if (segment.get(JAVA_BYTE, offset + i) != bytes[i]) {
                 return false;
             }

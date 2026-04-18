@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
-import java.lang.foreign.MemorySegment;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import module java.base;
 
 final class QueryParamCallbacks implements OffsetsCallbacks {
 

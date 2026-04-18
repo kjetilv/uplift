@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
-import java.io.ByteArrayInputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
-import java.util.List;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

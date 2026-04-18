@@ -46,12 +46,12 @@ public record LambdaResult(
     }
 
     @SafeVarargs
-    public static LambdaResult string(int status, String body, Map.Entry<String, String>... headers) {
+    public static LambdaResult status(int status, String body, Map.Entry<String, String>... headers) {
         return new LambdaResult(
             status,
             Map.ofEntries(headers),
-            body.getBytes(UTF_8),
-            true
+            body == null ? null : body.getBytes(UTF_8),
+            body != null
         );
     }
 

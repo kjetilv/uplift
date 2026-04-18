@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -29,7 +24,7 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
     }
 
     public String header(MemorySegment name) {
-        for (ReqHeader header : headers) {
+        for (var header : headers) {
             if (header.is(name)) {
                 return header.value();
             }
@@ -38,7 +33,7 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
     }
 
     public String header(byte[] bytes) {
-        for (ReqHeader header : headers) {
+        for (var header : headers) {
             if (header.is(bytes)) {
                 return header.value();
             }

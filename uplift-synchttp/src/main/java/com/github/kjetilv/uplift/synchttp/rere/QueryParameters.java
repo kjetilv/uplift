@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.rere;
 
+import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
-
-import java.lang.foreign.MemorySegment;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public record QueryParameters(int startIndex, QueryParameter... parameters) {
@@ -48,7 +43,7 @@ public record QueryParameters(int startIndex, QueryParameter... parameters) {
     }
 
     public String par(String name) {
-        for (QueryParameter parameter : parameters) {
+        for (var parameter : parameters) {
             if (parameter.hasName(name)) {
                 return parameter.value();
             }
@@ -67,7 +62,7 @@ public record QueryParameters(int startIndex, QueryParameter... parameters) {
     }
 
     String value(String name) {
-        for (QueryParameter parameter : parameters) {
+        for (var parameter : parameters) {
             if (parameter.hasName(name)) {
                 return parameter.value();
             }
