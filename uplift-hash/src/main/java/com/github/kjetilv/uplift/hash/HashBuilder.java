@@ -22,11 +22,11 @@ public interface HashBuilder<T, H extends HashKind<H>> {
 
     Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
 
-    static <K extends HashKind<K>> HashBuilder<InputStream, K> forInputStream(K kind) {
+    static <H extends HashKind<H>> HashBuilder<InputStream, H> forInputStream(H kind) {
         return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), inputStream2Bytes());
     }
 
-    static <K extends HashKind<K>> HashBuilder<Bytes, K> forKind(K kind) {
+    static <H extends HashKind<H>> HashBuilder<Bytes, H> forKind(H kind) {
         return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), IDENTITY);
     }
 

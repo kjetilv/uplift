@@ -9,7 +9,7 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// @param <H>
 final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
-    static <K extends HashKind<K>> MessageByteDigest<K> get(K kind) {
+    static <H extends HashKind<H>> MessageByteDigest<H> get(H kind) {
         return new MessageByteDigest<>(kind);
     }
 
@@ -80,7 +80,7 @@ final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
     private static final int DIGEST_POOL_SIZE = 20;
 
-    private static <K extends HashKind<K>> MessageDigest createDigest(K kind) {
+    private static <H extends HashKind<H>> MessageDigest createDigest(H kind) {
         try {
             return MessageDigest.getInstance(kind.algorithm());
         } catch (Exception e) {

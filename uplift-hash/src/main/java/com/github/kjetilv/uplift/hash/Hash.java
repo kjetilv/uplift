@@ -16,22 +16,22 @@ import static java.util.Objects.requireNonNull;
 /// These can be parsed back to hash instances with other [factory methods][Hash#from(String)],
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
-    static <K extends HashKind<K>> String toShortHashString(List<Hash<K>> hashes) {
+    static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
         return hashes.stream()
             .map(Hash::toShortString)
             .collect(Collectors.joining("—"));
     }
 
     @SuppressWarnings("unchecked")
-    static <K extends HashKind<K>> Hash<K> from(byte[] bytes) {
+    static <H extends HashKind<H>> Hash<H> from(byte[] bytes) {
         requireNonNull(bytes, "bytes");
         if (bytes.length == K128.byteCount()) {
             var ls = Bytes.toLongs(bytes, new long[K128.longCount()]);
-            return (Hash<K>) new H128(ls[0], ls[1]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
         }
         if (bytes.length == K256.byteCount()) {
             var ls = Bytes.toLongs(bytes, new long[K256.longCount()]);
-            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         throw new IllegalStateException("Byte size for hash not recognized: " + bytes.length + " bytes");
     }
@@ -42,19 +42,19 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     /// @return Hash
     /// @throws IllegalArgumentException If the digest was not valid
     @SuppressWarnings("unchecked")
-    static <K extends HashKind<K>> Hash<K> from(String digest) {
+    static <H extends HashKind<H>> Hash<H> from(String digest) {
         var length = requireNonNull(digest, "digest").length();
         var k256Length = K256.digestLength();
         if (length >= k256Length) {
             var substring = length == k256Length ? digest : digest.substring(0, k256Length);
             var ls = toLongs(substring, new long[K256.longCount()]);
-            return (Hash<K>) new H256(ls[0], ls[1], ls[2], ls[3]);
+            return (Hash<H>) new H256(ls[0], ls[1], ls[2], ls[3]);
         }
         var k128Length = K128.digestLength();
         if (length >= k128Length) {
             var substring = length == k128Length ? digest : digest.substring(0, k128Length);
             var ls = toLongs(substring, new long[K128.longCount()]);
-            return (Hash<K>) new H128(ls[0], ls[1]);
+            return (Hash<H>) new H128(ls[0], ls[1]);
         }
         var reportedString = digest.substring(0, Math.min(length, 10)) + (length > 10 ? "..." : "");
         throw new IllegalArgumentException("Hash of length " + length + " not recognized: " + reportedString);
@@ -72,6 +72,7 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     }
 
     /// @return Byte representation of the id
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     default byte[] bytes() {
         var ls = ls();
         var bytes = new byte[ls.length * 8];
