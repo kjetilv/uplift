@@ -8,7 +8,7 @@ import com.github.kjetilv.uplift.json.bytes.ByteArrayIntsBytesSource;
 
 public final class BytesJsonReader<T extends Record> extends AbstractJsonReader<byte[], T> {
 
-    public BytesJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
+    public  BytesJsonReader(Function<Consumer<T>, Callbacks> callbacksInitializer) {
         this(callbacksInitializer, null);
     }
 

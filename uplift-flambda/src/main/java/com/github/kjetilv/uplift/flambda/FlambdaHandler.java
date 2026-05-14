@@ -50,7 +50,7 @@ record FlambdaHandler(
     }
 
     private static String toString(RequestOut request) {
-        return RequestOutRW.INSTANCE.stringWriter().write(request);
+        return RequestOutRW.INSTANCE.stringWriter().write(request).toString();
     }
 
     private static Hash<HashKind.K128> id(String path) {

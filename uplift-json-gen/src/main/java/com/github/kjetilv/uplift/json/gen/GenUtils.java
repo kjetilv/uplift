@@ -8,6 +8,10 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 final class GenUtils {
 
+    static <R> String jsonSchema(RecordComponentElement el) {
+        return "";
+    }
+
     static String fieldName(RecordComponentElement el) {
         var field = el.getAnnotation(Field.class);
         return field == null ? el.getSimpleName().toString()
@@ -19,7 +23,7 @@ final class GenUtils {
         Collection<? extends Element> rootElements,
         Collection<? extends Element> enums
     ) {
-        var primitiveListType = primitiveListEvent(element);
+        var primitiveListType = primitiveListType(element);
         if (primitiveListType.isPresent()) {
             return primitiveListType
                 .map(Class::getName);
@@ -94,7 +98,7 @@ final class GenUtils {
             .map(TypeElement.class::cast);
     }
 
-    static Optional<Class<?>> primitiveListEvent(RecordComponentElement element) {
+    static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
         return Arrays.stream(BaseType.values())
             .filter(el ->
                 el.fieldTypes()
@@ -138,12 +142,6 @@ final class GenUtils {
         return "import " + clazz.getName() + ";";
     }
 
-    static String unq(PackageElement packageElement, Name name) {
-        var prefix = packageElement.getQualifiedName().toString();
-        var fullName = name.toString();
-        return fullName.startsWith(prefix) ? fullName.substring(prefix.length() + 1) : fullName;
-    }
-
     static String factoryClass(TypeElement te) {
         var annotation = te.getAnnotation(JsonRecord.class);
         var name = te.getSimpleName().toString();
@@ -158,6 +156,10 @@ final class GenUtils {
         return annotation != null ? annotation.value()
             : plural.endsWith("s") ? plural.substring(0, plural.length() - 1)
                 : plural;
+    }
+
+    static String qName(TypeElement te) {
+        return te.getQualifiedName().toString();
     }
 
     private GenUtils() {

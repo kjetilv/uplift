@@ -177,7 +177,7 @@ record RecordAttribute(
                         enums
                     )
                 ))
-            .or(() -> primitiveListEvent(element)
+            .or(() -> primitiveListType(element)
                 .map(primtiveType ->
                     new RecordAttribute(
                         primtiveType.getSimpleName(),

@@ -40,7 +40,11 @@ public interface JsonRW<T extends Record> {
     }
 
     default JsonWriter<byte[], T, ByteArrayOutputStream> bytesWriter() {
-        return new BytesJsonWriter<>(objectWriter());
+        return new BytesJsonWriter<T, ByteArrayOutputStream>(objectWriter(), ByteArrayOutputStream::new);
+    }
+
+    default JsonWriter<byte[], T, OutputStream> bytesWriter(OutputStream outputStream) {
+        return new BytesJsonWriter<>(objectWriter(), outputStream);
     }
 
     default JsonReader<ReadableByteChannel, T> channelReader(int length) {
@@ -69,6 +73,7 @@ public interface JsonRW<T extends Record> {
                 var events = new DefaultFieldEvents(sink);
                 objectWriter().write(t, events);
             }
+            return out;
         };
     }
 

@@ -5,6 +5,7 @@ import module java.compiler;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
@@ -15,46 +16,51 @@ record Generator(
     Function<String, JavaFileObject> filer
 ) {
 
-    void writeRW(TypeElement te) {
-        var name = te.getQualifiedName();
+    boolean isRoot() {
+        var annotation = te.getAnnotation(JsonRecord.class);
+        return annotation != null && annotation.root();
+    }
+
+    void writeRW() {
+        var unqualifiedName = unqTypeName();
         var file = factoryFile(pe, te);
         try (var bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "import module java.base;",
-                "",
+                importType(Consumer.class),
+                importType(Function.class),
                 importType(Generated.class),
                 "",
                 importType(Callbacks.class),
                 importType(ObjectWriter.class),
                 importType(JsonRW.class),
                 "",
-                "/// Reading and writing instances of [" + unq(pe, name) + "]",
+                "/// Reading and writing instances of [" + unqualifiedName + "]",
                 "///",
                 "/// Generated @ " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time + "\",",
-                "    comments = \"Reading and writing " + unq(pe, name) + "\"",
+                "    comments = \"Reading and writing " + unqualifiedName + "\"",
                 ")",
-                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unq(pe, name) + "> {",
+                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
                 "",
-                "    public static final " + JSON_RW + "<" + unq(pe, name) + "> INSTANCE = new " + factoryClass(te) + "();",
+                "    public static " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(te) + "();",
                 "",
                 "    @Override",
-                "    public " + FUNCTION + "<" + CONSUMER + "<" + unq(pe, name) + ">, " + CALLBACKS + "> callbacks() {",
+                "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",
                 "        return " + callbacksClassPlain(te) + "::create;",
                 "    }",
                 "",
                 "    @Override",
-                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unq(pe, name) + "> onDone) {",
+                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unqualifiedName + "> onDone) {",
                 "        return " + callbacksClassPlain(te) + ".create(onDone);",
                 "    }",
                 "",
                 "    @Override",
-                "    public " + OBJECT_WRITER + "<" + unq(pe, name) + "> objectWriter() {",
+                "    public " + OBJECT_WRITER + "<" + unqualifiedName + "> objectWriter() {",
                 "        return new " + writerClassPlain(te) + "();",
                 "    }",
                 "",
@@ -68,13 +74,36 @@ record Generator(
 
     }
 
+    Map<String, ?> jsonSchema(TypeElement te) {
+        Map<String, ?> type = te.getRecordComponents()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    GenUtils::fieldName,
+                    (Function<? super RecordComponentElement, ?>) (RecordComponentElement element) ->
+                        Map.of(
+                            "type", GenUtils.jsonSchema(element)
+                        ),
+                    (e1, e2) -> {
+                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
+                    },
+                    LinkedHashMap::new
+                ));
+
+        return Map.ofEntries(
+            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
+            Map.entry("type", "object"),
+            Map.entry("properties", type)
+        );
+    }
+
     void writeWriter(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
         var file = writerFile(te);
         try (var bw = writer(file)) {
-            var name = te.getQualifiedName();
+            var unqualifiedName = unqTypeName();
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
@@ -84,32 +113,31 @@ record Generator(
                 importType(AbstractObjectWriter.class),
                 importType(FieldEvents.class),
                 "",
-                "/// Writer for [" + unq(pe, name) + "]",
+                "/// Writer for [" + unqualifiedName + "]",
                 "///",
                 "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time + "\",",
-                "    comments = \"Writer for " + unq(pe, name) + "\"",
+                "    comments = \"Writer for " + unqualifiedName + "\"",
                 ")",
-                "final class " + writerClassPlain(te) + " extends " + ABSTRACT_OBJECT_WRITER + "<" + unq(
-                    pe,
-                    name
-                ) + "> {",
-                "",
+                "final class " + writerClassPlain(te),
+                "    extends " + ABSTRACT_OBJECT_WRITER + "<" + unqualifiedName + ">",
+                "{",
                 "    protected " + FIELD_EVENTS + " doWrite(",
-                "        " + unq(pe, name) + " " + variableName(te) + ", ",
+                "        " + unqualifiedName + " " + variableName(te) + ", ",
                 "        " + FIELD_EVENTS + " events",
                 "    ) {",
                 "        return events"
             );
             te.getRecordComponents()
                 .stream()
-                .map(element -> RecordAttribute.create(element, roots, enums))
-                .forEach(recordAttribute ->
+                .map(el ->
+                    RecordAttribute.create(el, roots, enums))
+                .forEach(attr ->
                     write(
                         bw,
-                        "            ." + recordAttribute.writeCall(te)
+                        "            ." + attr.writeCall(te)
                     ));
             write(
                 bw,
@@ -127,15 +155,14 @@ record Generator(
         Collection<? extends Element> enums,
         boolean root
     ) {
-        var name = te.getQualifiedName();
         var file = callbackFile(te);
+        var unqualifiedName = unqTypeName();
         try (var bw = writer(file)) {
             write(
                 bw,
                 "package " + pe.getQualifiedName() + ";",
                 "",
-                "import module java.base;",
-                "",
+                importType(Consumer.class),
                 importType(Generated.class),
                 "",
                 importType(Callbacks.class),
@@ -143,31 +170,25 @@ record Generator(
                 importType(PresetCallbacks.class),
                 importType(PresetCallbacksInitializer.class),
                 "",
-                "/// Callbacks for [" + unq(pe, name) + "]",
+                "/// Callbacks for [" + unqualifiedName + "]",
                 "///",
                 "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time + "\",",
-                "    comments = \"Callbacks for " + unq(pe, name) + "\"",
+                "    comments = \"Callbacks for " + unqualifiedName + "\"",
                 ")",
                 "final class " + callbacksClassPlain(te) + " {",
                 "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unq(
-                    pe,
-                    name
-                ) + "> create(",
-                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
+                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unqualifiedName + "> create(",
+                "        " + CONSUMER + "<" + unqualifiedName + "> onDone",
                 "    ) {",
                 "        return create(null, onDone);",
                 "    }",
                 "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unq(
-                    pe,
-                    name
-                ) + "> create(",
+                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(te) + ", " + unqualifiedName + "> create(",
                 "        " + CALLBACKS + " parent, ",
-                "        " + CONSUMER + "<" + unq(pe, name) + "> onDone",
+                "        " + CONSUMER + "<" + unqualifiedName + "> onDone",
                 "    ) {",
                 "        return new " + PRESET_CALLBACKS + "<>(",
                 "            " + builderClassPlain(te) + ".create(),",
@@ -181,10 +202,7 @@ record Generator(
                 "        );",
                 "    }",
                 "",
-                "    static final " + PRESET_CALLBACKS_INITIALIZER + "<" + builderClassPlain(te) + ", " + unq(
-                    pe,
-                    name
-                ) + "> PRESETS;"
+                "    static final " + PRESET_CALLBACKS_INITIALIZER + "<" + builderClassPlain(te) + ", " + unqualifiedName + "> PRESETS;"
             );
             write(bw, "");
             write(bw, "    static {");
@@ -207,8 +225,8 @@ record Generator(
 
             var recordAttributes = te.getRecordComponents()
                 .stream()
-                .filter(recordComponentElement ->
-                    recordComponentElement.getKind() == ElementKind.RECORD_COMPONENT)
+                .filter(element ->
+                    element.getKind() == ElementKind.RECORD_COMPONENT)
                 .map(element ->
                     RecordAttribute.create(element, roots, enums))
                 .toList();
@@ -235,7 +253,6 @@ record Generator(
         Collection<? extends Element> roots,
         Collection<? extends Element> enums
     ) {
-        var name = te.getQualifiedName();
         var file = builderFile(te);
         var setters = te.getRecordComponents()
             .stream().flatMap(el -> {
@@ -269,10 +286,11 @@ record Generator(
             )
             .toList();
 
+        var unqualifiedName = unqTypeName();
         var creatorStart = List.of(
             "    @Override",
-            "    public " + unq(pe, name) + " get() {",
-            "        return new " + unq(pe, name) + "("
+            "    public " + unqualifiedName + " get() {",
+            "        return new " + unqualifiedName + "("
         );
 
         List<String> creatorMeat = te.getRecordComponents()
@@ -296,18 +314,15 @@ record Generator(
                 importType(Supplier.class),
                 importType(Generated.class),
                 "",
-                "/// Builder for [" + unq(pe, name) + "]",
+                "/// Builder for [" + unqualifiedName + "]",
                 "///",
                 "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
                 "@" + GENERATED + "(",
                 "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
                 "    date = \"" + time + "\",",
-                "    comments = \"Builder for " + unq(pe, name) + "\"",
+                "    comments = \"Builder for " + unqualifiedName + "\"",
                 ")",
-                "final class " + builderClassPlain(te) + " implements " + SUPPLIER + "<" + unq(
-                    pe,
-                    name
-                ) + "> {",
+                "final class " + builderClassPlain(te) + " implements " + SUPPLIER + "<" + unqualifiedName + "> {",
                 "",
                 "    static " + builderClassPlain(te) + " create() {",
                 "        return new " + builderClassPlain(te) + "();",
@@ -326,6 +341,15 @@ record Generator(
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write builder for " + te, e);
         }
+    }
+
+    private String unqTypeName() {
+        var name = te.getQualifiedName();
+        var prefix = pe.getQualifiedName().toString();
+        var fullName = name.toString();
+        return fullName.startsWith(prefix)
+            ? fullName.substring(prefix.length() + 1)
+            : fullName;
     }
 
     private JavaFileObject factoryFile(PackageElement packageEl, TypeElement typeEl) {

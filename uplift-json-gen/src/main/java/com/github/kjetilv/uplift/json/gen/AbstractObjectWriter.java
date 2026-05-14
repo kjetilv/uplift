@@ -25,7 +25,7 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
     }
 
     protected String value(Boolean value) {
-        return value ? "true" : "false";
+        return value.toString();
     }
 
     protected String value(Number value) {
