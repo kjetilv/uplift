@@ -7,7 +7,7 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// are non-stringly-typed, such as single-field {@link Record records}.
 ///
 /// In such cases, [implement][#normalize(Object)] this interface and
-/// [plug it in][MapsMemoizers#create(KeyHandler,com.github.kjetilv.uplift.hash.HashKind)]
+/// [plug it in][MapsMemoizers#createWith(KeyHandler,com.github.kjetilv.uplift.hash.HashKind)]
 /// to produce instances of that key type.
 ///
 /// However, often maps have [string][String] keys, or at least some key type with a suitable
@@ -15,10 +15,10 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// [the default memoizer][MapsMemoizers#create(com.github.kjetilv.uplift.hash.HashKind)]
 /// which simply normalizes to strings.
 ///
-/// @param <MK> Key type
-/// @see MapsMemoizers#create(KeyHandler, com.github.kjetilv.uplift.hash.HashKind)
+/// @param <K> Key type
+/// @see MapsMemoizers#createWith(KeyHandler, com.github.kjetilv.uplift.hash.HashKind)
 @FunctionalInterface
-public interface KeyHandler<MK> {
+public interface KeyHandler<K> {
 
     @SuppressWarnings("unchecked")
     static <MK> KeyHandler<MK> defaultHandler() {
@@ -30,7 +30,7 @@ public interface KeyHandler<MK> {
     ///
     /// @param key Key
     /// @return byte array for hashing
-    default Bytes bytes(MK key) {
+    default Bytes bytes(K key) {
         return Bytes.from(key.toString());
     }
 
@@ -38,9 +38,9 @@ public interface KeyHandler<MK> {
     /// gets the same `K` instance.
     ///
     /// Note that this method must accept [any][Object] value. The [MapsMemoizer] needs to work
-    /// on `Map<?, ?>`, so it is up to the handler to resolve maps' keys into [MK]'s.
+    /// on `Map<?, ?>`, so it is up to the handler to resolve maps' keys into [K]'s.
     ///
     /// @param key Key
     /// @return A K instance
-    MK normalize(Object key);
+    K normalize(Object key);
 }

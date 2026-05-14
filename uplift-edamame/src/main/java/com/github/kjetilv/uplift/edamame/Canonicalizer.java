@@ -4,10 +4,10 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 /// Canonicalizes [hashed trees][HashedTree] to [canonical values][CanonicalValue].
 ///
-/// @param <MK> Type of Map keys
-/// @param <K> Hash kind
+/// @param <K> Type of Map keys
+/// @param <H> Hash kind
 @FunctionalInterface
-public interface Canonicalizer<MK, K extends HashKind<K>> {
+public interface Canonicalizer<K, H extends HashKind<H>> {
 
-    CanonicalValue<MK, K> canonical(HashedTree<MK, K> hashedTree);
+    CanonicalValue<H> canonical(HashedTree<K, H> hashedTree);
 }

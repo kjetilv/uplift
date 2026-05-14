@@ -14,20 +14,20 @@ import static com.github.kjetilv.uplift.edamame.impl.Tag.*;
 /// found in trees.
 ///
 /// @see Tag
-public record DefaultLeafHasher<K extends HashKind<K>>(Supplier<HashBuilder<Bytes, K>> newBuilder, PojoBytes pojoBytes)
-    implements LeafHasher<K> {
+public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Bytes, H>> newBuilder, PojoBytes pojoBytes)
+    implements LeafHasher<H> {
 
-    public DefaultLeafHasher(Supplier<HashBuilder<Bytes, K>> newBuilder, PojoBytes pojoBytes) {
+    public DefaultLeafHasher(Supplier<HashBuilder<Bytes, H>> newBuilder, PojoBytes pojoBytes) {
         this.newBuilder = Objects.requireNonNull(newBuilder, "newBuilder");
         this.pojoBytes = Objects.requireNonNull(pojoBytes, "pojoBytes");
     }
 
     @Override
-    public Hash<K> hash(Object leaf) {
+    public Hash<H> hash(Object leaf) {
         return hashTo(newBuilder.get(), leaf).build();
     }
 
-    private HashBuilder<Bytes, K> hashTo(HashBuilder<Bytes, K> hb, Object leaf) {
+    private HashBuilder<Bytes, H> hashTo(HashBuilder<Bytes, H> hb, Object leaf) {
         return switch (leaf) {
             case String s -> hashString(STRING.tag(hb), s);
             case Boolean b -> hashString(BOOL.tag(hb), Boolean.toString(b));

@@ -10,10 +10,10 @@ import static com.github.kjetilv.uplift.util.Maps.transformMap;
 /// A hashed tree mirrors a structure we want to store, decorating each part of the tree with a unique
 /// [hash][#hash()].
 @SuppressWarnings("unused")
-public sealed interface HashedTree<MK, K extends HashKind<K>> {
+public sealed interface HashedTree<K, H extends HashKind<H>> {
 
     /// @return The hash of this part of the tree
-    Hash<K> hash();
+    Hash<H> hash();
 
     /// @return The original structure
     Object unwrap();

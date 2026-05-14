@@ -11,23 +11,23 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// Strategy for hashing leaf values.  [Overridable][InternalFactory#create(KeyHandler, LeafHasher, HashKind, PojoBytes)]
 /// for testing purposes.
 @FunctionalInterface
-public interface LeafHasher<K extends HashKind<K>> {
+public interface LeafHasher<H extends HashKind<H>> {
 
-    static <K extends HashKind<K>> LeafHasher<K> create(K kind) {
+    static <H extends HashKind<H>> LeafHasher<H> create(H kind) {
         return create(kind, null, null);
     }
 
-    static <K extends HashKind<K>> LeafHasher<K> create(K kind, PojoBytes pojoBytes) {
+    static <H extends HashKind<H>> LeafHasher<H> create(H kind, PojoBytes pojoBytes) {
         return create(kind, null, pojoBytes);
     }
 
-    static <K extends HashKind<K>> LeafHasher<K> create(K kind, Supplier<HashBuilder<Bytes, K>> supplier) {
+    static <H extends HashKind<H>> LeafHasher<H> create(H kind, Supplier<HashBuilder<Bytes, H>> supplier) {
         return create(kind, supplier, null);
     }
 
-    static <K extends HashKind<K>> LeafHasher<K> create(
-        K kind,
-        Supplier<HashBuilder<Bytes, K>> supplier,
+    static <H extends HashKind<H>> LeafHasher<H> create(
+        H kind,
+        Supplier<HashBuilder<Bytes, H>> supplier,
         PojoBytes pojoBytes
     ) {
         return new DefaultLeafHasher<>(
@@ -38,5 +38,5 @@ public interface LeafHasher<K extends HashKind<K>> {
 
     /// @param leaf Leaf value
     /// @return Hash
-    Hash<K> hash(Object leaf);
+    Hash<H> hash(Object leaf);
 }

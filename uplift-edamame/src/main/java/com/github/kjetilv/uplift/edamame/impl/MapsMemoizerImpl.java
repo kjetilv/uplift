@@ -18,27 +18,27 @@ import static java.util.Objects.requireNonNull;
 /// Use [MapsMemoizers#create(HashKind)] and siblings to create instances of this class.
 ///
 /// @param <I>  Identifier type.  An identifier identifies exactly one of the cached maps
-/// @param <MK> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
-/// @param <K>  Hash kind
+/// @param <K> Key type for the maps. All maps (and their submaps) will be stored with keys of this type
+/// @param <H>  Hash kind
 @SuppressWarnings("unchecked")
-class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
-    implements MapsMemoizer<I, MK> {
+class MapsMemoizerImpl<I, K, H extends HashKind<H>>
+    implements MapsMemoizer<I, K> {
 
-    private final Map<I, Hash<K>> hashes = new HashMap<>();
+    private final Map<I, Hash<H>> hashes = new HashMap<>();
 
-    private final Map<Hash<K>, Map<MK, Object>> objects = new HashMap<>();
+    private final Map<Hash<H>, Map<K, Object>> objects = new HashMap<>();
 
-    private final Map<I, Map<MK, Object>> overflow = new HashMap<>();
+    private final Map<I, Map<K, Object>> overflow = new HashMap<>();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private final TreeHasher<MK, K> treeHasher;
+    private final TreeHasher<K, H> treeHasher;
 
-    private final Canonicalizer<MK, K> canonicalValues;
+    private final Canonicalizer<K, H> canonicalValues;
 
     /// @param canonicalValues Not null
-    /// @see MapsMemoizers#create(com.github.kjetilv.uplift.edamame.KeyHandler, HashKind)
-    MapsMemoizerImpl(TreeHasher<MK, K> treeHasher, Canonicalizer<MK, K> canonicalValues) {
+    /// @see MapsMemoizers#createWith(com.github.kjetilv.uplift.edamame.KeyHandler, HashKind)
+    MapsMemoizerImpl(TreeHasher<K, H> treeHasher, Canonicalizer<K, H> canonicalValues) {
         this.treeHasher = requireNonNull(treeHasher, "mapHasher");
         this.canonicalValues = requireNonNull(canonicalValues, "canonicalValues");
     }
@@ -49,7 +49,7 @@ class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
     }
 
     @Override
-    public Map<MK, ?> get(I id) {
+    public Map<K, ?> get(I id) {
         requireNonNull(id, "id");
         return withReadLock(() -> {
             var hash = hashes.get(id);
@@ -68,7 +68,7 @@ class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
     }
 
     @Override
-    public MemoizedMaps<I, MK> maps(boolean copy) {
+    public MemoizedMaps<I, K> maps(boolean copy) {
         return withReadLock(() ->
             new MemoizedMapsImpl<>(
                 copy ? copyOf(hashes) : unmodifiableMap(hashes),
@@ -86,28 +86,28 @@ class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
         var hashedTree = treeHasher.tree(value);
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
-            case CanonicalValue.Node<?, K>(
-                Hash<K> hash,
+            case CanonicalValue.Node<?, H>(
+                Hash<H> hash,
                 Map<?, Object> node
             ) -> withWriteLock(() ->
                 putCanonical(
                     identifier,
                     hash,
-                    (Map<MK, Object>) node,
+                    (Map<K, Object>) node,
                     requireAbsent
                 )
             );
-            case CanonicalValue.Collision<?, K> _ -> withWriteLock(() ->
-                putOverflow(identifier, (Map<MK, Object>) value)
+            case CanonicalValue.Collision<H> _ -> withWriteLock(() ->
+                putOverflow(identifier, (Map<K, Object>) value)
             );
-            case CanonicalValue<?, K> other -> fail("Unexpected canonical value: " + other);
+            case CanonicalValue<H> other -> fail("Unexpected canonical value: " + other);
         };
     }
 
     private boolean putCanonical(
         I identifier,
-        Hash<K> hash,
-        Map<MK, Object> value,
+        Hash<H> hash,
+        Map<K, Object> value,
         boolean requireAbsent
     ) {
         return withWriteLock(() -> {
@@ -126,7 +126,7 @@ class MapsMemoizerImpl<I, MK, K extends HashKind<K>>
         });
     }
 
-    private boolean putOverflow(I identifier, Map<MK, Object> value) {
+    private boolean putOverflow(I identifier, Map<K, Object> value) {
         return withWriteLock(() ->
             overflow.putIfAbsent(identifier, value) == null);
     }

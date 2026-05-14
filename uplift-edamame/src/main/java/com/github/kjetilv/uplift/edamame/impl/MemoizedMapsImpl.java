@@ -8,20 +8,20 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
-final class MemoizedMapsImpl<I, MK, K extends HashKind<K>> implements MemoizedMaps<I, MK> {
+final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMaps<I, K> {
 
-    private final Map<I, Hash<K>> hashes;
+    private final Map<I, Hash<H>> hashes;
 
-    private final Map<Hash<K>, Map<MK, Object>> objects;
+    private final Map<Hash<H>, Map<K, Object>> objects;
 
-    private final Map<I, Map<MK, Object>> overflow;
+    private final Map<I, Map<K, Object>> overflow;
 
     private final int size;
 
     MemoizedMapsImpl(
-        Map<I, Hash<K>> hashes,
-        Map<Hash<K>, Map<MK, Object>> objects,
-        Map<I, Map<MK, Object>> overflow
+        Map<I, Hash<H>> hashes,
+        Map<Hash<H>, Map<K, Object>> objects,
+        Map<I, Map<K, Object>> overflow
     ) {
         this.hashes = requireNonNull(hashes, "hashes");
         this.objects = requireNonNull(objects, "objects");
@@ -35,7 +35,7 @@ final class MemoizedMapsImpl<I, MK, K extends HashKind<K>> implements MemoizedMa
     }
 
     @Override
-    public Map<MK, ?> get(I id) {
+    public Map<K, ?> get(I id) {
         var hash = hashes.get(id);
         return hash != null ? objects.get(hash)
             : overflow.get(id);

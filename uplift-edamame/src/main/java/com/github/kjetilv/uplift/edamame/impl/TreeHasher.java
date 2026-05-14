@@ -4,7 +4,7 @@ import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 @FunctionalInterface
-interface TreeHasher<MK, K extends HashKind<K>> {
+interface TreeHasher<K, H extends HashKind<H>> {
 
-    HashedTree<MK, K> tree(Object value);
+    HashedTree<K, H> tree(Object value);
 }
