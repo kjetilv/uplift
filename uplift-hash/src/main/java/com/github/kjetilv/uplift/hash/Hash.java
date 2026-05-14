@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 ///
 /// Instances can provide a [digest][#digest()], which is a compact string representation.
 /// These can be parsed back to hash instances with other [factory methods][Hash#from(String)],
-public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> {
+public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
     static <K extends HashKind<K>> String toShortHashString(List<Hash<K>> hashes) {
         return hashes.stream()
@@ -92,7 +92,7 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
     }
 
     @Override
-    default int compareTo(Hash<K> o) {
+    default int compareTo(Hash<H> o) {
         if (equals(o)) {
             return 0;
         }
@@ -122,7 +122,7 @@ public sealed interface Hash<K extends HashKind<K>> extends Comparable<Hash<K>> 
     /// @throws IllegalStateException if this is not a [128-bit][H128] hash
     UUID asUuid();
 
-    K kind();
+    H kind();
 
     /// The longs
     ///

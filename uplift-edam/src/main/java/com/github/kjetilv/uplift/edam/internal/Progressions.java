@@ -8,11 +8,11 @@ import com.github.kjetilv.uplift.edam.patterns.PatternOccurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-record Progressions<K extends HashKind<K>>(
-    Occurrence<K> current,
-    Map<Hash<K>, List<HashPattern<K>>> starters,
-    List<PatternOccurrence<K>> progressing,
-    List<PatternOccurrence<K>> completed
+record Progressions<H extends HashKind<H>>(
+    Occurrence<H> current,
+    Map<Hash<H>, List<HashPattern<H>>> starters,
+    List<PatternOccurrence<H>> progressing,
+    List<PatternOccurrence<H>> completed
 ) {
     static <K extends HashKind<K>> List<PatternMatch<K>> repeats(
         Occurrence<K> occurrence,
@@ -33,7 +33,7 @@ record Progressions<K extends HashKind<K>>(
         Objects.requireNonNull(completed, "completed");
     }
 
-    private Progressions(Occurrence<K> occurrence, List<HashPattern<K>> hashPatterns) {
+    private Progressions(Occurrence<H> occurrence, List<HashPattern<H>> hashPatterns) {
         this(
             Objects.requireNonNull(occurrence, "occurrence"),
             group(Objects.requireNonNull(hashPatterns, "patterns")),
@@ -42,7 +42,7 @@ record Progressions<K extends HashKind<K>>(
         );
     }
 
-    private Progressions<K> proceed(Occurrence<K> historical) {
+    private Progressions<H> proceed(Occurrence<H> historical) {
         var historicalHash = historical.hash();
         var currentHash = current.hash();
 
@@ -53,7 +53,7 @@ record Progressions<K extends HashKind<K>>(
                 .flatMap(Optional::stream)
                 .toList();
 
-        Collection<HashPattern<K>> stillViableHashPatterns = stillViableProgressions.stream()
+        Collection<HashPattern<H>> stillViableHashPatterns = stillViableProgressions.stream()
             .map(PatternOccurrence::hashPattern)
             .collect(Collectors.toSet());
 
@@ -75,7 +75,7 @@ record Progressions<K extends HashKind<K>>(
 
         var stillProgressing = Stream.of(stillViableProgressions, newCandidates)
             .flatMap(Collection::stream)
-            .filter(((Predicate<PatternOccurrence<K>>) PatternOccurrence::match).negate())
+            .filter(((Predicate<PatternOccurrence<H>>) PatternOccurrence::match).negate())
             .toList();
 
         var completed = Stream.concat(
@@ -87,7 +87,7 @@ record Progressions<K extends HashKind<K>>(
         return new Progressions<>(current, starters, stillProgressing, completed);
     }
 
-    private List<PatternMatch<K>> resolve() {
+    private List<PatternMatch<H>> resolve() {
         return completed.stream()
             .collect(Collectors.groupingBy(PatternOccurrence::hashPattern))
             .entrySet()

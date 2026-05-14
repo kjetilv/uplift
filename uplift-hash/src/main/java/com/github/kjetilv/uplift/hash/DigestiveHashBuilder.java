@@ -3,33 +3,33 @@ package com.github.kjetilv.uplift.hash;
 import module java.base;
 import com.github.kjetilv.uplift.util.Bytes;
 
-record DigestiveHashBuilder<T, K extends HashKind<K>>(
-    ByteDigest<K> byteDigest,
+record DigestiveHashBuilder<T, H extends HashKind<H>>(
+    ByteDigest<H> byteDigest,
     Function<T, Stream<Bytes>> toBytes
-) implements HashBuilder<T, K> {
+) implements HashBuilder<T, H> {
 
-    DigestiveHashBuilder(ByteDigest<K> byteDigest, Function<T, Stream<Bytes>> toBytes) {
+    DigestiveHashBuilder(ByteDigest<H> byteDigest, Function<T, Stream<Bytes>> toBytes) {
         this.byteDigest = Objects.requireNonNull(byteDigest, "byteDigest");
         this.toBytes = Objects.requireNonNull(toBytes, "toBytes");
     }
 
     @Override
-    public K kind() {
+    public H kind() {
         return byteDigest.kind();
     }
 
     @Override
-    public HashBuilder<T, K> hash(T item) {
+    public HashBuilder<T, H> hash(T item) {
         return item == null ? this : hash(Stream.ofNullable(item));
     }
 
     @Override
-    public HashBuilder<T, K> hash(List<T> items) {
+    public HashBuilder<T, H> hash(List<T> items) {
         return items == null || items.isEmpty() ? this : hash(items.stream());
     }
 
     @Override
-    public HashBuilder<T, K> hash(Stream<T> items) {
+    public HashBuilder<T, H> hash(Stream<T> items) {
         if (items != null) {
             items.flatMap(toBytes)
                 .forEach(byteDigest::digest);
@@ -38,17 +38,17 @@ record DigestiveHashBuilder<T, K extends HashKind<K>>(
     }
 
     @Override
-    public Hash<K> build() {
+    public Hash<H> build() {
         return byteDigest.get();
     }
 
     @Override
-    public <R> HashBuilder<R, K> map(Function<R, T> transform) {
+    public <R> HashBuilder<R, H> map(Function<R, T> transform) {
         return new DigestiveHashBuilder<>(byteDigest, transform.andThen(toBytes));
     }
 
     @Override
-    public <R> HashBuilder<R, K> flatMap(Function<R, Stream<T>> transform) {
+    public <R> HashBuilder<R, H> flatMap(Function<R, Stream<T>> transform) {
         return new DigestiveHashBuilder<>(byteDigest, r -> transform.apply(r).flatMap(toBytes));
     }
 

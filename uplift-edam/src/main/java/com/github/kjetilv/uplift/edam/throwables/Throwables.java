@@ -14,7 +14,7 @@ import com.github.kjetilv.uplift.util.Bytes;
 @SuppressWarnings("unused")
 public final class Throwables {
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> onHeap(K kind) {
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> onHeap(H kind) {
         return onHeap(
             null,
             null,
@@ -25,9 +25,9 @@ public final class Throwables {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> onHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> onHeap(
         Window window,
-        K kind,
+        H kind,
         int maxLength,
         boolean messages
     ) {
@@ -41,11 +41,11 @@ public final class Throwables {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> onHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> onHeap(
         Supplier<Instant> now,
         Window window,
-        K kind,
-        HashBuilder<Bytes, K> hashBuilder,
+        H kind,
+        HashBuilder<Bytes, H> hashBuilder,
         int maxLength,
         boolean messages
     ) {
@@ -58,9 +58,9 @@ public final class Throwables {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> offHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> offHeap(
         Arena arena,
-        K kind
+        H kind
     ) {
         return offHeap(
             arena,
@@ -74,10 +74,10 @@ public final class Throwables {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> offHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> offHeap(
         Arena arena,
         Window window,
-        K kind,
+        H kind,
         int maxLength,
         boolean messages
     ) {
@@ -93,12 +93,12 @@ public final class Throwables {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> offHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> offHeap(
         Arena arena,
         Supplier<Instant> now,
         Window window,
-        K kind,
-        HashBuilder<Bytes, K> hashBuilder,
+        H kind,
+        HashBuilder<Bytes, H> hashBuilder,
         HashFun<Hash<?>> hashFun,
         int maxLength,
         boolean messages

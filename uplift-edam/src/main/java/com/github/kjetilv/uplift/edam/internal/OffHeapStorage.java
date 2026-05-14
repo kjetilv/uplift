@@ -12,7 +12,7 @@ import static java.lang.foreign.MemoryLayout.sequenceLayout;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
-final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
+final class OffHeapStorage<H extends HashKind<H>> extends AbstractStorage<H> {
 
     static <K extends HashKind<K>> Storage<K> create(
         Window window,
@@ -24,9 +24,9 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
 
     private final MemorySegment segment;
 
-    private final Indexer<Hash<K>> indexer;
+    private final Indexer<Hash<H>> indexer;
 
-    OffHeapStorage(Window window, Indexer<Hash<K>> indexer, Arena arena) {
+    OffHeapStorage(Window window, Indexer<Hash<H>> indexer, Arena arena) {
         super(window);
         this.indexer = Objects.requireNonNull(indexer, "indexer");
         this.segment = Objects.requireNonNull(arena, "arena")
@@ -34,7 +34,7 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
     }
 
     @Override
-    protected Occurrence<K> retrieveFrom(long index) {
+    protected Occurrence<H> retrieveFrom(long index) {
         var slice = slice(index);
         var i = (long) IH.get(slice, 0);
         var n = (long) NH.get(slice, 0);
@@ -45,7 +45,7 @@ final class OffHeapStorage<K extends HashKind<K>> extends AbstractStorage<K> {
     }
 
     @Override
-    protected void storeTo(long index, Occurrence<K> occurrence) {
+    protected void storeTo(long index, Occurrence<H> occurrence) {
         var i = indexer.exchange(occurrence.hash());
         var n = Duration.between(
             START_TIME,

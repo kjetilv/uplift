@@ -12,25 +12,25 @@ import static com.github.kjetilv.uplift.edam.Analysis.Patterns;
 import static com.github.kjetilv.uplift.edam.Analysis.Repeats;
 import static java.util.Objects.requireNonNull;
 
-record SequenceTracker<K extends HashKind<K>>(Storage<K> storage, Detector detector) {
+record SequenceTracker<H extends HashKind<H>>(Storage<H> storage, Detector detector) {
 
     SequenceTracker {
         requireNonNull(storage, "storage");
     }
 
-    SequenceTracker<K> update(Occurrence<K> occurrence) {
+    SequenceTracker<H> update(Occurrence<H> occurrence) {
         storage.store(List.of(occurrence));
         return this;
     }
 
-    Analysis<K> process(Occurrence<K> occurrence) {
+    Analysis<H> process(Occurrence<H> occurrence) {
         var matches = getPatternMatches(occurrence);
         return matches.isEmpty() ? new Single<>(occurrence)
             : isRepeated(matches) ? new Repeats<>(simpleMatches(matches))
                 : new Patterns<>(occurrence, matches);
     }
 
-    private List<PatternMatch<K>> getPatternMatches(Occurrence<K> occurrence) {
+    private List<PatternMatch<H>> getPatternMatches(Occurrence<H> occurrence) {
         return Progressions.repeats(
             occurrence,
             detector.patterns(storage, storage.count()),

@@ -6,25 +6,25 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// Maintains a simple pool of non-trivially-created instances of [MessageDigest], in the form of a queue.
 /// On demand, query the queue for a digest, or create a new one.  On release, offer the digest to the queue.
 ///
-/// @param <K>
-final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
+/// @param <H>
+final class MessageByteDigest<H extends HashKind<H>> implements ByteDigest<H> {
 
     static <K extends HashKind<K>> MessageByteDigest<K> get(K kind) {
         return new MessageByteDigest<>(kind);
     }
 
-    private final K kind;
+    private final H kind;
 
     private final Lock digestLock = new ReentrantLock();
 
     private MessageDigest messageDigest;
 
-    MessageByteDigest(K kind) {
+    MessageByteDigest(H kind) {
         this.kind = Objects.requireNonNull(kind, "kind");
     }
 
     @Override
-    public K kind() {
+    public H kind() {
         return kind;
     }
 
@@ -42,7 +42,7 @@ final class MessageByteDigest<K extends HashKind<K>> implements ByteDigest<K> {
     ///
     /// @return Hash of current digest
     @Override
-    public Hash<K> get() {
+    public Hash<H> get() {
         digestLock.lock();
         try {
             if (messageDigest == null) {

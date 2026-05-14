@@ -11,7 +11,7 @@ import com.github.kjetilv.uplift.util.Bytes;
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
 
-abstract sealed class AbstractOffHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K>
+abstract sealed class AbstractOffHeapIndexer<H extends HashKind<H>> extends AbstractIndexer<H>
     permits OffHeapIndexer128, OffHeapIndexer256 {
 
     @SuppressWarnings("unchecked")
@@ -32,5 +32,5 @@ abstract sealed class AbstractOffHeapIndexer<K extends HashKind<K>> extends Abst
     }
 
     @Override
-    protected abstract Slot<K> slot(long index);
+    protected abstract Slot<H> slot(long index);
 }

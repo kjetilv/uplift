@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.edam.HashFun;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<Hash<K>>
+abstract sealed class AbstractIndexer<H extends HashKind<H>> implements Indexer<Hash<H>>
     permits AbstractOffHeapIndexer, OnHeapIndexer {
 
     private final long limit;
@@ -23,7 +23,7 @@ abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<
     }
 
     @Override
-    public final long exchange(Hash<K> hash) {
+    public final long exchange(Hash<H> hash) {
         var initPos = hashFunction.compute(hash) & lastIndex;
         var pos = initPos;
         while (true) {
@@ -48,7 +48,7 @@ abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<
     }
 
     @Override
-    public final Hash<K> exchange(long index) {
+    public final Hash<H> exchange(long index) {
         if (index == limit) {
             throw new IllegalArgumentException(this + ": Index out of bounds: " + index);
         }
@@ -66,7 +66,7 @@ abstract sealed class AbstractIndexer<K extends HashKind<K>> implements Indexer<
         return limit;
     }
 
-    protected abstract Slot<K> slot(long index);
+    protected abstract Slot<H> slot(long index);
 
     @Override
     public final String toString() {

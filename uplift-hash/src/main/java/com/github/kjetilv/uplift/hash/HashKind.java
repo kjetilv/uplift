@@ -8,7 +8,7 @@ import module java.base;
 /// * [#K256], a 32 byte one using SHA3-256 hashing
 ///
 @SuppressWarnings("unused")
-public sealed interface HashKind<K extends HashKind<K>> {
+public sealed interface HashKind<H extends HashKind<H>> {
 
     /// 128-bit hash
     K128 K128 = new K128();
@@ -53,13 +53,13 @@ public sealed interface HashKind<K extends HashKind<K>> {
     int bits();
 
     /// @return The canonical all-zeroes instance
-    Hash<K> blank();
+    Hash<H> blank();
 
     /// @return Hash from data input
-    Hash<K> from(DataInput dataInput);
+    Hash<H> from(DataInput dataInput);
 
     /// @return A random hash
-    Hash<K> random();
+    Hash<H> random();
 
     record K128(
         String algorithm,

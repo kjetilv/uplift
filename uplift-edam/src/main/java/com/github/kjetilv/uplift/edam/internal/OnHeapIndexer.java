@@ -7,13 +7,13 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 @SuppressWarnings("unused")
-final class OnHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K> {
+final class OnHeapIndexer<H extends HashKind<H>> extends AbstractIndexer<H> {
 
-    private final Hash<K>[] hashes;
+    private final Hash<H>[] hashes;
 
-    private final K kind;
+    private final H kind;
 
-    OnHeapIndexer(HashFun<Hash<?>> hashFunction, K kind, long count) {
+    OnHeapIndexer(HashFun<Hash<?>> hashFunction, H kind, long count) {
         super(hashFunction, count);
         this.kind = kind;
         var size = toInt(hashFunction.slotCount(count));
@@ -22,7 +22,7 @@ final class OnHeapIndexer<K extends HashKind<K>> extends AbstractIndexer<K> {
     }
 
     @Override
-    protected Slot<K> slot(long index) {
+    protected Slot<H> slot(long index) {
         return new IndexedSlot<>(toInt(index), hashes, kind);
     }
 

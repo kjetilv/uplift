@@ -5,10 +5,10 @@ import com.github.kjetilv.uplift.util.Bytes;
 import java.nio.ByteBuffer;
 
 /// Hides the details of byte digestion
-interface ByteDigest<K extends HashKind<K>> {
+interface ByteDigest<H extends HashKind<H>> {
 
     /// @return The kind of hash
-    K kind();
+    H kind();
 
     /// Add bytes to digest.
     ///
@@ -20,5 +20,5 @@ interface ByteDigest<K extends HashKind<K>> {
     /// Resets the current digest and returns th bytes digested so far
     ///
     ///  @return The hash of the bytes added to the digest
-    Hash<K> get();
+    Hash<H> get();
 }

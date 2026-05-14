@@ -7,8 +7,8 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 record Detector(int depth) {
 
-    <K extends HashKind<K>> List<HashPattern<K>> patterns(
-        LongFunction<? extends Supplier<Hash<K>>> get,
+    <H extends HashKind<H>> List<HashPattern<H>> patterns(
+        LongFunction<? extends Supplier<Hash<H>>> get,
         long count
     ) {
         return LongStream.range(0, count).mapToObj(i ->
@@ -21,8 +21,8 @@ record Detector(int depth) {
             .toList();
     }
 
-    private <K extends HashKind<K>> Stream<HashPattern<K>> patterns(
-        LongFunction<? extends Supplier<Hash<K>>> get,
+    private <H extends HashKind<H>> Stream<HashPattern<H>> patterns(
+        LongFunction<? extends Supplier<Hash<H>>> get,
         long index,
         int length,
         long count
@@ -32,12 +32,12 @@ record Detector(int depth) {
             : expand(get, index, length, count, single(get, index));
     }
 
-    private <K extends HashKind<K>> Stream<HashPattern<K>> expand(
-        LongFunction<? extends Supplier<Hash<K>>> get,
+    private <H extends HashKind<H>> Stream<HashPattern<H>> expand(
+        LongFunction<? extends Supplier<Hash<H>>> get,
         long index,
         int length,
         long count,
-        HashPattern<K> hashPattern
+        HashPattern<H> hashPattern
     ) {
         return Stream.concat(
             Stream.of(hashPattern),
@@ -50,8 +50,8 @@ record Detector(int depth) {
         );
     }
 
-    private static <K extends HashKind<K>> HashPattern<K> single(
-        LongFunction<? extends Supplier<Hash<K>>> get,
+    private static <H extends HashKind<H>> HashPattern<H> single(
+        LongFunction<? extends Supplier<Hash<H>>> get,
         long index
     ) {
         return new HashPattern<>(get.apply(index).get());

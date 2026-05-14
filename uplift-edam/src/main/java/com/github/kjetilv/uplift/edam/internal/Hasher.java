@@ -6,15 +6,14 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 /// Strategy interface for identifying objects. Thread-safe.
 @FunctionalInterface
-public interface Hasher<T, K extends HashKind<K>> extends Function<T, Hash<K>> {
+public interface Hasher<T, H extends HashKind<H>> extends Function<T, Hash<H>> {
 
     @Override
-    default Hash<K> apply(T t) {
+    default Hash<H> apply(T t) {
         return hash(t);
     }
 
     /// @param t Non-null
     /// @return Id
-    Hash<K> hash(T t);
+    Hash<H> hash(T t);
 }
-

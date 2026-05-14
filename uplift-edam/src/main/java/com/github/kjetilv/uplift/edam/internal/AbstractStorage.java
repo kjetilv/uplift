@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
+abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
 
     private long index;
 
@@ -19,17 +19,17 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
     }
 
     @Override
-    public final Occurrence<K> apply(long index) {
+    public final Occurrence<H> apply(long index) {
         return get(index);
     }
 
     @Override
-    public final Occurrence<K> get(long index) {
+    public final Occurrence<H> get(long index) {
         return retrieveFrom(full ? (this.index + index) % window.count() : index);
     }
 
     @Override
-    public final Storage<K> store(Collection<Occurrence<K>> occurrences) {
+    public final Storage<H> store(Collection<Occurrence<H>> occurrences) {
         for (var occurrence : occurrences) {
             try {
                 storeTo(index, occurrence);
@@ -42,12 +42,12 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
     }
 
     @Override
-    public final Occurrence<K> getFirst() {
+    public final Occurrence<H> getFirst() {
         return get(0);
     }
 
     @Override
-    public final Occurrence<K> getLast() {
+    public final Occurrence<H> getLast() {
         return get(count() - 1);
     }
 
@@ -57,17 +57,17 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
     }
 
     @Override
-    public final Cursor<K> rewind() {
+    public final Cursor<H> rewind() {
         return rewind(null);
     }
 
     @Override
-    public final Cursor<K> forward() {
+    public final Cursor<H> forward() {
         return forward(null);
     }
 
     @Override
-    public final Cursor<K> rewind(Hash<K> hash) {
+    public final Cursor<H> rewind(Hash<H> hash) {
         var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
@@ -79,7 +79,7 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
     }
 
     @Override
-    public final Cursor<K> forward(Hash<K> hash) {
+    public final Cursor<H> forward(Hash<H> hash) {
         var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
@@ -95,16 +95,16 @@ abstract class AbstractStorage<K extends HashKind<K>> implements Storage<K> {
         return full ? window.count() : index;
     }
 
-    protected abstract Occurrence<K> retrieveFrom(long index);
+    protected abstract Occurrence<H> retrieveFrom(long index);
 
-    protected abstract void storeTo(long index, Occurrence<K> occurrence);
+    protected abstract void storeTo(long index, Occurrence<H> occurrence);
 
-    private Cursor<K> cursor(
-        Hash<K> hash,
+    private Cursor<H> cursor(
+        Hash<H> hash,
         long index,
         LongPredicate indexCutoff,
         int step,
-        BiPredicate<Occurrence<K>, Instant> timeCutoff
+        BiPredicate<Occurrence<H>, Instant> timeCutoff
     ) {
         return new CursorImpl<>(
             hash,

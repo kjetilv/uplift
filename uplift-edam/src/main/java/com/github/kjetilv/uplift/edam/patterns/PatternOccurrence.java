@@ -10,14 +10,14 @@ import static java.util.Objects.requireNonNull;
 /// @param hashPattern     A pattern
 /// @param occurrences Actual occurrences following the pattern
 @SuppressWarnings("unused")
-public record PatternOccurrence<K extends HashKind<K>>(HashPattern<K> hashPattern, List<Occurrence<K>> occurrences)
-    implements Spanning, Comparable<PatternOccurrence<K>>, Iterable<Occurrence<K>> {
+public record PatternOccurrence<H extends HashKind<H>>(HashPattern<H> hashPattern, List<Occurrence<H>> occurrences)
+    implements Spanning, Comparable<PatternOccurrence<H>>, Iterable<Occurrence<H>> {
 
-    public PatternOccurrence(HashPattern<K> hashPattern) {
+    public PatternOccurrence(HashPattern<H> hashPattern) {
         this(hashPattern, new ArrayList<>());
     }
 
-    public PatternOccurrence(HashPattern<K> hashPattern, List<Occurrence<K>> occurrences) {
+    public PatternOccurrence(HashPattern<H> hashPattern, List<Occurrence<H>> occurrences) {
         if (hashPattern.validOccurrences(occurrences)) {
             this.hashPattern = requireNonNull(hashPattern, "pattern");
             this.occurrences = Utils.Lists.nonNullSorted(occurrences, "occurrences");
@@ -48,13 +48,13 @@ public record PatternOccurrence<K extends HashKind<K>>(HashPattern<K> hashPatter
         return "<" + head + " " + tail + ">";
     }
 
-    public Optional<PatternOccurrence<K>> matchingOccurrence(Occurrence<K> occ) {
+    public Optional<PatternOccurrence<H>> matchingOccurrence(Occurrence<H> occ) {
         return matchesNext(occ.hash())
             ? Optional.of(new PatternOccurrence<>(hashPattern, add(occ)))
             : Optional.empty();
     }
 
-    public boolean matchesNext(Hash<K> hash) {
+    public boolean matchesNext(Hash<H> hash) {
         return occurrences.size() < hashPattern().length() && hashPattern.hash(occurrences().size()).equals(hash);
     }
 
@@ -67,11 +67,11 @@ public record PatternOccurrence<K extends HashKind<K>>(HashPattern<K> hashPatter
     }
 
     @Override
-    public Iterator<Occurrence<K>> iterator() {
+    public Iterator<Occurrence<H>> iterator() {
         return occurrences.iterator();
     }
 
-    private List<Occurrence<K>> add(Occurrence<K> occ) {
+    private List<Occurrence<H>> add(Occurrence<H> occ) {
         return Stream.concat(occurrences.stream(), Stream.of(occ))
             .toList();
     }

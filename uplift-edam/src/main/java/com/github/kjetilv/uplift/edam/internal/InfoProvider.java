@@ -7,11 +7,11 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 /// Storage for [Throwable]s.
 @SuppressWarnings("unused")
-interface InfoProvider<T, I extends Info<T, K>, K extends HashKind<K>> {
+interface InfoProvider<T, I extends Info<T, H>, H extends HashKind<H>> {
 
-    default I build(T item, Occurrence<K> occurrence) {
+    default I build(T item, Occurrence<H> occurrence) {
         return build(item, occurrence, null);
     }
 
-    I build(T item, Occurrence<K> occurrence, Function<Throwable, String> printer);
+    I build(T item, Occurrence<H> occurrence, Function<Throwable, String> printer);
 }

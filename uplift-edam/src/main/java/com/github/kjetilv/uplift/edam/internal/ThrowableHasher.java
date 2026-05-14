@@ -6,19 +6,19 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 
-final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, K> {
+final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Throwable, H> {
 
-    private final HashBuilder<Bytes, K> hashBuilder;
+    private final HashBuilder<Bytes, H> hashBuilder;
 
     private final boolean messages;
 
     private final Lock lock = new ReentrantLock();
 
-    private final HashBuilder<String, K> strings;
+    private final HashBuilder<String, H> strings;
 
-    private final HashBuilder<Integer, K> ints;
+    private final HashBuilder<Integer, H> ints;
 
-    ThrowableHasher(boolean messages, HashBuilder<Bytes, K> hashBuilder) {
+    ThrowableHasher(boolean messages, HashBuilder<Bytes, H> hashBuilder) {
         this.hashBuilder = Objects.requireNonNull(hashBuilder, "idBuilder");
         this.strings = this.hashBuilder.map(ThrowableHasher::bytes);
         this.ints = this.hashBuilder.map(Bytes.intToBytes());
@@ -26,7 +26,7 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
     }
 
     @Override
-    public Hash<K> hash(Throwable throwable) {
+    public Hash<H> hash(Throwable throwable) {
         Objects.requireNonNull(throwable, "throwable");
         var chain = Utils.ThrowableUtils.chain(throwable).toList();
         lock.lock();
@@ -37,7 +37,7 @@ final class ThrowableHasher<K extends HashKind<K>> implements Hasher<Throwable, 
         }
     }
 
-    private Hash<K> hash(List<Throwable> chain) {
+    private Hash<H> hash(List<Throwable> chain) {
         chain.forEach(this::hashSingle);
         return hashBuilder.build();
     }

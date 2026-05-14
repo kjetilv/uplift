@@ -9,11 +9,12 @@ import static java.util.Objects.requireNonNull;
 
 /// @param hashes Hashes in this pattern
 @SuppressWarnings("unused")
-public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implements Comparable<HashPattern<K>>, Iterable<Hash<K>> {
+public record HashPattern<H extends HashKind<H>>(List<Hash<H>> hashes)
+    implements Comparable<HashPattern<H>>, Iterable<Hash<H>> {
 
     @SafeVarargs
     @SuppressWarnings("unused")
-    public HashPattern(Hash<K>... hashes) {
+    public HashPattern(Hash<H>... hashes) {
         this(Cycles.find(hashes));
     }
 
@@ -39,7 +40,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     @Override
-    public int compareTo(HashPattern<K> hashPattern) {
+    public int compareTo(HashPattern<H> hashPattern) {
         var length = length();
         var lengthCompare = Integer.compare(length, hashPattern.length());
         if (lengthCompare != 0) {
@@ -54,7 +55,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
         return 0;
     }
 
-    public Hash<K> hash(int index) {
+    public Hash<H> hash(int index) {
         return hashes.get(index);
     }
 
@@ -62,24 +63,24 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
         return toStringCustom(hash -> hash.toStringCustom(digestLength));
     }
 
-    public int count(Hash<K> hash) {
+    public int count(Hash<H> hash) {
         return Math.toIntExact(hashes.stream()
             .filter(hash::equals).count());
     }
 
-    public HashPattern<K> cyclicSubPattern() {
+    public HashPattern<H> cyclicSubPattern() {
         var base = Cycles.find(hashes);
         return base.size() == hashes.size()
             ? this
             : new HashPattern<>(base);
     }
 
-    public boolean isCandidate(Hash<K> start, Hash<K> end) {
+    public boolean isCandidate(Hash<H> start, Hash<H> end) {
         return hashes.size() == 1 && start.equals(end) && hashes.getFirst().equals(start)
                || hashes.size() > 1 && hashes.getFirst().equals(start) && hashes.getLast().equals(end);
     }
 
-    public HashPattern<K> with(HashPattern<K> hashPattern) {
+    public HashPattern<H> with(HashPattern<H> hashPattern) {
         return new HashPattern<>(
             Stream.of(hashes(), hashPattern.hashes())
                 .flatMap(List::stream)
@@ -92,11 +93,11 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     }
 
     @Override
-    public Iterator<Hash<K>> iterator() {
+    public Iterator<Hash<H>> iterator() {
         return hashes.iterator();
     }
 
-    public boolean validOccurrences(List<Occurrence<K>> occurrences) {
+    public boolean validOccurrences(List<Occurrence<H>> occurrences) {
         var iterator = occurrences.iterator();
         for (var hash : this) {
             if (!iterator.hasNext()) {
@@ -109,7 +110,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
         return true;
     }
 
-    public PatternOccurrence<K> at(Instant... times) {
+    public PatternOccurrence<H> at(Instant... times) {
         return new PatternOccurrence<>(
             this,
             zip(Arrays.asList(times), hashes, Occurrence::new)
@@ -124,11 +125,11 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
         return hashes.size() > 1;
     }
 
-    private Stream<Hash<K>> hashStream() {
+    private Stream<Hash<H>> hashStream() {
         return hashes.stream();
     }
 
-    private String toStringCustom(Function<Hash<K>, String> toString) {
+    private String toStringCustom(Function<Hash<H>, String> toString) {
         return getClass().getSimpleName() + "[/" + hashes.size() + ":" +
                "<" +
                hashStream()
@@ -151,7 +152,7 @@ public record HashPattern<K extends HashKind<K>>(List<Hash<K>> hashes) implement
     @Override
     public String toString() {
         var size = hashes.size();
-        Function<Hash<K>, String> toString = size > 3 ? Hash::toShortString : Hash::toString;
+        Function<Hash<H>, String> toString = size > 3 ? Hash::toShortString : Hash::toString;
         return toStringCustom(toString);
     }
 }

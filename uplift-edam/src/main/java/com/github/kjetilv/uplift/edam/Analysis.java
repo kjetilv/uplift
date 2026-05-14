@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 /// Analysis of repeated occurrences.  Spans
 @SuppressWarnings("unused")
-public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
+public sealed interface Analysis<H extends HashKind<H>> extends Timelined {
 
     ZoneId UTC = ZoneId.of("UTC");
 
@@ -24,7 +24,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         return count(null);
     }
 
-    default Hash<K> triggerHash() {
+    default Hash<H> triggerHash() {
         return trigger().hash();
     }
 
@@ -46,7 +46,7 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
         return Duration.between(firstOccurrence().time(), trigger().time());
     }
 
-    default Stream<PatternMatch<K>> combinedMatches() {
+    default Stream<PatternMatch<H>> combinedMatches() {
         return Stream.empty();
     }
 
@@ -58,21 +58,21 @@ public sealed interface Analysis<K extends HashKind<K>> extends Timelined {
     int distinctOccurrencesCount();
 
     /// @return The earliest occurrence in the analysis
-    Occurrence<K> firstOccurrence();
+    Occurrence<H> firstOccurrence();
 
     /// @return The occurrence that triggered the analysis, ie. the latest occurrence
-    Occurrence<K> trigger();
+    Occurrence<H> trigger();
 
     /// @return The number of patterns detected in this analysis
     int distinctPatternsCount();
 
     /// @return The number of occurences of the Id
-    int count(Hash<K> hash);
+    int count(Hash<H> hash);
 
     String toPatternMatchesString();
 
     /// @return The simple component of this analysis, if any.
-    Optional<Repeats<K>> simpleMatch();
+    Optional<Repeats<H>> simpleMatch();
 
     /// No repeats of the item in the given timespan/history length.
     ///

@@ -17,8 +17,8 @@ import static java.util.Spliterator.NONNULL;
 /// When done, invoking [#build()] returns the final hash, and resets the underlying hasher.
 ///
 /// @param <T> Hashed type
-/// @param <K> Hash kind
-public interface HashBuilder<T, K extends HashKind<K>> {
+/// @param <H> Hash kind
+public interface HashBuilder<T, H extends HashKind<H>> {
 
     Function<Bytes, Stream<Bytes>> IDENTITY = Stream::of;
 
@@ -42,13 +42,13 @@ public interface HashBuilder<T, K extends HashKind<K>> {
     }
 
     /// @return Hash kind
-    K kind();
+    H kind();
 
     /// Add items
     ///
     /// @param items Items tp add
     /// @return This builder
-    default HashBuilder<T, K> hash(List<T> items) {
+    default HashBuilder<T, H> hash(List<T> items) {
         items.forEach(this::hash);
         return this;
     }
@@ -57,7 +57,7 @@ public interface HashBuilder<T, K extends HashKind<K>> {
     ///
     /// @param items Items to add
     /// @return This builder
-    default HashBuilder<T, K> hash(Stream<T> items) {
+    default HashBuilder<T, H> hash(Stream<T> items) {
         items.forEach(this::hash);
         return this;
     }
@@ -65,21 +65,21 @@ public interface HashBuilder<T, K extends HashKind<K>> {
     /// Add to the hash
     ///
     /// @param item Item to add
-    HashBuilder<T, K> hash(T item);
+    HashBuilder<T, H> hash(T item);
 
     /// Get the hash, reset the underlying hasher.
     ///
     /// @return Hash
-    Hash<K> build();
+    Hash<H> build();
 
     /// @param transform Transformer for `R` to `T`
     /// @param <R>       Input type to new hasher
     /// @return New hasher that accepts  `R`
-    <R> HashBuilder<R, K> map(Function<R, T> transform);
+    <R> HashBuilder<R, H> map(Function<R, T> transform);
 
     /// @param transform Transformer for `R` to `Stream<T>`
     /// @return New hasher that accepts `R`
-    <R> HashBuilder<R, K> flatMap(Function<R, Stream<T>> transform);
+    <R> HashBuilder<R, H> flatMap(Function<R, Stream<T>> transform);
 
     final class BytesIterator implements Iterator<Bytes> {
 

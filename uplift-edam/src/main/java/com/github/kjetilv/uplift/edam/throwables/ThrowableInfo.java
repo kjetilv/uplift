@@ -6,20 +6,20 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-public record ThrowableInfo<K extends HashKind<K>>(
+public record ThrowableInfo<H extends HashKind<H>>(
     Throwable source,
-    Occurrence<K> occurrence,
+    Occurrence<H> occurrence,
     List<String> full,
     List<String> brief,
     List<String> messages
-) implements Info<Throwable, K> {
+) implements Info<Throwable, H> {
 
     public ThrowableInfo {
         Objects.requireNonNull(occurrence, "occurrence");
     }
 
     @Override
-    public Hash<K> hash() {
+    public Hash<H> hash() {
         return occurrence.hash();
     }
 

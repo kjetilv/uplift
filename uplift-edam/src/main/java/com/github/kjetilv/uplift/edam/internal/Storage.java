@@ -5,29 +5,29 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-interface Storage<K extends HashKind<K>> extends LongFunction<Occurrence<K>> {
+interface Storage<H extends HashKind<H>> extends LongFunction<Occurrence<H>> {
 
-    Occurrence<K> get(long index);
+    Occurrence<H> get(long index);
 
-    default Storage<K> store(Occurrence<K> occurrence) {
+    default Storage<H> store(Occurrence<H> occurrence) {
         return store(List.of(occurrence));
     }
 
-    Storage<K> store(Collection<Occurrence<K>> occurrences);
+    Storage<H> store(Collection<Occurrence<H>> occurrences);
 
-    Occurrence<K> getFirst();
+    Occurrence<H> getFirst();
 
-    Occurrence<K> getLast();
+    Occurrence<H> getLast();
 
     boolean isEmpty();
 
-    Cursor<K> rewind();
+    Cursor<H> rewind();
 
-    Cursor<K> forward();
+    Cursor<H> forward();
 
-    Cursor<K> rewind(Hash<K> hash);
+    Cursor<H> rewind(Hash<H> hash);
 
-    Cursor<K> forward(Hash<K> hash);
+    Cursor<H> forward(Hash<H> hash);
 
     long count();
 

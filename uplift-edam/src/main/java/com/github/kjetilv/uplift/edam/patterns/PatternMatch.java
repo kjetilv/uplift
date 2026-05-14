@@ -10,11 +10,11 @@ import static java.util.Objects.requireNonNull;
 /// @param hashPattern     The pattern that has occurred
 /// @param occurrences THe occurrences
 /// @param timespan    Timespan of all occurrences
-public record PatternMatch<K extends HashKind<K>>(
-    HashPattern<K> hashPattern,
-    List<PatternOccurrence<K>> occurrences,
+public record PatternMatch<H extends HashKind<H>>(
+    HashPattern<H> hashPattern,
+    List<PatternOccurrence<H>> occurrences,
     Timespan timespan
-) implements Timelined, Comparable<PatternMatch<K>>, Iterable<PatternOccurrence<K>> {
+) implements Timelined, Comparable<PatternMatch<H>>, Iterable<PatternOccurrence<H>> {
 
     public static <K extends HashKind<K>>String toShortString(List<PatternMatch<K>> sequenceOccurrences) {
         return toShortString(sequenceOccurrences, null);
@@ -31,7 +31,7 @@ public record PatternMatch<K extends HashKind<K>>(
             .collect(Collectors.joining(delimiter == null ? "⁄" : delimiter));
     }
 
-    public PatternMatch(HashPattern<K> hashPattern, List<PatternOccurrence<K>> patternOccurrences) {
+    public PatternMatch(HashPattern<H> hashPattern, List<PatternOccurrence<H>> patternOccurrences) {
         this(
             requireNonNull(hashPattern, "pattern"),
             Utils.Lists.nonNullSorted(patternOccurrences, "patternOccurrences"),
@@ -45,7 +45,7 @@ public record PatternMatch<K extends HashKind<K>>(
         requireNonNull(timespan, "timespan");
     }
 
-    public int count(Hash<K> hash) {
+    public int count(Hash<H> hash) {
         return hashPattern.count(hash) * occurrences.size();
     }
 
@@ -66,7 +66,7 @@ public record PatternMatch<K extends HashKind<K>>(
         return timespan.end();
     }
 
-    public Occurrence<K> firstOccurrence() {
+    public Occurrence<H> firstOccurrence() {
         return occurrences.getFirst().occurrences().getFirst();
     }
 
@@ -76,7 +76,7 @@ public record PatternMatch<K extends HashKind<K>>(
     }
 
     @Override
-    public Iterator<PatternOccurrence<K>> iterator() {
+    public Iterator<PatternOccurrence<H>> iterator() {
         return occurrences.iterator();
     }
 
@@ -88,7 +88,7 @@ public record PatternMatch<K extends HashKind<K>>(
         return occurrences.size() + "x" + hashPattern.toShortString() ;
     }
 
-    public Optional<List<Occurrence<K>>> singleOccurrence() {
+    public Optional<List<Occurrence<H>>> singleOccurrence() {
         return isSimple()
             ? Optional.ofNullable(occurrences().getFirst().occurrences())
             : Optional.empty();

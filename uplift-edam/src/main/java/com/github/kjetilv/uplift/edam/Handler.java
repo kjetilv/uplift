@@ -7,24 +7,24 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @FunctionalInterface
-public interface Handler<T, P extends Info<T, K>, K extends HashKind<K>> {
+public interface Handler<T, P extends Info<T, H>, H extends HashKind<H>> {
 
-    default <R> R map(T item, Function<Handling<T, P, K>, R> action) {
+    default <R> R map(T item, Function<Handling<T, P, H>, R> action) {
         return action.apply(handling(item));
     }
 
-    default Handler.With<T, P, K> handle(T item) {
+    default Handler.With<T, P, H> handle(T item) {
         return new With<>() {
 
             @Override
-            public <R> R with(BiFunction<Analysis<K>, P, R> processor) {
+            public <R> R with(BiFunction<Analysis<H>, P, R> processor) {
                 var handling = handling(item);
                 return processor.apply(handling.analysis(), handling.payload());
             }
         };
     }
 
-    Handling<T, P, K> handling(T item);
+    Handling<T, P, H> handling(T item);
 
     private static <T, P extends Info<T, K>, K extends HashKind<K>> void none(
         Results<T, K> results,

@@ -14,10 +14,10 @@ public final class InternalFactory {
 
     public static final HashFun<Hash<?>> JAVA = Object::hashCode;
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> createVerifiedOnHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> createVerifiedOnHeap(
         Supplier<Instant> now,
         Window window,
-        HashBuilder<Bytes, K> hashBuilder,
+        HashBuilder<Bytes, H> hashBuilder,
         int maxLength,
         boolean messages
     ) {
@@ -35,11 +35,11 @@ public final class InternalFactory {
         );
     }
 
-    public static <K extends HashKind<K>> Handler<Throwable, ThrowableInfo<K>, K> createVerifiedOffHeap(
+    public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> createVerifiedOffHeap(
         Arena arena,
         Supplier<Instant> now,
         Window window,
-        HashBuilder<Bytes, K> hashBuilder,
+        HashBuilder<Bytes, H> hashBuilder,
         HashFun<Hash<?>> hashFun,
         int maxLength,
         boolean messages

@@ -5,30 +5,30 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-final class CursorImpl<K extends HashKind<K>> implements Storage.Cursor<K> {
+final class CursorImpl<H extends HashKind<H>> implements Storage.Cursor<H> {
 
     private long index;
 
-    private final Hash<K> hash;
+    private final Hash<H> hash;
 
     private final Instant cutoffTime;
 
-    private final Function<Long, Occurrence<K>> getter;
+    private final Function<Long, Occurrence<H>> getter;
 
     private final LongPredicate indexCutoff;
 
     private final int step;
 
-    private final BiPredicate<Occurrence<K>, Instant> timeCutoff;
+    private final BiPredicate<Occurrence<H>, Instant> timeCutoff;
 
     CursorImpl(
-        Hash<K> hash,
+        Hash<H> hash,
         Instant cutoffTime,
         long index,
-        Function<Long, Occurrence<K>> getter,
+        Function<Long, Occurrence<H>> getter,
         LongPredicate indexCutoff,
         int step,
-        BiPredicate<Occurrence<K>, Instant> timeCutoff
+        BiPredicate<Occurrence<H>, Instant> timeCutoff
     ) {
         this.hash = hash;
         this.cutoffTime = cutoffTime;
@@ -40,7 +40,7 @@ final class CursorImpl<K extends HashKind<K>> implements Storage.Cursor<K> {
     }
 
     @Override
-    public Optional<Occurrence<K>> next() {
+    public Optional<Occurrence<H>> next() {
         while (true) {
             if (indexCutoff.test(index)) {
                 return Optional.empty();
@@ -57,7 +57,7 @@ final class CursorImpl<K extends HashKind<K>> implements Storage.Cursor<K> {
     }
 
     @Override
-    public Stream<Occurrence<K>> spool(Instant limit) {
+    public Stream<Occurrence<H>> spool(Instant limit) {
         return stream(
             this::next,
             occurrence ->

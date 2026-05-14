@@ -6,17 +6,17 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-record ThrowableInfoProvider<K extends HashKind<K>>(int briefCount)
-    implements InfoProvider<Throwable, ThrowableInfo<K>, K> {
+record ThrowableInfoProvider<H extends HashKind<H>>(int briefCount)
+    implements InfoProvider<Throwable, ThrowableInfo<H>, H> {
 
     ThrowableInfoProvider() {
         this(1);
     }
 
     @Override
-    public ThrowableInfo<K> build(
+    public ThrowableInfo<H> build(
         Throwable item,
-        Occurrence<K> occurrence,
+        Occurrence<H> occurrence,
         Function<Throwable, String> printer
     ) {
         return new ThrowableInfo<>(

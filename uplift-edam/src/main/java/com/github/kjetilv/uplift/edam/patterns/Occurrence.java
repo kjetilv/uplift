@@ -6,10 +6,10 @@ import com.github.kjetilv.uplift.hash.HashKind;
 
 import static java.util.Objects.requireNonNull;
 
-public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long sn)
-    implements Comparable<Occurrence<K>>, Supplier<Hash<K>>, Spanning {
+public record Occurrence<H extends HashKind<H>>(Instant time, Hash<H> hash, long sn)
+    implements Comparable<Occurrence<H>>, Supplier<Hash<H>>, Spanning {
 
-    public Occurrence(Instant time, Hash<K> hash) {
+    public Occurrence(Instant time, Hash<H> hash) {
         this(time, hash, Sns.next());
     }
 
@@ -36,12 +36,12 @@ public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long
         return time == null || this.time.compareTo(time) < 0;
     }
 
-    public boolean matches(Hash<K> hash) {
+    public boolean matches(Hash<H> hash) {
         return hash == null || this.hash.equals(hash);
     }
 
     @Override
-    public Hash<K> get() {
+    public Hash<H> get() {
         return hash();
     }
 
@@ -75,4 +75,3 @@ public record Occurrence<K extends HashKind<K>>(Instant time, Hash<K> hash, long
         return getClass().getSimpleName() + "[" + hash + "@" + time.truncatedTo(ChronoUnit.MILLIS) + "#" + sn + "]";
     }
 }
-
