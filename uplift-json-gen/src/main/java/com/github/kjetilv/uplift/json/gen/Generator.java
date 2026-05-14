@@ -4,6 +4,7 @@ import module java.base;
 import module java.compiler;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
@@ -89,7 +90,6 @@ record Generator(
                     },
                     LinkedHashMap::new
                 ));
-
         return Map.ofEntries(
             Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
             Map.entry("type", "object"),

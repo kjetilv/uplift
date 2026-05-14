@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
+import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
@@ -29,9 +30,9 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         var time = time();
         for (var el : typeEls) {
             if (el instanceof TypeElement te) {
+                var pe = GenUtils.packageEl(te);
+                var generator = new Generator(pe, te, time, this::file);
                 try {
-                    var pe = GenUtils.packageEl(te);
-                    var generator = new Generator(pe, te, time, this::file);
                     if (generator.isRoot()) {
                         generator.writeRW();
                     }
@@ -40,6 +41,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                     generator.writeWriter(typeEls, enumEls);
                 } catch (Exception e) {
                     throw new IllegalStateException("Failed to write " + el, e);
+                }
+                try {
+                    IO.println(generator.jsonSchema(te));
+                } catch (Exception e) {
+                    IO.println(GenUtils.fqName(te) + " could not be paresed");
+                    e.printStackTrace();
                 }
             } else {
                 throw new IllegalStateException("Not a supported type: " + el);

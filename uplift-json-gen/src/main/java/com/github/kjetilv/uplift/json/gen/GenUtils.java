@@ -9,7 +9,14 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 final class GenUtils {
 
     static <R> String jsonSchema(RecordComponentElement el) {
-        return "";
+        var baseType = BaseType.of(el);
+        return switch (baseType) {
+            case STRING, UUID, URI, URL, INSTANT, DURATION, LOCALDATE, LOCALDATETIME, OFFSETDATETIME -> "string";
+            case BOOLEAN -> "boolean";
+            case INTEGER, LONG, SHORT, BYTE, BIG_INTEGER -> "integer";
+            case DOUBLE, FLOAT, BIG_DECIMAL -> "number";
+            case MAP -> "object";
+        };
     }
 
     static String fieldName(RecordComponentElement el) {
