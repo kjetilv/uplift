@@ -8,7 +8,7 @@ import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
 record RecordAttribute(
     String callbackEvent,
-    RecordComponentElement element,
+    RecordComponentElement attribute,
     Variant variant,
     TypeElement internalType,
     Collection<? extends Element> roots,
@@ -45,11 +45,11 @@ record RecordAttribute(
 
     String callbackHandler(TypeElement builderType) {
         return "on" + callbackEvent + "(" +
-               quote(fieldName(element)) +
-               ", " + variant.midTerm(element, internalType)
+               quote(fieldName(attribute)) +
+               ", " + variant.midTerm(attribute, internalType)
                    .map(term -> term + ", ")
                    .orElse("") +
-               variant.callbackHandler(builderType, element, internalType) +
+               variant.callbackHandler(builderType, attribute, internalType) +
                ")";
     }
 
@@ -57,36 +57,14 @@ record RecordAttribute(
         return variant() == Variant.GENERATED_LIST || variant() == Variant.GENERATED;
     }
 
-    String writeCall(TypeElement te) {
-        var listType = listType(element, roots, enums);
-        var isEnum = isType(element, enums) || isListType(element, enums);
-        var isRoot = isType(element, roots) || isListType(element, roots);
-        var isMap = element.asType().toString().startsWith(Map.class.getName());
-        var convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
-            .orElseGet(() -> BaseType.of(element))
-            .requiresConversion());
-        var name = isRoot ? "object"
-            : isMap ? "map"
-                : isEnum ? "string"
-                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(element)).methodName();
-        return name +
-               listType.map(_ -> "Array").orElse("") +
-               "(" +
-               quote(element.getSimpleName()) +
-               ", " +
-               variableName(te) + "." + element.getSimpleName() + "()" +
-               (convert ? ", this::value)"
-                   : isRoot ? ", new " + listType.map(this::writerClass).orElseGet(this::writerClass) + "())"
-                       : isMap ? ", new " + MapWriter.class.getName() + "())"
-                           : ")");
-    }
+
 
     private String writerClass() {
-        return writerClass(element.asType().toString());
+        return writerClass(attribute.asType().toString());
     }
 
     private String writerClass(String name) {
-        var packageElement = packageEl(element);
+        var packageElement = packageEl(attribute);
         var prefix = packageElement.toString();
         return name.substring(prefix.length() + 1)
                    .replace('.', '_') + "_Writer";

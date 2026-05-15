@@ -23,14 +23,12 @@ public record Tweet(
     boolean favorited
 ) {
 
-    @JsonRecord(root = false)
     public record Entities(
         List<Hashtag> hashtags,
         List<UserMention> user_mentions,
         List<Url> urls
     ) {
 
-        @JsonRecord(root = false)
         public record UserMention(
             List<Long> indices,
             String name,
@@ -40,7 +38,6 @@ public record Tweet(
         ) {
         }
 
-        @JsonRecord(root = false)
         public record Hashtag(
             String text,
             List<Integer> indices
@@ -48,7 +45,6 @@ public record Tweet(
         }
     }
 
-    @JsonRecord(root = false)
     public record Url(
         List<String> indices,
         URI display_url,
@@ -57,7 +53,6 @@ public record Tweet(
     ) {
     }
 
-    @JsonRecord(root = false)
     public record Activities(
         String retweeters_count,
         List<String> retweeters,
@@ -68,7 +63,6 @@ public record Tweet(
     ) {
     }
 
-    @JsonRecord(root = false)
     public record User(
         String following,
         String notifications,

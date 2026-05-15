@@ -48,7 +48,9 @@ enum BaseType {
 
     static BaseType of(RecordComponentElement typeElement) {
         try {
-            return pick(typeElement, baseType -> isFor(baseType, typeElement));
+            return pick(typeElement, baseType ->
+                isFor(baseType, typeElement)
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for element " + typeElement, e);
         }

@@ -8,7 +8,7 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 final class GenUtils {
 
-    static <R> String jsonSchema(RecordComponentElement el) {
+    static <R> String baseJsonType(RecordComponentElement el) {
         var baseType = BaseType.of(el);
         return switch (baseType) {
             case STRING, UUID, URI, URL, INSTANT, DURATION, LOCALDATE, LOCALDATETIME, OFFSETDATETIME -> "string";
@@ -38,7 +38,8 @@ final class GenUtils {
         var enumListType = enumListType(element, enums);
         if (enumListType.isPresent()) {
             return enumListType
-                .map(el -> el.asType().toString());
+                .map(Element::asType)
+                .map(TypeMirror::toString);
         }
         var generatedListType = rootElements.stream()
             .filter(rootElement ->
@@ -46,7 +47,8 @@ final class GenUtils {
             .findFirst();
         if (generatedListType.isPresent()) {
             return generatedListType
-                .map(el -> el.asType().toString());
+                .map(Element::asType)
+                .map(TypeMirror::toString);
         }
         return Optional.empty();
     }
@@ -167,6 +169,10 @@ final class GenUtils {
 
     static String qName(TypeElement te) {
         return te.getQualifiedName().toString();
+    }
+
+    static boolean isMap(RecordComponentElement element) {
+        return element.asType().toString().startsWith(Map.class.getName());
     }
 
     private GenUtils() {

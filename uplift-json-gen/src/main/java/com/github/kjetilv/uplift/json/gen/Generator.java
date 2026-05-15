@@ -4,7 +4,7 @@ import module java.base;
 import module java.compiler;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.MapWriter;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
@@ -13,148 +13,15 @@ import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 record Generator(
     PackageElement pe,
     TypeElement te,
+    Collection<? extends Element> types,
+    Collection<? extends Element> enums,
     String time,
-    Function<String, JavaFileObject> filer
+    Function<String, JavaFileObject> filer,
+    Elements elementUtils,
+    Types typeUtils
 ) {
 
-    boolean isRoot() {
-        var annotation = te.getAnnotation(JsonRecord.class);
-        return annotation != null && annotation.root();
-    }
-
-    void writeRW() {
-        var unqualifiedName = unqTypeName();
-        var file = factoryFile(pe, te);
-        try (var bw = writer(file)) {
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Consumer.class),
-                importType(Function.class),
-                importType(Generated.class),
-                "",
-                importType(Callbacks.class),
-                importType(ObjectWriter.class),
-                importType(JsonRW.class),
-                "",
-                "/// Reading and writing instances of [" + unqualifiedName + "]",
-                "///",
-                "/// Generated @ " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Reading and writing " + unqualifiedName + "\"",
-                ")",
-                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
-                "",
-                "    public static " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(te) + "();",
-                "",
-                "    @Override",
-                "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",
-                "        return " + callbacksClassPlain(te) + "::create;",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unqualifiedName + "> onDone) {",
-                "        return " + callbacksClassPlain(te) + ".create(onDone);",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + OBJECT_WRITER + "<" + unqualifiedName + "> objectWriter() {",
-                "        return new " + writerClassPlain(te) + "();",
-                "    }",
-                "",
-                "    private " + factoryClass(te) + "() {",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write factory for " + te, e);
-        }
-
-    }
-
-    Map<String, ?> jsonSchema(TypeElement te) {
-        Map<String, ?> type = te.getRecordComponents()
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    GenUtils::fieldName,
-                    (Function<? super RecordComponentElement, ?>) (RecordComponentElement element) ->
-                        Map.of(
-                            "type", GenUtils.jsonSchema(element)
-                        ),
-                    (e1, e2) -> {
-                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
-                    },
-                    LinkedHashMap::new
-                ));
-        return Map.ofEntries(
-            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
-            Map.entry("type", "object"),
-            Map.entry("properties", type)
-        );
-    }
-
-    void writeWriter(
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums
-    ) {
-        var file = writerFile(te);
-        try (var bw = writer(file)) {
-            var unqualifiedName = unqTypeName();
-            write(
-                bw,
-                "package " + pe.getQualifiedName() + ";",
-                "",
-                importType(Generated.class),
-                "",
-                importType(AbstractObjectWriter.class),
-                importType(FieldEvents.class),
-                "",
-                "/// Writer for [" + unqualifiedName + "]",
-                "///",
-                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + time + "\",",
-                "    comments = \"Writer for " + unqualifiedName + "\"",
-                ")",
-                "final class " + writerClassPlain(te),
-                "    extends " + ABSTRACT_OBJECT_WRITER + "<" + unqualifiedName + ">",
-                "{",
-                "    protected " + FIELD_EVENTS + " doWrite(",
-                "        " + unqualifiedName + " " + variableName(te) + ", ",
-                "        " + FIELD_EVENTS + " events",
-                "    ) {",
-                "        return events"
-            );
-            te.getRecordComponents()
-                .stream()
-                .map(el ->
-                    RecordAttribute.create(el, roots, enums))
-                .forEach(attr ->
-                    write(
-                        bw,
-                        "            ." + attr.writeCall(te)
-                    ));
-            write(
-                bw,
-                "        ;",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write callbacks for " + te, e);
-        }
-    }
-
-    void writeCallbacks(
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums,
-        boolean root
-    ) {
+    void writeCallbacks() {
         var file = callbackFile(te);
         var unqualifiedName = unqTypeName();
         try (var bw = writer(file)) {
@@ -216,7 +83,7 @@ record Generator(
                     .filter(element ->
                         element.getKind() == ElementKind.RECORD_COMPONENT)
                     .map(element ->
-                        RecordAttribute.create(element, roots, enums).callbackHandler(te))
+                        RecordAttribute.create(element, types, enums).callbackHandler(te))
                     .map(event ->
                         "        PRESETS." + event + ";"
                     )
@@ -228,7 +95,7 @@ record Generator(
                 .filter(element ->
                     element.getKind() == ElementKind.RECORD_COMPONENT)
                 .map(element ->
-                    RecordAttribute.create(element, roots, enums))
+                    RecordAttribute.create(element, types, enums))
                 .toList();
 
             write(
@@ -240,7 +107,7 @@ record Generator(
                     .toList()
             );
 
-            if (root) {
+            if (isRoot()) {
                 write(bw, "        PRESETS.buildTokens();");
             }
             write(bw, "    }", "}");
@@ -249,10 +116,135 @@ record Generator(
         }
     }
 
-    void writeBuilder(
-        Collection<? extends Element> roots,
-        Collection<? extends Element> enums
-    ) {
+    boolean isRoot() {
+        var annotation = te.getAnnotation(JsonRecord.class);
+        return annotation != null && annotation.root();
+    }
+
+    void writeRW() {
+        var unqualifiedName = unqTypeName();
+        var file = factoryFile(pe, te);
+        try (var bw = writer(file)) {
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Consumer.class),
+                importType(Function.class),
+                importType(Generated.class),
+                "",
+                importType(Callbacks.class),
+                importType(ObjectWriter.class),
+                importType(JsonRW.class),
+                "",
+                "/// Reading and writing instances of [" + unqualifiedName + "]",
+                "///",
+                "/// Generated @ " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Reading and writing " + unqualifiedName + "\"",
+                ")",
+                "public final class " + factoryClass(te) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
+                "",
+                "    public static " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(te) + "();",
+                "",
+                "    @Override",
+                "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",
+                "        return " + callbacksClassPlain(te) + "::create;",
+                "    }",
+                "",
+                "    @Override",
+                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unqualifiedName + "> onDone) {",
+                "        return " + callbacksClassPlain(te) + ".create(onDone);",
+                "    }",
+                "",
+                "    @Override",
+                "    public " + OBJECT_WRITER + "<" + unqualifiedName + "> objectWriter() {",
+                "        return new " + writerClassPlain(te) + "();",
+                "    }",
+                "",
+                "    private " + factoryClass(te) + "() {",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write factory for " + te, e);
+        }
+
+    }
+
+    Map<String, ?> jsonSchema() {
+        Map<String, ?> type = te.getRecordComponents()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    GenUtils::fieldName,
+                    this::jsonType,
+                    (e1, e2) -> {
+                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
+                    },
+                    LinkedHashMap::new
+                ));
+        return Map.ofEntries(
+            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
+            Map.entry("description", unqTypeName()),
+            Map.entry("type", "object"),
+            Map.entry("properties", type)
+        );
+    }
+
+    void writeWriter() {
+        var file = writerFile(te);
+        try (var bw = writer(file)) {
+            var unqualifiedName = unqTypeName();
+            write(
+                bw,
+                "package " + pe.getQualifiedName() + ";",
+                "",
+                importType(Generated.class),
+                "",
+                importType(AbstractObjectWriter.class),
+                importType(FieldEvents.class),
+                "",
+                "/// Writer for [" + unqualifiedName + "]",
+                "///",
+                "/// Generated at " + time + " by " + System.getProperty("user.name") + " using uplift",
+                "@" + GENERATED + "(",
+                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
+                "    date = \"" + time + "\",",
+                "    comments = \"Writer for " + unqualifiedName + "\"",
+                ")",
+                "final class " + writerClassPlain(te),
+                "    extends " + ABSTRACT_OBJECT_WRITER + "<" + unqualifiedName + ">",
+                "{",
+                "    protected " + FIELD_EVENTS + " doWrite(",
+                "        " + unqualifiedName + " " + variableName(te) + ", ",
+                "        " + FIELD_EVENTS + " events",
+                "    ) {",
+                "        return events"
+            );
+            te.getRecordComponents()
+                .stream()
+                .map(el ->
+                    RecordAttribute.create(el, types, enums))
+                .forEach(attr ->
+                    write(
+                        bw,
+                        "            ." + writeCall(attr, te)
+                    ));
+            write(
+                bw,
+                "        ;",
+                "    }",
+                "}"
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write callbacks for " + te, e);
+        }
+    }
+
+    void writeBuilder() {
         var file = builderFile(te);
         var setters = te.getRecordComponents()
             .stream().flatMap(el -> {
@@ -271,7 +263,7 @@ record Generator(
         var adders = te.getRecordComponents()
             .stream()
             .flatMap(element ->
-                listType(element, roots, enums)
+                listType(element, types, enums)
                     .stream()
                     .flatMap(listType ->
                         Stream.of(
@@ -343,6 +335,67 @@ record Generator(
         }
     }
 
+    private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
+        var attribute = recordAttribute.attribute();
+        var listType = listType(attribute, types, enums);
+        var isEnum = isType(attribute, enums) || isListType(attribute, enums);
+        var isRoot = isType(attribute, types) || isListType(attribute, types);
+        var isMap = isMap(attribute);
+        var convert = !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
+            .orElseGet(() -> BaseType.of(attribute))
+            .requiresConversion());
+        var name = isRoot ? "object"
+            : isMap ? "map"
+                : isEnum ? "string"
+                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(attribute)).methodName();
+        return name +
+               listType.map(_ -> "Array").orElse("") +
+               "(" +
+               quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
+               (convert ? ", this::value)"
+                   : isRoot ? ", new " + listType
+                       .map((String listTypeName) ->
+                           writerClass(attribute, listTypeName))
+                       .orElseGet(getStringSupplier(attribute)) + "())"
+                       : isMap ? ", new " + MapWriter.class.getName() + "())"
+                           : ")");
+    }
+
+    private Supplier<String> getStringSupplier(RecordComponentElement attribute) {
+        return () -> writerClass(attribute, attribute.asType().toString());
+    }
+
+    private String writerClass(RecordComponentElement attribute, String name) {
+        var packageElement = packageEl(attribute);
+        var prefix = packageElement.toString();
+        return name.substring(prefix.length() + 1)
+                   .replace('.', '_') + "_Writer";
+    }
+
+    private Map<String, Object> jsonType(RecordComponentElement element) {
+        return listType(element, types, enums)
+            .map(listType ->
+                Map.of(
+                    "type", "array",
+                    "items", Map.of(
+                        "type", listType
+                    )
+                ))
+            .orElseGet(() ->
+                Map.of(
+                    "type", jsonTypeSingular(element)
+                ));
+    }
+
+    private String jsonTypeSingular(RecordComponentElement element) {
+//        typeUtils.isAssignable(typeUtils.g).
+        return isMap(element) ? "object"
+            : isType(element, types) || isMap(element) ? "object"
+                : isType(element, enums) ? "string"
+                    : isListType(element, enums) || isListType(element, types) ? "array"
+                        : baseJsonType(element);
+    }
+
     private String unqTypeName() {
         var name = te.getQualifiedName();
         var prefix = pe.getQualifiedName().toString();
@@ -401,6 +454,12 @@ record Generator(
     private static final String FUNCTION = Function.class.getSimpleName();
 
     private static final String OBJECT_WRITER = ObjectWriter.class.getSimpleName();
+
+    private static final String QUO = "\"";
+
+    private static String quote(Object string) {
+        return QUO + string + QUO;
+    }
 
     private static String print(TypeMirror type) {
         return Stream.of(
