@@ -5,51 +5,87 @@ import module java.compiler;
 
 enum BaseType {
 
-    STRING(String.class),
-    BOOLEAN(List.of(
-        Boolean.class,
-        Boolean.TYPE
-    ), Boolean.class),
-    INTEGER(List.of(
-        Integer.class,
-        Integer.TYPE
-    ), Number.class),
-    LONG(List.of(
-        Long.class,
-        Long.TYPE
-    ), Number.class),
-    DOUBLE(List.of(
-        Double.class,
-        Double.TYPE
-    ), Number.class),
-    FLOAT(List.of(
-        Float.class,
-        Float.TYPE
-    ), Number.class),
-    SHORT(List.of(
-        Short.class,
-        Short.TYPE
-    ), Number.class),
-    BYTE(List.of(
-        Byte.class,
-        Byte.TYPE
-    ), Number.class),
-    BIG_DECIMAL(BigDecimal.class, Number.class),
-    BIG_INTEGER(BigInteger.class, Number.class),
-    UUID(java.util.UUID.class, String.class),
-    URI(java.net.URI.class, String.class),
-    URL(java.net.URL.class, String.class),
-    INSTANT(Instant.class, Number.class),
-    DURATION(Duration.class, String.class),
-    LOCALDATE(LocalDate.class, String.class),
-    LOCALDATETIME(LocalDateTime.class, String.class),
-    OFFSETDATETIME(OffsetDateTime.class, String.class),
-    MAP(Map.class, Map.class);
+    STRING(FieldEventType.STRING),
+    MAP(FieldEventType.OBJECT),
+    BOOLEAN(
+        FieldEventType.BOOLEAN,
+        Boolean.class, Boolean.TYPE
+    ),
+    INTEGER(
+        FieldEventType.NUMBER,
+        Integer.class, Integer.TYPE
+    ),
+    LONG(
+        FieldEventType.NUMBER,
+        Long.class, Long.TYPE
+    ),
+    CHAR(
+        FieldEventType.NUMBER,
+        Character.class, Character.TYPE
+    ),
+    DOUBLE(
+        FieldEventType.NUMBER,
+        Double.class, Double.TYPE
+    ),
+    FLOAT(
+        FieldEventType.NUMBER,
+        Float.class, Float.TYPE
+    ),
+    SHORT(
+        FieldEventType.NUMBER,
+        Short.class, Short.TYPE
+    ),
+    BYTE(
+        FieldEventType.NUMBER,
+        Byte.class, Byte.TYPE
+    ),
+    BIG_DECIMAL(
+        FieldEventType.NUMBER,
+        BigDecimal.class
+    ),
+    BIG_INTEGER(
+        FieldEventType.NUMBER,
+        BigInteger.class
+    ),
+    UUID(
+        FieldEventType.STRING,
+        java.util.UUID.class
+    ),
+    URI(
+        FieldEventType.STRING,
+        java.net.URI.class
+    ),
+    URL(
+        FieldEventType.STRING,
+        java.net.URL.class
+    ),
+    INSTANT(
+        FieldEventType.NUMBER,
+        Instant.class
+    ),
+    DURATION(
+        FieldEventType.STRING,
+        Duration.class
+    ),
+    LOCALDATE(
+        FieldEventType.STRING,
+        LocalDate.class
+    ),
+    LOCALDATETIME(
+        FieldEventType.STRING,
+        LocalDateTime.class
+    ),
+    OFFSETDATETIME(
+        FieldEventType.STRING,
+        OffsetDateTime.class
+    );
 
     static BaseType of(RecordComponentElement typeElement) {
         try {
-            return pick(typeElement, baseType ->
-                isFor(baseType, typeElement)
+            return pick(
+                typeElement,
+                baseType ->
+                    isFor(baseType, typeElement)
             );
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for element " + typeElement, e);
@@ -58,7 +94,11 @@ enum BaseType {
 
     static BaseType of(String name) {
         try {
-            return pick(name, baseType -> isFor(baseType, name));
+            return pick(
+                name, baseType ->
+                    baseType.fieldTypes.stream().anyMatch(fieldType -> fieldType.getName().equals(
+                        name))
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("No basetype for type named " + name, e);
         }
@@ -66,42 +106,46 @@ enum BaseType {
 
     private final List<Class<?>> fieldTypes;
 
+    private FieldEventType fieldEventType;
+
     private final Class<?> jsonType;
 
-    BaseType(Class<?> fieldType) {
-        this(fieldType, fieldType);
+    BaseType(FieldEventType fieldEventType) {
+        this(fieldEventType, fieldEventType.getJsonType());
     }
 
-    BaseType(Class<?> fieldType, Class<?> jsonType) {
-        this(List.of(fieldType), jsonType);
+    BaseType(FieldEventType fieldEventType, Class<?>... fieldTypes) {
+        this.fieldEventType = fieldEventType;
+        this.jsonType = fieldEventType.getJsonType();
+        this.fieldTypes = Arrays.asList(fieldTypes);
     }
 
-    BaseType(List<Class<?>> fieldTypes, Class<?> jsonType) {
-        this.fieldTypes = fieldTypes;
-        this.jsonType = jsonType;
+    public FieldEventType fieldEventType() {
+        return fieldEventType;
     }
 
     public List<Class<?>> fieldTypes() {
         return fieldTypes;
     }
 
+    public String typeName() {
+        return switch (this) {
+            case STRING, CHAR, UUID, URI, URL, INSTANT, DURATION, LOCALDATE, LOCALDATETIME, OFFSETDATETIME -> "string";
+            case BOOLEAN -> "boolean";
+            case INTEGER, LONG, SHORT, BYTE, BIG_INTEGER -> "integer";
+            case DOUBLE, FLOAT, BIG_DECIMAL -> "number";
+            case MAP -> "object";
+        };
+    }
+
     public String methodName() {
-        if (Number.class.isAssignableFrom(jsonType)) {
-            return "number";
-        }
-        if (jsonType == String.class) {
-            return "string";
-        }
-        if (jsonType == Boolean.class) {
-            return "bool";
-        }
-        throw new IllegalStateException("No method name: " + this);
+        return fieldEventType.getName();
     }
 
     public boolean requiresConversion() {
-        return !fieldTypes.contains(String.class) &&
-               !fieldTypes.contains(Boolean.class) &&
-               !canBeNumberic();
+        return !(fieldTypes.contains(String.class) ||
+                 fieldTypes.contains(Boolean.class) ||
+                 canBeNumberic());
     }
 
     private boolean canBeNumberic() {
@@ -118,10 +162,9 @@ enum BaseType {
     }
 
     private static boolean isFor(BaseType type, RecordComponentElement typeElement) {
-        return isFor(type, typeElement.asType().toString());
-    }
-
-    private static boolean isFor(BaseType type, String string) {
-        return type.fieldTypes.stream().anyMatch(fieldType -> fieldType.getName().equals(string));
+        var typeElementName = typeElement.asType().toString();
+        return type.fieldTypes.stream()
+            .map(Class::getName)
+            .anyMatch(typeElementName::equals);
     }
 }

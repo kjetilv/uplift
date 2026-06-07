@@ -3,4 +3,6 @@ dependencies {
     implementation(project(":uplift-json"))
     implementation(project(":uplift-json-anno"))
     implementation(project(":uplift-util"))
+
+    testImplementation(project(":uplift-flogs"))
 }

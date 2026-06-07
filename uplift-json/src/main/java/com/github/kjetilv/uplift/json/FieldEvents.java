@@ -8,20 +8,20 @@ public interface FieldEvents {
         return string(field, value, Function.identity());
     }
 
-    default FieldEvents stringArray(String field, List<String> values) {
-        return stringArray(field, values, Function.identity());
-    }
-
     default FieldEvents number(String field, Number value) {
         return number(field, value, Function.identity());
     }
 
-    default FieldEvents numberArray(String field, List<? extends Number> values) {
-        return numberArray(field, values, Function.identity());
-    }
-
     default FieldEvents bool(String field, Boolean value) {
         return bool(field, value, Function.identity());
+    }
+
+    default FieldEvents stringArray(String field, List<String> values) {
+        return stringArray(field, values, Function.identity());
+    }
+
+    default FieldEvents numberArray(String field, List<? extends Number> values) {
+        return numberArray(field, values, Function.identity());
     }
 
     @SuppressWarnings("unused")
