@@ -417,16 +417,16 @@ final class Generator {
                 : isEnum ? "string"
                     : recordAttribute.fieldEvent();
 //                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(attribute)).methodName();
-        String u = listType
-            .map((DeclaredType listTypeName) ->
-                writerClass(attribute, listTypeName.asElement().getSimpleName().toString()))
-            .orElseGet(getStringSupplier(attribute));
+//        String u = listType
+//            .map((DeclaredType listTypeName) ->
+//                writerClass(attribute, listTypeName.asElement().getSimpleName().toString()))
+//            .orElseGet(getStringSupplier(attribute));
         return name +
                listType.map(_ -> "Array").orElse("") +
                "(" +
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : isRoot ? ", new " + u + "())"
+//                   : isRoot ? ", new " + u + "())"
                        : isMap ? ", new " + MapWriter.class.getName() + "())"
                            : ")");
     }
@@ -449,8 +449,8 @@ final class Generator {
             return name + "_Writer";
         }
         var prefix = packageElement.toString();
-        return name.substring(prefix.length() + 1)
-                   .replace('.', '_') + "_Writer";
+        var suffix = name.substring(prefix.length() + 1);
+        return suffix.replace('.', '_') + "_Writer";
     }
 
     private Map<String, Object> jsonType(RecordComponentElement element) {
