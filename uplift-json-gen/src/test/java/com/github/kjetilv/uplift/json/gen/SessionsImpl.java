@@ -28,7 +28,7 @@ final class SessionsImpl {
 
     private static final Logger log = getLogger("javac");
 
-    static Sessions session(
+    static Session session(
         String fqName,
         String source
     ) {
@@ -48,6 +48,12 @@ final class SessionsImpl {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set file manager locations on " + fm, e);
         }
+
+        var url = url(classOut);
+        var urlClassLoader = URLClassLoader.newInstance(
+            new URL[] {url},
+            Thread.currentThread().getContextClassLoader()
+        );
 
         try (var compilerOut = new ByteArrayOutputStream()) {
             var units = fm.getJavaFileObjectsFromPaths(List.of(sourceFile));
@@ -74,20 +80,22 @@ final class SessionsImpl {
             if (!compilerOut.toString(UTF_8).isEmpty()) {
                 log.warn("Compilation produced output: {}", compilerOut.toString(UTF_8));
             }
-            var url = url(classOut);
-            var urlClassLoader = URLClassLoader.newInstance(
-                new URL[] {url},
-                Thread.currentThread().getContextClassLoader()
-            );
             return new SessionImpl(
                 fqName,
                 source,
                 srcOut,
                 classOut,
-                urlClassLoader
+                urlClassLoader,
+                null
             );
         } catch (Exception e) {
-            throw new RuntimeException("Session for " + fqName + " failed", e);
+            return new SessionImpl(
+                fqName,
+                source,
+                srcOut,
+                classOut,
+                urlClassLoader,
+                e);
         }
     }
 
@@ -133,8 +141,9 @@ final class SessionsImpl {
         String source,
         Path sourcegenDir,
         Path classesDir,
-        ClassLoader classLoader
-    ) implements Sessions {
+        ClassLoader classLoader,
+        Exception compileError
+    ) implements Session {
 
         @Override
         public Object read(String json) {
@@ -147,6 +156,24 @@ final class SessionsImpl {
             JsonWriter<String, Record, StringBuilder> writer = rwMethod("stringWriter");
             var stringBuilder = writer.write((Record) type().cast(object));
             return stringBuilder.toString();
+        }
+
+        @Override
+        public List<Path> generatedFiles() {
+            try (var list = Files.walk(sourcegenDir)) {
+                return list
+                    .filter(Files::isRegularFile)
+                    .filter(path ->
+                        path.getFileName().toString().endsWith(".java"))
+                    .toList();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to list generated files in " + sourcegenDir, e);
+            }
+        }
+
+        @Override
+        public Path generatedFile(Path path) {
+            return sourcegenDir.relativize(path);
         }
 
         private Class<?> type() {

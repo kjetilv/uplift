@@ -106,7 +106,7 @@ enum BaseType {
 
     private final List<Class<?>> fieldTypes;
 
-    private FieldEventType fieldEventType;
+    private final FieldEventType fieldEventType;
 
     private final Class<?> jsonType;
 

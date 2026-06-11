@@ -104,12 +104,12 @@ public final class PresetCallbacks<B extends Supplier<T>, T extends Record> impl
         return this;
     }
 
-    private <V, S extends V> void build(BiConsumer<B, V> consumer, S s) {
+    private <V, S extends V> void build(BiConsumer<B, V> consumer, S value) {
         try {
-            consumer.accept(builder, s);
+            consumer.accept(builder, value);
         } catch (Exception e) {
             throw new IllegalStateException(
-                this + ": Failed to set " + s + (s == null ? "" : " of " + s.getClass()),
+                this + ": Failed to set " + value + (value == null ? "" : " of " + value.getClass()),
                 e
             );
         }

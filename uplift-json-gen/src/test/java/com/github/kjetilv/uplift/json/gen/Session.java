@@ -1,19 +1,28 @@
 package com.github.kjetilv.uplift.json.gen;
 
+import java.nio.file.Path;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-public interface Sessions {
+public interface Session {
 
-    static Sessions create(
+    static Session create(
         String fqName,
         String source
     ) {
         return SessionsImpl.session(fqName, source);
     }
 
+    Throwable compileError();
+
     Object read(String json);
 
     String write(Object object);
+
+    List<Path> generatedFiles();
+
+    Path generatedFile(Path path);
 
     default Object readAndVerify(String json) {
         var object = read(json);

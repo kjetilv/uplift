@@ -19,7 +19,7 @@ final class Generator {
 
     private final String timestamp;
 
-    private final Function<String, JavaFileObject> filer;
+    private final Function<String, JavaFileObject> fileForName;
 
     private final Elements elementUtils;
 
@@ -30,12 +30,12 @@ final class Generator {
     private final List<RecordAttribute> recordAttributes;
 
     Generator(
-        PackageElement jsonRecordPackage,
         TypeElement jsonRecord,
+        PackageElement jsonRecordPackage,
         Collection<? extends DeclaredType> jsonRecords,
         Collection<? extends DeclaredType> enums,
         String timestamp,
-        Function<String, JavaFileObject> filer,
+        Function<String, JavaFileObject> fileForName,
         Elements elementUtils,
         Types typeUtils
     ) {
@@ -46,7 +46,7 @@ final class Generator {
         this.enums = enums;
 
         this.timestamp = timestamp;
-        this.filer = filer;
+        this.fileForName = fileForName;
         this.elementUtils = elementUtils;
         this.typeUtils = typeUtils;
         this.utils = new GenUtils(typeUtils, elementUtils);
@@ -158,12 +158,6 @@ final class Generator {
         }
     }
 
-    boolean isRoot() {
-        return Optional.ofNullable(jsonRecord.getAnnotation(JsonRecord.class))
-            .map(JsonRecord::root)
-            .orElse(false);
-    }
-
     void writeRW() {
         var unqualifiedName = unqTypeName();
         var file = factoryFile(jsonRecordPackage, jsonRecord);
@@ -220,26 +214,6 @@ final class Generator {
             throw new IllegalStateException("Failed to write factory for " + jsonRecord, e);
         }
 
-    }
-
-    Map<String, ?> jsonSchema() {
-        Map<String, ?> type = jsonRecord.getRecordComponents()
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    GenUtils::fieldName,
-                    this::jsonType,
-                    (e1, e2) -> {
-                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
-                    },
-                    LinkedHashMap::new
-                ));
-        return Map.ofEntries(
-            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
-            Map.entry("description", unqTypeName()),
-            Map.entry("type", "object"),
-            Map.entry("properties", type)
-        );
     }
 
     void writeWriter() {
@@ -389,6 +363,32 @@ final class Generator {
         }
     }
 
+    private boolean isRoot() {
+        return Optional.ofNullable(jsonRecord.getAnnotation(JsonRecord.class))
+            .map(JsonRecord::root)
+            .orElse(false);
+    }
+
+    private Map<String, ?> jsonSchema() {
+        Map<String, ?> type = jsonRecord.getRecordComponents()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    GenUtils::fieldName,
+                    this::jsonType,
+                    (e1, e2) -> {
+                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
+                    },
+                    LinkedHashMap::new
+                ));
+        return Map.ofEntries(
+            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
+            Map.entry("description", unqTypeName()),
+            Map.entry("type", "object"),
+            Map.entry("properties", type)
+        );
+    }
+
     private List<RecordAttribute> recordAttributes(TypeElement jsonRecord) {
         return jsonRecord.getRecordComponents()
             .stream()
@@ -427,8 +427,8 @@ final class Generator {
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
 //                   : isRoot ? ", new " + u + "())"
-                       : isMap ? ", new " + MapWriter.class.getName() + "())"
-                           : ")");
+                   : isMap ? ", new " + MapWriter.class.getName() + "())"
+                       : ")");
     }
 
     private boolean isMap(TypeElement te) {
@@ -511,7 +511,7 @@ final class Generator {
 
     private JavaFileObject file(String name) {
         try {
-            return filer.apply(name);
+            return fileForName.apply(name);
         } catch (Exception e) {
             throw new IllegalStateException("Could not open file " + name, e);
         }
@@ -606,9 +606,8 @@ final class Generator {
                "types=" + jsonRecords + ", " +
                "enums=" + enums + ", " +
                "time=" + timestamp + ", " +
-               "filer=" + filer + ", " +
+               "fileForName=" + fileForName + ", " +
                "elementUtils=" + elementUtils + ", " +
                "typeUtils=" + typeUtils + ']';
     }
-
 }

@@ -8,11 +8,13 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 import javax.lang.model.type.TypeKind;
 
+import static com.github.kjetilv.uplift.json.gen.BaseType.*;
+
 @SuppressWarnings("unchecked")
 final class GenUtils {
 
     static <R> String baseJsonType(RecordComponentElement el) {
-        return BaseType.of(el).typeName();
+        return of(el).typeName();
     }
 
     static String fieldName(RecordComponentElement el) {
@@ -70,7 +72,7 @@ final class GenUtils {
 //    }
 
     static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
-        return Arrays.stream(BaseType.values())
+        return Arrays.stream(values())
             .filter(el ->
                 el.fieldTypes()
                     .stream().anyMatch(fieldType ->
@@ -165,15 +167,17 @@ final class GenUtils {
         this.iterableErasure = typeUtils.erasure(this.iterableType);
 
         this.matchers = List.of(
-            matcher(BaseType.STRING, String.class),
-            matcher(BaseType.BOOLEAN, Boolean.class, Boolean.TYPE),
-            matcher(BaseType.BYTE, Byte.class, Byte.TYPE),
-            matcher(BaseType.SHORT, Short.class, Short.TYPE),
-            matcher(BaseType.INTEGER, Integer.class, Integer.TYPE),
-            matcher(BaseType.LONG, Long.class, Long.TYPE),
-            matcher(BaseType.CHAR, Character.class, Character.TYPE),
-            matcher(BaseType.FLOAT, Float.class, Float.TYPE),
-            matcher(BaseType.DOUBLE, Double.class, Double.TYPE)
+            matcher(STRING, String.class),
+            matcher(BOOLEAN, Boolean.class, Boolean.TYPE),
+            matcher(BYTE, Byte.class, Byte.TYPE),
+            matcher(SHORT, Short.class, Short.TYPE),
+            matcher(INTEGER, Integer.class, Integer.TYPE),
+            matcher(LONG, Long.class, Long.TYPE),
+            matcher(CHAR, Character.class, Character.TYPE),
+            matcher(FLOAT, Float.class, Float.TYPE),
+            matcher(DOUBLE, Double.class, Double.TYPE),
+            matcher(BIG_DECIMAL, BigDecimal.class, Double.TYPE),
+            matcher(BIG_INTEGER, BigInteger.class, Double.TYPE)
         );
     }
 

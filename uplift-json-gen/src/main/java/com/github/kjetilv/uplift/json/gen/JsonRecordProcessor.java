@@ -4,6 +4,8 @@ import module java.base;
 import module java.compiler;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
+import static com.github.kjetilv.uplift.json.gen.GenUtils.packageOf;
+
 @SupportedAnnotationTypes("com.github.kjetilv.uplift.json.anno.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
@@ -49,12 +51,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         for (var jsonRecord : jsonRecords) {
             if (jsonRecord.asElement() instanceof TypeElement te) {
                 var generator = new Generator(
-                    GenUtils.packageOf(te),
                     te,
+                    packageOf(te),
                     jsonRecords,
                     enums,
                     time,
-                    this::file,
+                    this::fileForName,
                     elementUtils,
                     typeUtils
                 );
@@ -69,7 +71,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         }
     }
 
-    private JavaFileObject file(String name) {
+    private JavaFileObject fileForName(String name) {
         try {
             return processingEnv.getFiler().createSourceFile(name);
         } catch (Exception e) {
