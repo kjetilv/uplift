@@ -24,6 +24,10 @@ public interface Session {
 
     Path generatedFile(Path path);
 
+    default boolean compilationFailed() {
+        return compileError() != null;
+    }
+
     default Object readAndVerify(String json) {
         var object = read(json);
         var json2 = write(object);

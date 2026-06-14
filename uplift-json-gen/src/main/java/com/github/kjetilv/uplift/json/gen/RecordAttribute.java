@@ -45,6 +45,15 @@ record RecordAttribute(
         );
     }
 
+    RecordAttribute(
+        BaseType baseType,
+        String callbackEvent,
+        RecordComponentElement attribute,
+        Variant variant
+    ) {
+        this(baseType, callbackEvent, attribute, variant, null);
+    }
+
     public String fieldEvent() {
         return baseType.fieldEventType().getName();
     }

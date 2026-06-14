@@ -8,13 +8,11 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 import javax.lang.model.type.TypeKind;
 
-import static com.github.kjetilv.uplift.json.gen.BaseType.*;
-
 @SuppressWarnings("unchecked")
 final class GenUtils {
 
-    static <R> String baseJsonType(RecordComponentElement el) {
-        return of(el).typeName();
+    static String baseJsonType(RecordComponentElement el) {
+        return BaseType.of(el).typeName();
     }
 
     static String fieldName(RecordComponentElement el) {
@@ -72,7 +70,7 @@ final class GenUtils {
 //    }
 
     static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
-        return Arrays.stream(values())
+        return Arrays.stream(BaseType.values())
             .filter(el ->
                 el.fieldTypes()
                     .stream().anyMatch(fieldType ->
@@ -148,7 +146,7 @@ final class GenUtils {
 
     private final TypeMirror mapErasure;
 
-    private final List<Matcher> matchers;
+    private final List<TypeMatcher> matchers;
 
     GenUtils(
         Types typeUtils,
@@ -167,18 +165,24 @@ final class GenUtils {
         this.iterableErasure = typeUtils.erasure(this.iterableType);
 
         this.matchers = List.of(
-            matcher(STRING, String.class),
-            matcher(BOOLEAN, Boolean.class, Boolean.TYPE),
-            matcher(BYTE, Byte.class, Byte.TYPE),
-            matcher(SHORT, Short.class, Short.TYPE),
-            matcher(INTEGER, Integer.class, Integer.TYPE),
-            matcher(LONG, Long.class, Long.TYPE),
-            matcher(CHAR, Character.class, Character.TYPE),
-            matcher(FLOAT, Float.class, Float.TYPE),
-            matcher(DOUBLE, Double.class, Double.TYPE),
-            matcher(BIG_DECIMAL, BigDecimal.class, Double.TYPE),
-            matcher(BIG_INTEGER, BigInteger.class, Double.TYPE)
+            matcher(BaseType.STRING, String.class),
+            matcher(BaseType.BOOLEAN, Boolean.class, Boolean.TYPE),
+            matcher(BaseType.BYTE, Byte.class, Byte.TYPE),
+            matcher(BaseType.SHORT, Short.class, Short.TYPE),
+            matcher(BaseType.INTEGER, Integer.class, Integer.TYPE),
+            matcher(BaseType.LONG, Long.class, Long.TYPE),
+            matcher(BaseType.CHAR, Character.class, Character.TYPE),
+            matcher(BaseType.FLOAT, Float.class, Float.TYPE),
+            matcher(BaseType.DOUBLE, Double.class, Double.TYPE),
+            matcher(BaseType.BIG_DECIMAL, BigDecimal.class),
+            matcher(BaseType.BIG_INTEGER, BigInteger.class),
+            matcher(BaseType.UUID, UUID.class),
+            matcher(BaseType.MAP, Map.class)
         );
+    }
+
+    public boolean isAssignable(TypeMirror type, TypeMirror type2) {
+        return typeUtils.isAssignable(type, type2);
     }
 
     boolean isMap(RecordComponentElement element) {
@@ -305,7 +309,8 @@ final class GenUtils {
             .flatMap(Optional::stream)
             .findFirst()
             .orElseThrow(() ->
-                new IllegalStateException("No match for " + element));
+                new IllegalStateException(
+                    "No match for `" + element.getSimpleName() + "` of " + element.asType()));
 //        return switch (type.getKind()) {
 //            case BOOLEAN -> primitive("Boolean", element, roots, enums);
 //            case BYTE -> primitive("Byte", element, roots, enums);
@@ -320,19 +325,21 @@ final class GenUtils {
 //        };
     }
 
-    private Matcher matcher(BaseType baseType, Class<?> type) {
+    private TypeMatcher matcher(BaseType baseType, Class<?> type) {
         return matcher(baseType, type, null);
     }
 
-    private Matcher matcher(BaseType baseType, Class<?> type, Class<?> primitiveType) {
-        return new Matcher(
+    private TypeMatcher matcher(BaseType baseType, Class<?> type, Class<?> primitiveType) {
+        var primitiveTypeMirror = primitiveType == null
+            ? null
+            : fetchPrimitive(primitiveType);
+        return new TypeMatcher(
             baseType,
             type,
             primitiveType,
             fetch(type),
-            primitiveType == null
-                ? null
-                : fetchPrimitive(primitiveType)
+            primitiveTypeMirror,
+            this.typeUtils
         );
     }
 
@@ -477,83 +484,4 @@ final class GenUtils {
         return Character.toUpperCase(string.charAt(0)) + string.substring(1);
     }
 
-    private final class Matcher {
-
-        private final BaseType baseType;
-
-        private final Class<?> type;
-
-        private final Class<?> primitiveType;
-
-        private final DeclaredType typeMirror;
-
-        private final TypeMirror primitiveTypeMirror;
-
-        private Matcher(
-            BaseType baseType,
-            Class<?> type,
-            Class<?> primitiveType,
-            DeclaredType typeMirror,
-            TypeMirror primitiveTypeMirror
-        ) {
-            this.baseType = baseType;
-            this.type = type;
-            this.primitiveType = primitiveType;
-            this.typeMirror = typeMirror;
-            this.primitiveTypeMirror = primitiveTypeMirror;
-        }
-
-        public BaseType baseType() {
-            return baseType;
-        }
-
-        public DeclaredType declaredType() {
-            return typeMirror;
-        }
-
-        public boolean matches(TypeElement typeElement) {
-            return matches(typeElement.asType());
-        }
-
-        public boolean matches(RecordComponentElement element) {
-            return matches(element.asType());
-        }
-
-        public boolean matches(TypeMirror type) {
-            return typeUtils.isSameType(type, typeMirror) ||
-                   primitiveType != null && typeUtils.isSameType(type, primitiveTypeMirror);
-        }
-
-        Optional<RecordAttribute> recordAttribute(RecordComponentElement recordAttribute) {
-            return matches(recordAttribute.asType())
-                ? resolved(recordAttribute)
-                : Optional.empty();
-        }
-
-        private Optional<RecordAttribute> resolved(RecordComponentElement recordAttribute) {
-            if (primitiveType != null || baseType != null) {
-                return Optional.of(new RecordAttribute(
-                    baseType,
-                    type.getSimpleName(),
-                    recordAttribute,
-                    Variant.PRIMITIVE,
-                    null
-                ));
-            }
-            return Optional.of(new RecordAttribute(
-                baseType,
-                "Object",
-                recordAttribute,
-                Variant.GENERATED,
-                null
-            ));
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" +
-                   type.getSimpleName() + "/" + (primitiveType == null ? "" : primitiveType.getSimpleName()) +
-                   "]";
-        }
-    }
 }

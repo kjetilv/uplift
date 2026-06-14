@@ -16,12 +16,15 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private TypeMirror jsonRecordType;
 
+    private GenUtils genUtils;
+
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        typeUtils = this.processingEnv.getTypeUtils();
-        elementUtils = this.processingEnv.getElementUtils();
-        jsonRecordType = fetch(elementUtils, JsonRecord.class).asType();
+        this.typeUtils = this.processingEnv.getTypeUtils();
+        this.elementUtils = this.processingEnv.getElementUtils();
+        this.genUtils = new GenUtils(typeUtils, elementUtils);
+        this.jsonRecordType = fetch(this.elementUtils, JsonRecord.class).asType();
     }
 
     @Override
@@ -57,8 +60,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                     enums,
                     time,
                     this::fileForName,
-                    elementUtils,
-                    typeUtils
+                    genUtils
                 );
                 try {
                     generator.write();

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @SuppressWarnings("ClassNameDiffersFromFileName")
 class CompilerTest {
@@ -23,7 +24,7 @@ class CompilerTest {
 
     @Test
     void longFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -33,7 +34,27 @@ class CompilerTest {
                 public record SingleField(Long l) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"l": 1000}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void longPrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(long l) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"l": 1000}
@@ -43,7 +64,7 @@ class CompilerTest {
 
     @Test
     void intFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -53,7 +74,27 @@ class CompilerTest {
                 public record SingleField(Integer i) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"i": 576}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void intPrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(int i) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"i": 576}
@@ -63,7 +104,7 @@ class CompilerTest {
 
     @Test
     void shortFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -73,7 +114,27 @@ class CompilerTest {
                 public record SingleField(Short s) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"s": 42}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void shortPrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(short s) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"s": 42}
@@ -83,7 +144,7 @@ class CompilerTest {
 
     @Test
     void byteFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -93,7 +154,27 @@ class CompilerTest {
                 public record SingleField(Byte b) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"b": 32}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void bytePrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(byte b) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"b": 32}
@@ -103,7 +184,7 @@ class CompilerTest {
 
     @Test
     void floatFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -113,7 +194,27 @@ class CompilerTest {
                 public record SingleField(Float f) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"f": 3.14}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void floatPrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(float f) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"f": 3.14}
@@ -123,7 +224,7 @@ class CompilerTest {
 
     @Test
     void doubleFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -133,7 +234,27 @@ class CompilerTest {
                 public record SingleField(Double d) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
+            //language=json
+            """
+                {"d": 3.14}
+                """
+        )).isNotNull();
+    }
+
+    @Test
+    void doublePrimitiveFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(double d) {}
+                """
+        );
+        assertThat(read(
             //language=json
             """
                 {"d": 3.14}
@@ -143,7 +264,7 @@ class CompilerTest {
 
     @Test
     void bigDecimalFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -153,17 +274,57 @@ class CompilerTest {
                 public record SingleField(java.math.BigDecimal bd) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
             //language=json
             """
                 {"bd": 3.14}
+                """)
+        ).isNotNull();
+    }
+
+    @Test
+    void bigIntegerFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.math.BigInteger bi) {}
                 """
-        )).isNotNull();
+        );
+        assertThat(read(
+            //language=json
+            """
+                {"bi": 32}
+                """)
+        ).isNotNull();
+    }
+
+    @Test
+    void uuidFields() {
+        session(
+            "junker.barabas.SingleField",
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.UUID id) {}
+                """
+        );
+        assertThat(read(
+            //language=json
+            """
+                {"id": "%s"}
+                """.formatted(UUID.randomUUID()))
+        ).isNotNull();
     }
 
     @Test
     void booleanFields() {
-        session = Session.create(
+        session(
             "junker.barabas.SingleField",
             //language=java
             """
@@ -173,7 +334,7 @@ class CompilerTest {
                 public record SingleField(Boolean b) {}
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
             //language=json
             """
                 {"b": true}
@@ -183,7 +344,7 @@ class CompilerTest {
 
     @Test
     void simpleCase() {
-        var session = Session.create(
+        session(
             "junker.barabas.Foo",
             //language=java
             """
@@ -201,7 +362,7 @@ class CompilerTest {
                 }
                 """
         );
-        assertThat(session.readAndVerify(
+        assertThat(read(
             //language=json
             """
                 {
@@ -216,8 +377,53 @@ class CompilerTest {
         )).isNotNull();
     }
 
+    @Test
+    void maps() {
+        session(
+            "prince.little.FooMap",
+            //language=java
+            """
+                package prince.little;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record FooMap(
+                    java.util.Map<String, ?> map
+                ) {}
+                """
+        );
+        assertThat(read(
+            //language=json
+            """
+                {
+                    "map": {
+                      "foo": "bar"
+                    }
+                }
+                """
+        )).isNotNull();
+    }
+
+    private void session(String name, String source) {
+        session = Session.create(name, source);
+    }
+
+    private Object read(String json) {
+        assertThat(session)
+            .describedAs("Could not initialize session")
+            .isNotNull();
+        assertThat(session.compilationFailed())
+            .describedAs("Compilation failed:\n%s", session == null ? "N/A" : session.compileError())
+            .isFalse();
+        try {
+            return session.readAndVerify(json);
+        } catch (Exception e) {
+            return fail(e);
+        }
+    }
+
     private void afterExecutionCallback(ExtensionContext context) {
-        Optional.ofNullable(session.compileError())
+        Optional.ofNullable(session)
+            .map(Session::compileError)
             .or(context::getExecutionException)
             .ifPresentOrElse(
                 exception -> {
@@ -225,7 +431,8 @@ class CompilerTest {
                 },
                 () -> log.info("Success!")
             );
-        if (session != null) session.generatedFiles()
+        Stream.ofNullable(session)
+            .map(Session::generatedFiles).flatMap(List::stream)
             .forEach(file -> {
                 log.info("{}", session.generatedFile(file));
                 try (var lines = Files.lines(file)) {

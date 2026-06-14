@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
+@SuppressWarnings("JavaPrintToLogpoint")
 final class Generator {
 
     private final PackageElement jsonRecordPackage;
@@ -21,10 +22,6 @@ final class Generator {
 
     private final Function<String, JavaFileObject> fileForName;
 
-    private final Elements elementUtils;
-
-    private final Types typeUtils;
-
     private final GenUtils utils;
 
     private final List<RecordAttribute> recordAttributes;
@@ -36,8 +33,7 @@ final class Generator {
         Collection<? extends DeclaredType> enums,
         String timestamp,
         Function<String, JavaFileObject> fileForName,
-        Elements elementUtils,
-        Types typeUtils
+        GenUtils utils
     ) {
         this.jsonRecordPackage = jsonRecordPackage;
         this.jsonRecord = jsonRecord;
@@ -47,9 +43,7 @@ final class Generator {
 
         this.timestamp = timestamp;
         this.fileForName = fileForName;
-        this.elementUtils = elementUtils;
-        this.typeUtils = typeUtils;
-        this.utils = new GenUtils(typeUtils, elementUtils);
+        this.utils = utils;
         this.recordAttributes = this.recordAttributes(jsonRecord);
     }
 
@@ -436,7 +430,7 @@ final class Generator {
     }
 
     private boolean isMap(TypeMirror type) {
-        return typeUtils.isAssignable(type, utils.fetch(Map.class));
+        return utils.isAssignable(type, utils.fetch(Map.class));
     }
 
     private Supplier<String> getStringSupplier(RecordComponentElement attribute) {
@@ -600,14 +594,6 @@ final class Generator {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" +
-               "pe=" + jsonRecordPackage + ", " +
-               "te=" + jsonRecord + ", " +
-               "types=" + jsonRecords + ", " +
-               "enums=" + enums + ", " +
-               "time=" + timestamp + ", " +
-               "fileForName=" + fileForName + ", " +
-               "elementUtils=" + elementUtils + ", " +
-               "typeUtils=" + typeUtils + ']';
+        return getClass().getSimpleName() + "[" + jsonRecordPackage.getSimpleName() + "." + jsonRecord.getSimpleName() + "]";
     }
 }
