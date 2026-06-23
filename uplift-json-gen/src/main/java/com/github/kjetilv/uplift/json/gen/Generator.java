@@ -2,8 +2,13 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import com.github.kjetilv.uplift.json.*;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.MapWriter;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
+
+import javax.lang.model.type.TypeKind;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
@@ -49,21 +54,21 @@ final class Generator {
 
     public void write() {
         if (isRoot()) {
-            writeRW();
+            generateRWEntrypoint();
         }
-        writeBuilder();
-        writeCallbacks();
-        writeWriter();
-        try {
-            var obj = jsonSchema();
-            IO.println(Json.instance().write(obj));
-        } catch (Exception e) {
-            IO.println(fqName(jsonRecord) + " could not be parsed");
-            e.printStackTrace();
-        }
+        generateWriter();
+        generateBuilder();
+        generateCallbacks();
+//        try {
+//            var obj = jsonSchema();
+//            IO.println(Json.instance().write(obj));
+//        } catch (Exception e) {
+//            IO.println(fqName(jsonRecord) + " could not be parsed");
+//            e.printStackTrace();
+//        }
     }
 
-    void writeCallbacks() {
+    void generateCallbacks() {
         var unqualifiedName = unqTypeName();
         try (var bw = writer(callbackFile())) {
             if (!jsonRecordPackage.isUnnamed()) {
@@ -91,6 +96,7 @@ final class Generator {
                 "    date = \"" + timestamp + "\",",
                 "    comments = \"Callbacks for " + unqualifiedName + "\"",
                 ")",
+                "@SuppressWarnings(\"unchecked\")",
                 "final class " + callbacksClassPlain(jsonRecord) + " {",
                 "",
                 "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(jsonRecord) + ", " + unqualifiedName + "> create(",
@@ -152,7 +158,7 @@ final class Generator {
         }
     }
 
-    void writeRW() {
+    void generateRWEntrypoint() {
         var unqualifiedName = unqTypeName();
         var file = factoryFile(jsonRecordPackage, jsonRecord);
         try (var bw = writer(file)) {
@@ -181,6 +187,7 @@ final class Generator {
                 "    date = \"" + timestamp + "\",",
                 "    comments = \"Reading and writing " + unqualifiedName + "\"",
                 ")",
+                "@SuppressWarnings(\"unchecked\")",
                 "public final class " + factoryClass(jsonRecord) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
                 "",
                 "    public static " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(jsonRecord) + "();",
@@ -210,7 +217,7 @@ final class Generator {
 
     }
 
-    void writeWriter() {
+    void generateWriter() {
         var file = writerFile(jsonRecord);
         try (var bw = writer(file)) {
             var unqualifiedName = unqTypeName();
@@ -236,6 +243,7 @@ final class Generator {
                 "    date = \"" + timestamp + "\",",
                 "    comments = \"Writer for " + unqualifiedName + "\"",
                 ")",
+                "@SuppressWarnings(\"unchecked\")",
                 "final class " + writerClassPlain(jsonRecord),
                 "    extends " + ABSTRACT_OBJECT_WRITER + "<" + unqualifiedName + ">",
                 "{",
@@ -261,10 +269,11 @@ final class Generator {
         }
     }
 
-    void writeBuilder() {
+    void generateBuilder() {
         var file = builderFile(jsonRecord);
         var setters = jsonRecord.getRecordComponents()
-            .stream().flatMap(el -> {
+            .stream()
+            .flatMap(el -> {
                 var type = el.asType();
                 return Stream.of(
                     "    private " + print(type) + " " + fieldName(el) + ";",
@@ -280,7 +289,7 @@ final class Generator {
         var adders = jsonRecord.getRecordComponents()
             .stream()
             .flatMap(element ->
-                utils.iterableType(element, jsonRecords, enums)
+                utils.iterableType(element)
                     .stream()
                     .flatMap(listType ->
                         Stream.of(
@@ -336,6 +345,7 @@ final class Generator {
                 "    date = \"" + timestamp + "\",",
                 "    comments = \"Builder for " + unqualifiedName + "\"",
                 ")",
+                "@SuppressWarnings(\"unchecked\")",
                 "final class " + builderClassPlain(jsonRecord) + " implements " + SUPPLIER + "<" + unqualifiedName + "> {",
                 "",
                 "    static " + builderClassPlain(jsonRecord) + " create() {",
@@ -392,17 +402,27 @@ final class Generator {
             .toList();
     }
 
+    private boolean isEnum(TypeMirror type) {
+        return enumType(type)
+            .isPresent();
+    }
+
+    private Optional<Element> enumType(TypeMirror type) {
+        return Optional.of(type)
+            .filter(it -> it.getKind() == TypeKind.DECLARED)
+            .map(utils::asElement)
+            .filter(it -> it.getKind() == ElementKind.ENUM);
+    }
+
     private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
         var attribute = recordAttribute.attribute();
-        Optional<DeclaredType> listType = Optional.empty();//utils.iterableType(attribute);
-        var isEnum = utils.fieldType(attribute, enums)
-            .or(() -> utils.iterableType(attribute, enums))
-            .isPresent();
-        var isRoot = utils.fieldType(attribute, jsonRecords)
-            .or(() -> utils.iterableType(attribute, jsonRecords))
-            .isPresent();
+        Optional<TypeMirror> listType = utils.iterableType(attribute);
+        var fieldType = listType.orElse(attribute.asType());
+        var isEnum = isEnum(recordAttribute.attribute().asType())
+                     || listType.flatMap(this::enumType).isPresent();
+        var isRoot = isRoot();
         var isMap = isMap(te);
-        var convert = false;
+        var convert = recordAttribute.baseType().requiresConversion();
 //            !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
 //            .orElseGet(() -> BaseType.of(attribute))
 //            .requiresConversion());
@@ -415,7 +435,7 @@ final class Generator {
 //            .map((DeclaredType listTypeName) ->
 //                writerClass(attribute, listTypeName.asElement().getSimpleName().toString()))
 //            .orElseGet(getStringSupplier(attribute));
-        return name +
+        return recordAttribute.fieldEvent() +
                listType.map(_ -> "Array").orElse("") +
                "(" +
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
@@ -448,7 +468,7 @@ final class Generator {
     }
 
     private Map<String, Object> jsonType(RecordComponentElement element) {
-        return utils.iterableType(element, jsonRecords, enums)
+        return utils.iterableType(element)
             .map(listType ->
                 Map.of(
                     "type", "array",

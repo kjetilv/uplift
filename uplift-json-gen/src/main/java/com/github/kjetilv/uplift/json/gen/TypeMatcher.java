@@ -37,10 +37,41 @@ final class TypeMatcher {
         this.primitiveTypeMirror = primitiveTypeMirror;
     }
 
-    Optional<RecordAttribute> recordAttribute(RecordComponentElement recordAttribute) {
-        return Optional.of(recordAttribute)
-            .filter(attribute -> matches(attribute.asType()))
-            .map(this::resolved);
+    Optional<RecordAttribute> recordAttribute(TypeMirror type, RecordComponentElement element, boolean list) {
+        if (matches(type)) {
+            if (primitiveType == null && baseType == null) {
+                return Optional.of(
+                    new RecordAttribute(
+                        baseType,
+                        "Object",
+                        element,
+                        list ? Variant.GENERATED_LIST : Variant.GENERATED
+                    )
+                );
+            }
+            return Optional.of(
+                new RecordAttribute(
+                    baseType,
+                    this.type.getSimpleName(),
+                    element,
+                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE
+                )
+            );
+        }
+        return Optional.empty();
+    }
+
+    Optional<Found> match(TypeMirror type, RecordComponentElement element, boolean list) {
+        if (matches(type)) {
+            if (primitiveType == null && baseType == null) {
+                return Optional.of(
+                    new Found(this, element));
+            }
+            return Optional.of(
+                new Found(this, element)
+            );
+        }
+        return Optional.empty();
     }
 
     private boolean matches(TypeMirror type) {
@@ -48,10 +79,7 @@ final class TypeMatcher {
                primitiveType != null && typeUtils.isSameType(type, primitiveTypeMirror);
     }
 
-    private RecordAttribute resolved(RecordComponentElement element) {
-        return primitiveType == null && baseType == null
-            ? new RecordAttribute(baseType, "Object", element, Variant.GENERATED)
-            : new RecordAttribute(baseType, type.getSimpleName(), element, Variant.PRIMITIVE);
+    record Found(TypeMatcher matcher, RecordComponentElement element) {
     }
 
     @Override

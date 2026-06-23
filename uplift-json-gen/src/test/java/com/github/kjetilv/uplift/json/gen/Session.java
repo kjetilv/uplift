@@ -8,10 +8,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public interface Session {
 
     static Session create(
-        String fqName,
         String source
     ) {
-        return SessionsImpl.session(fqName, source);
+        return SessionsImpl.session(source);
     }
 
     Throwable compileError();
@@ -31,8 +30,11 @@ public interface Session {
     default Object readAndVerify(String json) {
         var object = read(json);
         var json2 = write(object);
+        assertThat(json2).isNotNull().isNotBlank();
         var object2 = read(json2);
-        assertThat(object2).isEqualTo(object);
+        assertThat(object2)
+            .isNotNull()
+            .isEqualTo(object);
         return object2;
     }
 }

@@ -21,9 +21,7 @@ final class GenUtils {
             : field.value();
     }
 
-    static Stream<? extends DeclaredType> enums(
-        Collection<? extends Element> els
-    ) {
+    static Stream<? extends DeclaredType> enums(Collection<? extends Element> els) {
         return Stream.concat(
             els.stream()
                 .filter(element ->
@@ -185,39 +183,24 @@ final class GenUtils {
         return typeUtils.isAssignable(type, type2);
     }
 
+    public Element asElement(TypeMirror type) {
+        return typeUtils.asElement(type);
+    }
+
     boolean isMap(RecordComponentElement element) {
         return typeUtils.isAssignable(element.asType(), this.mapType);
     }
 
-    Optional<DeclaredType> fieldType(
-        RecordComponentElement element,
-        Collection<? extends DeclaredType> candidates
-    ) {
-        var type = element.asType();
-        return candidates.stream()
-            .filter(candidate ->
-                typeUtils.isSameType(type, candidate))
-            .map(DeclaredType.class::cast)
-            .findFirst();
-    }
-
-    @SafeVarargs
-    final Optional<DeclaredType> iterableType(
-        RecordComponentElement element,
-        Collection<? extends DeclaredType>... candidates
-    ) {
-        return iterableType(element).filter(iterableType -> {
-            var typeArguments = iterableType.getTypeArguments();
-            if (typeArguments.size() != 1) {
-                return false;
-            }
-            var b = Arrays.stream(candidates).flatMap(Collection::stream)
-                .filter(fieldType(typeArguments.getFirst()))
-                .findFirst();
-            System.out.println("### " + iterableType + "<> " + b);
-            return b.isPresent();
-        });
-    }
+//    Optional<TypeMirror> fieldType(
+//        RecordComponentElement element,
+//        Collection<? extends DeclaredType> candidates
+//    ) {
+//        var type = element.asType();
+//        return (Optional<TypeMirror>) candidates.stream()
+//            .filter(candidate ->
+//                typeUtils.isSameType(type, candidate))
+//            .findFirst();
+//    }
 
     Optional<PrimitiveType> primitiveType(
         RecordComponentElement element
@@ -254,13 +237,15 @@ final class GenUtils {
 //        return Optional.empty();
 //    }
 
-    Optional<DeclaredType> iterableType(RecordComponentElement element) {
+    Optional<TypeMirror> iterableType(RecordComponentElement element) {
         return element.asType() instanceof DeclaredType declared
-            ? iterableType(declared)
+            ? (Optional<TypeMirror>) declared.getTypeArguments()
+            .stream()
+            .findFirst()
             : Optional.empty();
     }
 
-    <T extends TypeMirror, C> T fetchPrimitive(Class<?> type) {
+    <T extends TypeMirror> T fetchPrimitive(Class<?> type) {
         if (type == Boolean.TYPE) {
             return (T) typeUtils.getPrimitiveType(TypeKind.BOOLEAN);
         }
@@ -302,15 +287,13 @@ final class GenUtils {
     }
 
     RecordAttribute create(RecordComponentElement element) {
-        var type = element.asType();
-        return matchers.stream()
-            .map(matcher ->
-                matcher.recordAttribute(element))
-            .flatMap(Optional::stream)
-            .findFirst()
-            .orElseThrow(() ->
-                new IllegalStateException(
-                    "No match for `" + element.getSimpleName() + "` of " + element.asType()));
+        var listType = iterableType(element);
+
+        return listType
+            .map(parameterType ->
+                attribute(parameterType, element, true))
+            .orElseGet(() ->
+                attribute(element.asType(), element, false));
 //        return switch (type.getKind()) {
 //            case BOOLEAN -> primitive("Boolean", element, roots, enums);
 //            case BYTE -> primitive("Byte", element, roots, enums);
@@ -323,6 +306,20 @@ final class GenUtils {
 //            case DECLARED -> resolveDeclared(element, roots, enums);
 //            default -> throw new IllegalStateException("Unsupported: " + element);
 //        };
+    }
+
+    private RecordAttribute attribute(TypeMirror parameterType, RecordComponentElement element, boolean list) {
+        var attributes = matchers.stream()
+            .map(matcher ->
+                matcher.recordAttribute(parameterType, element, list))
+            .flatMap(Optional::stream)
+            .toList();
+        if (attributes.size() == 1) {
+            return attributes.getFirst();
+        }
+        throw new IllegalStateException("Invalid matchers for " + element + ": " + attributes.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(", ")));
     }
 
     private TypeMatcher matcher(BaseType baseType, Class<?> type) {

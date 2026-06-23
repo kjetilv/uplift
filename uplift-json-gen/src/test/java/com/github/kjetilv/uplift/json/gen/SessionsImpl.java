@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
@@ -28,10 +29,7 @@ final class SessionsImpl {
 
     private static final Logger log = getLogger("javac");
 
-    static Session session(
-        String fqName,
-        String source
-    ) {
+    static Session session(String source) {
         var compiler = ToolProvider.getSystemJavaCompiler();
         var fm = compiler.getStandardFileManager(null, Locale.ROOT, UTF_8);
 
@@ -39,6 +37,7 @@ final class SessionsImpl {
         var classOut = temp("classes");
         var srcOut = temp("gen-src");
 
+        var fqName = derive(source);
         var file = fqName.replace('.', '/') + ".java";
         var sourceFile = writeSource(srcDir, file, source);
 
@@ -65,7 +64,11 @@ final class SessionsImpl {
                         if (Objects.requireNonNull(diagnostic.getKind()) == Diagnostic.Kind.ERROR) {
                             throw new IllegalStateException("Compilation failure: " + diagnostic);
                         }
-                        log.warn(diagnostic.toString());
+                        var diagnosticString = diagnostic.toString();
+                        if (diagnosticString.contains("warning: Supported source version")) {
+                            return;
+                        }
+                        log.warn(diagnosticString);
                     },
                     null,
                     null,
@@ -95,11 +98,39 @@ final class SessionsImpl {
                 srcOut,
                 classOut,
                 urlClassLoader,
-                e);
+                e
+            );
         }
     }
 
     private SessionsImpl() {
+    }
+
+    private static String derive(String source) {
+        var lines = source.lines()
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .toList();
+        var packageName =
+            partName(lines, "package ", ';');
+        var className =
+            partName(lines, "public record ", '(')
+                .or(() -> partName(lines, "record ", '('))
+                .orElseThrow(() ->
+                    new IllegalStateException("No record class could be parsed"));
+        return packageName.map(pn ->
+                "%s.%s".formatted(pn, className))
+            .orElse(className);
+    }
+
+    private static Optional<String> partName(List<String> lines, String prefix, char stop) {
+        return lines.stream()
+            .filter(line -> line.startsWith(prefix))
+            .map(line ->
+                line.substring(prefix.length()).trim())
+            .map(suffix ->
+                suffix.substring(0, suffix.indexOf(stop)))
+            .findFirst();
     }
 
     private static URL url(Path classOut) {

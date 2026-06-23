@@ -32,19 +32,6 @@ record RecordAttribute(
 //        };
 //    }
 
-    static RecordAttribute primitive(
-        String event,
-        RecordComponentElement element
-    ) {
-        return new RecordAttribute(
-            null,
-            event,
-            element,
-            Variant.PRIMITIVE,
-            null
-        );
-    }
-
     RecordAttribute(
         BaseType baseType,
         String callbackEvent,

@@ -66,32 +66,40 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     public void onFloat(String name, BiConsumer<B, Float> set) {
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
-            (B builder, Double d) ->
-                build(builder, set, d.floatValue())
+            (builder, value) ->
+                build(builder, set, value.floatValue())
         );
     }
 
     public void onDouble(String name, BiConsumer<B, Double> set) {
-        numbers.put(new Token.Field(name.getBytes(UTF_8)), set);
+        numbers.put(
+            new Token.Field(name.getBytes(UTF_8)),
+            (builder, value) ->
+                build(builder, set, value.doubleValue())
+            );
     }
 
     public void onInteger(String name, BiConsumer<B, Integer> set) {
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
-            (B builder, Long l) ->
-                build(builder, set, l.intValue())
+            (builder, value) ->
+                build(builder, set, value.intValue())
         );
     }
 
     public void onLong(String name, BiConsumer<B, Long> set) {
-        numbers.put(new Token.Field(name.getBytes(UTF_8)), set);
+        numbers.put(
+            new Token.Field(name.getBytes(UTF_8)),
+            (builder, value) ->
+                build(builder, set, value.longValue())
+            );
     }
 
     public void onBigInteger(String name, BiConsumer<B, BigInteger> set) {
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
-            (B builder, Long value) ->
-                build(builder, set, BigInteger.valueOf(value))
+            (builder, value) ->
+                build(builder, set, BigInteger.valueOf(value.longValue()))
         );
     }
 

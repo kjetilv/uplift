@@ -21,6 +21,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+
         this.typeUtils = this.processingEnv.getTypeUtils();
         this.elementUtils = this.processingEnv.getElementUtils();
         this.genUtils = new GenUtils(typeUtils, elementUtils);
