@@ -7,26 +7,6 @@ import org.junit.jupiter.api.Test;
 class CompilerTest extends CompilerTestCase {
 
     @Test
-    void longFields() {
-        verify(
-            //language=java
-            """
-                package junker.barabas;
-                
-                @com.github.kjetilv.uplift.json.anno.JsonRecord
-                public record SingleField(Long l) {
-                }
-                """,
-            //language=json
-            """
-                {
-                  "l": 1000
-                }
-                """
-        );
-    }
-
-    @Test
     void stringFields() {
         verify(
             //language=java
@@ -75,6 +55,26 @@ class CompilerTest extends CompilerTestCase {
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(long l) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "l": 1000
+                }
+                """
+        );
+    }
+
+    @Test
+    void longFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(Long l) {
                 }
                 """,
             //language=json
@@ -147,6 +147,26 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void intListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Integer> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [1001, 1002, 1003]
+                }
+                """
+        );
+    }
+
+    @Test
     void shortFields() {
         verify(
             //language=java
@@ -161,6 +181,26 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "s": 42
+                }
+                """
+        );
+    }
+
+    @Test
+    void shortListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Short> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [1, 2, 3]
                 }
                 """
         );
@@ -207,6 +247,26 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void byteListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Byte> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [125, 126, 127]
+                }
+                """
+        );
+    }
+
+    @Test
     void bytePrimitiveFields() {
         verify(
             //language=java
@@ -241,6 +301,26 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "f": 3.14
+                }
+                """
+        );
+    }
+
+    @Test
+    void floatListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Float> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [1.1, 1.2, 1.3]
                 }
                 """
         );
@@ -287,6 +367,26 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void doubleListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Double> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [100.1, 100.2, 100.3]
+                }
+                """
+        );
+    }
+
+    @Test
     void doublePrimitiveFields() {
         verify(
             //language=java
@@ -327,6 +427,26 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void bigDecimalListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<java.math.BigDecimal> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [100.1, 100.2, 100.3]
+                }
+                """
+        );
+    }
+
+    @Test
     void bigIntegerFields() {
         verify(
             //language=java
@@ -347,8 +467,27 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void bigIntegerListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<java.math.BigInteger> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [1001, 1002, 1003]
+                }
+                """
+        );
+    }
+
+    @Test
     void uuidFields() {
-        var uuid = UUID.randomUUID();
         verify(
             //language=java
             """
@@ -363,9 +502,30 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "id": "%s"
                 }
-                """.formatted(uuid)
+                """.formatted(UUID.randomUUID())
         );
     }
+
+    @Test
+    void uuidListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<java.util.UUID> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": ["%s", "%s"]
+                }
+                """.formatted(UUID.randomUUID(), UUID.randomUUID())
+        );
+    }
+
 
     @Test
     void booleanFields() {
@@ -382,6 +542,46 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "b": true
+                }
+                """
+        );
+    }
+
+    @Test
+    void booleanPrimitiveFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(boolean b) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "b": true
+                }
+                """
+        );
+    }
+
+    @Test
+    void booleanListFields() {
+        verify(
+            //language=java
+            """
+                package junker.barabas;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record SingleField(java.util.List<Boolean> ls) {
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": [false, false, true]
                 }
                 """
         );
@@ -465,5 +665,4 @@ class CompilerTest extends CompilerTestCase {
                 """
         );
     }
-
 }

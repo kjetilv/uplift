@@ -4,18 +4,21 @@ import module java.base;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class CompilerTestCase {
 
     private static final Logger log = LoggerFactory.getLogger(CompilerTestCase.class);
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     @RegisterExtension
-    private final AfterEachCallback afterTestExecutionCallback = this::afterExecutionCallback;
+    private AfterEachCallback afterTestExecutionCallback = this::afterExecutionCallback;
 
     private Session session;
 
@@ -50,13 +53,13 @@ public class CompilerTestCase {
                     Stream.iterate(compileError, Objects::nonNull, Throwable::getCause)
                         .forEach(cause -> {
                             var top = Arrays.stream(cause.getStackTrace())
-                                .takeWhile(CompilerTestCase.beforeCutoff(context))
+                                .takeWhile(beforeCutoff(context))
                                 .toArray(StackTraceElement[]::new);
                             cause.setStackTrace(top);
                         });
 
                     generatedFiles.stream()
-                        .filter(CompilerTestCase.causes(compileError))
+                        .filter(causes(compileError))
                         .findFirst()
                         .ifPresentOrElse(
                             offendingFile -> {
@@ -78,6 +81,8 @@ public class CompilerTestCase {
                     log.info("That worked out nicely");
                 }
             );
+        session = null;
+        afterTestExecutionCallback = null;
     }
 
     private void print(Path file) {
