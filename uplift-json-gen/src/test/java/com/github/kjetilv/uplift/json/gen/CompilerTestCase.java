@@ -22,7 +22,7 @@ public class CompilerTestCase {
 
     private Session session;
 
-    protected void verify(String java, String json) {
+    protected void ver(String java, String json) {
         session = Session.create(java);
         assertThat(session)
             .describedAs("Could not initialize session")
@@ -30,7 +30,7 @@ public class CompilerTestCase {
         assertThat(session.compilationFailed())
             .describedAs("Compilation failed:\n%s", session == null ? "N/A" : session.compileError())
             .isFalse();
-        var object = Objects.requireNonNull(session, "session").readAndVerify(json);
+        var object = session.readAndVerify(json);
         assertThat(object).isNotNull();
     }
 

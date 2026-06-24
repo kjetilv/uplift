@@ -8,8 +8,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void stringFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -28,8 +27,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void stringListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -48,8 +46,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void longPrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -68,8 +65,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void longFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -88,8 +84,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void longListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -108,8 +103,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void intFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -128,8 +122,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void intPrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -148,8 +141,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void intListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -168,8 +160,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void shortFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -188,8 +179,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void shortListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -208,8 +198,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void shortPrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -228,8 +217,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void byteFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -248,8 +236,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void byteListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -268,8 +255,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void bytePrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -288,8 +274,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void floatFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -308,8 +293,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void floatListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -328,8 +312,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void floatPrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -348,8 +331,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void doubleFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -368,8 +350,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void doubleListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -388,8 +369,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void doublePrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -408,8 +388,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void bigDecimalFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -428,8 +407,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void bigDecimalListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -448,8 +426,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void bigIntegerFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -468,8 +445,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void bigIntegerListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -488,8 +464,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void uuidFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -508,8 +483,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void uuidListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -526,11 +500,9 @@ class CompilerTest extends CompilerTestCase {
         );
     }
 
-
     @Test
     void booleanFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -549,8 +521,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void booleanPrimitiveFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -569,8 +540,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void booleanListFields() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -589,8 +559,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void simpleCase() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package junker.barabas;
                 
@@ -621,8 +590,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void maps() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package prince.little;
                 
@@ -645,8 +613,7 @@ class CompilerTest extends CompilerTestCase {
 
     @Test
     void emptyMaps() {
-        verify(
-            //language=java
+        ver(//language=java
             """
                 package prince.little;
                 
