@@ -179,8 +179,14 @@ final class GenUtils {
         );
     }
 
-    public boolean isAssignable(TypeMirror type, TypeMirror type2) {
-        return typeUtils.isAssignable(type, type2);
+    public boolean isAssignable(TypeMirror t1, TypeMirror t2) {
+        return typeUtils.isAssignable(t1, t2)  ||
+               typeUtils.isAssignable(typeUtils.erasure(t1), typeUtils.erasure(t2));
+    }
+
+    public boolean isSameType(TypeMirror t1, TypeMirror t2) {
+        return typeUtils.isSameType(t1, t2) ||
+               typeUtils.isSameType(typeUtils.erasure(t1), typeUtils.erasure(t2));
     }
 
     public Element asElement(TypeMirror type) {
@@ -188,7 +194,7 @@ final class GenUtils {
     }
 
     boolean isMap(RecordComponentElement element) {
-        return typeUtils.isAssignable(element.asType(), this.mapType);
+        return typeUtils.isAssignable(typeUtils.erasure(element.asType()), this.mapErasure);
     }
 
 //    Optional<TypeMirror> fieldType(
@@ -238,11 +244,15 @@ final class GenUtils {
 //    }
 
     Optional<TypeMirror> iterableType(RecordComponentElement element) {
-        return element.asType() instanceof DeclaredType declared
-            ? (Optional<TypeMirror>) declared.getTypeArguments()
-            .stream()
-            .findFirst()
-            : Optional.empty();
+        var elementType = element.asType();
+        if (elementType instanceof DeclaredType declared) {
+            if (isAssignable(typeUtils.erasure(elementType), iterableErasure)) {
+                return (Optional<TypeMirror>) declared.getTypeArguments()
+                    .stream()
+                    .findFirst();
+            }
+        }
+        return Optional.empty();
     }
 
     <T extends TypeMirror> T fetchPrimitive(Class<?> type) {
@@ -287,11 +297,9 @@ final class GenUtils {
     }
 
     RecordAttribute create(RecordComponentElement element) {
-        var listType = iterableType(element);
-
-        return listType
-            .map(parameterType ->
-                attribute(parameterType, element, true))
+        return iterableType(element)
+            .map(iterableType ->
+                attribute(iterableType, element, true))
             .orElseGet(() ->
                 attribute(element.asType(), element, false));
 //        return switch (type.getKind()) {
@@ -336,7 +344,7 @@ final class GenUtils {
             primitiveType,
             fetch(type),
             primitiveTypeMirror,
-            this.typeUtils
+            this
         );
     }
 

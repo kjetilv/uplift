@@ -421,8 +421,16 @@ final class Generator {
         var isEnum = isEnum(recordAttribute.attribute().asType())
                      || listType.flatMap(this::enumType).isPresent();
         var isRoot = isRoot();
-        var isMap = isMap(te);
-        var convert = recordAttribute.baseType().requiresConversion();
+        var isMap = isMap(attribute.asType());
+
+        if (isMap) {
+            return "map(" +
+                   quote(attribute.getSimpleName()) + ", " +
+                   variableName(te) + "." + attribute.getSimpleName() + "()" +
+                   ", new " + MapWriter.class.getName() + "())";
+        }
+
+        var convert = !isMap && recordAttribute.baseType().requiresConversion();
 //            !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
 //            .orElseGet(() -> BaseType.of(attribute))
 //            .requiresConversion());

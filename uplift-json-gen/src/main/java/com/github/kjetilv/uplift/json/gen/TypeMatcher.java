@@ -5,11 +5,10 @@ import module java.base;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 final class TypeMatcher {
 
-    private final Types typeUtils;
+    private final GenUtils genUtils;
 
     private final BaseType baseType;
 
@@ -27,9 +26,9 @@ final class TypeMatcher {
         Class<?> primitiveType,
         DeclaredType typeMirror,
         TypeMirror primitiveTypeMirror,
-        Types typeUtils
+        GenUtils genUtils
     ) {
-        this.typeUtils = typeUtils;
+        this.genUtils = genUtils;
         this.baseType = baseType;
         this.type = type;
         this.primitiveType = primitiveType;
@@ -46,6 +45,16 @@ final class TypeMatcher {
                         "Object",
                         element,
                         list ? Variant.GENERATED_LIST : Variant.GENERATED
+                    )
+                );
+            }
+            if (genUtils.isMap(element)) {
+                return Optional.of(
+                    new RecordAttribute(
+                        baseType,
+                        "Object",
+                        element,
+                        Variant.GENERIC_MAP
                     )
                 );
             }
@@ -75,8 +84,8 @@ final class TypeMatcher {
     }
 
     private boolean matches(TypeMirror type) {
-        return typeUtils.isSameType(type, typeMirror) ||
-               primitiveType != null && typeUtils.isSameType(type, primitiveTypeMirror);
+        return genUtils.isSameType(type, typeMirror) ||
+               primitiveType != null && genUtils.isSameType(type, primitiveTypeMirror);
     }
 
     record Found(TypeMatcher matcher, RecordComponentElement element) {
