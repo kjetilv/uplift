@@ -83,6 +83,7 @@ final class SessionsImpl {
             if (!compilerOut.toString(UTF_8).isEmpty()) {
                 log.warn("Compilation produced output: {}", compilerOut.toString(UTF_8));
             }
+
             return new SessionImpl(
                 fqName,
                 source,
@@ -100,10 +101,30 @@ final class SessionsImpl {
                 urlClassLoader,
                 e
             );
+        } finally {
+            copySources(srcDir, srcOut);
         }
     }
 
     private SessionsImpl() {
+    }
+
+    private static void copySources(Path srcDir, Path srcOut) {
+        try (var sourceWalk = Files.walk(srcDir)) {
+            sourceWalk
+                .filter(Files::isRegularFile)
+                .forEach(sourcePath -> {
+                        var target = srcOut.resolve(srcDir.relativize(sourcePath));
+                        try {
+                            Files.copy(sourcePath, target);
+                        } catch (Exception e) {
+                            throw new IllegalStateException("Could not copy " + sourcePath, e);
+                        }
+                    }
+                );
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not copy sources", e);
+        }
     }
 
     private static String derive(String source) {
@@ -170,7 +191,7 @@ final class SessionsImpl {
     record SessionImpl(
         String fqName,
         String source,
-        Path sourcegenDir,
+        Path generatedDir,
         Path classesDir,
         ClassLoader classLoader,
         Exception compileError
@@ -191,20 +212,20 @@ final class SessionsImpl {
 
         @Override
         public List<Path> generatedFiles() {
-            try (var list = Files.walk(sourcegenDir)) {
+            try (var list = Files.walk(generatedDir)) {
                 return list
                     .filter(Files::isRegularFile)
                     .filter(path ->
                         path.getFileName().toString().endsWith(".java"))
                     .toList();
             } catch (Exception e) {
-                throw new IllegalStateException("Failed to list generated files in " + sourcegenDir, e);
+                throw new IllegalStateException("Failed to list generated files in " + generatedDir, e);
             }
         }
 
         @Override
         public Path generatedFile(Path path) {
-            return sourcegenDir.relativize(path);
+            return generatedDir.relativize(path);
         }
 
         private Class<?> type() {

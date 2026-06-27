@@ -19,6 +19,13 @@ public interface Session {
 
     String write(Object object);
 
+    Path generatedDir();
+
+    default Path generatedFilesDir() {
+        return generatedFiles().stream().map(Path::getParent).distinct().findFirst().orElseThrow(() ->
+            new IllegalStateException(this + ": No generated files"));
+    }
+
     List<Path> generatedFiles();
 
     Path generatedFile(Path path);

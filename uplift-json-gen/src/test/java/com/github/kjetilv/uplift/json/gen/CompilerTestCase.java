@@ -50,6 +50,7 @@ public class CompilerTestCase {
             .or(context::getExecutionException)
             .ifPresentOrElse(
                 compileError -> {
+                    log.info("Generated files failed: {}", session.generatedFilesDir().toUri());
                     Stream.iterate(compileError, Objects::nonNull, Throwable::getCause)
                         .forEach(cause -> {
                             var top = Arrays.stream(cause.getStackTrace())
@@ -75,6 +76,8 @@ public class CompilerTestCase {
                                 );
                             }
                         );
+                    log.info("Generated files failed: {}", session.generatedFilesDir().toUri());
+                    link();
                 },
                 () -> {
                     generatedFiles.forEach(this::print);
@@ -83,6 +86,24 @@ public class CompilerTestCase {
             );
         session = null;
         afterTestExecutionCallback = null;
+    }
+
+    private void link() {
+        var dir = session.generatedDir();
+        try (
+            var list = Files.list(dir);
+        ) {
+            var topPackage = list
+                .findFirst().orElseThrow(() ->
+                    new IllegalStateException("No top package in " + dir)).getFileName();
+            var link = Path.of("build/generated/sources/annotationProcessor/java/main/").resolve(topPackage);
+            var target = session.generatedDir().resolve(topPackage);
+            Files.deleteIfExists(link);
+            Files.createSymbolicLink(link, target);
+            log.info("Link: {}", link.toUri());
+        } catch (Exception e) {
+            log.warn("Failed to link: {}", e.toString());
+        }
     }
 
     private void print(Path file) {

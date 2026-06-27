@@ -3,14 +3,15 @@ package com.github.kjetilv.uplift.json.gen;
 import module java.base;
 import module java.compiler;
 
-import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
+import static com.github.kjetilv.uplift.json.gen.GenUtils.fieldName;
+import static com.github.kjetilv.uplift.json.gen.GenUtils.packageOf;
 
 record RecordAttribute(
     BaseType baseType,
     String callbackEvent,
     RecordComponentElement attribute,
     Variant variant,
-    TypeElement internalType
+    TypeMirror internalType
 ) {
 
 //    static RecordAttribute create(
@@ -42,16 +43,26 @@ record RecordAttribute(
     }
 
     public String fieldEvent() {
-        return baseType.fieldEventType().getName();
+        if (baseType != null) {
+            return baseType.fieldEventType().getName();
+        }
+        if (variant == Variant.GENERATED) {
+            return "object";
+        }
+        throw new IllegalStateException("Unsupported attribute type: " + this);
     }
 
-    String callbackHandler(TypeElement builderType) {
+    public boolean requiresConversion() {
+        return baseType != null && baseType().requiresConversion();
+    }
+
+    String callbackHandler(TypeElement elementType) {
         return "on" + callbackEvent + "(" +
                quote(fieldName(attribute)) +
-               ", " + variant.midTerm(attribute, internalType)
+               ", " + variant.midTerm(attribute, elementType)
                    .map(term -> term + ", ")
                    .orElse("") +
-               variant.callbackHandler(builderType, attribute, internalType) +
+               variant.callbackHandler(elementType, attribute, elementType) +
                ")";
     }
 

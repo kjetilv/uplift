@@ -632,4 +632,27 @@ class CompilerTest extends CompilerTestCase {
                 """
         );
     }
+
+    @Test
+    void nestedType() {
+        ver(//language=java
+            """
+                package nest.eagles;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record Eagle(
+                    Nest nest
+                ) {
+                    record Nest(String foo) {}
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nest": {
+                    "foo": "bar"
+                  }
+                }
+                """);
+    }
 }

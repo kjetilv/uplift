@@ -40,6 +40,9 @@ final class GenUtils {
     }
 
     static PackageElement packageOf(Element te) {
+        if (te == null) {
+            return null;
+        }
         var enclosingElement = te.getEnclosingElement();
         return enclosingElement instanceof PackageElement packageElement
             ? packageElement
@@ -83,10 +86,6 @@ final class GenUtils {
         return canonicalClassName(te, true);
     }
 
-    static String builderClassPlain(TypeElement te) {
-        return simpleName(te) + "_Builder";
-    }
-
     static String setter(RecordComponentElement el) {
         return "set" + upcased(el.getSimpleName().toString());
     }
@@ -95,17 +94,13 @@ final class GenUtils {
         return "add" + upcased(singularVariableName(el));
     }
 
-    static String callbacksClassPlain(TypeElement te) {
-        return simpleName(te) + "_Callbacks";
+    static String callbacksClassPlain(TypeMirror te) {
+        return te.toString() + "_Callbacks";
     }
 
     static String factoryClassQ(PackageElement pe, TypeElement te) {
         var qualifiedName = pe.getQualifiedName();
         return (qualifiedName.isEmpty() ? "" : qualifiedName + ".") + factoryClass(te);
-    }
-
-    static String simpleName(TypeElement te) {
-        return canonicalClassName(te, false);
     }
 
     static String importType(Class<?> clazz) {
@@ -128,6 +123,18 @@ final class GenUtils {
                 : plural;
     }
 
+    static String builderClassPlain(TypeElement te) {
+        return simpleName(te) + "_Builder";
+    }
+
+    static String simpleName(TypeElement te) {
+        return canonicalClassName(te, false);
+    }
+
+    static String callbacksClassPlain(TypeElement te) {
+        return simpleName(te) + "_Callbacks";
+    }
+
     private final Types typeUtils;
 
     private final Elements elementUtils;
@@ -146,6 +153,8 @@ final class GenUtils {
 
     private final List<TypeMatcher> matchers;
 
+    private final TypeMirror recordType;
+
     GenUtils(
         Types typeUtils,
         Elements elementUtils
@@ -161,6 +170,8 @@ final class GenUtils {
 
         this.iterableType = fetch(Iterable.class);
         this.iterableErasure = typeUtils.erasure(this.iterableType);
+
+        this.recordType = fetch(Record.class);
 
         this.matchers = List.of(
             matcher(BaseType.STRING, String.class),
@@ -180,7 +191,7 @@ final class GenUtils {
     }
 
     public boolean isAssignable(TypeMirror t1, TypeMirror t2) {
-        return typeUtils.isAssignable(t1, t2)  ||
+        return typeUtils.isAssignable(t1, t2) ||
                typeUtils.isAssignable(typeUtils.erasure(t1), typeUtils.erasure(t2));
     }
 
@@ -193,11 +204,38 @@ final class GenUtils {
         return typeUtils.asElement(type);
     }
 
-    boolean isMap(RecordComponentElement element) {
-        return typeUtils.isAssignable(typeUtils.erasure(element.asType()), this.mapErasure);
+    public TypeElement lookup(Class<?> type) {
+        return elementUtils.getAllTypeElements(type.getName())
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(type + " not found"));
     }
 
-//    Optional<TypeMirror> fieldType(
+    public boolean isMap(TypeMirror type) {
+        return typeUtils.isAssignable(typeUtils.erasure(type), this.mapErasure);
+    }
+
+    public Optional<DeclaredType> asRecord(Element typeElement) {
+        return Optional.ofNullable(typeElement)
+            .filter(DeclaredType.class::isInstance)
+            .map(DeclaredType.class::cast)
+            .filter(element ->
+                typeUtils.isAssignable(((Element) element).asType(), recordType));
+    }
+
+    String simpleName(TypeMirror te) {
+        var element = typeUtils.asElement(te);
+        if (element instanceof TypeElement typeElement) {
+            return canonicalClassName(typeElement, false);
+        }
+        throw new IllegalStateException("Not a type element: " + element);
+    }
+
+    boolean isMap(RecordComponentElement element) {
+        return isMap(element.asType());
+    }
+
+    //    Optional<TypeMirror> fieldType(
 //        RecordComponentElement element,
 //        Collection<? extends DeclaredType> candidates
 //    ) {
@@ -319,13 +357,29 @@ final class GenUtils {
     private RecordAttribute attribute(TypeMirror parameterType, RecordComponentElement element, boolean list) {
         var attributes = matchers.stream()
             .map(matcher ->
-                matcher.recordAttribute(parameterType, element, list))
+                matcher.recordAttribute(
+                    parameterType,
+                    element,
+                    parameterType,
+                    list
+                ))
             .flatMap(Optional::stream)
             .toList();
         if (attributes.size() == 1) {
             return attributes.getFirst();
         }
-        throw new IllegalStateException("Invalid matchers for " + element + ": " + attributes.stream()
+        if (attributes.isEmpty()) {
+            if (typeUtils.isAssignable(element.asType(), recordType)) {
+                return new RecordAttribute(
+                    null,
+                    "Object",
+                    element,
+                    Variant.GENERATED,
+                    null
+                );
+            }
+        }
+        throw new IllegalStateException("No matcher for " + element + ": " + attributes.stream()
             .map(Object::toString)
             .collect(Collectors.joining(", ")));
     }

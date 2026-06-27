@@ -10,10 +10,6 @@ import static com.github.kjetilv.uplift.json.gen.GenUtils.packageOf;
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class JsonRecordProcessor extends AbstractProcessor {
 
-    private Types typeUtils;
-
-    private Elements elementUtils;
-
     private TypeMirror jsonRecordType;
 
     private GenUtils genUtils;
@@ -21,11 +17,12 @@ public final class JsonRecordProcessor extends AbstractProcessor {
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-
-        this.typeUtils = this.processingEnv.getTypeUtils();
-        this.elementUtils = this.processingEnv.getElementUtils();
-        this.genUtils = new GenUtils(typeUtils, elementUtils);
-        this.jsonRecordType = fetch(this.elementUtils, JsonRecord.class).asType();
+        var elementUtils = this.processingEnv.getElementUtils();
+        this.genUtils = new GenUtils(
+            this.processingEnv.getTypeUtils(),
+            elementUtils
+        );
+        this.jsonRecordType = genUtils.lookup(JsonRecord.class).asType();
     }
 
     @Override
@@ -33,18 +30,18 @@ public final class JsonRecordProcessor extends AbstractProcessor {
         if (!isInitialized()) {
             throw new IllegalStateException(this + " not initialized");
         }
-        if (containsJsonRecord(typeElements)) {
-            var types = jsonRecords(roundEnv);
-            if (types.isEmpty()) {
-                return true;
-            }
+        if (!containsJsonRecord(typeElements)) {
+            return false;
+        }
+        var types = jsonRecords(roundEnv);
+        if (!types.isEmpty()) {
             if (rootless(types)) {
                 throw new IllegalStateException("None of " + types.size() + " elements are roots: " + print(types));
             }
             var enums = enums(roundEnv);
             write(types, enums);
         }
-        return false;
+        return true;
     }
 
     private void write(
@@ -87,7 +84,7 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .flatMap(Collection::stream)
             .map(TypeElement::asType)
             .anyMatch(type ->
-                typeUtils.isSameType(jsonRecordType, type));
+                genUtils.isSameType(jsonRecordType, type));
     }
 
     private boolean rootless(Collection<? extends DeclaredType> els) {
@@ -98,11 +95,11 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .noneMatch(JsonRecord::root);
     }
 
-    private static TypeElement fetch(Elements utils, Class<?> type) {
-        return utils.getAllTypeElements(type.getName())
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException(type + " not found"));
+    private Stream<DeclaredType> jsonRecords(TypeElement typeElement) {
+        return typeElement.getEnclosedElements().stream()
+            .map(enclosed ->
+                genUtils.asRecord(enclosed))
+            .flatMap(Optional::stream);
     }
 
     private static String time() {

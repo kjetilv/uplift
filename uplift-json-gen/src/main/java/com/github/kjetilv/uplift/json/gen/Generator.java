@@ -12,7 +12,6 @@ import javax.lang.model.type.TypeKind;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
-@SuppressWarnings("JavaPrintToLogpoint")
 final class Generator {
 
     private final PackageElement jsonRecordPackage;
@@ -145,7 +144,10 @@ final class Generator {
                 recordAttributes.stream()
                     .filter(RecordAttribute::isGenerated)
                     .map(attribute ->
-                        "        PRESETS.sub(" + callbacksClassPlain(attribute.internalType()) + ".PRESETS);")
+                    {
+                        var te = attribute.attribute().asType();
+                        return "        PRESETS.sub(" + callbacksClassPlain(attribute.attribute().asType()) + ".PRESETS);";
+                    })
                     .toList()
             );
 
@@ -417,48 +419,25 @@ final class Generator {
     private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
         var attribute = recordAttribute.attribute();
         Optional<TypeMirror> listType = utils.iterableType(attribute);
-        var fieldType = listType.orElse(attribute.asType());
-        var isEnum = isEnum(recordAttribute.attribute().asType())
-                     || listType.flatMap(this::enumType).isPresent();
-        var isRoot = isRoot();
-        var isMap = isMap(attribute.asType());
-
-        if (isMap) {
+        if (isMap(attribute.asType())) {
             return "map(" +
                    quote(attribute.getSimpleName()) + ", " +
                    variableName(te) + "." + attribute.getSimpleName() + "()" +
                    ", new " + MapWriter.class.getName() + "())";
         }
-
-        var convert = !isMap && recordAttribute.baseType().requiresConversion();
-//            !isMap && !isRoot && (isEnum || listType.map(BaseType::of)
-//            .orElseGet(() -> BaseType.of(attribute))
-//            .requiresConversion());
-        var name = isRoot ? "object"
-            : isMap ? "map"
-                : isEnum ? "string"
-                    : recordAttribute.fieldEvent();
-//                    : listType.map(BaseType::of).orElseGet(() -> BaseType.of(attribute)).methodName();
-//        String u = listType
-//            .map((DeclaredType listTypeName) ->
-//                writerClass(attribute, listTypeName.asElement().getSimpleName().toString()))
-//            .orElseGet(getStringSupplier(attribute));
+        var generated = recordAttribute.isGenerated();
+        var convert = recordAttribute.requiresConversion();
         return recordAttribute.fieldEvent() +
                listType.map(_ -> "Array").orElse("") +
                "(" +
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
-//                   : isRoot ? ", new " + u + "())"
-                   : isMap ? ", new " + MapWriter.class.getName() + "())"
+                   : generated ? ", new " + writerClassPlain(attribute.asType()) + "())"
                        : ")");
     }
 
-    private boolean isMap(TypeElement te) {
-        return isMap(te.asType());
-    }
-
     private boolean isMap(TypeMirror type) {
-        return utils.isAssignable(type, utils.fetch(Map.class));
+        return utils.isMap(type);
     }
 
     private Supplier<String> getStringSupplier(RecordComponentElement attribute) {
@@ -537,6 +516,10 @@ final class Generator {
         } catch (Exception e) {
             throw new IllegalStateException("Could not open file " + name, e);
         }
+    }
+
+    private String writerClassPlain(TypeMirror te) {
+        return utils.simpleName(te) + "_Writer";
     }
 
     private static final String GENERATED = Generated.class.getSimpleName();

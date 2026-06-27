@@ -36,7 +36,12 @@ final class TypeMatcher {
         this.primitiveTypeMirror = primitiveTypeMirror;
     }
 
-    Optional<RecordAttribute> recordAttribute(TypeMirror type, RecordComponentElement element, boolean list) {
+    Optional<RecordAttribute> recordAttribute(
+        TypeMirror type,
+        RecordComponentElement element,
+        TypeMirror parameterType,
+        boolean list
+    ) {
         if (matches(type)) {
             if (primitiveType == null && baseType == null) {
                 return Optional.of(
@@ -44,7 +49,8 @@ final class TypeMatcher {
                         baseType,
                         "Object",
                         element,
-                        list ? Variant.GENERATED_LIST : Variant.GENERATED
+                        list ? Variant.GENERATED_LIST : Variant.GENERATED,
+                        null
                     )
                 );
             }
