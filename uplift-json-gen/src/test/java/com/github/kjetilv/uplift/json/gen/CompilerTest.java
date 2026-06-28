@@ -10,7 +10,7 @@ class CompilerTest extends CompilerTestCase {
     void stringFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(String s) {
@@ -29,7 +29,7 @@ class CompilerTest extends CompilerTestCase {
     void stringListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<String> ss) {
@@ -48,7 +48,7 @@ class CompilerTest extends CompilerTestCase {
     void longPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(long l) {
@@ -67,7 +67,7 @@ class CompilerTest extends CompilerTestCase {
     void longFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Long l) {
@@ -86,7 +86,7 @@ class CompilerTest extends CompilerTestCase {
     void longListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Long> ls) {
@@ -105,7 +105,7 @@ class CompilerTest extends CompilerTestCase {
     void intFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Integer i) {
@@ -124,7 +124,7 @@ class CompilerTest extends CompilerTestCase {
     void intPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(int i) {
@@ -143,7 +143,7 @@ class CompilerTest extends CompilerTestCase {
     void intListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Integer> ls) {
@@ -162,7 +162,7 @@ class CompilerTest extends CompilerTestCase {
     void shortFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Short s) {
@@ -181,7 +181,7 @@ class CompilerTest extends CompilerTestCase {
     void shortListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Short> ls) {
@@ -200,7 +200,7 @@ class CompilerTest extends CompilerTestCase {
     void shortPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(short s) {
@@ -219,7 +219,7 @@ class CompilerTest extends CompilerTestCase {
     void byteFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Byte b) {
@@ -238,7 +238,7 @@ class CompilerTest extends CompilerTestCase {
     void byteListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Byte> ls) {
@@ -257,7 +257,7 @@ class CompilerTest extends CompilerTestCase {
     void bytePrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(byte b) {
@@ -276,7 +276,7 @@ class CompilerTest extends CompilerTestCase {
     void floatFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Float f) {
@@ -295,7 +295,7 @@ class CompilerTest extends CompilerTestCase {
     void floatListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Float> ls) {
@@ -314,7 +314,7 @@ class CompilerTest extends CompilerTestCase {
     void floatPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(float f) {
@@ -333,7 +333,7 @@ class CompilerTest extends CompilerTestCase {
     void doubleFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Double d) {
@@ -352,7 +352,7 @@ class CompilerTest extends CompilerTestCase {
     void doubleListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Double> ls) {
@@ -371,7 +371,7 @@ class CompilerTest extends CompilerTestCase {
     void doublePrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(double d) {
@@ -390,7 +390,7 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.math.BigDecimal bd) {
@@ -409,7 +409,7 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<java.math.BigDecimal> ls) {
@@ -428,7 +428,7 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.math.BigInteger bi) {
@@ -447,7 +447,7 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<java.math.BigInteger> ls) {
@@ -466,7 +466,7 @@ class CompilerTest extends CompilerTestCase {
     void uuidFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.UUID id) {
@@ -485,7 +485,7 @@ class CompilerTest extends CompilerTestCase {
     void uuidListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<java.util.UUID> ls) {
@@ -504,7 +504,7 @@ class CompilerTest extends CompilerTestCase {
     void booleanFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(Boolean b) {
@@ -523,7 +523,7 @@ class CompilerTest extends CompilerTestCase {
     void booleanPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(boolean b) {
@@ -542,7 +542,7 @@ class CompilerTest extends CompilerTestCase {
     void booleanListFields() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record SingleField(java.util.List<Boolean> ls) {
@@ -561,7 +561,7 @@ class CompilerTest extends CompilerTestCase {
     void simpleCase() {
         ver(//language=java
             """
-                package junker.barabas;
+                package junker.barabas.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record Foo(
@@ -592,7 +592,7 @@ class CompilerTest extends CompilerTestCase {
     void maps() {
         ver(//language=java
             """
-                package prince.little;
+                package prince.little.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record FooMap(
@@ -615,7 +615,7 @@ class CompilerTest extends CompilerTestCase {
     void emptyMaps() {
         ver(//language=java
             """
-                package prince.little;
+                package prince.little.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
                 public record FooMap(
@@ -637,12 +637,10 @@ class CompilerTest extends CompilerTestCase {
     void nestedType() {
         ver(//language=java
             """
-                package nest.eagles;
+                package nest.eagles.TESTNAME;
                 
                 @com.github.kjetilv.uplift.json.anno.JsonRecord
-                public record Eagle(
-                    Nest nest
-                ) {
+                public record Eagle(Nest nest) {
                     record Nest(String foo) {}
                 }
                 """,

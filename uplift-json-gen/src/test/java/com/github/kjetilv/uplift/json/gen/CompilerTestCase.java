@@ -1,6 +1,8 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -22,8 +24,17 @@ public class CompilerTestCase {
 
     private Session session;
 
+    private TestInfo testInfo;
+
+    @BeforeEach
+    void update(TestInfo testInfo) {
+        this.testInfo = testInfo;
+    }
+
     protected void ver(String java, String json) {
-        session = Session.create(java);
+        var source = PATTERN.matcher(java)
+            .replaceAll(MessageFormat.format(".{0};\n", testName()));
+        session = Session.create(source);
         assertThat(session)
             .describedAs("Could not initialize session")
             .isNotNull();
@@ -32,6 +43,12 @@ public class CompilerTestCase {
             .isFalse();
         var object = session.readAndVerify(json);
         assertThat(object).isNotNull();
+    }
+
+    private String testName() {
+        return PARS.matcher(testInfo.getDisplayName())
+            .replaceAll("")
+            .toLowerCase(Locale.ROOT);
     }
 
     private void afterExecutionCallback(ExtensionContext context) {
@@ -114,6 +131,10 @@ public class CompilerTestCase {
             throw new IllegalStateException("Failed to read " + file, e);
         }
     }
+
+    private static final Pattern PATTERN = Pattern.compile(".TESTNAME;\n");
+
+    private static final Pattern PARS = Pattern.compile("\\(\\)");
 
     private static Predicate<StackTraceElement> beforeCutoff(ExtensionContext context) {
         return context.getTestMethod()
