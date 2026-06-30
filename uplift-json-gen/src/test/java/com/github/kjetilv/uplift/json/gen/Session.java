@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.gen;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,6 +21,8 @@ public interface Session {
     String write(Object object);
 
     Path generatedDir();
+
+    Optional<Path> packageDir();
 
     default Path generatedFilesDir() {
         return generatedFiles().stream().map(Path::getParent).distinct().findFirst().orElseThrow(() ->

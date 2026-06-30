@@ -95,7 +95,10 @@ final class GenUtils {
     }
 
     static String callbacksClassPlain(TypeMirror te) {
-        return te.toString() + "_Callbacks";
+        var element = ((DeclaredType) te).asElement();
+        var packageElement = packageOf(element);
+        var className = element.toString().substring(packageElement.toString().length() + 1);
+        return className.replace('.', '_') + "_Callbacks";
     }
 
     static String factoryClassQ(PackageElement pe, TypeElement te) {

@@ -10,21 +10,21 @@ enum Variant {
 
     PRIMITIVE() {
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + setter(element);
         }
     },
 
     PRIMITIVE_LIST() {
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + adder(element);
         }
     },
 
     GENERATED() {
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " +
                    callbacksClassPlain(generated) +
                    ".create(callbacks, builder::" + setter(
@@ -34,7 +34,7 @@ enum Variant {
 
     GENERATED_LIST() {
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " +
                    callbacksClassPlain(generated) +
                    ".create(callbacks, builder::" + adder(element) + ")";
@@ -43,7 +43,7 @@ enum Variant {
 
     GENERIC_MAP() {
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " + MapCallbacks.class.getName() +
                    ".create(callbacks, builder::" + setter(element) + ")";
         }
@@ -56,7 +56,7 @@ enum Variant {
         }
 
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + setter(element);
         }
     },
@@ -68,7 +68,7 @@ enum Variant {
         }
 
         @Override
-        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated) {
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + adder(element);
         }
     };
@@ -77,5 +77,5 @@ enum Variant {
         return Optional.empty();
     }
 
-    abstract String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeElement generated);
+    abstract String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated);
 }

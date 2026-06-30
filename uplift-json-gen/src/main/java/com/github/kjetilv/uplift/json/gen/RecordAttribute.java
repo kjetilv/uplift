@@ -56,13 +56,13 @@ record RecordAttribute(
         return baseType != null && baseType().requiresConversion();
     }
 
-    String callbackHandler(TypeElement elementType) {
+    String callbackHandler(TypeElement typeElement) {
         return "on" + callbackEvent + "(" +
                quote(fieldName(attribute)) +
-               ", " + variant.midTerm(attribute, elementType)
+               ", " + variant.midTerm(attribute, typeElement)
                    .map(term -> term + ", ")
                    .orElse("") +
-               variant.callbackHandler(elementType, attribute, elementType) +
+               variant.callbackHandler(typeElement, attribute, attribute.asType()) +
                ")";
     }
 

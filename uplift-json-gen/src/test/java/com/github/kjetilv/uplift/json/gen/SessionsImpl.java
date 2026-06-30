@@ -15,10 +15,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
@@ -37,9 +37,10 @@ final class SessionsImpl {
         var classOut = temp("classes");
         var srcOut = temp("gen-src");
 
-        var fqName = derive(source);
+        var src = source.trim();
+        var fqName = derive(src);
         var file = fqName.replace('.', '/') + ".java";
-        var sourceFile = writeSource(srcDir, file, source);
+        var sourceFile = writeSource(srcDir, file, src);
 
         try {
             fm.setLocationFromPaths(CLASS_OUTPUT, List.of(classOut));
@@ -86,7 +87,7 @@ final class SessionsImpl {
 
             return new SessionImpl(
                 fqName,
-                source,
+                src,
                 srcOut,
                 classOut,
                 urlClassLoader,
@@ -95,7 +96,7 @@ final class SessionsImpl {
         } catch (Exception e) {
             return new SessionImpl(
                 fqName,
-                source,
+                src,
                 srcOut,
                 classOut,
                 urlClassLoader,
@@ -108,6 +109,8 @@ final class SessionsImpl {
 
     private SessionsImpl() {
     }
+
+    private static final Pattern PACKAGE = Pattern.compile("^package ([\\p{Alnum}.]+)\\s*;\\s*");
 
     private static void copySources(Path srcDir, Path srcOut) {
         try (var sourceWalk = Files.walk(srcDir)) {
@@ -226,6 +229,19 @@ final class SessionsImpl {
         @Override
         public Path generatedFile(Path path) {
             return generatedDir.relativize(path);
+        }
+
+        @Override
+        public Optional<Path> packageDir() {
+            return Arrays.stream(source.split("\n")).flatMap(line ->
+                Stream.of(PACKAGE.matcher(line))
+                    .filter(Matcher::matches)
+                    .map(matcher ->
+                        matcher.group(1))
+                    .map(packidge ->
+                        packidge.replace('.', '/'))
+                    .map(Path::of))
+                .findFirst();
         }
 
         private Class<?> type() {

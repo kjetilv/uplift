@@ -32,9 +32,7 @@ public class CompilerTestCase {
     }
 
     protected void ver(String java, String json) {
-        var source = PATTERN.matcher(java)
-            .replaceAll(MessageFormat.format(".{0};\n", testName()));
-        session = Session.create(source);
+        session = compilerSession(java);
         assertThat(session)
             .describedAs("Could not initialize session")
             .isNotNull();
@@ -43,6 +41,12 @@ public class CompilerTestCase {
             .isFalse();
         var object = session.readAndVerify(json);
         assertThat(object).isNotNull();
+    }
+
+    private Session compilerSession(String java) {
+        var source = PATTERN.matcher(java)
+            .replaceAll(MessageFormat.format(".{0};\n", testName()));
+        return Session.create(source);
     }
 
     private String testName() {
@@ -63,6 +67,7 @@ public class CompilerTestCase {
                 }
             }))
             .toList();
+        link();
         Optional.ofNullable(session.compileError())
             .or(context::getExecutionException)
             .ifPresentOrElse(
@@ -94,7 +99,6 @@ public class CompilerTestCase {
                             }
                         );
                     log.info("Generated files failed: {}", session.generatedFilesDir().toUri());
-                    link();
                 },
                 () -> {
                     generatedFiles.forEach(this::print);
@@ -106,20 +110,54 @@ public class CompilerTestCase {
     }
 
     private void link() {
-        var dir = session.generatedDir();
-        try (
-            var list = Files.list(dir);
-        ) {
-            var topPackage = list
-                .findFirst().orElseThrow(() ->
-                    new IllegalStateException("No top package in " + dir)).getFileName();
-            var link = Path.of("build/generated/sources/annotationProcessor/java/main/").resolve(topPackage);
-            var target = session.generatedDir().resolve(topPackage);
-            Files.deleteIfExists(link);
-            Files.createSymbolicLink(link, target);
-            log.info("Link: {}", link.toUri());
+        try {
+            var tempFiles = session.generatedDir();
+            var localCopy = Path.of("build/generated/sources/annotationProcessor/java/main/");
+            var localCopyPackage = session.packageDir()
+                .map(localCopy::resolve)
+                .map(CompilerTestCase::createDirs)
+                .orElse(localCopy);
+            var tempfilesPackage = session.packageDir()
+                .map(tempFiles::resolve).orElse(tempFiles);
+            try (
+                var files = Files.walk(localCopyPackage)
+                    .filter(Files::isRegularFile)
+            ) {
+                files.forEach(CompilerTestCase::rm);
+            }
+            try (
+                var dirs = Files.walk(localCopyPackage)
+                    .filter(Files::isDirectory).sorted(LONGEST_FIRST)
+            ) {
+                dirs.forEach(CompilerTestCase::rm);
+            }
+            try (
+                var dirs = Files.walk(tempfilesPackage)
+                    .filter(Files::isDirectory)
+            ) {
+                createDirs(tempfilesPackage, localCopyPackage, dirs);
+            }
+            try (
+                var files = Files.walk(tempfilesPackage)
+                    .filter(Files::isRegularFile)
+            ) {
+                copyFiles(tempfilesPackage, localCopyPackage, files);
+            }
+            try (var dirs = Files.walk(localCopy)) {
+                dirs.filter(Files::isDirectory)
+                    .filter(CompilerTestCase::isEmpty)
+                    .forEach(CompilerTestCase::rm);
+            }
         } catch (Exception e) {
-            log.warn("Failed to link: {}", e.toString());
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static boolean isEmpty(Path dir) {
+        try (var list = Files.list(dir)) {
+            return list.findAny().isEmpty();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to list " + dir, e);
         }
     }
 
@@ -135,6 +173,41 @@ public class CompilerTestCase {
     private static final Pattern PATTERN = Pattern.compile(".TESTNAME;\n");
 
     private static final Pattern PARS = Pattern.compile("\\(\\)");
+
+    private static final Comparator<Path> LONGEST_FIRST = Comparator.comparing(Path::getNameCount).reversed();
+
+    private static void rm(Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete " + path, e);
+        }
+    }
+
+    private static void createDirs(Path source, Path target, Stream<Path> paths) {
+        paths.map(source::relativize)
+            .map(target::resolve)
+            .forEach(CompilerTestCase::createDirs);
+    }
+
+    private static Path createDirs(Path path) {
+        try {
+            return Files.createDirectories(path);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create " + path, e);
+        }
+    }
+
+    private static void copyFiles(Path source, Path target, Stream<Path> paths) {
+        paths.forEach(path -> {
+            try {
+                var copy = target.resolve(source.relativize(path));
+                Files.copy(path, copy);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create " + path, e);
+            }
+        });
+    }
 
     private static Predicate<StackTraceElement> beforeCutoff(ExtensionContext context) {
         return context.getTestMethod()
