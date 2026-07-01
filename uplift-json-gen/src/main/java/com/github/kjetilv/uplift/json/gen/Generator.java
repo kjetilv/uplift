@@ -2,13 +2,8 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.FieldEvents;
-import com.github.kjetilv.uplift.json.MapWriter;
-import com.github.kjetilv.uplift.json.ObjectWriter;
+import com.github.kjetilv.uplift.json.*;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
-
-import javax.lang.model.type.TypeKind;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 
@@ -17,10 +12,6 @@ final class Generator {
     private final PackageElement jsonRecordPackage;
 
     private final TypeElement jsonRecord;
-
-    private final Collection<? extends DeclaredType> jsonRecords;
-
-    private final Collection<? extends DeclaredType> enums;
 
     private final String timestamp;
 
@@ -33,17 +24,12 @@ final class Generator {
     Generator(
         TypeElement jsonRecord,
         PackageElement jsonRecordPackage,
-        Collection<? extends DeclaredType> jsonRecords,
-        Collection<? extends DeclaredType> enums,
         String timestamp,
         Function<String, JavaFileObject> fileForName,
         GenUtils utils
     ) {
         this.jsonRecordPackage = jsonRecordPackage;
         this.jsonRecord = jsonRecord;
-
-        this.jsonRecords = jsonRecords;
-        this.enums = enums;
 
         this.timestamp = timestamp;
         this.fileForName = fileForName;
@@ -58,13 +44,13 @@ final class Generator {
         generateWriter();
         generateBuilder();
         generateCallbacks();
-//        try {
-//            var obj = jsonSchema();
+        try {
+            var obj = jsonSchema();
 //            IO.println(Json.instance().write(obj));
-//        } catch (Exception e) {
+        } catch (Exception e) {
 //            IO.println(fqName(jsonRecord) + " could not be parsed");
 //            e.printStackTrace();
-//        }
+        }
     }
 
     void generateCallbacks() {
@@ -131,20 +117,16 @@ final class Generator {
                 bw,
                 recordAttributes(jsonRecord)
                     .stream()
-                    .map(recordAttribute -> {
-                        var event = recordAttribute.callbackHandler(jsonRecord);
-                        return "        PRESETS." + event + ";";
-                    })
+                    .map(recordAttribute ->
+                        "        PRESETS." + recordAttribute.callbackHandler(jsonRecord) + ";")
                     .toList()
             );
             write(
                 bw,
                 recordAttributes.stream()
                     .filter(RecordAttribute::isGenerated)
-                    .map(attribute -> {
-                        var te = attribute.attribute().asType();
-                        return "        PRESETS.sub(" + callbacksClassPlain(attribute.realType()) + ".PRESETS);";
-                    })
+                    .map(attribute ->
+                        "        PRESETS.sub(" + callbacksClassPlain(attribute.realType()) + ".PRESETS);")
                     .toList()
             );
 
@@ -401,18 +383,6 @@ final class Generator {
             .toList();
     }
 
-    private boolean isEnum(TypeMirror type) {
-        return enumType(type)
-            .isPresent();
-    }
-
-    private Optional<Element> enumType(TypeMirror type) {
-        return Optional.of(type)
-            .filter(it -> it.getKind() == TypeKind.DECLARED)
-            .map(utils::asElement)
-            .filter(it -> it.getKind() == ElementKind.ENUM);
-    }
-
     private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
         var attribute = recordAttribute.attribute();
         Optional<TypeMirror> listType = utils.iterableType(attribute);
@@ -436,20 +406,6 @@ final class Generator {
 
     private boolean isMap(TypeMirror type) {
         return utils.isMap(type);
-    }
-
-    private Supplier<String> getStringSupplier(RecordComponentElement attribute) {
-        return () -> writerClass(attribute, attribute.asType().toString());
-    }
-
-    private String writerClass(RecordComponentElement attribute, String name) {
-        var packageElement = packageOf(attribute);
-        if (packageElement.isUnnamed()) {
-            return name + "_Writer";
-        }
-        var prefix = packageElement.toString();
-        var suffix = name.substring(prefix.length() + 1);
-        return suffix.replace('.', '_') + "_Writer";
     }
 
     private Map<String, Object> jsonType(RecordComponentElement element) {

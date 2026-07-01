@@ -21,19 +21,6 @@ final class GenUtils {
             : field.value();
     }
 
-    static Stream<? extends DeclaredType> enums(Collection<? extends Element> els) {
-        return Stream.concat(
-            els.stream()
-                .filter(element ->
-                    element.getKind() == ElementKind.ENUM)
-                .map(Element::asType)
-                .map(DeclaredType.class::cast),
-            els.stream()
-                .map(Element::getEnclosedElements)
-                .flatMap(GenUtils::enums)
-        );
-    }
-
     static String variableName(TypeElement typeElement) {
         var name = typeElement.getSimpleName().toString();
         return Character.toLowerCase(name.charAt(0)) + name.substring(1);
@@ -47,39 +34,6 @@ final class GenUtils {
         return enclosingElement instanceof PackageElement packageElement
             ? packageElement
             : packageOf(enclosingElement);
-    }
-
-    static Optional<TypeElement> generatedListType(
-        RecordComponentElement element,
-        Collection<? extends Element> rootElements
-    ) {
-        return rootElements.stream()
-            .filter(el ->
-                el instanceof TypeElement te && listType(te).equals(element.asType().toString()))
-            .findFirst()
-            .map(TypeElement.class::cast);
-    }
-
-//    static Optional<? extends Element> enumListType(
-//        RecordComponentElement element,
-//        Collection<? extends DeclaredType> enums
-//    ) {
-//        return enums.stream()
-//            .filter(type ->
-//                listType(type).equals(element.asType().toString()))
-//            .findFirst();
-//    }
-
-    static Optional<Class<?>> primitiveListType(RecordComponentElement element) {
-        return Arrays.stream(BaseType.values())
-            .filter(el ->
-                el.fieldTypes()
-                    .stream().anyMatch(fieldType ->
-                        listType(fieldType).equals(element.asType().toString())))
-            .flatMap(baseType ->
-                baseType.fieldTypes()
-                    .stream())
-            .findFirst();
     }
 
     static String fqName(TypeElement te) {
@@ -142,14 +96,6 @@ final class GenUtils {
 
     private final Elements elementUtils;
 
-    private final ModuleElement javaBase;
-
-    private final PackageElement javaUtil;
-
-    private final TypeMirror mapType;
-
-    private final TypeMirror iterableType;
-
     private final TypeMirror iterableErasure;
 
     private final TypeMirror mapErasure;
@@ -157,8 +103,6 @@ final class GenUtils {
     private final List<TypeMatcher> matchers;
 
     private final TypeMirror recordType;
-
-    private final TypeMirror enumType;
 
     private final TypeMirror enumErasure;
 
@@ -169,17 +113,16 @@ final class GenUtils {
         this.typeUtils = typeUtils;
         this.elementUtils = elementUtils;
 
-        this.javaBase = elementUtils.getModuleElement("java.base");
-        this.javaUtil = elementUtils.getPackageElement("java.util");
+        elementUtils.getModuleElement("java.base");
 
-        this.mapType = fetch(Map.class);
-        this.mapErasure = typeUtils.erasure(this.mapType);
+        TypeMirror mapType = fetch(Map.class);
+        this.mapErasure = typeUtils.erasure(mapType);
 
-        this.iterableType = fetch(Iterable.class);
-        this.iterableErasure = typeUtils.erasure(this.iterableType);
+        TypeMirror iterableType = fetch(Iterable.class);
+        this.iterableErasure = typeUtils.erasure(iterableType);
 
-        this.enumType = fetch(Enum.class);
-        this.enumErasure = typeUtils.erasure(this.enumType);
+        TypeMirror enumType = fetch(Enum.class);
+        this.enumErasure = typeUtils.erasure(enumType);
 
         this.recordType = fetch(Record.class);
 
@@ -217,10 +160,6 @@ final class GenUtils {
                typeUtils.isSameType(typeUtils.erasure(t1), typeUtils.erasure(t2));
     }
 
-    public Element asElement(TypeMirror type) {
-        return typeUtils.asElement(type);
-    }
-
     public TypeElement lookup(Class<?> type) {
         return elementUtils.getAllTypeElements(type.getName())
             .stream()
@@ -230,14 +169,6 @@ final class GenUtils {
 
     public boolean isMap(TypeMirror type) {
         return typeUtils.isAssignable(typeUtils.erasure(type), this.mapErasure);
-    }
-
-    public Optional<DeclaredType> asRecord(Element typeElement) {
-        return Optional.ofNullable(typeElement)
-            .filter(DeclaredType.class::isInstance)
-            .map(DeclaredType.class::cast)
-            .filter(element ->
-                typeUtils.isAssignable(((Element) element).asType(), recordType));
     }
 
     String simpleName(TypeMirror te) {
@@ -251,52 +182,6 @@ final class GenUtils {
     boolean isMap(RecordComponentElement element) {
         return isMap(element.asType());
     }
-
-    //    Optional<TypeMirror> fieldType(
-//        RecordComponentElement element,
-//        Collection<? extends DeclaredType> candidates
-//    ) {
-//        var type = element.asType();
-//        return (Optional<TypeMirror>) candidates.stream()
-//            .filter(candidate ->
-//                typeUtils.isSameType(type, candidate))
-//            .findFirst();
-//    }
-
-    Optional<PrimitiveType> primitiveType(
-        RecordComponentElement element
-    ) {
-        return Optional.ofNullable(element.asType().getKind())
-            .filter(TypeKind::isPrimitive)
-            .map(typeUtils::getPrimitiveType);
-    }
-
-//    Optional<TypeMirror> listType(
-//        RecordComponentElement element,
-//        Collection<? extends Element> jsonRecords,
-//        Collection<? extends Element> enums
-//    ) {
-//        var primitiveListType = primitiveListType(element);
-//        if (primitiveListType.isPresent()) {
-//            return primitiveListType
-//                .map(Class::getName);
-//        }
-//        var enumListType = enumListType(element, enums);
-//        if (enumListType.isPresent()) {
-//            return enumListType
-//                .map(Element::asType)
-//                .map(TypeMirror::toString);
-//        }
-//        var generatedListType = jsonRecords.stream()
-//            .filter(rootElement ->
-//                element.asType().toString().equals(listType(rootElement)))
-//            .findFirst();
-//        if (generatedListType.isPresent()) {
-//            return generatedListType
-//                .map(Element::asType);
-//        }
-//        return Optional.empty();
-//    }
 
     Optional<TypeMirror> iterableType(RecordComponentElement element) {
         var elementType = element.asType();
@@ -357,18 +242,6 @@ final class GenUtils {
                 attribute(iterableType, element, true))
             .orElseGet(() ->
                 attribute(element.asType(), element, false));
-//        return switch (type.getKind()) {
-//            case BOOLEAN -> primitive("Boolean", element, roots, enums);
-//            case BYTE -> primitive("Byte", element, roots, enums);
-//            case SHORT -> primitive("Short", element, roots, enums);
-//            case INT -> primitive("Integer", element, roots, enums);
-//            case LONG -> primitive("Long", element, roots, enums);
-//            case CHAR -> primitive("Character", element, roots, enums);
-//            case FLOAT -> primitive("Float", element, roots, enums);
-//            case DOUBLE -> primitive("Double", element, roots, enums);
-//            case DECLARED -> resolveDeclared(element, roots, enums);
-//            default -> throw new IllegalStateException("Unsupported: " + element);
-//        };
     }
 
     private boolean isIterableType(TypeMirror elementType) {
@@ -457,135 +330,7 @@ final class GenUtils {
         );
     }
 
-//    private DeclaredType resolveDeclared(
-//        RecordComponentElement element,
-//        Collection<? extends DeclaredType> roots,
-//        Collection<? extends DeclaredType> enums
-//    ) {
-//        var baseType = matchers.stream()
-//            .filter(matcher -> matcher.matches(element))
-//            .findFirst()
-//            .map(matcher ->
-//                new RecordAttribute(
-//                    matcher.baseType().
-//                ));
-//        return baseType.or(() ->
-//            fieldType(element, enums)
-//                .map(enumType ->
-//                    new RecordAttribute(
-//                        "Enum",
-//                        element,
-//                        Variant.ENUM,
-//                        null,
-//                        roots,
-//                        enums
-//                    ))
-//                .or(() ->
-//                    iterableType(element, enums)
-//                        .map(enumListType ->
-//                            new RecordAttribute(
-//                                "Enum",
-//                                element,
-//                                Variant.ENUM_LIST,
-//                                (TypeElement) enumListType.asElement(),
-//                                roots,
-//                                enums
-//                            )))
-//                .or(() ->
-//                    fieldType(element, roots)
-//                        .map(generatedType ->
-//                            new RecordAttribute(
-//                                "Object",
-//                                element,
-//                                Variant.GENERATED,
-//                                (TypeElement) generatedType.asElement(),
-//                                roots,
-//                                enums
-//                            )
-//                        ))
-//                .or(() -> iterableType(element, roots)
-//                    .map(enumListType ->
-//                        new RecordAttribute(
-//                            "Object",
-//                            element,
-//                            Variant.GENERATED_LIST,
-//                            (TypeElement) enumListType.asElement(),
-//                            roots,
-//                            enums
-//                        )
-//                    ))
-//                .or(() -> primitiveType(element)
-//                    .map(primitiveType ->
-//                        new RecordAttribute(
-//                            primitiveType.getKind().toString(),
-//                            element,
-//                            Variant.PRIMITIVE,
-//                            null,
-//                            roots,
-//                            enums
-//                        )))
-//                .or(() -> primitiveListType(element)
-//                    .map(primtiveType ->
-//                        new RecordAttribute(
-//                            primtiveType.getSimpleName(),
-//                            element,
-//                            Variant.PRIMITIVE_LIST,
-//                            null,
-//                            roots,
-//                            enums
-//                        )
-//                    ))
-
-    /// /            .or(() -> generatedListType(element, roots)
-    /// /                .map(generatedType ->
-    /// /                    new RecordAttribute(
-    /// /                        "Object",
-    /// /                        element,
-    /// /                        Variant.GENERATED_LIST,
-    /// /                        generatedType,
-    /// /                        roots,
-    /// /                        enums
-    /// /                    )
-    /// /                ))
-    /// /            .or(() -> Optional.of(element.asType().toString())
-    /// /                .filter(mapType ->
-    /// /                    mapType.startsWith("java.util.Map"))
-    /// /                .map(_ ->
-    /// /                    new RecordAttribute(
-    /// /                        "Object",
-    /// /                        element,
-    /// /                        Variant.GENERIC_MAP,
-    /// /                        null,
-    /// /                        roots,
-    /// /                        enums
-    /// /                    ))
-    /// /            )
-//                .orElseThrow(() ->
-//                    new IllegalStateException("Unsupported element/type: " + element + "/" + element.asType() + ", roots are: " + roots));
-//    }
-    private Predicate<TypeMirror> fieldType(TypeMirror typeArgument) {
-        return type -> typeUtils.isSameType(typeArgument, type);
-    }
-
-    private Optional<DeclaredType> iterableType(DeclaredType declared) {
-        return typeUtils.directSupertypes(declared)
-            .stream()
-            .filter(DeclaredType.class::isInstance)
-            .filter(superType ->
-                typeUtils.isAssignable(iterableErasure, superType))
-            .findFirst()
-            .map(DeclaredType.class::cast);
-    }
-
     private static final String DEFAULT_SUFFIX = "RW";
-
-    private static String listType(TypeElement te) {
-        return List.class.getName() + "<" + te.getQualifiedName() + ">";
-    }
-
-    private static String listType(Class<?> el) {
-        return List.class.getName() + "<" + el.getName() + ">";
-    }
 
     private static String canonicalClassName(TypeElement te, boolean fq) {
         var packageElement = packageOf(te);

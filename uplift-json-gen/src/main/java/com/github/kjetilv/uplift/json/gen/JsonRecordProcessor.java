@@ -38,15 +38,13 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             if (rootless(types)) {
                 throw new IllegalStateException("None of " + types.size() + " elements are roots: " + print(types));
             }
-            var enums = enums(roundEnv);
-            write(types, enums);
+            write(types);
         }
         return true;
     }
 
     private void write(
-        Collection<? extends DeclaredType> jsonRecords,
-        Collection<? extends DeclaredType> enums
+        Collection<? extends DeclaredType> jsonRecords
     ) {
         var time = time();
         for (var jsonRecord : jsonRecords) {
@@ -54,8 +52,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
                 var generator = new Generator(
                     te,
                     packageOf(te),
-                    jsonRecords,
-                    enums,
                     time,
                     this::fileForName,
                     genUtils
@@ -95,13 +91,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             .noneMatch(JsonRecord::root);
     }
 
-    private Stream<DeclaredType> jsonRecords(TypeElement typeElement) {
-        return typeElement.getEnclosedElements().stream()
-            .map(enclosed ->
-                genUtils.asRecord(enclosed))
-            .flatMap(Optional::stream);
-    }
-
     private static String time() {
         return Instant.now().truncatedTo(ChronoUnit.SECONDS)
             .atZone(ZoneId.of("Z"))
@@ -110,15 +99,6 @@ public final class JsonRecordProcessor extends AbstractProcessor {
 
     private static boolean isRecord(Element el) {
         return el.getKind() == ElementKind.RECORD;
-    }
-
-    private static boolean isPackageOrRecord(Element enc) {
-        return enc instanceof PackageElement || enc instanceof TypeElement;
-    }
-
-    private static Collection<? extends DeclaredType> enums(RoundEnvironment roundEnv) {
-        return GenUtils.enums(roundEnv.getRootElements())
-            .collect(Collectors.toSet());
     }
 
     private static Collection<DeclaredType> jsonRecords(RoundEnvironment roundEnv) {
