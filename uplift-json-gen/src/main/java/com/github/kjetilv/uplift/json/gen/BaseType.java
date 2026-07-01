@@ -145,10 +145,10 @@ enum BaseType {
     public boolean requiresConversion() {
         return !(fieldTypes.contains(String.class) ||
                  fieldTypes.contains(Boolean.class) ||
-                 canBeNumberic());
+                 canBeNumeric());
     }
 
-    private boolean canBeNumberic() {
+    private boolean canBeNumeric() {
         return Number.class.isAssignableFrom(jsonType) &&
                fieldTypes.stream().anyMatch(Number.class::isAssignableFrom);
     }

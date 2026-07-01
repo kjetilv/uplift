@@ -158,6 +158,10 @@ final class GenUtils {
 
     private final TypeMirror recordType;
 
+    private final TypeMirror enumType;
+
+    private final TypeMirror enumErasure;
+
     GenUtils(
         Types typeUtils,
         Elements elementUtils
@@ -174,6 +178,9 @@ final class GenUtils {
         this.iterableType = fetch(Iterable.class);
         this.iterableErasure = typeUtils.erasure(this.iterableType);
 
+        this.enumType = fetch(Enum.class);
+        this.enumErasure = typeUtils.erasure(this.enumType);
+
         this.recordType = fetch(Record.class);
 
         this.matchers = List.of(
@@ -188,6 +195,13 @@ final class GenUtils {
             matcher(BaseType.DOUBLE, Double.class, Double.TYPE),
             matcher(BaseType.BIG_DECIMAL, BigDecimal.class),
             matcher(BaseType.BIG_INTEGER, BigInteger.class),
+            matcher(BaseType.INSTANT, Instant.class),
+            matcher(BaseType.URL, URL.class),
+            matcher(BaseType.URI, URI.class),
+            matcher(BaseType.LOCALDATE, LocalDate.class),
+            matcher(BaseType.LOCALDATETIME, LocalDateTime.class),
+            matcher(BaseType.OFFSETDATETIME, OffsetDateTime.class),
+            matcher(BaseType.DURATION, Duration.class),
             matcher(BaseType.UUID, UUID.class),
             matcher(BaseType.MAP, Map.class)
         );
@@ -296,10 +310,6 @@ final class GenUtils {
         return Optional.empty();
     }
 
-    private boolean isIterableType(TypeMirror elementType) {
-        return isAssignable(typeUtils.erasure(elementType), iterableErasure);
-    }
-
     <T extends TypeMirror> T fetchPrimitive(Class<?> type) {
         if (type == Boolean.TYPE) {
             return (T) typeUtils.getPrimitiveType(TypeKind.BOOLEAN);
@@ -361,6 +371,10 @@ final class GenUtils {
 //        };
     }
 
+    private boolean isIterableType(TypeMirror elementType) {
+        return isAssignable(typeUtils.erasure(elementType), iterableErasure);
+    }
+
     private RecordAttribute attribute(TypeMirror parameterType, RecordComponentElement element, boolean list) {
         var attributes = matchers.stream()
             .map(matcher ->
@@ -385,14 +399,37 @@ final class GenUtils {
                     null
                 );
             }
-            if (isIterableType(element.asType()) && isAssignable(iterableType(element).get(), recordType)) {
+            if (typeUtils.isAssignable(typeUtils.erasure(element.asType()), enumErasure)) {
                 return new RecordAttribute(
                     null,
-                    "Object",
+                    "Enum",
                     element,
-                    Variant.GENERATED_LIST,
-                    iterableType(element).get()
+                    Variant.ENUM,
+                    null
                 );
+            }
+            var iteratedType = iterableType(element).orElseThrow(() ->
+                new IllegalStateException("No matcher for " + element)
+            );
+            if (isIterableType(element.asType())) {
+                if (isAssignable(iteratedType, recordType)) {
+                    return new RecordAttribute(
+                        null,
+                        "Object",
+                        element,
+                        Variant.GENERATED_LIST,
+                        iteratedType
+                    );
+                }
+                if (typeUtils.isAssignable(typeUtils.erasure(iteratedType), enumErasure)) {
+                    return new RecordAttribute(
+                        null,
+                        "Enum",
+                        element,
+                        Variant.ENUM_LIST,
+                        iteratedType
+                    );
+                }
             }
         }
         var attributesList = attributes.isEmpty() ? "<no attributes>"

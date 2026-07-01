@@ -51,7 +51,7 @@ enum Variant {
 
     ENUM() {
         @Override
-        Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
+        Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
             return Optional.of(element.asType().toString() + "::valueOf");
         }
 
@@ -63,8 +63,8 @@ enum Variant {
 
     ENUM_LIST {
         @Override
-        Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
-            return Optional.of(internalType.asType().toString() + "::valueOf");
+        Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
+            return Optional.of(internalType.toString() + "::valueOf");
         }
 
         @Override
@@ -73,7 +73,7 @@ enum Variant {
         }
     };
 
-    Optional<String> midTerm(RecordComponentElement element, TypeElement internalType) {
+    Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
         return Optional.empty();
     }
 

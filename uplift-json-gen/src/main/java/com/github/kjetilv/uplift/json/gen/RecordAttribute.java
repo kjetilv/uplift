@@ -49,17 +49,22 @@ record RecordAttribute(
         if (variant == Variant.GENERATED || variant == Variant.GENERATED_LIST) {
             return "object";
         }
+        if (variant == Variant.ENUM || variant == Variant.ENUM_LIST) {
+            return "string";
+        }
         throw new IllegalStateException("Unsupported attribute type: " + this);
     }
 
     public boolean requiresConversion() {
-        return baseType != null && baseType().requiresConversion();
+        return baseType != null && baseType().requiresConversion()
+            || variant == Variant.ENUM
+            || variant == Variant.ENUM_LIST;
     }
 
     String callbackHandler(TypeElement typeElement) {
         return "on" + callbackEvent + "(" +
                quote(fieldName(attribute)) +
-               ", " + variant.midTerm(attribute, typeElement)
+               ", " + variant.midTerm(attribute, realType())
                    .map(term -> term + ", ")
                    .orElse("") +
                variant.callbackHandler(
