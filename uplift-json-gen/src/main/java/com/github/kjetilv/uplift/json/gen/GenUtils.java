@@ -287,13 +287,17 @@ final class GenUtils {
     Optional<TypeMirror> iterableType(RecordComponentElement element) {
         var elementType = element.asType();
         if (elementType instanceof DeclaredType declared) {
-            if (isAssignable(typeUtils.erasure(elementType), iterableErasure)) {
+            if (isIterableType(elementType)) {
                 return (Optional<TypeMirror>) declared.getTypeArguments()
                     .stream()
                     .findFirst();
             }
         }
         return Optional.empty();
+    }
+
+    private boolean isIterableType(TypeMirror elementType) {
+        return isAssignable(typeUtils.erasure(elementType), iterableErasure);
     }
 
     <T extends TypeMirror> T fetchPrimitive(Class<?> type) {
@@ -381,10 +385,21 @@ final class GenUtils {
                     null
                 );
             }
+            if (isIterableType(element.asType()) && isAssignable(iterableType(element).get(), recordType)) {
+                return new RecordAttribute(
+                    null,
+                    "Object",
+                    element,
+                    Variant.GENERATED_LIST,
+                    iterableType(element).get()
+                );
+            }
         }
-        throw new IllegalStateException("No matcher for " + element + ": " + attributes.stream()
-            .map(Object::toString)
-            .collect(Collectors.joining(", ")));
+        var attributesList = attributes.isEmpty() ? "<no attributes>"
+            : attributes.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        throw new IllegalStateException("No matcher for " + element + ": " + attributesList);
     }
 
     private TypeMatcher matcher(BaseType baseType, Class<?> type) {

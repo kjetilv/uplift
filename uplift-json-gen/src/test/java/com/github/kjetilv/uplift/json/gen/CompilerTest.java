@@ -653,4 +653,62 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """);
     }
+
+    @Test
+    void nestedTypeEmpty() {
+        ver(//language=java
+            """
+                package nest.eagles.TESTNAME;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record Eagle(Nest nest) {
+                    record Nest(String foo) {}
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nest": {
+                  }
+                }
+                """);
+    }
+
+    @Test
+    void nestedTypeNull() {
+        ver(//language=java
+            """
+                package nest.eagles.TESTNAME;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record Eagle(Nest nest) {
+                    record Nest(String foo) {}
+                }
+                """,
+            //language=json
+            "{}");
+    }
+
+    @Test
+    void nestedTypeList() {
+        ver(//language=java
+            """
+                package nest.eagles.TESTNAME;
+                
+                @com.github.kjetilv.uplift.json.anno.JsonRecord
+                public record Eagle(java.util.List<Nest> nests) {
+                    record Nest(String foo) {}
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nests": [
+                    {
+                       "foo": "bar"
+                    }
+                  ]
+                }"""
+        );
+    }
 }

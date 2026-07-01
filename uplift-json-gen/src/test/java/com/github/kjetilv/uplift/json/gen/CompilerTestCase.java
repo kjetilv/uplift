@@ -68,10 +68,16 @@ public class CompilerTestCase {
             }))
             .toList();
         link();
-        Optional.ofNullable(session.compileError())
+        Optional.ofNullable(session)
+            .map(Session::compileError)
             .or(context::getExecutionException)
             .ifPresentOrElse(
                 compileError -> {
+                    log.error("Compilation failed", compileError);
+                    if (session == null) {
+                        log.warn("Session not created, aborting print phase");
+                        return;
+                    }
                     log.info("Generated files failed: {}", session.generatedFilesDir().toUri());
                     Stream.iterate(compileError, Objects::nonNull, Throwable::getCause)
                         .forEach(cause -> {
@@ -110,6 +116,11 @@ public class CompilerTestCase {
     }
 
     private void link() {
+        if (session == null) {
+            log.warn("Session not created, aborting link phase");
+            return;
+        }
+        ;
         try {
             var tempFiles = session.generatedDir();
             var localCopy = Path.of("build/generated/sources/annotationProcessor/java/main/");
@@ -149,15 +160,16 @@ public class CompilerTestCase {
                     .forEach(CompilerTestCase::rm);
             }
         } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static boolean isEmpty(Path dir) {
-        try (var list = Files.list(dir)) {
-            return list.findAny().isEmpty();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to list " + dir, e);
+            if (session.compileError() == null) {
+                throw new IllegalStateException(e);
+            }
+            if (e instanceof NoSuchFileException) {
+                log.warn("Failed to copy files after compile error: {}", e.toString());
+                return;
+            }
+            var illegalStateException = new IllegalStateException("Failed to link: ", e);
+            illegalStateException.addSuppressed(session.compileError());
+            throw illegalStateException;
         }
     }
 
@@ -175,6 +187,14 @@ public class CompilerTestCase {
     private static final Pattern PARS = Pattern.compile("\\(\\)");
 
     private static final Comparator<Path> LONGEST_FIRST = Comparator.comparing(Path::getNameCount).reversed();
+
+    private static boolean isEmpty(Path dir) {
+        try (var list = Files.list(dir)) {
+            return list.findAny().isEmpty();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to list " + dir, e);
+        }
+    }
 
     private static void rm(Path path) {
         try {

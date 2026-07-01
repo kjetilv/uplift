@@ -46,7 +46,7 @@ record RecordAttribute(
         if (baseType != null) {
             return baseType.fieldEventType().getName();
         }
-        if (variant == Variant.GENERATED) {
+        if (variant == Variant.GENERATED || variant == Variant.GENERATED_LIST) {
             return "object";
         }
         throw new IllegalStateException("Unsupported attribute type: " + this);
@@ -62,8 +62,15 @@ record RecordAttribute(
                ", " + variant.midTerm(attribute, typeElement)
                    .map(term -> term + ", ")
                    .orElse("") +
-               variant.callbackHandler(typeElement, attribute, attribute.asType()) +
-               ")";
+               variant.callbackHandler(
+                   typeElement,
+                   attribute,
+                   realType()
+               ) + ")";
+    }
+
+    TypeMirror realType() {
+        return internalType == null ? attribute.asType() : internalType;
     }
 
     boolean isGenerated() {

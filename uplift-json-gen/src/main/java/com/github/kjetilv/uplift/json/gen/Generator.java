@@ -131,22 +131,19 @@ final class Generator {
                 bw,
                 recordAttributes(jsonRecord)
                     .stream()
-                    .map(recordAttribute ->
-                        recordAttribute.callbackHandler(jsonRecord))
-                    .map(event ->
-                        "        PRESETS." + event + ";"
-                    )
+                    .map(recordAttribute -> {
+                        var event = recordAttribute.callbackHandler(jsonRecord);
+                        return "        PRESETS." + event + ";";
+                    })
                     .toList()
             );
-
             write(
                 bw,
                 recordAttributes.stream()
                     .filter(RecordAttribute::isGenerated)
-                    .map(attribute ->
-                    {
+                    .map(attribute -> {
                         var te = attribute.attribute().asType();
-                        return "        PRESETS.sub(" + callbacksClassPlain(attribute.attribute().asType()) + ".PRESETS);";
+                        return "        PRESETS.sub(" + callbacksClassPlain(attribute.realType()) + ".PRESETS);";
                     })
                     .toList()
             );
@@ -432,7 +429,8 @@ final class Generator {
                "(" +
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
-                   : generated ? ", new " + writerClassPlain(attribute.asType()) + "())"
+                   : generated ? ", new " + writerClassPlain(utils.iterableType(attribute)
+                       .orElseGet(attribute::asType)) + "())"
                        : ")");
     }
 

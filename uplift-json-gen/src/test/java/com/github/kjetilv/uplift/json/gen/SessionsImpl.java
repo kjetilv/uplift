@@ -85,6 +85,7 @@ final class SessionsImpl {
                 log.warn("Compilation produced output: {}", compilerOut.toString(UTF_8));
             }
 
+            copySources(srcDir, srcOut);
             return new SessionImpl(
                 fqName,
                 src,
@@ -102,8 +103,6 @@ final class SessionsImpl {
                 urlClassLoader,
                 e
             );
-        } finally {
-            copySources(srcDir, srcOut);
         }
     }
 
