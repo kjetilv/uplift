@@ -61,12 +61,8 @@ public final class InternalFactory {
         return LeafHasher.create(kind, pojoBytes);
     }
 
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
-        return canonicalizer(false);
-    }
-
-    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(boolean collisionsNeverHappen) {
-        return new CanonicalSubstructuresCataloguer<>(collisionsNeverHappen);
+    public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(boolean assumeNoCollisions) {
+        return new CanonicalSubstructuresCataloguer<>(assumeNoCollisions);
     }
 
     private InternalFactory() {

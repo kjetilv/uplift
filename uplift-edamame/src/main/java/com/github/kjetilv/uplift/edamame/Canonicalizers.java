@@ -7,13 +7,13 @@ import com.github.kjetilv.uplift.hash.HashKind;
 public final class Canonicalizers {
 
     public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer() {
-        return InternalFactory.canonicalizer();
+        return canonicalizer(false);
     }
 
     public static <K, H extends HashKind<H>> Canonicalizer<K, H> canonicalizer(
-        boolean collisionsNeverHappen
+        boolean assumeNoCollisions
     ) {
-        return InternalFactory.canonicalizer(collisionsNeverHappen);
+        return InternalFactory.canonicalizer(assumeNoCollisions);
     }
 
     private Canonicalizers() {

@@ -32,10 +32,10 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
 
     private final Map<Hash<H>, Object> leaves = new ConcurrentHashMap<>();
 
-    private final boolean collisionsNeverHappen;
+    private final boolean noCollisions;
 
-    CanonicalSubstructuresCataloguer(boolean collisionsNeverHappen) {
-        this.collisionsNeverHappen = collisionsNeverHappen;
+    CanonicalSubstructuresCataloguer(boolean noCollisions) {
+        this.noCollisions = noCollisions;
     }
 
     private CanonicalSubstructuresCataloguer() {
@@ -47,25 +47,23 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         return switch (hashedTree) {
             case Node<K, H>(var hash, var map) -> {
                 var node = transformMap(map, this::canonical);
-                var collision = collision(node.values());
-                yield collision != null ? collision
-                    : canonicalize(
-                        transformMap(node, CanonicalValue::value),
-                        hash,
-                        maps,
-                        t -> new CanonicalValue.Node<>(hash, t)
-                    );
+                var collision = noCollisions ? null : collision(node.values());
+                yield noCollisions || collision == null ? canonicalize(
+                    transformMap(node, CanonicalValue::value),
+                    hash,
+                    maps,
+                    t -> new CanonicalValue.Node<>(hash, t)
+                ) : collision;
             }
             case Nodes<K, H>(var hash, var list) -> {
                 var nodes = transformList(list, this::canonical);
-                var collision = collision(nodes);
-                yield collision != null ? collision
-                    : canonicalize(
-                        transformList(nodes, CanonicalValue::value),
-                        hash,
-                        lists,
-                        t -> new CanonicalValue.Nodes<>(hash, t)
-                    );
+                var collision = noCollisions ? null : collision(nodes);
+                yield noCollisions || collision == null ? canonicalize(
+                    transformList(nodes, CanonicalValue::value),
+                    hash,
+                    lists,
+                    t -> new CanonicalValue.Nodes<>(hash, t)
+                ) : collision;
             }
             case HashedTree.Leaf<?, H>(var hash, var value) -> canonicalize(
                 value,
@@ -93,8 +91,8 @@ final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
         Function<T, CanonicalValue<H>> wrap
     ) {
         var existing = map.putIfAbsent(hash, value);
-        return existing == null || collisionsNeverHappen ? wrap.apply(value)
-            : existing.equals(value) ? wrap.apply(existing)
+        return existing == null ? wrap.apply(value)
+            : noCollisions || existing.equals(value) ? wrap.apply(existing)
                 : new Collision<>(hash, value);
     }
 }

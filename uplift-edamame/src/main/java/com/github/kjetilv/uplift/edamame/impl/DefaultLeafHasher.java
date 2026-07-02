@@ -33,9 +33,9 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
             case Boolean b -> hashString(BOOL.tag(hb), Boolean.toString(b));
             case BigDecimal b -> hashBigDecimal(BIG_DECIMAL.tag(hb), b);
             case BigInteger b -> hashBigInteger(BIG_INTEGER.tag(hb), b);
+            case UUID u -> hashUuid(UUID.tag(hb), u);
             case Number n -> hashNumber(NUMBER.tag(hb), n);
             case TemporalAccessor temporal -> hashTemporal(hb, temporal);
-            case UUID u -> hashUuid(UUID.tag(hb), u);
             default -> hashLeaf(OBJECT.tag(hb), leaf, pojoBytes);
         };
     }
@@ -72,6 +72,7 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
             case MonthDay m -> hashNumber(MONTH_DAY.tag(hb), m.getMonthValue() * 12 + m.getDayOfMonth());
             case DayOfWeek d -> hashNumber(DAY_OF_WEEK.tag(hb), d.getValue());
             case Era e -> hashNumber(ERA.tag(hb), e.getValue());
+            case ZoneOffset z -> hashNumber(ZONE_OFFSET.tag(hb), z.getTotalSeconds());
             case TemporalAccessor ta -> hashString(OTHER_TEMPORAL.tag(hb), ta.toString());
         };
     }

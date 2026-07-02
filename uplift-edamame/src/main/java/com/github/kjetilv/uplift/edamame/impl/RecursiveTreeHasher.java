@@ -85,7 +85,7 @@ record RecursiveTreeHasher<I, H extends HashKind<H>>(
         trees.stream()
             .map(HashedTree::hash)
             .forEach(hashHb::hash);
-        return hashHb.build();
+        return hb.build();
     }
 
     private Hash<H> hashLeaf(Object value) {

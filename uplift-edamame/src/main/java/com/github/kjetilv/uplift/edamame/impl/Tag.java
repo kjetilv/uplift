@@ -30,6 +30,7 @@ enum Tag {
     DAY_OF_WEEK,
     ERA,
     INSTANT,
+    ZONE_OFFSET,
     OTHER_TEMPORAL,
     UUID;
 
