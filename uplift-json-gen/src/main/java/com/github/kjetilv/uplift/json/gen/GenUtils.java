@@ -172,11 +172,10 @@ final class GenUtils {
     }
 
     String simpleName(TypeMirror te) {
-        var element = typeUtils.asElement(te);
-        if (element instanceof TypeElement typeElement) {
-            return canonicalClassName(typeElement, false);
+        if (typeUtils.asElement(te) instanceof TypeElement typeElement) {
+            return simpleName(typeElement);
         }
-        throw new IllegalStateException("Not a type element: " + element);
+        throw new IllegalStateException("Not a type element: " + te);
     }
 
     boolean isMap(RecordComponentElement element) {
@@ -222,9 +221,11 @@ final class GenUtils {
         if (type == Double.TYPE) {
             return (T) typeUtils.getPrimitiveType(TypeKind.DOUBLE);
         }
+
         if (type == Character.TYPE) {
             return (T) typeUtils.getPrimitiveType(TypeKind.CHAR);
         }
+
         throw new IllegalStateException(type.getName());
     }
 
@@ -334,13 +335,14 @@ final class GenUtils {
 
     private static String canonicalClassName(TypeElement te, boolean fq) {
         var packageElement = packageOf(te);
-        return (fq && !packageElement.isUnnamed() ? packageElement + "." : "") + te.getQualifiedName().toString()
-            .substring(packageElement.isUnnamed() ? 0 : packageElement.getQualifiedName().length() + 1)
-            .replace('.', '_');
+        var unnamed = packageElement == null || packageElement.isUnnamed();
+        var packagePrefix = !fq || unnamed ? "" : packageElement + ".";
+        var classNamePart = te.getQualifiedName().toString()
+            .substring(unnamed ? 0 : packageElement.getQualifiedName().length() + 1);
+        return packagePrefix + classNamePart.replace('.', '_');
     }
 
     private static String upcased(String string) {
         return Character.toUpperCase(string.charAt(0)) + string.substring(1);
     }
-
 }
