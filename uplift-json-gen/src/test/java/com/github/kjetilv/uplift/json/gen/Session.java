@@ -39,12 +39,16 @@ public interface Session {
 
     default Object readAndVerify(String json) {
         var object = read(json);
-        var json2 = write(object);
-        assertThat(json2).isNotNull().isNotBlank();
-        var object2 = read(json2);
-        assertThat(object2)
+        var rewrittenJson = write(object);
+        assertThat(rewrittenJson)
             .isNotNull()
+            .isNotBlank();
+        var rereadObject = read(rewrittenJson);
+        assertThat(rereadObject)
+            .isNotNull()
+            .describedAs(
+                "Re-read object different from original: %s <> %s (original)", rereadObject, object)
             .isEqualTo(object);
-        return object2;
+        return rereadObject;
     }
 }

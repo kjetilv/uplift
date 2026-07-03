@@ -39,7 +39,8 @@ public class CompilerTestCase {
         assertThat(session.compilationFailed())
             .describedAs("Compilation failed:\n%s", session == null ? "N/A" : session.compileError())
             .isFalse();
-        var object = session.readAndVerify(json);
+        var object = Objects.requireNonNull(session, "session")
+            .readAndVerify(json);
         assertThat(object).isNotNull();
     }
 

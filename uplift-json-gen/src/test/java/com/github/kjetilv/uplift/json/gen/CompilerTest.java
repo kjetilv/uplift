@@ -12,7 +12,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(String s) {
@@ -34,7 +34,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<String> ss) {
@@ -55,7 +55,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(long l) {
@@ -76,7 +76,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Long l) {
@@ -98,7 +98,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Long> ls) {
@@ -119,7 +119,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Integer i) {
@@ -140,7 +140,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(int i) {
@@ -162,7 +162,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Integer> ls) {
@@ -183,7 +183,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Short s) {
@@ -205,7 +205,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Short> ls) {
@@ -226,7 +226,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(short s) {
@@ -269,7 +269,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Byte> ls) {
@@ -290,7 +290,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(byte b) {
@@ -311,7 +311,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Float f) {
@@ -333,7 +333,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Float> ls) {
@@ -354,7 +354,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(float f) {
@@ -375,7 +375,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Double d) {
@@ -397,7 +397,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Double> ls) {
@@ -418,7 +418,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(double d) {
@@ -440,7 +440,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(BigDecimal bd) {
@@ -462,7 +462,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<BigDecimal> ls) {
@@ -484,7 +484,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(BigInteger bi) {
@@ -506,7 +506,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<BigInteger> ls) {
@@ -528,7 +528,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(UUID id) {
@@ -550,7 +550,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<UUID> ls) {
@@ -573,7 +573,7 @@ class CompilerTest extends CompilerTestCase {
                 
                 import module java.base;
                 import module java.net.http;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(HttpClient.Version version) {
@@ -595,7 +595,7 @@ class CompilerTest extends CompilerTestCase {
                 
                 import module java.base;
                 import module java.net.http;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record ListField(List<HttpClient.Version> version) {
@@ -616,7 +616,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Duration dura) {
@@ -637,7 +637,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Duration> ds) {
@@ -658,7 +658,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(Boolean b) {
@@ -679,7 +679,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(boolean b) {
@@ -701,7 +701,7 @@ class CompilerTest extends CompilerTestCase {
                 package junker.barabas.TESTNAME;
                 import module java.base;
 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record SingleField(List<Boolean> ls) {
@@ -722,7 +722,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package junker.barabas.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Foo(
@@ -756,7 +756,7 @@ class CompilerTest extends CompilerTestCase {
                 package prince.little.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record FooMap(Map<String, ?> map) {
@@ -780,7 +780,7 @@ class CompilerTest extends CompilerTestCase {
                 package prince.little.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record FooMap(Map<String, ?> map) {
@@ -802,7 +802,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package nest.eagles.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Eagle(Nest nest) {
@@ -825,7 +825,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package nest.eagles.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Eagle(Nest nest) {
@@ -847,7 +847,7 @@ class CompilerTest extends CompilerTestCase {
             """
                 package nest.eagles.TESTNAME;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Eagle(Nest nest) {
@@ -865,7 +865,7 @@ class CompilerTest extends CompilerTestCase {
                 package nest.eagles.TESTNAME;
                 
                 import module java.base;
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Eagle(List<Nest> nests) {
@@ -895,7 +895,7 @@ class CompilerTest extends CompilerTestCase {
                 
                 import module java.base;
                 
-                import com.github.kjetilv.uplift.json.anno.*;
+                import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
                 public record Eagle(List<Nest> nests) {

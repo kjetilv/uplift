@@ -22,7 +22,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             field,
             value,
             Function.identity(),
-            map -> writer.write(map, new DefaultFieldEvents(sink()))
+            map -> writer.write(map, new DefaultFieldEvents(sink))
         );
     }
 
@@ -36,7 +36,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             field,
             value,
             Function.identity(),
-            _ -> writer.write(value, new DefaultFieldEvents(sink()))
+            _ -> writer.write(value, new DefaultFieldEvents(sink))
         );
     }
 
@@ -50,7 +50,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             field,
             values,
             Function.identity(),
-            t -> writer.write(t, new DefaultFieldEvents(sink()))
+            t -> writer.write(t, new DefaultFieldEvents(sink))
         );
     }
 
@@ -84,13 +84,44 @@ public final class DefaultFieldEvents implements FieldEvents {
         return writeArray(field, value, toBool, this::value);
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void done() {
-        sink().accept("}");
+        sink.accept("}");
     }
 
-    @SuppressWarnings("resource")
+    private <T, R> FieldEvents writeField(
+        String field,
+        T value,
+        Function<T, R> writer,
+        Consumer<R> setter
+    ) {
+        if (value == null) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        field(field);
+        setter.accept(writer.apply(value));
+        return this;
+    }
+
+    private void value(String value) {
+        var quoted = value.indexOf('"') >= 0;
+        var unquoted = quoted
+            ? replaceAll(value)
+            : value;
+        sink.accept("\"%s\"".formatted(unquoted));
+    }
+
+    private void value(Number value) {
+        sink.accept(value);
+    }
+
+    private void value(Boolean value) {
+        sink.accept(value);
+    }
+
     private <T, V> FieldEvents writeArray(
         String field,
         List<? extends T> values,
@@ -100,7 +131,6 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.isEmpty()) {
             return this;
         }
-        var sink = sink();
         if (mark.moved()) {
             sink.accept(",");
         }
@@ -124,44 +154,6 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     private void field(String field) {
         sink.accept("\"%s\":".formatted(field));
-    }
-
-    private void value(String value) {
-        var quoted = value.indexOf('"') >= 0;
-        var unquoted = quoted
-            ? replaceAll(value)
-            : value;
-        sink.accept("\"%s\"".formatted(unquoted));
-    }
-
-    private void value(Number value) {
-        sink.accept(value);
-    }
-
-    private void value(Boolean value) {
-        sink.accept(value);
-    }
-
-    private Sink sink() {
-        return sink;
-    }
-
-    @SuppressWarnings("resource")
-    private <T, R> FieldEvents writeField(
-        String field,
-        T value,
-        Function<T, R> writer,
-        Consumer<R> setter
-    ) {
-        if (value == null) {
-            return this;
-        }
-        if (mark.moved()) {
-            sink().accept(",");
-        }
-        field(field);
-        setter.accept(writer.apply(value));
-        return this;
     }
 
     private static final Pattern QUOTE = Pattern.compile("\"");
