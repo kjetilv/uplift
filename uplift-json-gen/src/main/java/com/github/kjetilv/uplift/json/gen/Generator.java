@@ -424,10 +424,7 @@ final class Generator {
     }
 
     private String jsonTypeSingular(RecordComponentElement element) {
-//        typeUtils.isAssignable(typeUtils.g).
         return isMap(element.asType()) ? "object"
-//            : utils.isMap(element, jsonRecords) || isMap(element) ? "object"
-//                : isMap(element, enums) ? "string"
             : utils.iterableType(element).isPresent() ? "array"
                 : baseJsonType(element);
     }
