@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 
+import static com.github.kjetilv.uplift.json.io.Canonical.FALSE;
+import static com.github.kjetilv.uplift.json.io.Canonical.TRUE;
+
 public sealed interface Sink extends RuntimeCloseable
     permits BufferedByteChannelSink, ByteChannelSink, ChunkedTransferByteChannelSink, StreamSink, StringSink {
 
@@ -34,7 +37,7 @@ public sealed interface Sink extends RuntimeCloseable
     }
 
     default Sink accept(boolean bool) {
-        return accept(bool ? Canonical.TRUE : Canonical.FALSE);
+        return accept(bool ? TRUE : FALSE);
     }
 
     default Sink accept(Number number) {
@@ -45,12 +48,13 @@ public sealed interface Sink extends RuntimeCloseable
     default void close() {
     }
 
-    Sink accept(String str);
-
     default Mark mark() {
-        var length = length();
-        return () -> length != length();
+        var previousLength = length();
+        return () ->
+            length() != previousLength;
     }
+
+    Sink accept(String str);
 
     long length();
 
