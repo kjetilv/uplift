@@ -56,12 +56,7 @@ final class TypeMatcher {
             }
             if (genUtils.isMap(element)) {
                 return Optional.of(
-                    new RecordAttribute(
-                        baseType,
-                        "Object",
-                        element,
-                        Variant.GENERIC_MAP
-                    )
+                    new RecordAttribute(baseType, "Object", element, Variant.GENERIC_MAP, null)
                 );
             }
             return Optional.of(
@@ -69,8 +64,7 @@ final class TypeMatcher {
                     baseType,
                     this.type.getSimpleName(),
                     element,
-                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE
-                )
+                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE, null)
             );
         }
         return Optional.empty();

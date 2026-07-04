@@ -14,15 +14,6 @@ record RecordAttribute(
     TypeMirror internalType
 ) {
 
-    RecordAttribute(
-        BaseType baseType,
-        String callbackEvent,
-        RecordComponentElement attribute,
-        Variant variant
-    ) {
-        this(baseType, callbackEvent, attribute, variant, null);
-    }
-
     String fieldEvent() {
         if (baseType != null) {
             return baseType.fieldEventType().getName();
