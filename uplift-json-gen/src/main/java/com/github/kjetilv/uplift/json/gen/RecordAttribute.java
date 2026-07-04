@@ -23,7 +23,7 @@ record RecordAttribute(
         this(baseType, callbackEvent, attribute, variant, null);
     }
 
-    public String fieldEvent() {
+    String fieldEvent() {
         if (baseType != null) {
             return baseType.fieldEventType().getName();
         }
@@ -36,10 +36,10 @@ record RecordAttribute(
         throw new IllegalStateException("Unsupported attribute type: " + this);
     }
 
-    public boolean requiresConversion() {
+    boolean requiresConversion() {
         return baseType != null && baseType().requiresConversion()
-            || variant == Variant.ENUM
-            || variant == Variant.ENUM_LIST;
+               || variant == Variant.ENUM
+               || variant == Variant.ENUM_LIST;
     }
 
     String callbackHandler(TypeElement typeElement) {

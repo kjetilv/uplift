@@ -16,10 +16,6 @@ public interface FieldEvents {
         return bool(field, value, Function.identity());
     }
 
-    default FieldEvents stringArray(String field, List<String> values) {
-        return stringArray(field, values, Function.identity());
-    }
-
     default FieldEvents numberArray(String field, List<? extends Number> values) {
         return numberArray(field, values, Function.identity());
     }
@@ -27,6 +23,26 @@ public interface FieldEvents {
     @SuppressWarnings("unused")
     default FieldEvents boolArray(String field, List<Boolean> value) {
         return boolArray(field, value, Function.identity());
+    }
+
+    default FieldEvents stringArray(String field, String[] values) {
+        return stringArray(field, Arrays.asList(values), Function.identity());
+    }
+
+    default FieldEvents stringArray(String field, List<String> values) {
+        return stringArray(field, values, Function.identity());
+    }
+
+    default FieldEvents numberArray(String field, Number[] values) {
+        return numberArray(field, Arrays.asList(values), Function.identity());
+    }
+
+    default <T> FieldEvents numberArray(String field, T[] values, Function<T, Number> toNumber) {
+        return numberArray(field, Arrays.asList(values), toNumber);
+    }
+
+    default <T> FieldEvents boolArray(String field, T[] value, Function<T, Boolean> toBool) {
+        return boolArray(field, Arrays.asList(value), toBool);
     }
 
     FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);
