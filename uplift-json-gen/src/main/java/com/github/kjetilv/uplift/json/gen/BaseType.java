@@ -80,30 +80,6 @@ enum BaseType {
         OffsetDateTime.class
     );
 
-    static BaseType of(RecordComponentElement typeElement) {
-        try {
-            return pick(
-                typeElement,
-                baseType ->
-                    isFor(baseType, typeElement)
-            );
-        } catch (Exception e) {
-            throw new IllegalArgumentException("No basetype for element " + typeElement, e);
-        }
-    }
-
-    static BaseType of(String name) {
-        try {
-            return pick(
-                name, baseType ->
-                    baseType.fieldTypes.stream().anyMatch(fieldType -> fieldType.getName().equals(
-                        name))
-            );
-        } catch (Exception e) {
-            throw new IllegalArgumentException("No basetype for type named " + name, e);
-        }
-    }
-
     private final List<Class<?>> fieldTypes;
 
     private final FieldEventType fieldEventType;
@@ -122,24 +98,6 @@ enum BaseType {
 
     public FieldEventType fieldEventType() {
         return fieldEventType;
-    }
-
-    public List<Class<?>> fieldTypes() {
-        return fieldTypes;
-    }
-
-    public String typeName() {
-        return switch (this) {
-            case STRING, CHAR, UUID, URI, URL, INSTANT, DURATION, LOCALDATE, LOCALDATETIME, OFFSETDATETIME -> "string";
-            case BOOLEAN -> "boolean";
-            case INTEGER, LONG, SHORT, BYTE, BIG_INTEGER -> "integer";
-            case DOUBLE, FLOAT, BIG_DECIMAL -> "number";
-            case MAP -> "object";
-        };
-    }
-
-    public String methodName() {
-        return fieldEventType.getName();
     }
 
     public boolean requiresConversion() {
@@ -161,10 +119,4 @@ enum BaseType {
                 new IllegalArgumentException("Unsupported: " + name + " (" + name.getClass() + ")"));
     }
 
-    private static boolean isFor(BaseType type, RecordComponentElement typeElement) {
-        var typeElementName = typeElement.asType().toString();
-        return type.fieldTypes.stream()
-            .map(Class::getName)
-            .anyMatch(typeElementName::equals);
-    }
 }

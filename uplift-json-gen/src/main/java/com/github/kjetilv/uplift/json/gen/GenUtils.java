@@ -11,10 +11,6 @@ import javax.lang.model.type.TypeKind;
 @SuppressWarnings("unchecked")
 final class GenUtils {
 
-    static String baseJsonType(RecordComponentElement el) {
-        return BaseType.of(el).typeName();
-    }
-
     static String fieldName(RecordComponentElement el) {
         var field = el.getAnnotation(Field.class);
         return field == null ? el.getSimpleName().toString()
@@ -171,6 +167,14 @@ final class GenUtils {
         return typeUtils.isAssignable(typeUtils.erasure(type), this.mapErasure);
     }
 
+    public boolean isIterable(RecordComponentElement element) {
+        return iterableType(element).isPresent();
+    }
+
+    public boolean isArray(RecordComponentElement element) {
+        return element.asType().getKind() == TypeKind.ARRAY;
+    }
+
     String simpleName(TypeMirror te) {
         if (typeUtils.asElement(te) instanceof TypeElement typeElement) {
             return simpleName(typeElement);
@@ -183,13 +187,10 @@ final class GenUtils {
     }
 
     Optional<TypeMirror> iterableType(RecordComponentElement element) {
-        var elementType = element.asType();
-        if (elementType instanceof DeclaredType declared) {
-            if (isIterableType(elementType)) {
-                return (Optional<TypeMirror>) declared.getTypeArguments()
-                    .stream()
-                    .findFirst();
-            }
+        if (element.asType() instanceof DeclaredType declared && isIterableType(declared)) {
+            return (Optional<TypeMirror>) declared.getTypeArguments()
+                .stream()
+                .findFirst();
         }
         return Optional.empty();
     }

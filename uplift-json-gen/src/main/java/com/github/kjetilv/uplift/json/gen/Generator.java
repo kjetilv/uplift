@@ -424,9 +424,16 @@ final class Generator {
     }
 
     private String jsonTypeSingular(RecordComponentElement element) {
-        return isMap(element.asType()) ? "object"
-            : utils.iterableType(element).isPresent() ? "array"
-                : baseJsonType(element);
+        return utils.isIterable(element) ? "array"
+                : switch (element.asType().getKind()) {
+                    case BOOLEAN -> "boolean";
+                    case BYTE, SHORT, INT, LONG -> "integer";
+                    case FLOAT, DOUBLE -> "number";
+                    case ARRAY -> "array";
+                    case DECLARED -> "map";
+                    case CHAR -> "string";
+                    default -> throw new IllegalArgumentException("Not a JSON element: " + element);
+                };
     }
 
     private String unqTypeName() {
