@@ -8,6 +8,8 @@ import com.github.kjetilv.uplift.json.anno.Singular;
 
 import javax.lang.model.type.TypeKind;
 
+import static com.github.kjetilv.uplift.json.gen.BaseType.*;
+
 @SuppressWarnings("unchecked")
 final class GenUtils {
 
@@ -123,26 +125,26 @@ final class GenUtils {
         this.recordType = fetch(Record.class);
 
         this.matchers = List.of(
-            matcher(BaseType.STRING, String.class),
-            matcher(BaseType.BOOLEAN, Boolean.class, Boolean.TYPE),
-            matcher(BaseType.BYTE, Byte.class, Byte.TYPE),
-            matcher(BaseType.SHORT, Short.class, Short.TYPE),
-            matcher(BaseType.INTEGER, Integer.class, Integer.TYPE),
-            matcher(BaseType.LONG, Long.class, Long.TYPE),
-            matcher(BaseType.CHAR, Character.class, Character.TYPE),
-            matcher(BaseType.FLOAT, Float.class, Float.TYPE),
-            matcher(BaseType.DOUBLE, Double.class, Double.TYPE),
-            matcher(BaseType.BIG_DECIMAL, BigDecimal.class),
-            matcher(BaseType.BIG_INTEGER, BigInteger.class),
-            matcher(BaseType.INSTANT, Instant.class),
-            matcher(BaseType.URL, URL.class),
-            matcher(BaseType.URI, URI.class),
-            matcher(BaseType.LOCALDATE, LocalDate.class),
-            matcher(BaseType.LOCALDATETIME, LocalDateTime.class),
-            matcher(BaseType.OFFSETDATETIME, OffsetDateTime.class),
-            matcher(BaseType.DURATION, Duration.class),
-            matcher(BaseType.UUID, UUID.class),
-            matcher(BaseType.MAP, Map.class)
+            matcher(STRING, String.class, null),
+            matcher(BOOLEAN, Boolean.class, Boolean.TYPE),
+            matcher(BYTE, Byte.class, Byte.TYPE),
+            matcher(SHORT, Short.class, Short.TYPE),
+            matcher(INTEGER, Integer.class, Integer.TYPE),
+            matcher(LONG, Long.class, Long.TYPE),
+            matcher(CHAR, Character.class, Character.TYPE),
+            matcher(FLOAT, Float.class, Float.TYPE),
+            matcher(DOUBLE, Double.class, Double.TYPE),
+            matcher(BIG_DECIMAL, BigDecimal.class, null),
+            matcher(BIG_INTEGER, BigInteger.class, null),
+            matcher(INSTANT, Instant.class, null),
+            matcher(URL, URL.class, null),
+            matcher(URI, URI.class, null),
+            matcher(LOCALDATE, LocalDate.class, null),
+            matcher(LOCALDATETIME, LocalDateTime.class, null),
+            matcher(OFFSETDATETIME, OffsetDateTime.class, null),
+            matcher(DURATION, Duration.class, null),
+            matcher(UUID, UUID.class, null),
+            matcher(MAP, Map.class, null)
         );
     }
 
@@ -253,12 +255,7 @@ final class GenUtils {
     private RecordAttribute attribute(TypeMirror parameterType, RecordComponentElement element, boolean list) {
         var attributes = matchers.stream()
             .map(matcher ->
-                matcher.recordAttribute(
-                    parameterType,
-                    element,
-                    parameterType,
-                    list
-                ))
+                matcher.recordAttribute(parameterType, element, list))
             .flatMap(Optional::stream)
             .toList();
         if (attributes.size() == 1) {
@@ -314,20 +311,15 @@ final class GenUtils {
         throw new IllegalStateException("No matcher for " + element + ": " + attributesList);
     }
 
-    private TypeMatcher matcher(BaseType baseType, Class<?> type) {
-        return matcher(baseType, type, null);
-    }
-
     private TypeMatcher matcher(BaseType baseType, Class<?> type, Class<?> primitiveType) {
-        var primitiveTypeMirror = primitiveType == null
-            ? null
-            : fetchPrimitive(primitiveType);
         return new TypeMatcher(
             baseType,
             type,
             primitiveType,
             fetch(type),
-            primitiveTypeMirror,
+            primitiveType == null
+                ? null
+                : fetchPrimitive(primitiveType),
             this
         );
     }

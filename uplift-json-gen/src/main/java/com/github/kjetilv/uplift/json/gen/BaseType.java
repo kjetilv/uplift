@@ -31,10 +31,10 @@ enum BaseType {
     private final boolean convert;
 
     BaseType(FieldEventType fieldEventType) {
-        this(fieldEventType, false, fieldEventType.getJsonType());
+        this(fieldEventType, false);
     }
 
-    BaseType(FieldEventType fieldEventType, boolean convert, Class<?>... fieldTypes) {
+    BaseType(FieldEventType fieldEventType, boolean convert) {
         this.fieldEventType = fieldEventType;
         this.convert = convert;
     }

@@ -11,7 +11,7 @@ record RecordAttribute(
     String callbackEvent,
     RecordComponentElement attribute,
     Variant variant,
-    TypeMirror internalType
+    TypeMirror iteratedType
 ) {
 
     String fieldEvent() {
@@ -36,18 +36,20 @@ record RecordAttribute(
     String callbackHandler(TypeElement typeElement) {
         return "on" + callbackEvent + "(" +
                quote(fieldName(attribute)) +
-               ", " + variant.midTerm(attribute, realType())
+               ", " + variant.midTerm(attribute, actualType())
                    .map(term -> term + ", ")
                    .orElse("") +
                variant.callbackHandler(
                    typeElement,
                    attribute,
-                   realType()
+                   actualType()
                ) + ")";
     }
 
-    TypeMirror realType() {
-        return internalType == null ? attribute.asType() : internalType;
+    TypeMirror actualType() {
+        return iteratedType == null
+            ? attribute.asType()
+            : iteratedType;
     }
 
     boolean isGenerated() {

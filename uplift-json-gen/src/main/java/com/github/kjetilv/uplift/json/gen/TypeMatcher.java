@@ -39,7 +39,6 @@ final class TypeMatcher {
     Optional<RecordAttribute> recordAttribute(
         TypeMirror type,
         RecordComponentElement element,
-        TypeMirror parameterType,
         boolean list
     ) {
         if (matches(type)) {
@@ -56,7 +55,13 @@ final class TypeMatcher {
             }
             if (genUtils.isMap(element)) {
                 return Optional.of(
-                    new RecordAttribute(baseType, "Object", element, Variant.GENERIC_MAP, null)
+                    new RecordAttribute(
+                        baseType,
+                        "Object",
+                        element,
+                        Variant.GENERIC_MAP,
+                        null
+                    )
                 );
             }
             return Optional.of(
@@ -64,20 +69,9 @@ final class TypeMatcher {
                     baseType,
                     this.type.getSimpleName(),
                     element,
-                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE, null)
-            );
-        }
-        return Optional.empty();
-    }
-
-    Optional<Found> match(TypeMirror type, RecordComponentElement element, boolean list) {
-        if (matches(type)) {
-            if (primitiveType == null && baseType == null) {
-                return Optional.of(
-                    new Found(this, element));
-            }
-            return Optional.of(
-                new Found(this, element)
+                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE,
+                    null
+                )
             );
         }
         return Optional.empty();
@@ -86,9 +80,6 @@ final class TypeMatcher {
     private boolean matches(TypeMirror type) {
         return genUtils.isSameType(type, typeMirror) ||
                primitiveType != null && genUtils.isSameType(type, primitiveTypeMirror);
-    }
-
-    record Found(TypeMatcher matcher, RecordComponentElement element) {
     }
 
     @Override

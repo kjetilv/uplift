@@ -2,7 +2,10 @@ package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
 import module java.compiler;
-import com.github.kjetilv.uplift.json.*;
+import com.github.kjetilv.uplift.json.Callbacks;
+import com.github.kjetilv.uplift.json.FieldEvents;
+import com.github.kjetilv.uplift.json.MapWriter;
+import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
@@ -125,8 +128,10 @@ final class Generator {
                 bw,
                 recordAttributes.stream()
                     .filter(RecordAttribute::isGenerated)
-                    .map(attribute ->
-                        "        PRESETS.sub(" + callbacksClassPlain(attribute.realType()) + ".PRESETS);")
+                    .map(RecordAttribute::actualType)
+                    .map(GenUtils::callbacksClassPlain)
+                    .map(callbacksClassName ->
+                        "        PRESETS.sub(" + callbacksClassName + ".PRESETS);")
                     .toList()
             );
 
