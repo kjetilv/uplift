@@ -8,11 +8,11 @@ import com.github.kjetilv.uplift.json.bytes.ChannelIntSource;
 
 public final class ChannelJsonReader<T extends Record> extends AbstractJsonReader<ReadableByteChannel, T> {
 
-    private final int length;
+    private final long length;
 
     public ChannelJsonReader(
         Function<Consumer<T>, Callbacks> callbacksInitializer,
-        int length
+        long length
     ) {
         this(callbacksInitializer, null, length);
     }
@@ -20,7 +20,7 @@ public final class ChannelJsonReader<T extends Record> extends AbstractJsonReade
     public ChannelJsonReader(
         Function<Consumer<T>, Callbacks> callbacksInitializer,
         JsonSession jsonSession,
-        int length
+        long length
     ) {
         super(callbacksInitializer, jsonSession);
         if (length < 0) {

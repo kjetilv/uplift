@@ -176,7 +176,7 @@ final class Generator {
                 "@SuppressWarnings(\"unchecked\")",
                 "public final class " + factoryClass(jsonRecord) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
                 "",
-                "    public static " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(jsonRecord) + "();",
+                "    public static final " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(jsonRecord) + "();",
                 "",
                 "    @Override",
                 "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",

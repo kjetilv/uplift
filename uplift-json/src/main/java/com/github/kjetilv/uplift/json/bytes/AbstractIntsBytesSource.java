@@ -85,6 +85,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         }
     }
 
+    @SuppressWarnings("ConstantValue") // Data flow algo misses updates to next1/next2
     @Override
     public Bytes spoolNumber() {
         index++; // First digit is already in buffer
@@ -181,6 +182,9 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return new Bytes(currentLexeme, 0, index);
     }
 
+    /**
+     * @return Next byte, -1 when done
+     */
     protected abstract byte nextByte();
 
     private void save() {

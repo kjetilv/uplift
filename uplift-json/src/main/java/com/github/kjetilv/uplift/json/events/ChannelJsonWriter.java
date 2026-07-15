@@ -14,10 +14,6 @@ public class ChannelJsonWriter<T extends Record>
 
     private final Charset charset;
 
-    public ChannelJsonWriter(ObjectWriter<T> objectWriter) {
-        this(objectWriter, null);
-    }
-
     public ChannelJsonWriter(ObjectWriter<T> objectWriter, Charset charset) {
         super(objectWriter);
         this.charset = charset == null ? UTF_8 : charset;

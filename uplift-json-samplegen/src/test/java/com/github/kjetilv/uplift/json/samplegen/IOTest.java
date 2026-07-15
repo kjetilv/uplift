@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +19,16 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class IOTest {
 
     @Test
-    void test() throws IOException {
+    void files() {
+        var writer = Users.INSTANCE.fileWriter();
+        Path path = writer.write(USER);
+
+        User user = Users.INSTANCE.fileReader().read(path);
+        assertThat(user).isEqualTo(USER);
+    }
+
+    @Test
+    void channels() throws IOException {
         var writer = Users.INSTANCE.channelWriter(64);
         var baos = new ByteArrayOutputStream();
         try (

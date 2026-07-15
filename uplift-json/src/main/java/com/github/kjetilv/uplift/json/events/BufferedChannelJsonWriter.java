@@ -23,11 +23,13 @@ public class BufferedChannelJsonWriter<T extends Record>
     ) {
         super(objectWriter);
         this.charset = charset == null ? UTF_8 : charset;
-        this.bufferSize = bufferSize;
+        this.bufferSize = bufferSize > 0 ? bufferSize : DEFAULT_BUFFER_SIZE;
     }
 
     @Override
     protected Sink output(WritableByteChannel out) {
         return new BufferedByteChannelSink(out, charset, bufferSize);
     }
+
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
 }

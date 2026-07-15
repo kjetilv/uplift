@@ -3,13 +3,15 @@ package com.github.kjetilv.uplift.json.gen;
 import module java.base;
 import com.github.kjetilv.uplift.json.JsonWriter;
 
-final class ChannelFileWriter<T extends Record> implements JsonWriter<Path, T, Path> {
+import static java.nio.file.StandardOpenOption.*;
+
+final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
 
     private final Path path;
 
     private final JsonWriter<?, T, WritableByteChannel> writer;
 
-    ChannelFileWriter(
+    PathWriter(
         JsonWriter<?, T, WritableByteChannel> writer,
         Path path
     ) {
@@ -19,19 +21,23 @@ final class ChannelFileWriter<T extends Record> implements JsonWriter<Path, T, P
 
     @Override
     public Path write(T t) {
-        return write(t, tmp());
+        return writeX(t, tmp(), WRITE);
     }
 
     @Override
     public Path write(T t, Path out) {
+        return writeX(t, out, WRITE, CREATE_NEW);
+    }
+
+    private Path writeX(T t, Path out, OpenOption... openOptions) {
         try (
-            var channel = Files.newByteChannel(out)
+            var channel = Files.newByteChannel(out, openOptions)
         ) {
             writer.write(t, channel);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return path;
+        return out;
     }
 
     private static Path tmp() {
