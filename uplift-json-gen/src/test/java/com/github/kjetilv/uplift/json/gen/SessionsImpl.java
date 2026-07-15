@@ -2,11 +2,13 @@ package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.JsonWriter;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
 import javax.tools.Diagnostic;
 import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -29,13 +31,13 @@ final class SessionsImpl {
 
     private static final Logger log = getLogger("javac");
 
-    static Session session(String source) {
+    static Session session(String source, Path tempDirectory) {
         var compiler = ToolProvider.getSystemJavaCompiler();
         var fm = compiler.getStandardFileManager(null, Locale.ROOT, UTF_8);
 
-        var srcDir = temp("src");
-        var classOut = temp("classes");
-        var srcOut = temp("gen-src");
+        var srcDir = createTemp(tempDirectory, "src");
+        var classOut = createTemp(tempDirectory, "classes");
+        var srcOut = createTemp(tempDirectory, "gen-src");
 
         var src = source.trim();
         var fqName = derive(src);
@@ -103,6 +105,15 @@ final class SessionsImpl {
                 urlClassLoader,
                 e
             );
+        }
+    }
+
+    private static  Path createTemp(Path tempDirectory, String subDir) {
+        var resolved = tempDirectory.resolve(subDir);
+        try {
+            return Files.createDirectories(resolved);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create temp dir " + resolved, e);
         }
     }
 
@@ -182,14 +193,6 @@ final class SessionsImpl {
         }
     }
 
-    private static Path temp(String prefix) {
-        try {
-            return Files.createTempDirectory(prefix);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not create temp dir " + prefix, e);
-        }
-    }
-
     record SessionImpl(
         String fqName,
         String source,
@@ -233,13 +236,13 @@ final class SessionsImpl {
         @Override
         public Optional<Path> packageDir() {
             return Arrays.stream(source.split("\n")).flatMap(line ->
-                Stream.of(PACKAGE.matcher(line))
-                    .filter(Matcher::matches)
-                    .map(matcher ->
-                        matcher.group(1))
-                    .map(packidge ->
-                        packidge.replace('.', '/'))
-                    .map(Path::of))
+                    Stream.of(PACKAGE.matcher(line))
+                        .filter(Matcher::matches)
+                        .map(matcher ->
+                            matcher.group(1))
+                        .map(packidge ->
+                            packidge.replace('.', '/'))
+                        .map(Path::of))
                 .findFirst();
         }
 

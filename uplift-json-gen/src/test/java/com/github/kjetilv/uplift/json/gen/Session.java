@@ -9,9 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public interface Session {
 
     static Session create(
-        String source
+        String source,
+        Path tempDirectory
     ) {
-        return SessionsImpl.session(source);
+        return SessionsImpl.session(source, tempDirectory);
     }
 
     Throwable compileError();

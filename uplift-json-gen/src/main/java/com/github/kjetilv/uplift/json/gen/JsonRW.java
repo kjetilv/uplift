@@ -3,8 +3,6 @@ package com.github.kjetilv.uplift.json.gen;
 import module java.base;
 import com.github.kjetilv.uplift.json.*;
 import com.github.kjetilv.uplift.json.events.*;
-import com.github.kjetilv.uplift.json.io.ChunkedTransferByteChannelSink;
-import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -63,18 +61,49 @@ public interface JsonRW<T extends Record> {
         return new BufferedChannelJsonWriter<>(objectWriter(), UTF_8, bufferSize);
     }
 
+    default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter() {
+        return chunkedChannelWriter(null, 0);
+    }
+
     default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter(int bufferSize) {
         return chunkedChannelWriter(null, bufferSize);
     }
 
-    default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter(Charset charset, int bufferSize) {
-        return (t, out) -> {
-            try (var sink = new ChunkedTransferByteChannelSink(out, charset, bufferSize)) {
-                var events = new DefaultFieldEvents(sink);
-                objectWriter().write(t, events);
-            }
-            return out;
-        };
+    default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter(Charset charset) {
+        return chunkedChannelWriter(charset, 0);
+    }
+
+    default JsonWriter<Void, T, WritableByteChannel> chunkedChannelWriter(
+        Charset charset,
+        int bufferSize
+    ) {
+        return new ChunkedChannelWriter<>(
+            charset,
+            bufferSize,
+            objectWriter()
+        );
+    }
+
+    default JsonWriter<Path, T, Path> fileWriter() {
+        return fileWriter(null, 0);
+    }
+
+    default JsonWriter<Path, T, Path> fileWriter(Path path) {
+        return fileWriter(path, 0);
+    }
+
+    default JsonWriter<Path, T, Path> fileWriter(int bufferSize) {
+        return fileWriter(null, bufferSize);
+    }
+
+    default JsonWriter<Path, T, Path> fileWriter(
+        Path path,
+        int bufferSize
+    ) {
+        return new ChannelFileWriter<T>(
+            channelWriter(bufferSize),
+            path
+        );
     }
 
     default <K, V> T read(Map<K, V> userMap, Class<T> type) {

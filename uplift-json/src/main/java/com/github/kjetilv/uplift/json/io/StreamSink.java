@@ -2,23 +2,21 @@ package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
 
-final class StreamSink implements Sink {
+final class StreamSink extends AbstractEncodingSink {
 
     private final LongAdder lengthCounter = new LongAdder();
 
     private final OutputStream outputStream;
 
-    private final Charset charset;
-
     StreamSink(OutputStream outputStream, Charset charset) {
+        super(charset);
         this.outputStream = Objects.requireNonNull(outputStream, "baos");
-        this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
     }
 
     @Override
     public Sink accept(String str) {
         try {
-            var bytes = str.getBytes(charset);
+            var bytes = str.getBytes(charset());
             lengthCounter.add(bytes.length);
             outputStream.write(bytes);
         } catch (Exception e) {

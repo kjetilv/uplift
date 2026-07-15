@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class BufferedByteChannelSink implements Sink {
+public final class BufferedByteChannelSink extends AbstractBufferedSink {
 
     private final WritableByteChannel byteChannel;
 
@@ -19,10 +19,11 @@ public final class BufferedByteChannelSink implements Sink {
     private final ByteBuffer buffer;
 
     public BufferedByteChannelSink(WritableByteChannel byteChannel, Charset charset, int bufferSize) {
+        super(charset, bufferSize);
         this.byteChannel = byteChannel;
         this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
         this.bufferSize = bufferSize;
-        this.buffer = ByteBuffer.allocateDirect(this.bufferSize);
+        this.buffer = ByteBuffer.allocateDirect(bufferSize());
     }
 
     @Override

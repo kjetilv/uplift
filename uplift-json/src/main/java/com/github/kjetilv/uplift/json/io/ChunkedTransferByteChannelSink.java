@@ -9,33 +9,28 @@ import java.util.concurrent.atomic.LongAdder;
 import static java.lang.System.arraycopy;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public final class ChunkedTransferByteChannelSink implements Sink {
+public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
 
     private final WritableByteChannel byteChannel;
 
-    private final Charset charset;
-
     private final LongAdder bytesWritten = new LongAdder();
-
-    private final int bufferSize;
 
     private final ByteBuffer buffer;
 
     private final int maxHeader;
 
     public ChunkedTransferByteChannelSink(WritableByteChannel byteChannel, Charset charset, int bufferSize) {
+        super(charset, bufferSize);
         this.byteChannel = byteChannel;
-        this.charset = charset == null ? UTF_8 : charset;
         this.maxHeader = Integer.numberOfTrailingZeros(Integer.highestOneBit(bufferSize));
-        this.bufferSize = bufferSize;
-        this.buffer = ByteBuffer.allocateDirect(maxHeader + CRLF.length + this.bufferSize + CRLF.length);
+        this.buffer = ByteBuffer.allocateDirect(maxHeader + CRLF.length + this.bufferSize() + CRLF.length);
         this.buffer.position(maxHeader);
     }
 
     @Override
     public Sink accept(String str) {
-        var bytes = str.getBytes(charset);
-        if (bytes.length > bufferSize) {
+        var bytes = str.getBytes(charset());
+        if (bytes.length > bufferSize()) {
             bytesWritten.add(
                 flush(buffer) +
                 flush(ByteBuffer.wrap(bytes))

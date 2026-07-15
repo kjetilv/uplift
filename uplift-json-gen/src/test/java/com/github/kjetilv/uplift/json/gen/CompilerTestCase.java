@@ -6,6 +6,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
@@ -25,6 +26,9 @@ public class CompilerTestCase {
     private Session session;
 
     private TestInfo testInfo;
+
+    @TempDir
+    private Path tempDirectory;
 
     @BeforeEach
     void update(TestInfo testInfo) {
@@ -47,7 +51,7 @@ public class CompilerTestCase {
     private Session compilerSession(String java) {
         var source = PATTERN.matcher(java)
             .replaceAll(MessageFormat.format(".{0};\n", testName()));
-        return Session.create(source);
+        return Session.create(source, tempDirectory);
     }
 
     private String testName() {
@@ -121,7 +125,6 @@ public class CompilerTestCase {
             log.warn("Session not created, aborting link phase");
             return;
         }
-        ;
         try {
             var tempFiles = session.generatedDir();
             var localCopy = Path.of("build/generated/sources/annotationProcessor/java/main/");

@@ -10,7 +10,7 @@ import static com.github.kjetilv.uplift.json.io.Canonical.FALSE;
 import static com.github.kjetilv.uplift.json.io.Canonical.TRUE;
 
 public sealed interface Sink extends RuntimeCloseable
-    permits BufferedByteChannelSink, ByteChannelSink, ChunkedTransferByteChannelSink, StreamSink, StringSink {
+    permits AbstractBufferedSink, AbstractEncodingSink, StringSink {
 
     static Sink stream(OutputStream outputStream) {
         return stream(outputStream, null);
