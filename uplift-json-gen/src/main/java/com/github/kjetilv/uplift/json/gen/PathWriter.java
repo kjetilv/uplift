@@ -11,25 +11,22 @@ final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
 
     private final JsonWriter<?, T, WritableByteChannel> writer;
 
-    PathWriter(
-        JsonWriter<?, T, WritableByteChannel> writer,
-        Path path
-    ) {
+    PathWriter(JsonWriter<?, T, WritableByteChannel> writer, Path path) {
         this.path = path == null ? tmp() : path;
         this.writer = writer;
     }
 
     @Override
     public Path write(T t) {
-        return writeX(t, tmp(), WRITE);
+        return doWrite(t, path, WRITE);
     }
 
     @Override
     public Path write(T t, Path out) {
-        return writeX(t, out, WRITE, CREATE_NEW);
+        return doWrite(t, out, WRITE, CREATE_NEW);
     }
 
-    private Path writeX(T t, Path out, OpenOption... openOptions) {
+    private Path doWrite(T t, Path out, OpenOption... openOptions) {
         try (
             var channel = Files.newByteChannel(out, openOptions)
         ) {

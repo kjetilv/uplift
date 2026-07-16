@@ -34,16 +34,20 @@ record RecordAttribute(
     }
 
     String callbackHandler(TypeElement typeElement) {
-        return "on" + callbackEvent + "(" +
+        return "on" +
+               callbackEvent +
+               "(" +
                quote(fieldName(attribute)) +
-               ", " + variant.midTerm(attribute, actualType())
+               ", " +
+               variant.midTerm(attribute, actualType())
                    .map(term -> term + ", ")
                    .orElse("") +
                variant.callbackHandler(
                    typeElement,
                    attribute,
                    actualType()
-               ) + ")";
+               ) +
+               ")";
     }
 
     TypeMirror actualType() {
