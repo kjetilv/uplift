@@ -3,7 +3,8 @@ package com.github.kjetilv.uplift.json.gen;
 import module java.base;
 import com.github.kjetilv.uplift.json.JsonWriter;
 
-import static java.nio.file.StandardOpenOption.*;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
 
@@ -11,9 +12,16 @@ final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
 
     private final JsonWriter<?, T, WritableByteChannel> writer;
 
-    PathWriter(JsonWriter<?, T, WritableByteChannel> writer, Path path) {
+    private final OpenOption[] openOptions;
+
+    PathWriter(
+        JsonWriter<?, T, WritableByteChannel> writer,
+        Path path,
+        OpenOption... openOptions
+    ) {
         this.path = path == null ? tmp() : path;
         this.writer = writer;
+        this.openOptions = openOptions;
     }
 
     @Override
@@ -26,15 +34,24 @@ final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
         return doWrite(t, out, WRITE, CREATE_NEW);
     }
 
-    private Path doWrite(T t, Path out, OpenOption... openOptions) {
+    private Path doWrite(T t, Path out, OpenOption... defaultOptions) {
         try (
-            var channel = Files.newByteChannel(out, openOptions)
+            var channel = Files.newByteChannel(
+                out,
+                resolveOptions(defaultOptions)
+            )
         ) {
             writer.write(t, channel);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return out;
+    }
+
+    private OpenOption[] resolveOptions(OpenOption[] openOptions) {
+        return this.openOptions.length == 0
+            ? openOptions
+            : this.openOptions;
     }
 
     private static Path tmp() {

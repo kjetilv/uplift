@@ -110,19 +110,25 @@ public interface JsonRW<T extends Record> {
         return fileWriter(null, 0);
     }
 
-    default JsonWriter<Path, T, Path> fileWriter(Path path) {
-        return fileWriter(path, 0);
-    }
-
-    default JsonWriter<Path, T, Path> fileWriter(int bufferSize) {
+    default JsonWriter<Path, T, Path> fileWriter(
+        int bufferSize
+    ) {
         return fileWriter(null, bufferSize);
     }
 
     default JsonWriter<Path, T, Path> fileWriter(
         Path path,
-        int bufferSize
+        OpenOption... openOptions
     ) {
-        return new PathWriter<>(channelWriter(bufferSize), path);
+        return fileWriter(path, 0, openOptions);
+    }
+
+    default JsonWriter<Path, T, Path> fileWriter(
+        Path path,
+        int bufferSize,
+        OpenOption... openOptions
+    ) {
+        return new PathWriter<>(channelWriter(bufferSize), path, openOptions);
     }
 
     // Implementor responsibilities
