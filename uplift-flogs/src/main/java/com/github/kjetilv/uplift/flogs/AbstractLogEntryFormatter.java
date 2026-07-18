@@ -66,6 +66,8 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
 
     private static final char[] GREEN = AWS_LAMBDA ? EMPTY : new char[] {ESC, PAR, '3', '2', END};
 
+    private static final char[] CYAN = AWS_LAMBDA ? EMPTY : new char[] {ESC, PAR, '3', '6', END};
+
     private static final char[] BOLD_ON = AWS_LAMBDA ? EMPTY : new char[] {ESC, PAR, '1', END};
 
     private static final char[] BOLD_OFF = AWS_LAMBDA ? EMPTY : new char[] {ESC, PAR, '2', '2', END};
@@ -88,6 +90,7 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
                 case ERROR -> RED;
                 case WARN -> YELLOW;
                 case INFO -> GREEN;
+                case DEBUG -> CYAN;
                 default -> EMPTY;
             };
     }
