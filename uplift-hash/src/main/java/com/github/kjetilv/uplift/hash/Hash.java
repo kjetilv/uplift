@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 /// These can be parsed back to hash instances with other [factory methods][Hash#from(String)],
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
-    static Hash<K256> shaOf(Path path) {
+    static Hash<K256> sha(Path path) {
         return hashFile(path, forInputStream(K256));
     }
 
