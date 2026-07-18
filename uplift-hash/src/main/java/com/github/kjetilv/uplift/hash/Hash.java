@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.hash;
 import module java.base;
 import com.github.kjetilv.uplift.util.Bytes;
 
+import static com.github.kjetilv.uplift.hash.HashBuilder.forInputStream;
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
 import static com.github.kjetilv.uplift.hash.StrUtils.*;
@@ -16,10 +17,12 @@ import static java.util.Objects.requireNonNull;
 /// These can be parsed back to hash instances with other [factory methods][Hash#from(String)],
 public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> {
 
-    static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
-        return hashes.stream()
-            .map(Hash::toShortString)
-            .collect(Collectors.joining("—"));
+    static Hash<K256> shaOf(Path path) {
+        return hashFile(path, forInputStream(K256));
+    }
+
+    static Hash<K128> md5(Path path) {
+        return hashFile(path, forInputStream(K128));
     }
 
     @SuppressWarnings("unchecked")
@@ -58,6 +61,12 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         }
         var reportedString = digest.substring(0, Math.min(length, 10)) + (length > 10 ? "..." : "");
         throw new IllegalArgumentException("Hash of length " + length + " not recognized: " + reportedString);
+    }
+
+    static <H extends HashKind<H>> String toShortHashString(List<Hash<H>> hashes) {
+        return hashes.stream()
+            .map(Hash::toShortString)
+            .collect(Collectors.joining("—"));
     }
 
     /// @return Unique string representation
@@ -130,6 +139,14 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     /// @return Longs
     long[] ls();
 
+    private static <H extends HashKind<H>> Hash<H> hashFile(Path path, HashBuilder<InputStream, H> builder) {
+        try (var stream = new BufferedInputStream(Files.newInputStream(path))) {
+            return builder.hash(stream).build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to open " + path, e);
+        }
+    }
+
     private static long[] toLongs(String raw, long[] ls) {
         try {
             var digest = denormalize(raw);
@@ -151,13 +168,13 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         }
 
         @Override
-        public K128 kind() {
-            return K128;
+        public UUID asUuid() {
+            return new UUID(long0, long1);
         }
 
         @Override
-        public UUID asUuid() {
-            return new UUID(long0, long1);
+        public K128 kind() {
+            return K128;
         }
 
         @Override
@@ -174,11 +191,6 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
     record H256(long long0, long long1, long long2, long long3) implements Hash<K256> {
 
         @Override
-        public K256 kind() {
-            return K256;
-        }
-
-        @Override
         public boolean isBlank() {
             return this == K256.blank() || long0 == 0L && long1 == 0L && long2 == 0L && long3 == 0L;
         }
@@ -186,6 +198,11 @@ public sealed interface Hash<H extends HashKind<H>> extends Comparable<Hash<H>> 
         @Override
         public UUID asUuid() {
             throw new IllegalStateException("Not a valid UUID: " + this);
+        }
+
+        @Override
+        public K256 kind() {
+            return K256;
         }
 
         @Override

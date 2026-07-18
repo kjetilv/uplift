@@ -34,11 +34,11 @@ final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
         return doWrite(t, out, WRITE, CREATE_NEW);
     }
 
-    private Path doWrite(T t, Path out, OpenOption... defaultOptions) {
+    private Path doWrite(T t, Path out, OpenOption... defaults) {
         try (
             var channel = Files.newByteChannel(
                 out,
-                resolveOptions(defaultOptions)
+                resolveOptions(defaults)
             )
         ) {
             writer.write(t, channel);
@@ -48,10 +48,8 @@ final class PathWriter<T extends Record> implements JsonWriter<Path, T, Path> {
         return out;
     }
 
-    private OpenOption[] resolveOptions(OpenOption[] openOptions) {
-        return this.openOptions.length == 0
-            ? openOptions
-            : this.openOptions;
+    private OpenOption[] resolveOptions(OpenOption... defaults) {
+        return this.openOptions.length == 0 ? defaults : this.openOptions;
     }
 
     private static Path tmp() {
