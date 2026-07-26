@@ -94,8 +94,4 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
                 default -> EMPTY;
             };
     }
-
-    private static String pad(int i) {
-        return i < 10 ? "0" : "";
-    }
 }

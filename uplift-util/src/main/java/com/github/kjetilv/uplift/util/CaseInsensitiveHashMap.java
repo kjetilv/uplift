@@ -28,8 +28,8 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
     @SuppressWarnings("unchecked")
     public static <T> Map<String, T> wrap(Map<?, T> map) {
         return map == null || map.isEmpty() ? Collections.emptyMap()
-            : map instanceof CaseInsensitiveHashMap<?> ? (CaseInsensitiveHashMap<T>) map
-                : new CaseInsensitiveHashMap<>(map);
+            : map instanceof CaseInsensitiveHashMap<?> ? (Map<String, T>) map
+                : lc(map);
     }
 
     private final Map<String, V> map;
@@ -107,6 +107,19 @@ public final class CaseInsensitiveHashMap<V> implements Map<String, V> {
 
     private static String lc(Object key) {
         return requireNonNull(key, "key").toString().toLowerCase(Locale.ROOT);
+    }
+
+    private static <T> Map<String, T> lc(Map<?, T> map) {
+        return map.entrySet()
+            .stream()
+            .collect(
+                caseInsensitive(
+                    entry -> lc(entry.getKey()),
+                    Entry::getValue,
+                    (o1, o2) -> {
+                        throw new IllegalStateException(o1 + " / " + o2);
+                    }
+                ));
     }
 
     @Override
