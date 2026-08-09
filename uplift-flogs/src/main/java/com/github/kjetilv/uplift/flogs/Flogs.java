@@ -2,13 +2,91 @@ package com.github.kjetilv.uplift.flogs;
 
 import module java.base;
 
+import org.slf4j.LoggerFactory;
+
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
 public final class Flogs {
 
-    static {
-        FjulFormatter.init();
+    public static org.slf4j.Logger initializeAndGet(String logger) {
+        initialize(null, null, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(String logger, LogLevel logLevel) {
+        initialize(logLevel, null, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(String logger, LogLevel logLevel, Consumer<String> printer) {
+        initialize(logLevel, printer, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(String logger, LogFormatter<LogEntry> formatter) {
+        initialize(null, formatter);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(
+        String logger,
+        LogLevel logLevel,
+        LogFormatter<LogEntry> formatter
+    ) {
+        initialize(logLevel, null, null, formatter);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(
+        String logger,
+        LogLevel logLevel,
+        Consumer<String> printer,
+        Supplier<Instant> time,
+        LogFormatter<LogEntry> formatter
+    ) {
+        settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(Class<?> logger) {
+        initialize(null, null, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(Class<?> logger, LogLevel logLevel) {
+        initialize(logLevel, null, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(Class<?> logger, LogLevel logLevel, Consumer<String> printer) {
+        initialize(logLevel, printer, null, null);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(Class<?> logger, LogFormatter<LogEntry> formatter) {
+        initialize(null, formatter);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(
+        Class<?> logger,
+        LogLevel logLevel,
+        LogFormatter<LogEntry> formatter
+    ) {
+        initialize(logLevel, null, null, formatter);
+        return LoggerFactory.getLogger(logger);
+    }
+
+    public static org.slf4j.Logger initializeAndGet(
+        Class<?> logger,
+        LogLevel logLevel,
+        Consumer<String> printer,
+        Supplier<Instant> time,
+        LogFormatter<LogEntry> formatter
+    ) {
+        settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
+        return LoggerFactory.getLogger(logger);
     }
 
     public static void initialize() {
@@ -59,6 +137,10 @@ public final class Flogs {
         var settings = Flogs.settings.orElseSet(Settings::new);
         return new Floggers(settings.printer(), settings);
     });
+
+    static {
+        FjulFormatter.init();
+    }
 
     private static Flogger flogger(String name) {
         return floggers.get().create(name);

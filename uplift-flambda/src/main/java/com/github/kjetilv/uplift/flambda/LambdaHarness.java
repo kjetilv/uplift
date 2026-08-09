@@ -25,12 +25,9 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final Reqs reqs;
 
-    private LambdaHandler handler;
+    private final LambdaHandler handler;
 
-    public LambdaHarness(
-        String name,
-        LambdaHandler lambdaHandler
-    ) {
+    public LambdaHarness(String name, LambdaHandler lambdaHandler) {
         this(
             name,
             lambdaHandler,

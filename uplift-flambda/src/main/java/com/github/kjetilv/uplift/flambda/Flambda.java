@@ -37,10 +37,13 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         this.lambdaServer = Server.create(settings.lambdaPort())
             .run(new HttpCallbackProcessor(new FlambdaHandler(settings, flambdaState)));
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Shutting down {}", this);
-            close();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(
+            () -> {
+                log.info("Shutting down {}", this);
+                close();
+            },
+            Flambda.class.getSimpleName() + " shutdown"
+        ));
         log.info("{} started", this);
     }
 
@@ -92,7 +95,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     private StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
         return StructuredTaskScope.open(
-        allSuccessfulOrThrow(), configuration -> configuration
+            allSuccessfulOrThrow(), configuration -> configuration
                 .withThreadFactory(Thread.ofVirtual().factory())
                 .withName(name)
                 .withTimeout(Duration.ofMinutes(1))
