@@ -62,6 +62,6 @@ final class Sync<K, V> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() +"[" + map.size() + "]";
+        return "<" + map.size() + ">";
     }
 }

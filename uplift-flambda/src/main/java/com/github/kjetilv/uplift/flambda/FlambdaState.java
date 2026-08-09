@@ -60,8 +60,8 @@ class FlambdaState {
     public String toString() {
         return getClass().getSimpleName() + "[" +
                "[" + reqQueue.size() + "]" +
-               " req:" + syncRequests +
-               " res:" + syncResponses +
+               " " + syncRequests +
+               " -> " + syncResponses +
                "]";
     }
 }
