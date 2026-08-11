@@ -26,7 +26,7 @@ public final class Segments {
 
         this.memorySegment = Objects.requireNonNull(arena, "arena")
             .allocate(this.basePoolSize);
-        this.allocations = new boolean[(int) (this.basePoolSize / this.baseSize)];
+        this.allocations = new boolean[Math.toIntExact(this.basePoolSize / this.baseSize)];
     }
 
     public Pooled acquire() {
@@ -49,7 +49,7 @@ public final class Segments {
         }
     }
 
-    /// 2KiB min
+    /// 4KiB min
     private static final int DEFAULT_BASE_SIZE = 1 << 12;
 
     /// 16MiB

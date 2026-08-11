@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.synchttp.HttpMethod;
 import com.github.kjetilv.uplift.synchttp.Utils;
 
+import static com.github.kjetilv.uplift.synchttp.HttpMethod.*;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 public record ReqLine(
@@ -12,7 +13,6 @@ public record ReqLine(
     int urlLength,
     int versionIndex,
     int lineBreak,
-    Supplier<HttpMethod> methodSupplier,
     QueryParameters queryParameters
 ) {
 
@@ -27,7 +27,6 @@ public record ReqLine(
             urlIndex,
             versionIndex,
             lineBreak,
-            null,
             null
         );
     }
@@ -37,7 +36,6 @@ public record ReqLine(
         int urlIndex,
         int versionIndex,
         int lineBreak,
-        Supplier<HttpMethod> methodSupplier,
         QueryParameters queryParameters
     ) {
         this(
@@ -46,27 +44,8 @@ public record ReqLine(
             versionIndex - urlIndex - 1,
             versionIndex,
             lineBreak,
-            methodSupplier,
             queryParameters
         );
-    }
-
-    public ReqLine(
-        MemorySegment segment,
-        int urlIndex,
-        int urlLength,
-        int versionIndex,
-        int lineBreak,
-        Supplier<HttpMethod> methodSupplier,
-        QueryParameters queryParameters
-    ) {
-        this.segment = segment;
-        this.urlIndex = urlIndex;
-        this.urlLength = urlLength;
-        this.versionIndex = versionIndex;
-        this.lineBreak = lineBreak;
-        this.methodSupplier = methodSupplier == null ? this::parseMethod : methodSupplier;
-        this.queryParameters = queryParameters;
     }
 
     public String method() {
@@ -97,7 +76,6 @@ public record ReqLine(
                 urlLength,
                 versionIndex,
                 lineBreak,
-                methodSupplier,
                 queryParameters
             );
         }
@@ -108,26 +86,21 @@ public record ReqLine(
             urlLength,
             versionIndex,
             lineBreak,
-            methodSupplier,
             queryParameters
         );
     }
 
     public HttpMethod getMethod() {
-        return methodSupplier.get();
-    }
-
-    private HttpMethod parseMethod() {
         return switch (charAt(0)) {
-            case 'G' -> check(3, HttpMethod.GET);
+            case 'G' -> check(3, GET);
             case 'P' -> switch (charAt(1)) {
-                case 'O' -> check(4, HttpMethod.POST);
-                case 'U' -> check(3, HttpMethod.PUT);
+                case 'O' -> check(4, POST);
+                case 'U' -> check(3, PUT);
                 default -> throw new IllegalStateException("Not a valid method: " + this);
             };
-            case 'H' -> check(4, HttpMethod.HEAD);
-            case 'O' -> check(7, HttpMethod.OPTIONS);
-            case 'D' -> check(6, HttpMethod.DELETE);
+            case 'H' -> check(4, HEAD);
+            case 'O' -> check(7, OPTIONS);
+            case 'D' -> check(6, DELETE);
             default -> throw new IllegalStateException("Not a valid method: " + this);
         };
     }

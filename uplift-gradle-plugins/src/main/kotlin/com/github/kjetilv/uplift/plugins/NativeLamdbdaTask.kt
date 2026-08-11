@@ -21,7 +21,9 @@ import javax.inject.Inject
 import kotlin.io.path.toPath
 
 @CacheableTask
-abstract class NativeLamdbdaTask @Inject constructor(private var execOperations: ExecOperations) : DefaultTask() {
+abstract class NativeLamdbdaTask @Inject constructor(
+    private var execOperations: ExecOperations
+) : DefaultTask() {
 
     init {
         group = "uplift"

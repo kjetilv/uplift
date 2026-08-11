@@ -19,11 +19,6 @@ internal fun Project.buildSubDirectory(dir: String): Path =
     layout.buildDirectory.dir(dir).get().asFile.toPath()
         .also(Files::createDirectories)
 
-internal inline fun <reified T : Task> Project.register(name: String, crossinline reg: T.() -> Unit) =
-    this.also {
-        tasks.register(name, T::class.java) { it.reg() }
-    }
-
 internal val Project.classpath: List<File>
     get() =
         configurations

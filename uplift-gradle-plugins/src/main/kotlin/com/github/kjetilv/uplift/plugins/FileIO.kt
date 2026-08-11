@@ -2,7 +2,8 @@ package com.github.kjetilv.uplift.plugins
 
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
+import java.nio.file.StandardCopyOption.COPY_ATTRIBUTES
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.time.Instant
 import kotlin.io.path.isDirectory
 
@@ -19,11 +20,7 @@ internal fun copyTo(sourcePath: Path, context: Path, target: String? = null) =
     context.resolve(target?.let { Path.of(it) } ?: sourcePath.fileName)
         .also { targetPath ->
             if (shouldCopy(sourcePath, targetPath)) {
-                Files.copy(
-                    sourcePath, targetPath,
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.COPY_ATTRIBUTES
-                )
+                Files.copy(sourcePath, targetPath, REPLACE_EXISTING, COPY_ATTRIBUTES)
             }
         }
 
