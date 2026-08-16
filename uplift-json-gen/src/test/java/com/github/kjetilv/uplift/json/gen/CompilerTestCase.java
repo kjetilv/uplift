@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.gen;
 
 import module java.base;
+import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -35,10 +36,10 @@ public class CompilerTestCase {
         this.testInfo = testInfo;
     }
 
-    protected void ver(String java, String json) {
+    protected void ver(String java, String... jsons) {
         for (String source : List.of(
-            java,
-            addPackage(java)
+            withImports(java),
+            addPackage(withImports(java))
         )) {
             session = compilerSession(source);
             assertThat(session.compilationFailed())
@@ -48,14 +49,15 @@ public class CompilerTestCase {
                     session.compileError()
                 )
                 .isFalse();
-            var object = session.readAndVerify(json);
-            assertThat(object).isNotNull();
+            for (String json : jsons) {
+                var object = session.readAndVerify(json);
+                assertThat(object).isNotNull();
+            }
         }
     }
 
     private Session compilerSession(String java) {
-        var source = PATTERN.matcher(java)
-            .replaceAll(MessageFormat.format(".{0};\n", testName()));
+        var source = java.replace("TESTNAME", testName());
         return Session.create(source, tempDirectory);
     }
 
@@ -191,11 +193,22 @@ public class CompilerTestCase {
         }
     }
 
-    private static final Pattern PATTERN = Pattern.compile(".TESTNAME;\n");
-
     private static final Pattern PARS = Pattern.compile("\\(\\)");
 
     private static final Comparator<Path> LONGEST_FIRST = Comparator.comparing(Path::getNameCount).reversed();
+
+    @SuppressWarnings({"EmptyClass"})
+    private static String withImports(String java) {
+        //language=java
+        return """
+                   import module java.base;
+                   import module java.net.http;
+                   
+                   """ + "@" + JsonRecord.class.getName() +
+               """
+                   
+                   """ + java;
+    }
 
     @SuppressWarnings("EmptyClass")
     private static String addPackage(String java) {

@@ -10,9 +10,6 @@ class CompilerTest extends CompilerTestCase {
     void stringFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(String s) {
                 }
                 """,
@@ -20,6 +17,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "s": "foo"
+                }
+                """,
+            //language=json
+            """
+                {
+                  "s": ""
+                }
+                """,
+            //language=json
+            """
+                {
+                  "s": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -29,10 +43,6 @@ class CompilerTest extends CompilerTestCase {
     void stringListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<String> ss) {
                 }
                 """,
@@ -40,6 +50,29 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ss": ["foo", "bar"]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ss": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ss": [""]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ss": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -49,9 +82,6 @@ class CompilerTest extends CompilerTestCase {
     void longPrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(long l) {
                 }
                 """,
@@ -59,6 +89,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "l": 1000
+                }
+                """,
+            //language=json
+            """
+                {
+                  "l": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -68,9 +109,6 @@ class CompilerTest extends CompilerTestCase {
     void longFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Long l) {
                 }
                 """,
@@ -87,10 +125,6 @@ class CompilerTest extends CompilerTestCase {
     void longListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Long> ls) {
                 }
                 """,
@@ -98,6 +132,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [1001, 1002, 1003]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -107,9 +158,6 @@ class CompilerTest extends CompilerTestCase {
     void intFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Integer i) {
                 }
                 """,
@@ -126,9 +174,6 @@ class CompilerTest extends CompilerTestCase {
     void intPrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(int i) {
                 }
                 """,
@@ -136,6 +181,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "i": 576
+                }
+                """,
+            //language=json
+            """
+                {
+                  "i": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -145,10 +201,6 @@ class CompilerTest extends CompilerTestCase {
     void intListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Integer> ls) {
                 }
                 """,
@@ -156,6 +208,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [1001, 1002, 1003]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -165,9 +234,6 @@ class CompilerTest extends CompilerTestCase {
     void shortFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Short s) {
                 }
                 """,
@@ -175,6 +241,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "s": 42
+                }
+                """,
+            //language=json
+            """
+                {
+                  "s": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -184,10 +261,6 @@ class CompilerTest extends CompilerTestCase {
     void shortListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Short> ls) {
                 }
                 """,
@@ -195,6 +268,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [1, 2, 3]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -204,9 +294,6 @@ class CompilerTest extends CompilerTestCase {
     void shortPrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(short s) {
                 }
                 """,
@@ -214,6 +301,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "s": 42
+                }
+                """,
+            //language=json
+            """
+                {
+                  "s": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -223,9 +321,6 @@ class CompilerTest extends CompilerTestCase {
     void byteFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Byte b) {
                 }
                 """,
@@ -233,6 +328,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "b": 32
+                }
+                """,
+            //language=json
+            """
+                {
+                  "b": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -242,10 +348,6 @@ class CompilerTest extends CompilerTestCase {
     void byteListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Byte> ls) {
                 }
                 """,
@@ -253,6 +355,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [125, 126, 127]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -262,9 +381,6 @@ class CompilerTest extends CompilerTestCase {
     void bytePrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(byte b) {
                 }
                 """,
@@ -272,6 +388,11 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "b": 32
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -281,9 +402,6 @@ class CompilerTest extends CompilerTestCase {
     void floatFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Float f) {
                 }
                 """,
@@ -291,6 +409,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "f": 3.14
+                }
+                """,
+            //language=json
+            """
+                {
+                  "f": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -300,10 +429,6 @@ class CompilerTest extends CompilerTestCase {
     void floatListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Float> ls) {
                 }
                 """,
@@ -311,6 +436,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [1.1, 1.2, 1.3]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -320,9 +462,6 @@ class CompilerTest extends CompilerTestCase {
     void floatPrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(float f) {
                 }
                 """,
@@ -330,6 +469,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "f": 3.14
+                }
+                """,
+            //language=json
+            """
+                {
+                  "f": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -339,9 +489,6 @@ class CompilerTest extends CompilerTestCase {
     void doubleFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Double d) {
                 }
                 """,
@@ -349,6 +496,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "d": 3.14
+                }
+                """,
+            //language=json
+            """
+                {
+                  "d": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -358,10 +516,6 @@ class CompilerTest extends CompilerTestCase {
     void doubleListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Double> ls) {
                 }
                 """,
@@ -369,6 +523,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [100.1, 100.2, 100.3]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -378,9 +549,6 @@ class CompilerTest extends CompilerTestCase {
     void doublePrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(double d) {
                 }
                 """,
@@ -388,6 +556,11 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "d": 3.14
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -397,10 +570,6 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(BigDecimal bd) {
                 }
                 """,
@@ -408,6 +577,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "bd": 3.14
+                }
+                """,
+            //language=json
+            """
+                {
+                  "bd": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -417,10 +597,6 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<BigDecimal> ls) {
                 }
                 """,
@@ -428,6 +604,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [100.1, 100.2, 100.3]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -437,10 +630,6 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(BigInteger bi) {
                 }
                 """,
@@ -448,6 +637,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "bi": 32
+                }
+                """,
+            //language=json
+            """
+                {
+                  "bi": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -457,10 +657,6 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<BigInteger> ls) {
                 }
                 """,
@@ -468,6 +664,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [1001, 1002, 1003]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -477,10 +690,6 @@ class CompilerTest extends CompilerTestCase {
     void uuidFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(UUID id) {
                 }
                 """,
@@ -489,7 +698,12 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "id": "%s"
                 }
-                """.formatted(UUID.randomUUID())
+                """.formatted(UUID.randomUUID()),
+            //language=json
+            """
+                {
+                }
+                """
         );
     }
 
@@ -497,10 +711,6 @@ class CompilerTest extends CompilerTestCase {
     void uuidListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<UUID> ls) {
                 }
                 """,
@@ -509,7 +719,18 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "ls": ["%s", "%s"]
                 }
-                """.formatted(UUID.randomUUID(), UUID.randomUUID())
+                """.formatted(UUID.randomUUID(), UUID.randomUUID()),
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                }
+                """
         );
     }
 
@@ -517,11 +738,6 @@ class CompilerTest extends CompilerTestCase {
     void enumFields() {
         ver(//language=java
             """
-                import module java.base;
-                import module java.net.http;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(HttpClient.Version version) {
                 }
                 """,
@@ -530,18 +746,19 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "version": "HTTP_1_1"
                 }
-                """);
+                """,
+            //language=json
+            """
+                {
+                }
+                """
+        );
     }
 
     @Test
     void enumListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import module java.net.http;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record ListField(List<HttpClient.Version> version) {
                 }
                 """,
@@ -550,17 +767,31 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "version": ["HTTP_1_1", "HTTP_2"]
                 }
-                """);
+                """,
+            //language=json
+            """
+                {
+                  "version": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "version": null
+                }
+                """,
+            //language=json
+            """
+                {
+                }
+                """
+        );
     }
 
     @Test
     void durationFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Duration dura) {
                 }
                 """,
@@ -569,17 +800,31 @@ class CompilerTest extends CompilerTestCase {
                 {
                   "dura": "PT50S"
                 }
-                """);
+                """,
+            //language=json
+            """
+                {
+                  "dura": "PT0S"
+                }
+                """,
+            //language=json
+            """
+                {
+                  "dura": null
+                }
+                """,
+            //language=json
+            """
+                {
+                }
+                """
+        );
     }
 
     @Test
     void durationListFields() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Duration> ds) {
                 }
                 """,
@@ -587,6 +832,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ds": ["PT42S", "PT54S"]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ds": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ds": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -596,9 +858,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(Boolean b) {
                 }
                 """,
@@ -606,6 +865,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "b": true
+                }
+                """,
+            //language=json
+            """
+                {
+                  "b": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -615,9 +885,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanPrimitiveFields() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(boolean b) {
                 }
                 """,
@@ -625,6 +892,17 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "b": true
+                }
+                """,
+            //language=json
+            """
+                {
+                  "b": false
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -634,11 +912,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanListFields() {
         ver(//language=java
             """
-                import module java.base;
-
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record SingleField(List<Boolean> ls) {
                 }
                 """,
@@ -646,6 +919,23 @@ class CompilerTest extends CompilerTestCase {
             """
                 {
                   "ls": [false, false, true]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "ls": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );
@@ -655,9 +945,6 @@ class CompilerTest extends CompilerTestCase {
     void simpleCase() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record Foo(
                     Boolean foo,
                     String zot,
@@ -686,10 +973,6 @@ class CompilerTest extends CompilerTestCase {
     void maps() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record FooMap(Map<String, ?> map) {
                 }
                 """,
@@ -700,26 +983,18 @@ class CompilerTest extends CompilerTestCase {
                       "foo": "bar"
                     }
                 }
-                """
-        );
-    }
-
-    @Test
-    void emptyMaps() {
-        ver(//language=java
-            """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
-                public record FooMap(Map<String, ?> map) {
-                }
                 """,
             //language=json
             """
                 {
                     "map": {
                     }
+                }
+                """,
+            //language=json
+            """
+                {
+                    "map": null
                 }
                 """
         );
@@ -729,9 +1004,6 @@ class CompilerTest extends CompilerTestCase {
     void nestedType() {
         ver(//language=java
             """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record Eagle(Nest nest) {
                     record Nest(String foo) {}
                 }
@@ -743,19 +1015,6 @@ class CompilerTest extends CompilerTestCase {
                     "foo": "bar"
                   }
                 }
-                """);
-    }
-
-    @Test
-    void nestedTypeEmpty() {
-        ver(//language=java
-            """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
-                public record Eagle(Nest nest) {
-                    record Nest(String foo) {}
-                }
                 """,
             //language=json
             """
@@ -763,32 +1022,19 @@ class CompilerTest extends CompilerTestCase {
                   "nest": {
                   }
                 }
-                """);
-    }
-
-    @Test
-    void nestedTypeNull() {
-        ver(//language=java
-            """
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
-                public record Eagle(Nest nest) {
-                    record Nest(String foo) {}
-                }
                 """,
             //language=json
-            "{}");
+            """
+                {
+                }
+                """
+        );
     }
 
     @Test
     void nestedTypeList() {
         ver(//language=java
             """
-                import module java.base;
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record Eagle(List<Nest> nests) {
                     record Nest(String foo) {}
                 }
@@ -812,11 +1058,6 @@ class CompilerTest extends CompilerTestCase {
     void compelexNestedTypeList() {
         ver(//language=java
             """
-                import module java.base;
-                
-                import com.github.kjetilv.uplift.json.anno.JsonRecord;
-                
-                @JsonRecord
                 public record Eagle(List<Nest> nests) {
                     record Nest(String foo, List<Integer> nums) {}
                 }
@@ -832,6 +1073,20 @@ class CompilerTest extends CompilerTestCase {
                     {
                        "foo": "zot",
                        "nums": [42, 54]
+                    }
+                  ]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nests": [
+                    {
+                       "nums":[1,2]
+                    },
+                    {
+                       "foo": "zot",
+                       "nums": []
                     }
                   ]
                 }

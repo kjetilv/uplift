@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
+import module java.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
