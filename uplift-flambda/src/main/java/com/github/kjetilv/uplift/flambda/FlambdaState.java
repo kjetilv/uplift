@@ -58,10 +58,12 @@ class FlambdaState {
 
     @Override
     public String toString() {
+        var reqs = syncRequests.size() + syncResponses.size() > 0
+            ? syncRequests + " -> " + syncResponses
+            : "<no requests yet>";
         return getClass().getSimpleName() + "[" +
-               "[" + reqQueue.size() + "]" +
-               " " + syncRequests +
-               " -> " + syncResponses +
+               (reqQueue.isEmpty() ? "<queue empty>" : "[" + reqQueue + "]") + " " +
+               reqs +
                "]";
     }
 }

@@ -17,7 +17,8 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
             entry.args(),
             entry.lastArgThrowable() ? 1 : 0
         );
-        var dateFormatted = dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+        var dateFormatted =
+            dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
         sb.append(dateFormatted);
         sb.append(SPACES, 0, ISO_LENGTH - dateFormatted.length());
         var level = entry.logLevel();
@@ -35,9 +36,8 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
         if (entry.threadName() != null) {
             sb.append(" ")
                 .append(ITAL_ON)
-                .append("[")
+                .append("חי ")
                 .append(entry.threadName())
-                .append(']')
                 .append(ITAL_OFF);
         }
         return sb.toString();

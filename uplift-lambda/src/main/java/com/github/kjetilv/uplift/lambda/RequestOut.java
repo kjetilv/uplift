@@ -50,8 +50,7 @@ public record RequestOut(
         return getClass().getSimpleName() + "[" + httpMethod + " " + path +
                " q:" + Utils.printQueryParams(queryStringParameters) +
                " h:" + Utils.headers(headers) +
-               " b:" + Utils.printBody(body) +
-               (isBase64Encoded ? " base64" : "") +
+               " b:" + Utils.printBody(body, isBase64Encoded ? "base64" : null) +
                "]";
     }
 }

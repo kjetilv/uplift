@@ -9,4 +9,9 @@ record LambdaRes(
     Hash<K128> id,
     ResponseIn in
 ) {
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + id + " -> " + in + "]";
+    }
 }

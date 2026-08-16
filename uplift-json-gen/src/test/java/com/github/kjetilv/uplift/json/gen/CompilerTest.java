@@ -1026,6 +1026,12 @@ class CompilerTest extends CompilerTestCase {
             //language=json
             """
                 {
+                  "nest": null
+                }
+                """,
+            //language=json
+            """
+                {
                 }
                 """
         );

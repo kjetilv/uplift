@@ -28,13 +28,18 @@ final class Utils {
     }
 
     static String printBody(String body) {
+        return printBody(body, null);
+    }
+
+    static String printBody(String body, String contents) {
         if (body == null || body.isBlank()) {
             return "[]";
         }
         if (body.length() < MAX_PRINT) {
             return body;
         }
-        return body.substring(0, CUTOFF_PRINT) + ".. (" + body.length() + " chars)";
+        return body.substring(0, CUTOFF_PRINT) + "⋯ (" + body.length() + " " +
+               (contents == null ? "chars" : contents) + ")";
     }
 
     static String encodeResponseBody(byte[] body, boolean binary) {
@@ -43,7 +48,7 @@ final class Utils {
 
     static String headers(Map<?, ?> headers) {
         return headers == null ? "{}"
-            : headers.size() > 5 ? "{" + headers.size() + " headers}"
+            : headers.size() > 3 ? "{" + headers.size() + " headers}"
                 : headers.toString();
     }
 
@@ -54,7 +59,7 @@ final class Utils {
 
     private static final int MAX_PRINT = 50;
 
-    private static final int CUTOFF_PRINT = 40;
+    private static final int CUTOFF_PRINT = 25;
 
     private static String toPlainString(byte[] body) {
         return new String(body, UTF_8);

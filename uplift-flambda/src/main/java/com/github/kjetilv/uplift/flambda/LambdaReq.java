@@ -18,4 +18,9 @@ public record LambdaReq(
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(out, "out");
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + id + " -> " + out + "]";
+    }
 }

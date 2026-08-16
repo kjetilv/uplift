@@ -314,7 +314,7 @@ final class DefaultS3Accessor implements S3Accessor {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" +
-               Print.semiSecret(accessKey) + "/*** -> " + bucket + "@" + region +
+               Print.semiSecret(accessKey) + " -> " + bucket + "@" + region +
                "]";
     }
 }

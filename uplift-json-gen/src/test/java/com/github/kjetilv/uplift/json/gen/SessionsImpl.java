@@ -22,9 +22,10 @@ final class SessionsImpl {
         var compiler = ToolProvider.getSystemJavaCompiler();
         var fm = compiler.getStandardFileManager(null, Locale.ROOT, UTF_8);
 
-        var srcDir = createTemp(tempDirectory, "src");
-        var classOut = createTemp(tempDirectory, "classes");
-        var srcOut = createTemp(tempDirectory, "gen-src");
+        var tmp = tempDirectory == null ? tmp() : tempDirectory;
+        var srcDir = createTemp(tmp, "src");
+        var classOut = createTemp(tmp, "classes");
+        var srcOut = createTemp(tmp, "gen-src");
 
         var src = source.trim();
         var fqName = derive(src);
@@ -98,6 +99,14 @@ final class SessionsImpl {
     }
 
     private static final Pattern PACKAGE = Pattern.compile("^package ([\\p{Alnum}.]+)\\s*;\\s*");
+
+    private static Path tmp() {
+        try {
+            return Files.createTempDirectory(UUID.randomUUID().toString());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create temp dir", e);
+        }
+    }
 
     private static Path createTemp(Path tempDirectory, String subDir) {
         var resolved = tempDirectory.resolve(subDir);

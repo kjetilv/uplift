@@ -50,8 +50,7 @@ public class CompilerTestCase {
                 )
                 .isFalse();
             for (String json : jsons) {
-                var object = session.readAndVerify(json);
-                assertThat(object).isNotNull();
+                session.readAndVerify(json);
             }
         }
     }

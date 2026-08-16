@@ -11,10 +11,10 @@ public final class Print {
             return "*";
         }
         if (length < 5) {
-            return semi.charAt(0) + "***".substring(0, length - 1);
+            return semi.charAt(0) + STAR;
         }
         var printable = Math.min(5, length / 4);
-        return semi.substring(0, printable) + "***" + semi.substring(length - printable);
+        return semi.substring(0, printable) + STARR + semi.substring(length - printable);
     }
 
     @SuppressWarnings("MagicNumber")
@@ -43,4 +43,8 @@ public final class Print {
     private static final int K = 1_024;
 
     private static final int M = K * K;
+
+    private static final String STAR = "⁎";
+
+    public static final String STARR = STAR + STAR;
 }
