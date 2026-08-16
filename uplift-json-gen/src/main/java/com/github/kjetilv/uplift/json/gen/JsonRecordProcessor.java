@@ -34,18 +34,17 @@ public final class JsonRecordProcessor extends AbstractProcessor {
             return false;
         }
         var types = jsonRecords(roundEnv);
-        if (!types.isEmpty()) {
-            if (rootless(types)) {
-                throw new IllegalStateException("None of " + types.size() + " elements are roots: " + print(types));
-            }
-            write(types);
+        if (types.isEmpty()) {
+            return true;
         }
+        if (rootless(types)) {
+            throw new IllegalStateException("None of " + types.size() + " elements are roots: " + print(types));
+        }
+        write(types);
         return true;
     }
 
-    private void write(
-        Collection<? extends DeclaredType> jsonRecords
-    ) {
+    private void write(Collection<? extends DeclaredType> jsonRecords) {
         var time = time();
         for (var jsonRecord : jsonRecords) {
             if (jsonRecord.asElement() instanceof TypeElement te) {

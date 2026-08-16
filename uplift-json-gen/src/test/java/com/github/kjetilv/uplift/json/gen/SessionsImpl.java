@@ -2,13 +2,11 @@ package com.github.kjetilv.uplift.json.gen;
 
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.JsonWriter;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
 import javax.tools.Diagnostic;
 import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -17,12 +15,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -86,7 +86,6 @@ final class SessionsImpl {
             if (!compilerOut.toString(UTF_8).isEmpty()) {
                 log.warn("Compilation produced output: {}", compilerOut.toString(UTF_8));
             }
-
             copySources(srcDir, srcOut);
             return new SessionImpl(
                 fqName,
@@ -108,7 +107,12 @@ final class SessionsImpl {
         }
     }
 
-    private static  Path createTemp(Path tempDirectory, String subDir) {
+    private SessionsImpl() {
+    }
+
+    private static final Pattern PACKAGE = Pattern.compile("^package ([\\p{Alnum}.]+)\\s*;\\s*");
+
+    private static Path createTemp(Path tempDirectory, String subDir) {
         var resolved = tempDirectory.resolve(subDir);
         try {
             return Files.createDirectories(resolved);
@@ -117,11 +121,6 @@ final class SessionsImpl {
         }
     }
 
-    private SessionsImpl() {
-    }
-
-    private static final Pattern PACKAGE = Pattern.compile("^package ([\\p{Alnum}.]+)\\s*;\\s*");
-
     private static void copySources(Path srcDir, Path srcOut) {
         try (var sourceWalk = Files.walk(srcDir)) {
             sourceWalk
@@ -129,9 +128,12 @@ final class SessionsImpl {
                 .forEach(sourcePath -> {
                         var target = srcOut.resolve(srcDir.relativize(sourcePath));
                         try {
-                            Files.copy(sourcePath, target);
+                            Files.copy(sourcePath, target, REPLACE_EXISTING);
                         } catch (Exception e) {
-                            throw new IllegalStateException("Could not copy " + sourcePath, e);
+                            throw new IllegalStateException(
+                                "Could not copy " + sourcePath + " to " + target,
+                                e
+                            );
                         }
                     }
                 );
@@ -216,6 +218,19 @@ final class SessionsImpl {
         }
 
         @Override
+        public Optional<Path> packageDir() {
+            return Arrays.stream(source.split("\n")).flatMap(line ->
+                    Stream.of(PACKAGE.matcher(line))
+                        .filter(Matcher::matches)
+                        .map(matcher ->
+                            matcher.group(1))
+                        .map(packidge ->
+                            packidge.replace('.', '/'))
+                        .map(Path::of))
+                .findFirst();
+        }
+
+        @Override
         public List<Path> generatedFiles() {
             try (var list = Files.walk(generatedDir)) {
                 return list
@@ -231,19 +246,6 @@ final class SessionsImpl {
         @Override
         public Path generatedFile(Path path) {
             return generatedDir.relativize(path);
-        }
-
-        @Override
-        public Optional<Path> packageDir() {
-            return Arrays.stream(source.split("\n")).flatMap(line ->
-                    Stream.of(PACKAGE.matcher(line))
-                        .filter(Matcher::matches)
-                        .map(matcher ->
-                            matcher.group(1))
-                        .map(packidge ->
-                            packidge.replace('.', '/'))
-                        .map(Path::of))
-                .findFirst();
         }
 
         private Class<?> type() {

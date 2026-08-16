@@ -36,16 +36,21 @@ public class CompilerTestCase {
     }
 
     protected void ver(String java, String json) {
-        session = compilerSession(java);
-        assertThat(session)
-            .describedAs("Could not initialize session")
-            .isNotNull();
-        assertThat(session.compilationFailed())
-            .describedAs("Compilation failed:\n%s", session == null ? "N/A" : session.compileError())
-            .isFalse();
-        var object = Objects.requireNonNull(session, "session")
-            .readAndVerify(json);
-        assertThat(object).isNotNull();
+        for (String source : List.of(
+            java,
+            addPackage(java)
+        )) {
+            session = compilerSession(source);
+            assertThat(session.compilationFailed())
+                .describedAs(
+                    "%sackaged version: Compilation failed:\n%s",
+                    source.startsWith("package") ? "P" : "Unp",
+                    session.compileError()
+                )
+                .isFalse();
+            var object = session.readAndVerify(json);
+            assertThat(object).isNotNull();
+        }
     }
 
     private Session compilerSession(String java) {
@@ -191,6 +196,15 @@ public class CompilerTestCase {
     private static final Pattern PARS = Pattern.compile("\\(\\)");
 
     private static final Comparator<Path> LONGEST_FIRST = Comparator.comparing(Path::getNameCount).reversed();
+
+    @SuppressWarnings("EmptyClass")
+    private static String addPackage(String java) {
+        //language=java
+        return """
+                   package junker.barabas.TESTNAME;
+                   
+                   """ + java;
+    }
 
     private static boolean isEmpty(Path dir) {
         try (var list = Files.list(dir)) {

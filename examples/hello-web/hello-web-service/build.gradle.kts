@@ -1,4 +1,3 @@
-import com.github.kjetilv.uplift.plugins.NativeLambdaPlugin
 import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
 
 plugins {
@@ -33,8 +32,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
 }
-
-apply<NativeLambdaPlugin>()
 
 tasks.test {
     useJUnitPlatform()

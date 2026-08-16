@@ -1,5 +1,4 @@
 import com.github.kjetilv.uplift.plugins.UpliftPingTask
-import com.github.kjetilv.uplift.plugins.UpliftPlugin
 import com.github.kjetilv.uplift.plugins.UpliftTask
 
 plugins {
@@ -24,8 +23,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
 }
-
-apply<UpliftPlugin>()
 
 tasks.withType<UpliftTask> {
     admonish() // TODO Remove this when you have your properties in order

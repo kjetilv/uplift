@@ -10,8 +10,6 @@ class CompilerTest extends CompilerTestCase {
     void stringFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -31,8 +29,6 @@ class CompilerTest extends CompilerTestCase {
     void stringListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -53,8 +49,6 @@ class CompilerTest extends CompilerTestCase {
     void longPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -74,8 +68,6 @@ class CompilerTest extends CompilerTestCase {
     void longFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -95,8 +87,6 @@ class CompilerTest extends CompilerTestCase {
     void longListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -117,8 +107,6 @@ class CompilerTest extends CompilerTestCase {
     void intFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -138,8 +126,6 @@ class CompilerTest extends CompilerTestCase {
     void intPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -159,8 +145,6 @@ class CompilerTest extends CompilerTestCase {
     void intListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -181,8 +165,6 @@ class CompilerTest extends CompilerTestCase {
     void shortFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -202,8 +184,6 @@ class CompilerTest extends CompilerTestCase {
     void shortListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -224,8 +204,6 @@ class CompilerTest extends CompilerTestCase {
     void shortPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -245,8 +223,6 @@ class CompilerTest extends CompilerTestCase {
     void byteFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -266,8 +242,6 @@ class CompilerTest extends CompilerTestCase {
     void byteListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -288,8 +262,6 @@ class CompilerTest extends CompilerTestCase {
     void bytePrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -309,8 +281,6 @@ class CompilerTest extends CompilerTestCase {
     void floatFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -330,8 +300,6 @@ class CompilerTest extends CompilerTestCase {
     void floatListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -352,8 +320,6 @@ class CompilerTest extends CompilerTestCase {
     void floatPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -373,8 +339,6 @@ class CompilerTest extends CompilerTestCase {
     void doubleFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -394,8 +358,6 @@ class CompilerTest extends CompilerTestCase {
     void doubleListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -416,8 +378,6 @@ class CompilerTest extends CompilerTestCase {
     void doublePrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -437,8 +397,6 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -459,8 +417,6 @@ class CompilerTest extends CompilerTestCase {
     void bigDecimalListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -481,8 +437,6 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -503,8 +457,6 @@ class CompilerTest extends CompilerTestCase {
     void bigIntegerListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -525,8 +477,6 @@ class CompilerTest extends CompilerTestCase {
     void uuidFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -547,8 +497,6 @@ class CompilerTest extends CompilerTestCase {
     void uuidListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -569,8 +517,6 @@ class CompilerTest extends CompilerTestCase {
     void enumFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import module java.net.http;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
@@ -591,8 +537,6 @@ class CompilerTest extends CompilerTestCase {
     void enumListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import module java.net.http;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
@@ -613,8 +557,6 @@ class CompilerTest extends CompilerTestCase {
     void durationFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -634,8 +576,6 @@ class CompilerTest extends CompilerTestCase {
     void durationListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -656,8 +596,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -677,8 +615,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanPrimitiveFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -698,7 +634,6 @@ class CompilerTest extends CompilerTestCase {
     void booleanListFields() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
                 import module java.base;
 
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
@@ -720,8 +655,6 @@ class CompilerTest extends CompilerTestCase {
     void simpleCase() {
         ver(//language=java
             """
-                package junker.barabas.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -753,8 +686,6 @@ class CompilerTest extends CompilerTestCase {
     void maps() {
         ver(//language=java
             """
-                package prince.little.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -777,8 +708,6 @@ class CompilerTest extends CompilerTestCase {
     void emptyMaps() {
         ver(//language=java
             """
-                package prince.little.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -800,8 +729,6 @@ class CompilerTest extends CompilerTestCase {
     void nestedType() {
         ver(//language=java
             """
-                package nest.eagles.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -823,8 +750,6 @@ class CompilerTest extends CompilerTestCase {
     void nestedTypeEmpty() {
         ver(//language=java
             """
-                package nest.eagles.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -845,8 +770,6 @@ class CompilerTest extends CompilerTestCase {
     void nestedTypeNull() {
         ver(//language=java
             """
-                package nest.eagles.TESTNAME;
-                
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
                 @JsonRecord
@@ -862,8 +785,6 @@ class CompilerTest extends CompilerTestCase {
     void nestedTypeList() {
         ver(//language=java
             """
-                package nest.eagles.TESTNAME;
-                
                 import module java.base;
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;
                 
@@ -891,8 +812,6 @@ class CompilerTest extends CompilerTestCase {
     void compelexNestedTypeList() {
         ver(//language=java
             """
-                package nest.eagles.TESTNAME;
-                
                 import module java.base;
                 
                 import com.github.kjetilv.uplift.json.anno.JsonRecord;

@@ -13,20 +13,20 @@ final class PathReader<T extends Record> implements JsonReader<Path, T> {
 
     @Override
     public T read(Path source) {
-        long size = 0;
+        long size;
         try {
             size = Files.size(source);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to find size of " + source, e);
         }
-        if (size > 2) { // Need at least {}
-            try (var channel = Files.newByteChannel(source)) {
-                return reader.apply(size).read(channel);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to read from " + source + " (" + size + " bytes)", e);
-            }
+        if (size < 2) { // Need at least `{}` for an object
+            throw new IllegalArgumentException("Empty or short file (" + size + " bytes): " + source);
         }
-        throw new IllegalArgumentException("Empty or short file (" + size + " bytes): " + source);
+        try (var channel = Files.newByteChannel(source)) {
+            return reader.apply(size).read(channel);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read from " + source + " (" + size + " bytes)", e);
+        }
     }
 
     @Override

@@ -49,7 +49,8 @@ final class GenUtils {
     static String callbacksClassPlain(TypeMirror te) {
         var element = ((DeclaredType) te).asElement();
         var packageElement = packageOf(element);
-        var className = element.toString().substring(packageElement.toString().length() + 1);
+        var beginIndex = packageElement.isUnnamed() ? 0 : packageElement.getQualifiedName().length() + 1;
+        var className = element.toString().substring(beginIndex);
         return className.replace('.', '_') + "_Callbacks";
     }
 
