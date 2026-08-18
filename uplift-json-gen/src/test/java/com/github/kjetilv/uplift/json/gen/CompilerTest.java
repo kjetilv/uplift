@@ -32,10 +32,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -71,10 +68,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -98,10 +92,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -147,10 +138,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -190,10 +178,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -223,10 +208,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -250,10 +232,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -283,10 +262,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -310,10 +286,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -337,10 +310,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -370,10 +340,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -391,10 +358,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -418,10 +382,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -451,10 +412,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -478,10 +436,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -505,10 +460,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -538,10 +490,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -559,10 +508,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -586,10 +532,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -619,10 +562,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -646,10 +586,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -679,10 +616,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -700,10 +634,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """.formatted(UUID.randomUUID()),
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -727,10 +658,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -748,10 +676,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -781,10 +706,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -814,10 +736,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -847,10 +766,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -874,10 +790,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -901,10 +814,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -934,10 +844,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -958,6 +865,13 @@ class CompilerTest extends CompilerTestCase {
             //language=json
             """
                 {
+                  "zot": "zip",
+                  "six": 7
+                }
+                """,
+            //language=json
+            """
+                {
                   "foo": true,
                   "zot": "zip",
                   "five": 6,
@@ -965,7 +879,15 @@ class CompilerTest extends CompilerTestCase {
                   "seven": 8,
                   "eight": 2
                 }
-                """
+                """,
+            //language=json
+            """
+                {
+                  "foo": false
+                }
+                """,
+            //language=json
+            "{}"
         );
     }
 
@@ -987,8 +909,7 @@ class CompilerTest extends CompilerTestCase {
             //language=json
             """
                 {
-                    "map": {
-                    }
+                    "map": {}
                 }
                 """,
             //language=json
@@ -1011,16 +932,13 @@ class CompilerTest extends CompilerTestCase {
             //language=json
             """
                 {
-                  "nest": {
-                    "foo": "bar"
-                  }
+                  "nest": {"foo": "bar"}
                 }
                 """,
             //language=json
             """
                 {
-                  "nest": {
-                  }
+                  "nest": {}
                 }
                 """,
             //language=json
@@ -1030,10 +948,7 @@ class CompilerTest extends CompilerTestCase {
                 }
                 """,
             //language=json
-            """
-                {
-                }
-                """
+            "{}"
         );
     }
 
@@ -1095,6 +1010,31 @@ class CompilerTest extends CompilerTestCase {
                        "nums": []
                     }
                   ]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nests": [{}, { "foo": "zot" }]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nests": [{}, {}]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "nests": [{}, null]
+                }
+                """
+            ,
+            //language=json
+            """
+                {
+                  "nests": [null, {}]
                 }
                 """
         );

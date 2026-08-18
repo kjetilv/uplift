@@ -35,8 +35,10 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
             .append(formattedMessage);
         if (entry.threadName() != null) {
             sb.append(" ")
+                .append(BOLD_ON)
+                .append("🪡")
+                .append(BOLD_OFF)
                 .append(ITAL_ON)
-                .append("חי ")
                 .append(entry.threadName())
                 .append(ITAL_OFF);
         }
