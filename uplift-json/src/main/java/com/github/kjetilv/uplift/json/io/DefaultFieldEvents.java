@@ -43,6 +43,17 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
+    public <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
+        return writeArray(
+            field,
+            values,
+            Function.identity(),
+            t ->
+                writer.write(t, fieldEvents())
+        );
+    }
+
+    @Override
     public <T extends Record> FieldEvents objectArray(
         String field,
         List<? extends T> values,
@@ -124,6 +135,36 @@ public final class DefaultFieldEvents implements FieldEvents {
         Consumer<V> setter
     ) {
         if (values == null || values.isEmpty()) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(map.apply(value));
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        T[] values,
+        Function<T, V> map,
+        Consumer<V> setter
+    ) {
+        if (values == null || values.length == 0) {
             return this;
         }
         if (mark.moved()) {

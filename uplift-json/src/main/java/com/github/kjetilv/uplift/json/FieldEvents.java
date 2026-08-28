@@ -75,9 +75,7 @@ public interface FieldEvents {
         return boolArray(field, value == null ? null : toBooleans(value), id());
     }
 
-    default <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
-        return objectArray(field, asList(values), writer);
-    }
+    <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer);
 
     FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);
 
