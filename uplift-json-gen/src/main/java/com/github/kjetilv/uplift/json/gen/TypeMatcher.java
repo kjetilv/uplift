@@ -39,7 +39,8 @@ final class TypeMatcher {
     Optional<RecordAttribute> recordAttribute(
         TypeMirror type,
         RecordComponentElement element,
-        boolean list
+        boolean list,
+        boolean array
     ) {
         if (matches(type)) {
             if (primitiveType == null && baseType == null) {
@@ -48,7 +49,9 @@ final class TypeMatcher {
                         baseType,
                         "Object",
                         element,
-                        list ? Variant.GENERATED_LIST : Variant.GENERATED,
+                        list ? Variant.GENERATED_LIST
+                            : array ? Variant.GENERATED_ARRAY
+                                : Variant.GENERATED,
                         null
                     )
                 );
@@ -69,7 +72,9 @@ final class TypeMatcher {
                     baseType,
                     this.type.getSimpleName(),
                     element,
-                    list ? Variant.PRIMITIVE_LIST : Variant.PRIMITIVE,
+                    list ? Variant.PRIMITIVE_LIST
+                        : array ? Variant.PRIMITIVE_ARRAY
+                        : Variant.PRIMITIVE,
                     null
                 )
             );

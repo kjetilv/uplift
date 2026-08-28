@@ -9,6 +9,7 @@ import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
 enum Variant {
 
     PRIMITIVE() {
+
         @Override
         String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + setter(element);
@@ -16,6 +17,15 @@ enum Variant {
     },
 
     PRIMITIVE_LIST() {
+
+        @Override
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
+            return builderClassPlain(builderType) + "::" + adder(element);
+        }
+    },
+
+    PRIMITIVE_ARRAY() {
+
         @Override
         String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return builderClassPlain(builderType) + "::" + adder(element);
@@ -23,16 +33,29 @@ enum Variant {
     },
 
     GENERATED() {
+
         @Override
         String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " +
                    callbacksClassPlain(generated) +
-                   ".create(callbacks, builder::" + setter(
-                element) + ")";
+                   ".create(callbacks, builder::" + setter(element) +
+                   ")";
         }
     },
 
     GENERATED_LIST() {
+
+        @Override
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
+            return "(callbacks, builder) -> " +
+                   callbacksClassPlain(generated) +
+                   ".create(callbacks, builder::" + adder(element) +
+                   ")";
+        }
+    },
+
+    GENERATED_ARRAY() {
+
         @Override
         String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " +
@@ -42,14 +65,17 @@ enum Variant {
     },
 
     GENERIC_MAP() {
+
         @Override
         String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
             return "(callbacks, builder) -> " + MapCallbacks.class.getName() +
-                   ".create(callbacks, builder::" + setter(element) + ")";
+                   ".create(callbacks, builder::" + setter(element) +
+                   ")";
         }
     },
 
     ENUM() {
+
         @Override
         Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
             return Optional.of(element.asType().toString() + "::valueOf");
@@ -62,6 +88,20 @@ enum Variant {
     },
 
     ENUM_LIST {
+
+        @Override
+        Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
+            return Optional.of(internalType.toString() + "::valueOf");
+        }
+
+        @Override
+        String callbackHandler(TypeElement builderType, RecordComponentElement element, TypeMirror generated) {
+            return builderClassPlain(builderType) + "::" + adder(element);
+        }
+    },
+
+    ENUM_ARRAY {
+
         @Override
         Optional<String> midTerm(RecordComponentElement element, TypeMirror internalType) {
             return Optional.of(internalType.toString() + "::valueOf");

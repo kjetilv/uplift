@@ -178,6 +178,10 @@ final class GenUtils {
         return element.asType().getKind() == TypeKind.ARRAY;
     }
 
+    public TypeElement boxedType(PrimitiveType primitiveType) {
+        return typeUtils.boxedClass(primitiveType);
+    }
+
     String simpleName(TypeMirror te) {
         if (typeUtils.asElement(te) instanceof TypeElement typeElement) {
             return simpleName(typeElement);
@@ -196,6 +200,13 @@ final class GenUtils {
                 .findFirst();
         }
         return Optional.empty();
+    }
+
+    Optional<TypeMirror> arrayType(RecordComponentElement element) {
+        return Optional.of(element.asType())
+            .filter(ArrayType.class::isInstance)
+            .map(ArrayType.class::cast)
+            .map(ArrayType::getComponentType);
     }
 
     <T extends TypeMirror> T fetchPrimitive(Class<?> type) {
@@ -244,19 +255,27 @@ final class GenUtils {
     RecordAttribute create(RecordComponentElement element) {
         return iterableType(element)
             .map(iterableType ->
-                attribute(iterableType, element, true))
+                attribute(iterableType, element, true, false))
+            .or(() -> arrayType(element).map(arrayType ->
+                attribute(arrayType, element, false, true)
+            ))
             .orElseGet(() ->
-                attribute(element.asType(), element, false));
+                attribute(element.asType(), element, false, false));
     }
 
     private boolean isIterableType(TypeMirror elementType) {
         return isAssignable(typeUtils.erasure(elementType), iterableErasure);
     }
 
-    private RecordAttribute attribute(TypeMirror parameterType, RecordComponentElement element, boolean list) {
+    private RecordAttribute attribute(
+        TypeMirror parameterType,
+        RecordComponentElement element,
+        boolean list,
+        boolean array
+    ) {
         var attributes = matchers.stream()
             .map(matcher ->
-                matcher.recordAttribute(parameterType, element, list))
+                matcher.recordAttribute(parameterType, element, list, array))
             .flatMap(Optional::stream)
             .toList();
         if (attributes.size() == 1) {
@@ -281,28 +300,58 @@ final class GenUtils {
                     null
                 );
             }
-            var iteratedType = iterableType(element).orElseThrow(() ->
-                new IllegalStateException("No matcher for " + element)
+            var listAttribute = iterableType(element).flatMap(iteratedType -> {
+                    if (isIterableType(element.asType())) {
+                        if (isAssignable(iteratedType, recordType)) {
+                            return Optional.of(new RecordAttribute(
+                                null,
+                                "Object",
+                                element,
+                                Variant.GENERATED_LIST,
+                                iteratedType
+                            ));
+                        }
+                        if (typeUtils.isAssignable(typeUtils.erasure(iteratedType), enumErasure)) {
+                            return Optional.of(new RecordAttribute(
+                                null,
+                                "Enum",
+                                element,
+                                Variant.ENUM_LIST,
+                                iteratedType
+                            ));
+                        }
+                    }
+                    return Optional.empty();
+                }
             );
-            if (isIterableType(element.asType())) {
-                if (isAssignable(iteratedType, recordType)) {
-                    return new RecordAttribute(
-                        null,
-                        "Object",
-                        element,
-                        Variant.GENERATED_LIST,
-                        iteratedType
-                    );
+            if (listAttribute.isPresent()) {
+                return listAttribute.get();
+            }
+            var arrayAttribute = arrayType(element).flatMap(arrayType -> {
+                if (isArray(element)) {
+                    if (isAssignable(arrayType, recordType)) {
+                        return Optional.of(new RecordAttribute(
+                            null,
+                            "Object",
+                            element,
+                            Variant.GENERATED_ARRAY,
+                            arrayType
+                        ));
+                    }
+                    if (typeUtils.isAssignable(typeUtils.erasure(arrayType), enumErasure)) {
+                        return Optional.of(new RecordAttribute(
+                            null,
+                            "Enum",
+                            element,
+                            Variant.ENUM_ARRAY,
+                            arrayType
+                        ));
+                    }
                 }
-                if (typeUtils.isAssignable(typeUtils.erasure(iteratedType), enumErasure)) {
-                    return new RecordAttribute(
-                        null,
-                        "Enum",
-                        element,
-                        Variant.ENUM_LIST,
-                        iteratedType
-                    );
-                }
+                return Optional.empty();
+            });
+            if (arrayAttribute.isPresent()) {
+                return arrayAttribute.get();
             }
         }
         var attributesList = attributes.isEmpty() ? "<no attributes>"

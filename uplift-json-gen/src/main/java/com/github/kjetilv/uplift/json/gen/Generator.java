@@ -62,13 +62,12 @@ final class Generator {
             if (!jsonRecordPackage.isUnnamed()) {
                 write(
                     bw,
-                    "package " + jsonRecordPackage.getQualifiedName() + ";",
-                    ""
+                    "package " + jsonRecordPackage.getQualifiedName() + ";"
                 );
             }
+            javaBase(bw);
             write(
                 bw,
-                importType(Consumer.class),
                 importType(Generated.class),
                 "",
                 importType(Callbacks.class),
@@ -144,6 +143,14 @@ final class Generator {
         }
     }
 
+    private static void javaBase(BufferedWriter bw) {
+        write(
+            bw,
+            "",
+            "import module java.base;",
+            "");
+    }
+
     void generateRWEntrypoint() {
         var unqualifiedName = unqTypeName();
         var file = factoryFile(jsonRecordPackage, jsonRecord);
@@ -155,10 +162,9 @@ final class Generator {
                     ""
                 );
             }
+            javaBase(bw);
             write(
                 bw,
-                importType(Consumer.class),
-                importType(Function.class),
                 importType(Generated.class),
                 "",
                 importType(Callbacks.class),
@@ -176,7 +182,8 @@ final class Generator {
                 "@SuppressWarnings(\"unchecked\")",
                 "public final class " + factoryClass(jsonRecord) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
                 "",
-                "    public static final " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(jsonRecord) + "();",
+                "    public static final " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(
+                    jsonRecord) + "();",
                 "",
                 "    @Override",
                 "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",
@@ -214,6 +221,7 @@ final class Generator {
                     ""
                 );
             }
+            javaBase(bw);
             write(
                 bw,
                 importType(Generated.class),
@@ -275,7 +283,7 @@ final class Generator {
         var adders = jsonRecord.getRecordComponents()
             .stream()
             .flatMap(element ->
-                utils.iterableType(element)
+                utils.iterableType(element).or(() -> utils.arrayType(element))
                     .stream()
                     .flatMap(listType ->
                         Stream.of(
@@ -297,10 +305,11 @@ final class Generator {
             "        return new " + unqualifiedName + "("
         );
 
+        List<Converter> arrayConvertersCollector = new ArrayList<>();
         List<String> creatorMeat = jsonRecord.getRecordComponents()
             .stream()
             .map(el ->
-                "            " + fieldName(el) + ",")
+                "            " + fieldName(el) + unpack(el, arrayConvertersCollector) + ",")
             .collect(Collectors.toCollection(LinkedList::new));
         var last = creatorMeat.removeLast();
         creatorMeat.addLast(last.substring(0, last.length() - 1));
@@ -318,9 +327,9 @@ final class Generator {
                     ""
                 );
             }
+            javaBase(bw);
             write(
                 bw,
-                importType(Supplier.class),
                 importType(Generated.class),
                 "",
                 "/// Builder for [" + unqualifiedName + "]",
@@ -347,10 +356,26 @@ final class Generator {
             write(bw, creatorStart);
             write(bw, creatorMeat);
             write(bw, creatorEnd);
+            arrayConvertersCollector.forEach(converter ->
+                write(bw, converter.toCode()));
             write(bw, "}");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write builder for " + jsonRecord, e);
         }
+    }
+
+    private String unpack(RecordComponentElement el, Collection<Converter> arrayConvertersCollector) {
+        if (el.asType() instanceof ArrayType arrayType) {
+            var guard = " == null ? null : ";
+            var componentType = arrayType.getComponentType();
+            if (componentType instanceof PrimitiveType primitiveType) {
+                Converter converter = Converter.forType(primitiveType);
+                arrayConvertersCollector.add(converter);
+                return guard + converter.getCall() + "(" + fieldName(el) + ")";
+            }
+            return guard + fieldName(el) + ".toArray(" + componentType + "[]::new)";
+        }
+        return "";
     }
 
     private boolean isRoot() {
@@ -390,7 +415,6 @@ final class Generator {
 
     private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
         var attribute = recordAttribute.attribute();
-        Optional<TypeMirror> listType = utils.iterableType(attribute);
         if (isMap(attribute.asType())) {
             return "map(" +
                    quote(attribute.getSimpleName()) + ", " +
@@ -399,8 +423,11 @@ final class Generator {
         }
         var generated = recordAttribute.isGenerated();
         var convert = recordAttribute.requiresConversion();
+        Optional<TypeMirror> listType = utils.iterableType(attribute);
+        Optional<TypeMirror> arrayType = utils.arrayType(attribute);
         return recordAttribute.fieldEvent() +
-               listType.map(_ -> "Array").orElse("") +
+               listType.or(() -> arrayType)
+                   .map(_ -> "Array").orElse("") +
                "(" +
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
@@ -430,15 +457,15 @@ final class Generator {
 
     private String jsonTypeSingular(RecordComponentElement element) {
         return utils.isIterable(element) ? "array"
-                : switch (element.asType().getKind()) {
-                    case BOOLEAN -> "boolean";
-                    case BYTE, SHORT, INT, LONG -> "integer";
-                    case FLOAT, DOUBLE -> "number";
-                    case ARRAY -> "array";
-                    case DECLARED -> "map";
-                    case CHAR -> "string";
-                    default -> throw new IllegalArgumentException("Not a JSON element: " + element);
-                };
+            : switch (element.asType().getKind()) {
+                case BOOLEAN -> "boolean";
+                case BYTE, SHORT, INT, LONG -> "integer";
+                case FLOAT, DOUBLE -> "number";
+                case ARRAY -> "array";
+                case DECLARED -> "map";
+                case CHAR -> "string";
+                default -> throw new IllegalArgumentException("Not a JSON element: " + element);
+            };
     }
 
     private String unqTypeName() {
@@ -485,6 +512,17 @@ final class Generator {
         return utils.simpleName(te) + "_Writer";
     }
 
+    private String print(TypeMirror type) {
+        if (type instanceof ArrayType arrayType) {
+            var componentType = arrayType.getComponentType();
+            if (componentType instanceof PrimitiveType primitiveType) {
+                return "java.util.List<" + utils.boxedType(primitiveType) + ">";
+            }
+            return "java.util.List<" + componentType + ">";
+        }
+        return type.toString();
+    }
+
     private static final String GENERATED = Generated.class.getSimpleName();
 
     private static final String PRESET_CALLBACKS = PresetCallbacks.class.getSimpleName();
@@ -511,25 +549,6 @@ final class Generator {
 
     private static String quote(Object string) {
         return QUO + string + QUO;
-    }
-
-    private static String print(TypeMirror type) {
-        return Stream.of(
-                String.class,
-                Character.class,
-                Integer.class,
-                Long.class,
-                Double.class,
-                Float.class,
-                Short.class,
-                Byte.class,
-                Boolean.class
-            )
-            .filter(t ->
-                t.getName().equals(type.toString()))
-            .map(Class::getSimpleName)
-            .findFirst()
-            .orElseGet(type::toString);
     }
 
     private static void write(BufferedWriter bw, String... strs) {
@@ -569,5 +588,134 @@ final class Generator {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + jsonRecordPackage.getSimpleName() + "." + jsonRecord.getSimpleName() + "]";
+    }
+
+    private enum Converter {
+
+        BOOLEAN(
+            "boolean",
+            //language=java
+            """
+                    private static boolean[] toBooleanArray(List<Boolean> list) {
+                        boolean[] result = new boolean[list.size()];
+                        int i = 0;
+                        for (boolean f : list) {
+                            result[i++] = f;
+                        }
+                        return result;
+                    }
+                """
+        ),
+
+        FLOAT(
+            "float",
+            //language=java
+            """
+                    private static float[] toFloatArray(List<Float> list) {
+                        float[] result = new float[list.size()];
+                        int i = 0;
+                        for (float f : list) {
+                            result[i++] = f;
+                        }
+                        return result;
+                    }
+                """
+        ),
+
+        SHORT(
+            "short",
+            //language=java
+            """
+                    private static short[] toShortArray(List<Short> list) {
+                        short[] result = new short[list.size()];
+                        int i = 0;
+                        for (short f : list) {
+                            result[i++] = f;
+                        }
+                        return result;
+                    }
+                """
+        ),
+
+        BYTE(
+            "byte",
+            //language=java
+            """
+                    private static byte[] toByteArray(List<Byte> list) {
+                        byte[] result = new byte[list.size()];
+                        int i = 0;
+                        for (byte f : list) {
+                            result[i++] = f;
+                        }
+                        return result;
+                    }
+                """
+        ),
+
+        INTEGER(
+            "int",
+            //language=java
+            """
+                    private static int[] toIntArray(List<Integer> list) {
+                        return list.stream().mapToInt(Integer::intValue).toArray();
+                    }
+                """
+        ),
+
+        DOUBLE(
+            "double",
+            //language=java
+            """
+                    private static double[] toDoubleArray(List<Double> list) {
+                        return list.stream().mapToDouble(Double::doubleValue).toArray();
+                    }
+                """
+        ),
+
+        LONG(
+            "long",
+            //language=java
+            """
+                    private static long[] toLongArray(List<Long> list) {
+                        return list.stream().mapToLong(Long::longValue).toArray();
+                    }
+                """
+        );
+
+        private final String type;
+
+        private final String java;
+
+        Converter(
+            String type,
+            String java
+        ) {
+            this.type = type;
+            this.java = java;
+        }
+
+        public List<String> toCode() {
+            return Stream.concat(
+                Stream.of(""),
+                Arrays.stream(java.split("\n"))
+            ).toList();
+        }
+
+        String getCall() {
+            return "to" + type.substring(0, 1).toUpperCase(Locale.ROOT) + type.substring(1) + "Array";
+        }
+
+        String getJava() {
+            return java;
+        }
+
+        private static Converter forType(PrimitiveType type) {
+            return Arrays.stream(values())
+                .filter(converter ->
+                    converter.type.equalsIgnoreCase(type.toString()))
+                .findFirst()
+                .orElseThrow(() ->
+                    new IllegalStateException("No converter for " + type));
+        }
     }
 }

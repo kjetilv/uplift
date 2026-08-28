@@ -18,10 +18,10 @@ record RecordAttribute(
         if (baseType != null) {
             return baseType.fieldEventType().getName();
         }
-        if (variant == Variant.GENERATED || variant == Variant.GENERATED_LIST) {
+        if (variant == Variant.GENERATED || variant == Variant.GENERATED_LIST || variant == Variant.GENERATED_ARRAY) {
             return "object";
         }
-        if (variant == Variant.ENUM || variant == Variant.ENUM_LIST) {
+        if (variant == Variant.ENUM || variant == Variant.ENUM_LIST || variant == Variant.ENUM_ARRAY) {
             return "string";
         }
         throw new IllegalStateException("Unsupported attribute type: " + this);
