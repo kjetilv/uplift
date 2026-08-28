@@ -4,7 +4,6 @@ import module java.base;
 import module java.compiler;
 
 import static com.github.kjetilv.uplift.json.gen.GenUtils.fieldName;
-import static com.github.kjetilv.uplift.json.gen.GenUtils.packageOf;
 
 record RecordAttribute(
     BaseType baseType,
@@ -60,23 +59,6 @@ record RecordAttribute(
         return variant() == Variant.GENERATED_LIST
                || variant() == Variant.GENERATED
                || variant() == Variant.GENERATED_ARRAY;
-    }
-
-    private String writerClass() {
-        return writerClass(attribute.asType().toString());
-    }
-
-    private String writerClass(String name) {
-        var packageElement = packageOf(attribute);
-        var prefix = packageElement.toString();
-        return name.substring(prefix.length() + 1)
-                   .replace('.', '_') + "_Writer";
-    }
-
-    private Optional<RecordComponentElement> enumType(
-        RecordComponentElement element
-    ) {
-        return Optional.empty();
     }
 
     private static final String QUO = "\"";
