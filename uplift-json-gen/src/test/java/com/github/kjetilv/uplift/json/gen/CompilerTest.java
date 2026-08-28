@@ -1194,9 +1194,9 @@ class CompilerTest extends CompilerTestCase {
         ver(//language=java
             """
                 public record Eagle(Nest[] nests) {
-                 
+                
                     record Nest(String foo) {}
-                    
+                
                     @Override
                     public boolean equals(Object obj) {
                         return obj instanceof Eagle(var onests) && Arrays.equals(nests, onests);
