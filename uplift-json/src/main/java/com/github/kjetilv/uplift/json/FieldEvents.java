@@ -4,6 +4,7 @@ import module java.base;
 
 import static java.util.Arrays.asList;
 
+@SuppressWarnings("unused") // Used from generated code
 public interface FieldEvents {
 
     default FieldEvents string(String field, String value) {
@@ -22,7 +23,6 @@ public interface FieldEvents {
         return numberArray(field, values, id());
     }
 
-    @SuppressWarnings("unused")
     default FieldEvents boolArray(String field, List<Boolean> value) {
         return boolArray(field, value, id());
     }
@@ -44,8 +44,7 @@ public interface FieldEvents {
     }
 
     default FieldEvents numberArray(String field, int[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id()
-        );
+        return this.numberArray(field, values == null ? null : toNumbers(values), id());
     }
 
     default FieldEvents numberArray(String field, double[] values) {
@@ -74,6 +73,10 @@ public interface FieldEvents {
 
     default <T> FieldEvents boolArray(String field, boolean[] value) {
         return boolArray(field, value == null ? null : toBooleans(value), id());
+    }
+
+    default <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
+        return objectArray(field, asList(values), writer);
     }
 
     FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);

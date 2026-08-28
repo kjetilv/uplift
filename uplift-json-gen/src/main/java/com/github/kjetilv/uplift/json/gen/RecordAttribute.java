@@ -57,7 +57,9 @@ record RecordAttribute(
     }
 
     boolean isGenerated() {
-        return variant() == Variant.GENERATED_LIST || variant() == Variant.GENERATED;
+        return variant() == Variant.GENERATED_LIST
+               || variant() == Variant.GENERATED
+               || variant() == Variant.GENERATED_ARRAY;
     }
 
     private String writerClass() {

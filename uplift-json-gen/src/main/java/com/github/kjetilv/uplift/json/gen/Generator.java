@@ -143,14 +143,6 @@ final class Generator {
         }
     }
 
-    private static void javaBase(BufferedWriter bw) {
-        write(
-            bw,
-            "",
-            "import module java.base;",
-            "");
-    }
-
     void generateRWEntrypoint() {
         var unqualifiedName = unqTypeName();
         var file = factoryFile(jsonRecordPackage, jsonRecord);
@@ -432,6 +424,7 @@ final class Generator {
                quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
                (convert ? ", this::value)"
                    : generated ? ", new " + writerClassPlain(utils.iterableType(attribute)
+                       .or(() -> utils.arrayType(attribute))
                        .orElseGet(attribute::asType)) + "())"
                        : ")");
     }
@@ -546,6 +539,15 @@ final class Generator {
     private static final String OBJECT_WRITER = ObjectWriter.class.getSimpleName();
 
     private static final String QUO = "\"";
+
+    private static void javaBase(BufferedWriter bw) {
+        write(
+            bw,
+            "",
+            "import module java.base;",
+            ""
+        );
+    }
 
     private static String quote(Object string) {
         return QUO + string + QUO;
@@ -696,9 +698,10 @@ final class Generator {
 
         public List<String> toCode() {
             return Stream.concat(
-                Stream.of(""),
-                Arrays.stream(java.split("\n"))
-            ).toList();
+                    Stream.of(""),
+                    Arrays.stream(java.split("\n"))
+                )
+                .toList();
         }
 
         String getCall() {
