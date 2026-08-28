@@ -72,6 +72,10 @@ public interface FieldEvents {
         return boolArray(field, value == null ? null : asList(value), toBool);
     }
 
+    default <T> FieldEvents boolArray(String field, boolean[] value) {
+        return boolArray(field, value == null ? null : toBooleans(value), id());
+    }
+
     FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer);
 
     <T extends Record> FieldEvents object(String field, T value, ObjectWriter<T> writer);
@@ -128,6 +132,14 @@ public interface FieldEvents {
             numbers[i] = values[i];
         }
         return numbers;
+    }
+
+    private static Boolean[] toBooleans(boolean[] values) {
+        Boolean[] booleans = new Boolean[values.length];
+        for (var i = 0; i < values.length; i++) {
+            booleans[i] = values[i];
+        }
+        return booleans;
     }
 
     private static List<Double> toNumbers(double[] values) {

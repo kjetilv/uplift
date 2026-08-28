@@ -1023,6 +1023,46 @@ class CompilerTest extends CompilerTestCase {
     }
 
     @Test
+    void booleanArrayFields() {
+        ver(//language=java
+            """
+                public record SingleField(boolean[] bs) {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        return obj instanceof SingleField(var obs) && Arrays.equals(bs, obs);
+                    }
+                
+                    @Override
+                    public int hashCode() {
+                       return Arrays.hashCode(bs);
+                    }
+                }
+                """,
+            //language=json
+            """
+                {
+                  "bs": [false, false, true]
+                }
+                """,
+            //language=json
+            """
+                {
+                  "bs": []
+                }
+                """,
+            //language=json
+            """
+                {
+                  "bs": null
+                }
+                """,
+            //language=json
+            "{}"
+        );
+    }
+
+    @Test
     void simpleCase() {
         ver(//language=java
             """
