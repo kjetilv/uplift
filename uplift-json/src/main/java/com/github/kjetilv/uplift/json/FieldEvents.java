@@ -71,7 +71,7 @@ public interface FieldEvents {
         return boolArray(field, value == null ? null : asList(value), toBool);
     }
 
-    default <T> FieldEvents boolArray(String field, boolean[] value) {
+    default FieldEvents boolArray(String field, boolean[] value) {
         return boolArray(field, value == null ? null : toBooleans(value), id());
     }
 

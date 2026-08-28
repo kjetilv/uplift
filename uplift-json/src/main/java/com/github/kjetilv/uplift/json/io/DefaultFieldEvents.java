@@ -17,6 +17,52 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
+    public FieldEvents numberArray(String field, long[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, int[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, double[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, float[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, short[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, byte[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents boolArray(String field, boolean[] value) {
+        return writeArray(field, value, sink::accept);
+    }
+
+    @Override
+    public <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
+        return writeArray(
+            field,
+            values,
+            Function.identity(),
+            t ->
+                writer.write(t, fieldEvents())
+        );
+    }
+
+    @Override
     public FieldEvents map(String field, Map<?, ?> value, ObjectWriter<Map<?, ?>> writer) {
         return writeField(
             field,
@@ -36,17 +82,6 @@ public final class DefaultFieldEvents implements FieldEvents {
         return writeField(
             field,
             value,
-            Function.identity(),
-            t ->
-                writer.write(t, fieldEvents())
-        );
-    }
-
-    @Override
-    public <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
-        return writeArray(
-            field,
-            values,
             Function.identity(),
             t ->
                 writer.write(t, fieldEvents())
@@ -181,6 +216,209 @@ public final class DefaultFieldEvents implements FieldEvents {
                     sink.accept(",");
                 }
                 setter.accept(map.apply(value));
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        boolean[] values,
+        Consumer<Boolean> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        int[] values,
+        Consumer<Integer> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        long[] values,
+        Consumer<Long> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        double[] values,
+        Consumer<Double> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        float[] values,
+        Consumer<Float> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        short[] values,
+        Consumer<Short> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            sink.accept("]");
+        }
+        return this;
+    }
+
+    private <T, V> FieldEvents writeArray(
+        String field,
+        byte[] values,
+        Consumer<Byte> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
             }
         } finally {
             sink.accept("]");
