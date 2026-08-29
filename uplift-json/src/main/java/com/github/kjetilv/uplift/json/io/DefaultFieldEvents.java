@@ -83,8 +83,8 @@ public final class DefaultFieldEvents implements FieldEvents {
             field,
             value,
             Function.identity(),
-            t ->
-                writer.write(t, newFieldEvents())
+            _ ->
+                writer.write(value, newFieldEvents())
         );
     }
 
