@@ -172,7 +172,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.isEmpty()) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -198,7 +198,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -219,7 +219,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         sink.accept("]");
     }
 
-    private void preparyArray(String field) {
+    private void prepareArray(String field) {
         if (mark.moved()) {
             sink.accept(",");
         }
@@ -235,7 +235,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -260,7 +260,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -285,7 +285,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -310,7 +310,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -335,7 +335,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -360,7 +360,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -385,7 +385,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        preparyArray(field);
+        prepareArray(field);
         boolean first = true;
         try {
             for (var value : values) {
