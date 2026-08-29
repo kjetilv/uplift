@@ -58,7 +58,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             values,
             Function.identity(),
             t ->
-                writer.write(t, fieldEvents())
+                writer.write(t, newFieldEvents())
         );
     }
 
@@ -69,7 +69,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             value,
             Function.identity(),
             map ->
-                writer.write(map, fieldEvents())
+                writer.write(map, newFieldEvents())
         );
     }
 
@@ -84,7 +84,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             value,
             Function.identity(),
             t ->
-                writer.write(t, fieldEvents())
+                writer.write(t, newFieldEvents())
         );
     }
 
@@ -99,7 +99,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             values,
             Function.identity(),
             t ->
-                writer.write(t, fieldEvents())
+                writer.write(t, newFieldEvents())
         );
     }
 
@@ -172,11 +172,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.isEmpty()) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -188,7 +184,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(map.apply(value));
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -202,11 +198,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -218,9 +210,21 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(map.apply(value));
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
+    }
+
+    private void closeArray() {
+        sink.accept("]");
+    }
+
+    private void preparyArray(String field) {
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
     }
 
     private <T, V> FieldEvents writeArray(
@@ -231,11 +235,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -247,7 +247,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -260,11 +260,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -276,7 +272,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -289,11 +285,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -305,7 +297,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -318,11 +310,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -334,7 +322,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -347,11 +335,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -363,7 +347,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -376,11 +360,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -392,7 +372,7 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
@@ -405,11 +385,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         if (values == null || values.length == 0) {
             return this;
         }
-        if (mark.moved()) {
-            sink.accept(",");
-        }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        preparyArray(field);
         boolean first = true;
         try {
             for (var value : values) {
@@ -421,12 +397,12 @@ public final class DefaultFieldEvents implements FieldEvents {
                 setter.accept(value);
             }
         } finally {
-            sink.accept("]");
+            closeArray();
         }
         return this;
     }
 
-    private FieldEvents fieldEvents() {
+    private FieldEvents newFieldEvents() {
         return new DefaultFieldEvents(sink);
     }
 
