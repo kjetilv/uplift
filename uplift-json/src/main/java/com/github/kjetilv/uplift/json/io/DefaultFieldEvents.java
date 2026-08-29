@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 
+@SuppressWarnings("DuplicatedCode")
 public final class DefaultFieldEvents implements FieldEvents {
 
     private final Sink sink;
@@ -17,6 +18,31 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
+    public FieldEvents numberArray(String field, Number[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, double[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, short[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public <T> FieldEvents numberArray(String field, T[] values, Function<T, Number> toNumber) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public <T> FieldEvents boolArray(String field, T[] value, Function<T, Boolean> toBool) {
+        return writeArray(field, value, sink::accept);
+    }
+
+    @Override
     public FieldEvents numberArray(String field, long[] values) {
         return writeArray(field, values, sink::accept);
     }
@@ -27,17 +53,7 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
-    public FieldEvents numberArray(String field, double[] values) {
-        return writeArray(field, values, sink::accept);
-    }
-
-    @Override
     public FieldEvents numberArray(String field, float[] values) {
-        return writeArray(field, values, sink::accept);
-    }
-
-    @Override
-    public FieldEvents numberArray(String field, short[] values) {
         return writeArray(field, values, sink::accept);
     }
 
@@ -52,13 +68,23 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
+    public FieldEvents stringArray(String field, String[] values) {
+        return writeArray(field, values, this::value);
+    }
+
+    @Override
+    public FieldEvents stringArray(String field, List<String> values) {
+        return writeArray(field, values, Function.identity(), this::value);
+    }
+
+    @Override
     public <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer) {
         return writeArray(
             field,
             values,
             Function.identity(),
-            t ->
-                writer.write(t, newFieldEvents())
+            value ->
+                writer.write(value, newFieldEvents())
         );
     }
 
@@ -98,8 +124,8 @@ public final class DefaultFieldEvents implements FieldEvents {
             field,
             values,
             Function.identity(),
-            t ->
-                writer.write(t, newFieldEvents())
+            value ->
+                writer.write(value, newFieldEvents())
         );
     }
 
@@ -176,11 +202,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(map.apply(value));
             }
         } finally {
@@ -202,11 +224,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(map.apply(value));
             }
         } finally {
@@ -215,19 +233,32 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private void closeArray() {
-        sink.accept("]");
-    }
-
-    private void prepareArray(String field) {
-        if (mark.moved()) {
-            sink.accept(",");
+    private <T> FieldEvents writeArray(
+        String field,
+        T[] values,
+        Consumer<T> setter
+    ) {
+        if (values == null || values.length == 0) {
+            return this;
         }
-        sink.accept(quoted(field));
-        sink.accept("[");
+        prepareArray(field);
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            closeArray();
+        }
+        return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         boolean[] values,
         Consumer<Boolean> setter
@@ -239,11 +270,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -252,7 +279,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         int[] values,
         Consumer<Integer> setter
@@ -264,11 +291,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -277,7 +300,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         long[] values,
         Consumer<Long> setter
@@ -289,11 +312,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -302,7 +321,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         double[] values,
         Consumer<Double> setter
@@ -314,11 +333,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -327,7 +342,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         float[] values,
         Consumer<Float> setter
@@ -339,11 +354,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -352,7 +363,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         short[] values,
         Consumer<Short> setter
@@ -364,11 +375,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -377,7 +384,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private <T, V> FieldEvents writeArray(
+    private FieldEvents writeArray(
         String field,
         byte[] values,
         Consumer<Byte> setter
@@ -389,11 +396,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         boolean first = true;
         try {
             for (var value : values) {
-                if (first) {
-                    first = false;
-                } else {
-                    sink.accept(",");
-                }
+                first = commaUnless(first);
                 setter.accept(value);
             }
         } finally {
@@ -404,6 +407,25 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     private FieldEvents newFieldEvents() {
         return new DefaultFieldEvents(sink);
+    }
+
+    private void prepareArray(String field) {
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        sink.accept("[");
+    }
+
+    private boolean commaUnless(boolean first) {
+        if (!first) {
+            sink.accept(",");
+        }
+        return false;
+    }
+
+    private void closeArray() {
+        sink.accept("]");
     }
 
     private static final Pattern QUOTE = Pattern.compile("\"");

@@ -2,8 +2,6 @@ package com.github.kjetilv.uplift.json;
 
 import module java.base;
 
-import static java.util.Arrays.asList;
-
 @SuppressWarnings("unused") // Used from generated code
 public interface FieldEvents {
 
@@ -27,53 +25,29 @@ public interface FieldEvents {
         return boolArray(field, value, id());
     }
 
-    default FieldEvents stringArray(String field, String[] values) {
-        return stringArray(field, values == null ? null : asList(values), id());
-    }
+    FieldEvents numberArray(String field, double[] values);
 
-    default FieldEvents stringArray(String field, List<String> values) {
-        return stringArray(field, values, id());
-    }
+    FieldEvents numberArray(String field, short[] values);
 
-    default FieldEvents numberArray(String field, Number[] values) {
-        return numberArray(field, values == null ? null : asList(values), id());
-    }
+    FieldEvents numberArray(String field, Number[] values);
 
-    default FieldEvents numberArray(String field, long[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    <T> FieldEvents numberArray(String field, T[] values, Function<T, Number> toNumber);
 
-    default FieldEvents numberArray(String field, int[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    <T> FieldEvents boolArray(String field, T[] value, Function<T, Boolean> toBool);
 
-    default FieldEvents numberArray(String field, double[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    FieldEvents numberArray(String field, long[] values);
 
-    default FieldEvents numberArray(String field, float[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    FieldEvents numberArray(String field, int[] values);
 
-    default FieldEvents numberArray(String field, short[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    FieldEvents numberArray(String field, float[] values);
 
-    default FieldEvents numberArray(String field, byte[] values) {
-        return this.numberArray(field, values == null ? null : toNumbers(values), id());
-    }
+    FieldEvents numberArray(String field, byte[] values);
 
-    default <T> FieldEvents numberArray(String field, T[] values, Function<T, Number> toNumber) {
-        return numberArray(field, values == null ? null : asList(values), toNumber);
-    }
+    FieldEvents boolArray(String field, boolean[] value);
 
-    default <T> FieldEvents boolArray(String field, T[] value, Function<T, Boolean> toBool) {
-        return boolArray(field, value == null ? null : asList(value), toBool);
-    }
+    FieldEvents stringArray(String field, String[] values);
 
-    default FieldEvents boolArray(String field, boolean[] value) {
-        return boolArray(field, value == null ? null : toBooleans(value), id());
-    }
+    FieldEvents stringArray(String field, List<String> values);
 
     <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer);
 
