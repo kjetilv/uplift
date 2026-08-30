@@ -14,13 +14,13 @@ final class StreamSink extends AbstractEncodingSink {
     }
 
     @Override
-    public Sink accept(String str) {
+    public Sink accept(String string) {
         try {
-            var bytes = str.getBytes(charset());
+            var bytes = string.getBytes(charset());
             lengthCounter.add(bytes.length);
             outputStream.write(bytes);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to write " + str, e);
+            throw new IllegalStateException("Failed to write " + string, e);
         }
         return this;
     }

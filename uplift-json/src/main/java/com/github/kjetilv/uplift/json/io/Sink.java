@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import java.io.OutputStream;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 import static com.github.kjetilv.uplift.json.io.Canonical.FALSE;
 import static com.github.kjetilv.uplift.json.io.Canonical.TRUE;
@@ -54,9 +55,32 @@ public sealed interface Sink extends RuntimeCloseable
             length() != previousLength;
     }
 
-    Sink accept(String str);
+    default Sink acceptQuoted(String string) {
+        return accept(quoted(string));
+    }
+
+    Sink accept(String string);
 
     long length();
+
+    Pattern QUOTE = Pattern.compile("\"");
+
+    static String quoted(String value) {
+        var quoted = value.indexOf('"') >= 0;
+        var unquoted = quoted
+            ? replaceAll(value)
+            : value;
+        var formatted = "\"%s\"".formatted(unquoted);
+        return formatted;
+    }
+
+    static String replaceAll(String value) {
+        try {
+            return QUOTE.matcher(value).replaceAll("\\\\\"");
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not replace `" + QUOTE.pattern() + "` with `\\\\`: " + value, e);
+        }
+    }
 
     @FunctionalInterface
     interface Mark {

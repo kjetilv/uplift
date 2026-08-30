@@ -18,7 +18,27 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     @Override
-    public FieldEvents numberArray(String field, Number[] values) {
+    public FieldEvents string(String field, String value) {
+        return writeField(field, value, sink::acceptQuoted);
+    }
+
+    @Override
+    public FieldEvents number(String field, Number value) {
+        return writeField(field, value, sink::accept);
+    }
+
+    @Override
+    public FieldEvents bool(String field, Boolean value) {
+        return writeField(field, value, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, List<? extends Number> values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents boolArray(String field, List<Boolean> values) {
         return writeArray(field, values, sink::accept);
     }
 
@@ -29,6 +49,11 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     @Override
     public FieldEvents numberArray(String field, short[] values) {
+        return writeArray(field, values, sink::accept);
+    }
+
+    @Override
+    public FieldEvents numberArray(String field, Number[] values) {
         return writeArray(field, values, sink::accept);
     }
 
@@ -69,12 +94,12 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     @Override
     public FieldEvents stringArray(String field, String[] values) {
-        return writeArray(field, values, this::value);
+        return writeArray(field, values, sink::acceptQuoted);
     }
 
     @Override
     public FieldEvents stringArray(String field, List<String> values) {
-        return writeArray(field, values, Function.identity(), this::value);
+        return writeArray(field, values, sink::acceptQuoted);
     }
 
     @Override
@@ -82,7 +107,6 @@ public final class DefaultFieldEvents implements FieldEvents {
         return writeArray(
             field,
             values,
-            Function.identity(),
             value ->
                 writer.write(value, newFieldEvents())
         );
@@ -131,12 +155,12 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     @Override
     public <T> FieldEvents string(String field, T value, Function<T, String> toString) {
-        return writeField(field, value, toString, this::value);
+        return writeField(field, value, toString, sink::acceptQuoted);
     }
 
     @Override
     public <T> FieldEvents stringArray(String field, List<T> values, Function<T, String> toString) {
-        return writeArray(field, values, toString, this::value);
+        return writeArray(field, values, toString, sink::acceptQuoted);
     }
 
     @Override
@@ -181,12 +205,20 @@ public final class DefaultFieldEvents implements FieldEvents {
         return this;
     }
 
-    private void value(String value) {
-        var quoted = value.indexOf('"') >= 0;
-        var unquoted = quoted
-            ? replaceAll(value)
-            : value;
-        sink.accept("\"%s\"".formatted(unquoted));
+    private <T> FieldEvents writeField(
+        String field,
+        T value,
+        Consumer<T> setter
+    ) {
+        if (value == null) {
+            return this;
+        }
+        if (mark.moved()) {
+            sink.accept(",");
+        }
+        sink.accept(quoted(field));
+        setter.accept(value);
+        return this;
     }
 
     private <T, V> FieldEvents writeArray(
@@ -239,6 +271,31 @@ public final class DefaultFieldEvents implements FieldEvents {
         Consumer<T> setter
     ) {
         if (values == null || values.length == 0) {
+            return this;
+        }
+        prepareArray(field);
+        boolean first = true;
+        try {
+            for (var value : values) {
+                if (first) {
+                    first = false;
+                } else {
+                    sink.accept(",");
+                }
+                setter.accept(value);
+            }
+        } finally {
+            closeArray();
+        }
+        return this;
+    }
+
+    private <T> FieldEvents writeArray(
+        String field,
+        List<? extends T> values,
+        Consumer<T> setter
+    ) {
+        if (values == null || values.isEmpty()) {
             return this;
         }
         prepareArray(field);
@@ -428,17 +485,8 @@ public final class DefaultFieldEvents implements FieldEvents {
         sink.accept("]");
     }
 
-    private static final Pattern QUOTE = Pattern.compile("\"");
-
     private static String quoted(String field) {
         return "\"%s\":".formatted(field);
     }
 
-    private static String replaceAll(String value) {
-        try {
-            return QUOTE.matcher(value).replaceAll("\\\\\"");
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not replace `" + QUOTE.pattern() + "` with `\\\\`: " + value, e);
-        }
-    }
 }

@@ -9,8 +9,8 @@ record StringSink(StringBuilder sb) implements Sink {
     }
 
     @Override
-    public Sink accept(String str) {
-        sb.append(str);
+    public Sink accept(String string) {
+        sb.append(string);
         return this;
     }
 
