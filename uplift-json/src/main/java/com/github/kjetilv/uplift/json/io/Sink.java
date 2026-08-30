@@ -13,6 +13,8 @@ import static com.github.kjetilv.uplift.json.io.Canonical.TRUE;
 public sealed interface Sink extends RuntimeCloseable
     permits AbstractBufferedSink, AbstractEncodingSink, StringSink {
 
+    Pattern QUOTE = Pattern.compile("\"");
+
     static Sink stream(OutputStream outputStream) {
         return stream(outputStream, null);
     }
@@ -33,38 +35,6 @@ public sealed interface Sink extends RuntimeCloseable
         return new ByteChannelSink(byteChannel, charset);
     }
 
-    default Sink accept(Object obj) {
-        return accept(obj.toString());
-    }
-
-    default Sink accept(boolean bool) {
-        return accept(bool ? TRUE : FALSE);
-    }
-
-    default Sink accept(Number number) {
-        return accept(number.toString());
-    }
-
-    @Override
-    default void close() {
-    }
-
-    default Mark mark() {
-        var previousLength = length();
-        return () ->
-            length() != previousLength;
-    }
-
-    default Sink acceptQuoted(String string) {
-        return accept(quoted(string));
-    }
-
-    Sink accept(String string);
-
-    long length();
-
-    Pattern QUOTE = Pattern.compile("\"");
-
     static String quoted(String value) {
         var quoted = value.indexOf('"') >= 0;
         var unquoted = quoted
@@ -81,6 +51,36 @@ public sealed interface Sink extends RuntimeCloseable
             throw new IllegalStateException("Could not replace `" + QUOTE.pattern() + "` with `\\\\`: " + value, e);
         }
     }
+
+    default void accept(Object obj) {
+        accept(obj.toString());
+    }
+
+    default void accept(boolean bool) {
+        accept(bool ? TRUE : FALSE);
+    }
+
+    default void accept(Number number) {
+        accept(number.toString());
+    }
+
+    default Mark mark() {
+        var previous = length();
+        return () ->
+            previous != length();
+    }
+
+    default void acceptQuoted(String string) {
+        accept(quoted(string));
+    }
+
+    @Override
+    default void close() {
+    }
+
+    void accept(String string);
+
+    long length();
 
     @FunctionalInterface
     interface Mark {

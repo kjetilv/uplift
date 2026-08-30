@@ -90,7 +90,9 @@ public final class JsonWrites {
             } else {
                 sink.accept(",");
             }
-            sink.accept("\"").accept(value.getKey()).accept("\":");
+            sink.accept("\"");
+            sink.accept(value.getKey());
+            sink.accept("\":");
             write(sink, value.getValue());
         }
         sink.accept("}");

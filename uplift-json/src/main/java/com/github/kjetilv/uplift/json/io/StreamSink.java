@@ -14,7 +14,14 @@ final class StreamSink extends AbstractEncodingSink {
     }
 
     @Override
-    public Sink accept(String string) {
+    public Mark mark() {
+        var initialLength = lengthCounter.longValue();
+        return () ->
+            initialLength != lengthCounter.longValue();
+    }
+
+    @Override
+    public void accept(String string) {
         try {
             var bytes = string.getBytes(charset());
             lengthCounter.add(bytes.length);
@@ -22,16 +29,6 @@ final class StreamSink extends AbstractEncodingSink {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + string, e);
         }
-        return this;
-    }
-
-    @Override
-    public Mark mark() {
-        var initialLength = length();
-        var moved = new AtomicReference<Boolean>();
-        return () ->
-            moved.updateAndGet(alreadyMoved ->
-                truDat(alreadyMoved) || length() > initialLength);
     }
 
     @Override
@@ -39,7 +36,7 @@ final class StreamSink extends AbstractEncodingSink {
         return Math.toIntExact(lengthCounter.longValue());
     }
 
-    private static boolean truDat(Boolean b) {
+    private static boolean realTrue(Boolean b) {
         return b != null && b;
     }
 

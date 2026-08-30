@@ -17,13 +17,12 @@ public final class ByteChannelSink extends AbstractEncodingSink {
     }
 
     @Override
-    public Sink accept(String string) {
+    public void accept(String string) {
         try {
             var bytes = string.getBytes(charset());
             var byteBuffer = ByteBuffer.wrap(bytes);
             byteChannel.write(byteBuffer);
             bytesWritten.add(bytes.length);
-            return this;
         } catch (Exception e) {
             throw new RuntimeException(this + " failed to write `" + string + "`", e);
         }
@@ -37,7 +36,7 @@ public final class ByteChannelSink extends AbstractEncodingSink {
 
     @Override
     public long length() {
-        return 0;
+        return bytesWritten.longValue();
     }
 
     @Override

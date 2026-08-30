@@ -9,18 +9,15 @@ record StringSink(StringBuilder sb) implements Sink {
     }
 
     @Override
-    public Sink accept(String string) {
-        sb.append(string);
-        return this;
+    public Mark mark() {
+        var length = sb.length();
+        return () ->
+            length != sb.length();
     }
 
     @Override
-    public Mark mark() {
-        var length = sb.length();
-        var moved = new AtomicReference<Boolean>();
-        return () ->
-            moved.updateAndGet(alreadyMoved ->
-                alreadyMoved != null && alreadyMoved || sb.length() > length);
+    public void accept(String string) {
+        sb.append(string);
     }
 
     @Override

@@ -18,7 +18,11 @@ public final class BufferedByteChannelSink extends AbstractBufferedSink {
 
     private final ByteBuffer buffer;
 
-    public BufferedByteChannelSink(WritableByteChannel byteChannel, Charset charset, int bufferSize) {
+    public BufferedByteChannelSink(
+        WritableByteChannel byteChannel,
+        Charset charset,
+        int bufferSize
+    ) {
         super(charset, bufferSize);
         this.byteChannel = byteChannel;
         this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
@@ -27,7 +31,12 @@ public final class BufferedByteChannelSink extends AbstractBufferedSink {
     }
 
     @Override
-    public Sink accept(String string) {
+    public void close() {
+        flush(buffer);
+    }
+
+    @Override
+    public void accept(String string) {
         var bytes = string.getBytes(charset);
         if (bytes.length > bufferSize) {
             bytesWritten.add(
@@ -41,17 +50,11 @@ public final class BufferedByteChannelSink extends AbstractBufferedSink {
         } else {
             buffer.put(bytes);
         }
-        return this;
     }
 
     @Override
     public long length() {
         return bytesWritten.longValue() + buffer.position();
-    }
-
-    @Override
-    public void close() {
-        flush(buffer);
     }
 
     private int flush(ByteBuffer buffer) {

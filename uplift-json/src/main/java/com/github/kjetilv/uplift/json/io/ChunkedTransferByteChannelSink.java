@@ -28,7 +28,7 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
     }
 
     @Override
-    public Sink accept(String string) {
+    public void accept(String string) {
         var bytes = string.getBytes(charset());
         if (bytes.length > bufferSize()) {
             bytesWritten.add(
@@ -42,7 +42,6 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
         } else {
             buffer.put(bytes);
         }
-        return this;
     }
 
     @Override
