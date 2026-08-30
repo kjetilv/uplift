@@ -35,10 +35,6 @@ public record Rate(int num, int den) {
         );
     }
 
-    boolean is100Percent() {
-        return equals(SUCCESS);
-    }
-
     private static int gcd(int v1, int v2) {
         return v2 == 0 ? v1 : gcd(v2, v1 % v2);
     }

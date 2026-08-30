@@ -22,7 +22,7 @@ final class Paths {
                 mainElements.subList(pathsSize, mainSize)
                     .stream()
                     .map(element ->
-                        Probes.DeadLeaf.deadEnd(element, trace))
+                        Probe.DeadLeaf.deadEnd(element, trace))
             );
         }
         if (pathsSize > mainSize) {
@@ -49,17 +49,14 @@ final class Paths {
 
         @Override
         public Stream<Probe<T>> probe(T main, List<String> trace) {
-            return exactArrayPaths(
-                trace,
-                structure.listElements(main),
-                paths
-            );
+            return exactArrayPaths(trace, structure.listElements(main), paths);
         }
 
         @Override
         public Optional<Extract<T>> extract(T main) {
             return Optional.ofNullable(main)
-                .map(value -> () -> value);
+                .map(value -> () ->
+                    value);
         }
     }
 
@@ -73,13 +70,15 @@ final class Paths {
                     path.probe(node, trace))
                 .filter(Probe::found)
                 .findFirst()
-                .orElseGet(() -> new Probes.DeadLeaf<>(main, null, trace)));
+                .orElseGet(() ->
+                    new Probe.DeadLeaf<>(main, null, trace)));
         }
 
         @Override
         public Optional<Extract<T>> extract(T main) {
             return Optional.ofNullable(main)
-                .map(value -> () -> value);
+                .map(value -> () ->
+                    value);
         }
     }
 
@@ -88,10 +87,7 @@ final class Paths {
 
         @Override
         public Stream<Probe<T>> probe(T main, List<String> trace) {
-            return Stream.of(new Probes.FoundNode<>(
-                branches(main, trace),
-                trace
-            ));
+            return Stream.of(new Probe.FoundNode<>(branches(main, trace), trace));
         }
 
         @Override
@@ -166,7 +162,7 @@ final class Paths {
             T main,
             List<String> trace
         ) {
-            return Stream.of(Probes.DeadLeaf.deadEnd(main, trace));
+            return Stream.of(Probe.DeadLeaf.deadEnd(main, trace));
         }
     }
 
@@ -179,7 +175,7 @@ final class Paths {
                 .map(field ->
                     next.probe(field, addTo(trace, name)))
                 .orElseGet(() ->
-                    Stream.of(Probes.DeadLeaf.deadEnd(main, trace)));
+                    Stream.of(Probe.DeadLeaf.deadEnd(main, trace)));
         }
 
         @Override
@@ -213,11 +209,12 @@ final class Paths {
         @Override
         public Optional<Extract<T>> extract(T main) {
             return Optional.ofNullable(main)
-                .map(value -> () -> value);
+                .map(value -> () ->
+                    value);
         }
 
         private static <T> Probe<T> found(T expected, List<String> trace) {
-            return new Probes.FoundLeaf<>(expected, trace);
+            return new Probe.FoundLeaf<>(expected, trace);
         }
 
         private static <T> Optional<Probe<T>> unexpected(
@@ -225,7 +222,7 @@ final class Paths {
             T expected,
             List<String> trace
         ) {
-            return Optional.of(new Probes.DeadLeaf<>(main, expected, trace));
+            return Optional.of(new Probe.DeadLeaf<>(main, expected, trace));
         }
     }
 }

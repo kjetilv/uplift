@@ -8,13 +8,13 @@ public final class Print {
             return "<empty secret>";
         }
         if (length == 1) {
-            return "*";
+            return STAR;
         }
         if (length < 5) {
             return semi.charAt(0) + STAR;
         }
         var printable = Math.min(5, length / 4);
-        return semi.substring(0, printable) + STARR + semi.substring(length - printable);
+        return semi.substring(0, printable) + RINGO + semi.substring(length - printable);
     }
 
     @SuppressWarnings("MagicNumber")
@@ -46,5 +46,5 @@ public final class Print {
 
     private static final String STAR = "⁎";
 
-    public static final String STARR = STAR + STAR;
+    public static final String RINGO = STAR + STAR;
 }

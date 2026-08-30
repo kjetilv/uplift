@@ -35,7 +35,7 @@ public class CacheBenchmark {
     }
 
     @Benchmark
-    public Object readJsonUncached() throws Exception {
+    public Object  readJsonUncached() throws Exception {
         var json = Json.instance();
         try (var lines = Files.lines(tmp)) {
             return lines.map(json::read)
@@ -87,4 +87,3 @@ public class CacheBenchmark {
         }
     }
 }
-
