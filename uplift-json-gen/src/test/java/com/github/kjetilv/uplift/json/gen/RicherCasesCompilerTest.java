@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ClassNameDiffersFromFileName")
 public class RicherCasesCompilerTest extends CompilerTestCase {
+
     @Test
     void simpleCase() {
         ver(//language=java

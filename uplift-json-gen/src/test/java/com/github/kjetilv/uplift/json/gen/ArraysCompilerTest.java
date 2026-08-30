@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ClassNameDiffersFromFileName")
 public class ArraysCompilerTest extends CompilerTestCase {
+
     @Test
     void stringArrayFields() {
         ver(//language=java
