@@ -10,8 +10,7 @@ import java.util.stream.Stream;
 public record Range(Long start, Long exclusiveEnd, Long length) {
 
     public static Optional<Range> read(String value) {
-        return Optional.ofNullable(value)
-            .stream()
+        return Stream.ofNullable(value)
             .map(COMMA::split)
             .flatMap(Arrays::stream)
             .map(String::trim)
@@ -31,8 +30,8 @@ public record Range(Long start, Long exclusiveEnd, Long length) {
         return BYTES_EQ + rangeRequest();
     }
 
-    private String rangeRequest() {
-        return start + "-" + (exclusiveEnd - 1);
+    public String rangeRequest() {
+        return start + "-" + (exclusiveEnd == null ? "" : exclusiveEnd - 1);
     }
 
     private Range combine(Range range) {

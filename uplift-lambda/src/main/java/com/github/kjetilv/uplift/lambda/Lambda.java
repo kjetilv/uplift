@@ -26,7 +26,7 @@ public final class Lambda {
         Duration responseTimeout,
         int parallellism
     ) {
-        try (var managed = managed(handler, connectTimeout, responseTimeout)) {
+        try (var managed = managed(name, handler, connectTimeout, responseTimeout)) {
             managed.accept(name);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to run lambda: " + handler, e);
@@ -34,12 +34,14 @@ public final class Lambda {
     }
 
     public static LamdbdaManaged managed(
+        String name,
         LambdaHandler handler,
         Duration connectTimeout,
         Duration responseTimeout
     ) {
         var env = Env.actual();
         return managed(
+            name,
             env.awsLambdaUri(),
             new LambdaClientSettings(
                 env,
@@ -52,14 +54,19 @@ public final class Lambda {
     }
 
     public static LamdbdaManaged managed(
+        String name,
         URI uri,
         LambdaClientSettings settings,
         LambdaHandler handler
     ) {
-        return new DefaultLamdbdaManaged(uri, settings, handler);
+        return new DefaultLamdbdaManaged(
+            name,
+            uri,
+            settings,
+            handler
+        );
     }
 
     private Lambda() {
     }
-
 }

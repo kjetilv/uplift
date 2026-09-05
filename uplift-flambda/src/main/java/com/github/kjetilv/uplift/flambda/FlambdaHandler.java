@@ -57,10 +57,11 @@ record FlambdaHandler(
         try {
             var split = path.split("/");
             for (var i = 0; i < split.length; i++) {
-                if (split[i] == null || split[i].isBlank()) {
+                var s = split[i];
+                if (s == null || s.isBlank()) {
                     continue;
                 }
-                if (split[i].charAt(0) == 'i' && split[i].equals("invocation")) {
+                if (s.charAt(0) == 'i' && s.equals("invocation")) {
                     if (i + 1 < split.length) {
                         var id = split[i + 1];
                         return Hash.from(id);

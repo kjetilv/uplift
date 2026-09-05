@@ -10,5 +10,5 @@ public interface InvocationSource extends RuntimeCloseable {
     default void close() {
     }
 
-    Optional<CompletionStage<Invocation>> next();
+    Optional<CompletableFuture<Invocation>> next();
 }

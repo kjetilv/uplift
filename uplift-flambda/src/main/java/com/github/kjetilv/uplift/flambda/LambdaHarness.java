@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaLooper;
 import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
+import com.github.kjetilv.uplift.util.Virtuals;
 
 @SuppressWarnings("unused")
 public class LambdaHarness implements RuntimeCloseable {
@@ -82,13 +83,14 @@ public class LambdaHarness implements RuntimeCloseable {
 
         this.flambda = new Flambda(settings);
         var managed = Lambda.managed(
+            name,
             this.flambda.lambdaUri(),
             clientSettings,
             handler
         );
 
         this.looper = managed.looper(name);
-        Executors.newVirtualThreadPerTaskExecutor().submit(this.looper);
+        Virtuals.executor(name).submit(this.looper);
         this.reqs = flambda.reqs();
     }
 

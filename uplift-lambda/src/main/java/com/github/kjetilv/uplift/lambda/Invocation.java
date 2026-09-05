@@ -15,7 +15,7 @@ public record Invocation(
     LambdaPayload payload,
     LambdaResult result,
     HttpRequest completionRequest,
-    CompletionStage<HttpResponse<InputStream>> completionStage,
+    CompletableFuture<HttpResponse<InputStream>> completableFuture,
     HttpResponse<InputStream> completionResponse,
     Throwable responseFailure
 ) {
@@ -89,7 +89,7 @@ public record Invocation(
         LambdaPayload payload,
         LambdaResult result,
         HttpRequest completionRequest,
-        CompletionStage<HttpResponse<InputStream>> completionStage,
+        CompletableFuture<HttpResponse<InputStream>> completableFuture,
         HttpResponse<InputStream> completionResponse,
         Throwable responseFailure
     ) {
@@ -102,7 +102,7 @@ public record Invocation(
         this.payload = payload;
         this.result = result;
         this.completionRequest = completionRequest;
-        this.completionStage = completionStage;
+        this.completableFuture = completableFuture;
         this.completionResponse = completionResponse;
         this.responseFailure = responseFailure;
     }
@@ -122,7 +122,7 @@ public record Invocation(
             payload,
             result.get(),
             completionRequest,
-            completionStage,
+            completableFuture,
             completionResponse,
             responseFailure
         );
@@ -139,7 +139,7 @@ public record Invocation(
             this.payload,
             result.get(),
             completionRequest,
-            completionStage,
+            completableFuture,
             completionResponse,
             responseFailure
         );
@@ -166,14 +166,14 @@ public record Invocation(
             payload,
             result,
             empty() ? null : completionRequest.get(),
-            completionStage,
+            completableFuture,
             completionResponse,
             responseFailure
         );
     }
 
     Invocation completionFuture(
-        Supplier<CompletionStage<HttpResponse<InputStream>>> completionStage,
+        Supplier<CompletableFuture<HttpResponse<InputStream>>> completableFutureSupplier,
         Supplier<Instant> time
     ) {
         return new Invocation(
@@ -186,30 +186,30 @@ public record Invocation(
             payload,
             result,
             completionRequest,
-            empty() ? null : completionStage.get(),
+            empty() ? null : completableFutureSupplier.get(),
             completionResponse,
             responseFailure
         );
     }
 
-    CompletionStage<Invocation> completedAt(Supplier<Instant> time) {
-        return completionStage == null
+    CompletableFuture<Invocation> completedAt(Supplier<Instant> time) {
+        return completableFuture == null
             ? CompletableFuture.completedFuture(this)
-            : completionStage.thenApply(completion ->
-                                        new Invocation(
-                                            created,
-                                            request,
-                                            requestFailure,
-                                            aborted,
-                                            time.get(),
-                                            id,
-                                            payload,
-                                            result,
-                                            completionRequest,
-                                            completionStage,
-                                            completion,
-                                            responseFailure
-                                        ));
+            : completableFuture.thenApply(completion ->
+                new Invocation(
+                    created,
+                    request,
+                    requestFailure,
+                    aborted,
+                    time.get(),
+                    id,
+                    payload,
+                    result,
+                    completionRequest,
+                    completableFuture,
+                    completion,
+                    responseFailure
+                ));
     }
 
     boolean empty() {
@@ -223,7 +223,7 @@ public record Invocation(
                 : empty() ? "empty"
                     : payload + " / " + result + " => " + (
                         responseFailure != null
-                        ? "responseFailure:" + responseFailure
+                            ? "responseFailure:" + responseFailure
                             : completionResponse
                     )
         ) + "]";

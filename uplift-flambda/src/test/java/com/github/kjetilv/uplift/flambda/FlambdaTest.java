@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.lambda.RequestOutRW;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.CorsSettings;
+import com.github.kjetilv.uplift.util.Virtuals;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class FlambdaTest {
             var flambda = new Flambda(settings);
             var client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
-                .executor(Executors.newVirtualThreadPerTaskExecutor())
+                .executor(Virtuals.executor("flambda-test"))
                 .build()
         ) {
             var lambdaUri = flambda.lambdaUri();

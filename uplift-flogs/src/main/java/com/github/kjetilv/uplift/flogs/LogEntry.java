@@ -15,7 +15,8 @@ public record LogEntry(
     Object[] args,
     boolean lastArgThrowable,
     long threadId,
-    String threadName
+    String threadName,
+    Boolean virtual
 ) {
 
     @SuppressWarnings("deprecation")
@@ -40,7 +41,8 @@ public record LogEntry(
             args,
             argumentThrowable != null,
             id,
-            id == 1 ? null : thread.getName()
+            id == 1 ? null : thread.getName(),
+            thread.isVirtual()
         );
         return logEntry;
     }
@@ -58,6 +60,14 @@ public record LogEntry(
         }
     }
 
+    @Override
+    public String threadName() {
+        if (threadName.startsWith(WORKER)) {
+            return "🎱" + threadName.substring(WORKER.length());
+        }
+        return (virtual != null && virtual ? "𐄷" : "") + threadName;
+    }
+
     ZonedDateTime zuluTime() {
         return time.truncatedTo(MILLIS).atZone(Z);
     }
@@ -65,6 +75,8 @@ public record LogEntry(
     boolean hasLevel() {
         return logLevel != null;
     }
+
+    private static final String WORKER = "ForkJoinPool.commonPool-worker-";
 
     private static final ZoneId Z = ZoneId.of("Z");
 

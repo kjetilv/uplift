@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,8 @@ final class DefaultServer implements Server {
 
     private final LongAdder requests = new LongAdder();
 
+    private final ThreadFactory threadFactory;
+
     DefaultServer(InetSocketAddress address) {
         this(
             Objects.requireNonNull(address, "address"),
@@ -43,8 +46,9 @@ final class DefaultServer implements Server {
         ServerSocketChannel serverSocketChannel,
         Processor processor
     ) {
+        var name = "server@" + address.getPort();
         this.address = address;
-
+        this.threadFactory = Virtuals.virtualThreadFactory(name);
         if (serverSocketChannel == null) {
             this.serverSocketChannel = null;
             this.processor = null;
@@ -52,8 +56,20 @@ final class DefaultServer implements Server {
         } else {
             this.serverSocketChannel = serverSocketChannel;
             this.processor = Objects.requireNonNull(processor, "processor");
-            this.serverThread = server()::join;
+            this.serverThread = server(name)::join;
         }
+    }
+
+    @Override
+    public InetSocketAddress address() {
+        requireRunning();
+        return new InetSocketAddress(address.getAddress(), serverSocketChannel.socket().getLocalPort());
+    }
+
+    @Override
+    public void join() {
+        requireRunning();
+        serverThread.run();
     }
 
     @Override
@@ -64,12 +80,6 @@ final class DefaultServer implements Server {
             this.address.getAddress(), serverSocketChannel.socket().getLocalPort()
         );
         return new DefaultServer(address, serverSocketChannel, processor);
-    }
-
-    @Override
-    public InetSocketAddress address() {
-        requireRunning();
-        return new InetSocketAddress(address.getAddress(), serverSocketChannel.socket().getLocalPort());
     }
 
     @Override
@@ -89,12 +99,6 @@ final class DefaultServer implements Server {
         }
     }
 
-    @Override
-    public void join() {
-        requireRunning();
-        serverThread.run();
-    }
-
     @SuppressWarnings("resource")
     private ServerSocketChannel openServer() {
         try {
@@ -104,12 +108,15 @@ final class DefaultServer implements Server {
         }
     }
 
-    private CompletableFuture<Void> server() {
-        return CompletableFuture.runAsync(() -> {
-            while (processSocket(openSocket())) {
-                requests.increment();
-            }
-        });
+    private CompletableFuture<Void> server(String name) {
+        return CompletableFuture.runAsync(
+            () -> {
+                while (processSocket(openSocket())) {
+                    requests.increment();
+                }
+            },
+            Virtuals.executor(name)
+        );
     }
 
     private SocketChannel openSocket() {
@@ -133,7 +140,7 @@ final class DefaultServer implements Server {
         if (channel == null) {
             return false;
         }
-        THREAD_FACTORY.newThread(() -> {
+        threadFactory.newThread(() -> {
             try {
                 while (channel.isOpen() && processor.process(channel, channel)) {
                 }
@@ -161,8 +168,6 @@ final class DefaultServer implements Server {
             throw new IllegalStateException(this + " is not running");
         }
     }
-
-    private static final ThreadFactory THREAD_FACTORY = Thread.ofVirtual().name("vt", 0L).factory();
 
     @Override
     public String toString() {

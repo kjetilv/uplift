@@ -38,7 +38,8 @@ public abstract sealed class FjulFormatter extends Formatter {
                 record.getParameters(),
                 record.getThrown() != null,
                 record.getLongThreadID(),
-                String.valueOf(record.getLongThreadID())
+                String.valueOf(record.getLongThreadID()),
+                null
             )
         );
     }

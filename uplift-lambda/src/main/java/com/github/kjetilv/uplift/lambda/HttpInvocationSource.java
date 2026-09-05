@@ -17,7 +17,7 @@ final class HttpInvocationSource implements InvocationSource {
 
     private final Supplier<Instant> time;
 
-    private final Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch;
+    private final Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch;
 
     private final HttpRequest request;
 
@@ -28,7 +28,7 @@ final class HttpInvocationSource implements InvocationSource {
     private final AtomicBoolean closed = new AtomicBoolean();
 
     HttpInvocationSource(
-        Function<HttpRequest, CompletionStage<HttpResponse<InputStream>>> fetch,
+        Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch,
         URI endpoint,
         Duration timeout,
         Supplier<Instant> time
@@ -61,18 +61,17 @@ final class HttpInvocationSource implements InvocationSource {
     }
 
     @Override
-    public Optional<CompletionStage<Invocation>> next() {
-        if (closed.get()) {
-            return Optional.empty();
-        }
-        var stage = fetch.apply(request)
-            .thenApply(response ->
-                invocationId(response)
-                    .map(invocationId ->
-                        invocation(invocationId, response))
-                    .orElseGet(this::failedInvocation))
-            .exceptionally(this::failedInvocation);
-        return Optional.of(stage);
+    public Optional<CompletableFuture<Invocation>> next() {
+        return closed.get()
+            ? Optional.empty()
+            : Optional.of(fetch.apply(request)
+                .thenApply(response ->
+                    invocationId(response)
+                        .map(invocationId ->
+                            invocation(invocationId, response))
+                        .orElseGet(this::failedInvocation))
+                .exceptionally(this::failedInvocation)
+            );
     }
 
     private Invocation invocation(

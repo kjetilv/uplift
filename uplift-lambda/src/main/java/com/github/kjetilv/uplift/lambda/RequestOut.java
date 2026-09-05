@@ -1,8 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.kernel.io.Range;
 
 import java.util.Map;
+import java.util.Optional;
 
 @JsonRecord
 public record RequestOut(
@@ -14,7 +16,7 @@ public record RequestOut(
     RequestContext requestContext,
     boolean isBase64Encoded,
     String body
-) {
+) implements Headered {
 
     public RequestOut(
         String httpMethod,
@@ -37,6 +39,10 @@ public record RequestOut(
         );
     }
 
+    Optional<Range> range() {
+        return header("Range").flatMap(Range::read);
+    }
+
     private static final String VERSION = "2.0";
 
     public record RequestContext(Http http) {
@@ -48,6 +54,8 @@ public record RequestOut(
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + httpMethod + " " + path +
+               range().map(Range::rangeRequest)
+                   .map(range -> "/" + range).orElse("") +
                " q:" + Utils.printQueryParams(queryStringParameters) +
                " h:" + Utils.headers(headers) +
                " b:" + Utils.printBody(body, isBase64Encoded ? "base64" : null) +

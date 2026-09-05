@@ -32,13 +32,17 @@ final class Utils {
     }
 
     static String printBody(String body, String contents) {
+        return printBody(body, contents, CUTOFF_PRINT, MAX_PRINT);
+    }
+
+    static String printBody(String body, String contents, int cutoffPrint, int maxPrint) {
         if (body == null || body.isBlank()) {
             return "[]";
         }
-        if (body.length() < MAX_PRINT) {
+        if (body.length() < maxPrint) {
             return body;
         }
-        return body.substring(0, CUTOFF_PRINT) + "⋯ (" + body.length() + " " +
+        return body.substring(0, cutoffPrint) + "⋯ (" + body.length() + " " +
                (contents == null ? "chars" : contents) + ")";
     }
 

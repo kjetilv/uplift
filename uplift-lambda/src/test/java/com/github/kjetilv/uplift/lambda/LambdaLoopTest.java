@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
+import com.github.kjetilv.uplift.util.Virtuals;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpClient;
@@ -19,86 +20,42 @@ class LambdaLoopTest {
         Collection<String> responses = new ArrayList<>();
         var failed = new AtomicReference<Throwable>();
         var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
-        var test = LambdaLoopers.looper(
-            "test",
-            () ->
-                responses.size() > 3
-                    ? Optional.empty()
-                    : Optional.of(CompletableFuture.supplyAsync(() -> Invocation.create(
-                            UUID.randomUUID().toString(),
-                            request,
-                            LambdaPayload.parse(REQ), Instant.now()
-                        )
-                    )),
-            _ ->
-                new LambdaResult(
-                    200,
-                    Collections.emptyMap(),
-                    "OK".getBytes(UTF_8),
-                    false
-                ),
-            invocation -> {
-                var uri = invocation.request().uri();
-                var resolve = uri.resolve("/bar/" + invocation.id() + "/foo");
-                return HttpRequest.newBuilder(resolve).GET().build();
-            },
-            invocation -> {
-                InputStream ok = new ByteArrayInputStream(invocation.result().body());
-                responses.add(new String(invocation.result().body(), UTF_8));
-                return invocation.completionFuture(
-                    () ->
-                        CompletableFuture.supplyAsync(() -> new HttpResponse<InputStream>() {
-
-                            @Override
-                            public int statusCode() {
-                                return 0;
-                            }
-
-                            @Override
-                            public HttpRequest request() {
-                                return null;
-                            }
-
-                            @Override
-                            public Optional<HttpResponse<InputStream>> previousResponse() {
-                                return Optional.empty();
-                            }
-
-                            @Override
-                            public HttpHeaders headers() {
-                                return null;
-                            }
-
-                            @Override
-                            public InputStream body() {
-                                return ok;
-                            }
-
-                            @Override
-                            public Optional<SSLSession> sslSession() {
-                                return Optional.empty();
-                            }
-
-                            @Override
-                            public URI uri() {
-                                return null;
-                            }
-
-                            @Override
-                            public HttpClient.Version version() {
-                                return null;
-                            }
-                        }),
-                    Instant::now
-                );
-            },
-            (_, throwable) -> {
-                failed.set(throwable);
-                return throwable == null;
-            },
-            Instant::now
-        );
-        test.run();
+        try (var executor = Virtuals.executor("test")) {
+            LambdaLooper test = LambdaLoopers.looper(
+                "test",
+                invocationSource(responses, request, executor),
+                _ ->
+                    new LambdaResult(
+                        200,
+                        Collections.emptyMap(),
+                        "OK".getBytes(UTF_8),
+                        false
+                    ),
+                invocation -> {
+                    var uri = invocation.request().uri();
+                    var resolve = uri.resolve("/bar/" + invocation.id() + "/foo");
+                    return HttpRequest.newBuilder(resolve).GET().build();
+                },
+                invocation -> {
+                    InputStream ok = new ByteArrayInputStream(invocation.result().body());
+                    responses.add(new String(invocation.result().body(), UTF_8));
+                    return invocation.completionFuture(
+                        () ->
+                            CompletableFuture.supplyAsync(
+                                () -> new TestResponse(ok),
+                                executor
+                            ),
+                        Instant::now
+                    );
+                },
+                (_, throwable) -> {
+                    failed.set(throwable);
+                    return throwable == null;
+                },
+                Instant::now
+            );
+            test.run();
+        }
         assertThat(responses.size()).isGreaterThanOrEqualTo(3);
         assertThat(failed.get()).isNull();
     }
@@ -182,4 +139,79 @@ class LambdaLoopTest {
             }
             
             """;
+
+    private static InvocationSource invocationSource(
+        Collection<String> responses,
+        HttpRequest request,
+        ExecutorService executor
+    ) {
+        return () -> {
+            if (responses.size() > 3) {
+                return Optional.empty();
+            }
+            var invocationCompletableFuture = CompletableFuture.supplyAsync(
+                invocationSupplier(request),
+                executor
+            );
+            return Optional.of(invocationCompletableFuture);
+        };
+    }
+
+    private static Supplier<Invocation> invocationSupplier(HttpRequest request) {
+        return () ->
+            Invocation.create(
+                UUID.randomUUID().toString(),
+                request,
+                LambdaPayload.parse(REQ), Instant.now()
+            );
+    }
+
+    private static final class TestResponse implements HttpResponse<InputStream> {
+
+        private final InputStream ok;
+
+        private TestResponse(InputStream ok) {
+            this.ok = ok;
+        }
+
+        @Override
+        public int statusCode() {
+            return 0;
+        }
+
+        @Override
+        public HttpRequest request() {
+            return null;
+        }
+
+        @Override
+        public Optional<HttpResponse<InputStream>> previousResponse() {
+            return Optional.empty();
+        }
+
+        @Override
+        public HttpHeaders headers() {
+            return null;
+        }
+
+        @Override
+        public InputStream body() {
+            return ok;
+        }
+
+        @Override
+        public Optional<SSLSession> sslSession() {
+            return Optional.empty();
+        }
+
+        @Override
+        public URI uri() {
+            return null;
+        }
+
+        @Override
+        public HttpClient.Version version() {
+            return null;
+        }
+    }
 }

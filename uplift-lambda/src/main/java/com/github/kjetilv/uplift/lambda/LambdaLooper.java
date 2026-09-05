@@ -64,18 +64,23 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         this.startTime = this.time.get();
     }
 
+    @SuppressWarnings("EndlessStream")
     @Override
     public void run() {
         log.info("{}: Loop started", name);
-        try {
-            invocationFutures().map(this::run)
-                .peek(future ->
-                    future.whenComplete(this::handleOutcome))
-                .forEach(stage ->
-                    stage.toCompletableFuture().join());
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to respond", e);
-        }
+        Stream.generate(source::next)
+            .flatMap(Optional::stream)
+            .map(invocationFuture -> {
+                try {
+                    return Optional.of(invocationFuture
+                        .thenCompose(this::run)
+                        .whenComplete(this::handleOutcome));
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to respond", e);
+                }
+            })
+            .flatMap(Optional::stream)
+            .forEach(CompletableFuture::join);
     }
 
     @Override
@@ -83,17 +88,16 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         source.close();
     }
 
-    private Stream<CompletionStage<Invocation>> invocationFutures() {
-        return Stream.generate(source::next)
-            .takeWhile(Optional::isPresent)
-            .flatMap(Optional::stream);
-    }
-
-    private CompletionStage<Invocation> run(CompletionStage<Invocation> stage) {
-        return stage.thenApply(this::executeLambda)
-            .thenApply(this::prepareResponse)
-            .thenApply(sink::receive)
-            .thenCompose(this::markComplete)
+    private CompletableFuture<Invocation> run(Invocation invocation) {
+        var executed = executeLambda(invocation);
+        var prepared = executed.completed(
+            () ->
+                responseResolver.resolve(executed),
+            time
+        );
+        var received = sink.receive(prepared);
+        var marked = received.completedAt(time);
+        return marked
             .whenComplete(this::updateStats)
             .exceptionally(this::fatalInvocation);
     }
@@ -127,8 +131,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
     private Invocation executeLambda(Invocation invocation) {
         try {
             return invocation.result(
-                () ->
-                    lambdaHandler.handle(invocation.payload()),
+                () -> lambdaHandler.handle(invocation.payload()),
                 time
             );
         } catch (Exception e) {
@@ -148,17 +151,6 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
                 initiated.increment();
             }
         }
-    }
-
-    private Invocation prepareResponse(Invocation invocation) {
-        return invocation.completed(
-            () -> responseResolver.resolve(invocation),
-            time
-        );
-    }
-
-    private CompletionStage<Invocation> markComplete(Invocation invocation) {
-        return invocation.completedAt(time);
     }
 
     private void updateStats(Invocation invocation, Throwable throwable) {

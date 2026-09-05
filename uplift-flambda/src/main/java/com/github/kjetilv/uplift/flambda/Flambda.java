@@ -3,13 +3,16 @@ package com.github.kjetilv.uplift.flambda;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.Server;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
+import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -37,12 +40,12 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         this.lambdaServer = Server.create(settings.lambdaPort())
             .run(new HttpCallbackProcessor(new FlambdaHandler(settings, flambdaState)));
 
-        Runtime.getRuntime().addShutdownHook(new Thread(
+        Runtime.getRuntime().addShutdownHook(Virtuals.thread(
+            Flambda.class.getSimpleName().toLowerCase(Locale.ROOT) + "-shutdown",
             () -> {
                 log.info("Shutting down {}", this);
                 close();
-            },
-            Flambda.class.getSimpleName() + " shutdown"
+            }
         ));
         log.info("{} started", this);
     }
@@ -82,23 +85,22 @@ public final class Flambda implements RuntimeCloseable, Runnable {
     }
 
     private void await(Function<Server, Runnable> task) {
-        try (var scope = newScope()) {
-            scope.fork(task.apply(lambdaServer));
-            scope.fork(task.apply(apiServer));
-            scope.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted", e);
+        try (var executor = Virtuals.executor("flambda")) {
+            CompletableFuture<Void> lambdaFuture = CompletableFuture.runAsync(task.apply(lambdaServer), executor);
+            CompletableFuture<Void> apiFuture = CompletableFuture.runAsync(task.apply(apiServer), executor);
+            lambdaFuture.join();
+            apiFuture.join();
         }
-
     }
 
     private StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
         return StructuredTaskScope.open(
-            allSuccessfulOrThrow(), configuration -> configuration
-                .withThreadFactory(Thread.ofVirtual().factory())
-                .withName(name)
-                .withTimeout(Duration.ofMinutes(1))
+            allSuccessfulOrThrow(),
+            configuration ->
+                configuration
+                    .withThreadFactory(Virtuals.virtualThreadFactory(name))
+                    .withName(name)
+                    .withTimeout(Duration.ofMinutes(1))
         );
     }
 
