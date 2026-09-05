@@ -13,17 +13,24 @@ public record Entries<T>(Name name, List<T> items) {
     }
 
     public Entries<T> map(Function<T, T> transform) {
-        var list = items.stream()
-            .map(transform)
-            .toList();
-        return new Entries<>(name, list);
+        return new Entries<>(
+            name,
+            items.stream()
+                .map(transform)
+                .toList()
+        );
     }
 
     public boolean matches(Entries<T> items) {
-        return size() == items.size();
+        return entriesName().equalsIgnoreCase(items.entriesName()) &&
+               size() == items.size();
     }
 
     public int size() {
         return items.size();
+    }
+
+    private String entriesName() {
+        return name.name();
     }
 }
