@@ -9,7 +9,7 @@ public abstract class UpliftDestroyTask extends UpliftCdkTask {
 
     @Override
     protected void perform() {
-        if (!FileIO.isActualDirectory(cdkApp())) {
+        if (FileIO.nonDirectory(cdkApp())) {
             initCdkApp();
         }
         cdk().run("cdk destroy --require-approval=never " + profileOption() + " " + getStack().get());

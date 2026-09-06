@@ -21,30 +21,19 @@ public final class FileIO {
         return path.getFileName().toString().endsWith(".jar");
     }
 
-    /**
-     * Faithful port of the Kotlin `Path.isDir`, which tested the *file name* rather than
-     * the path: `fileName.isDirectory()`. A single-segment relative path is resolved
-     * against the working directory, so for an absolute build output this is essentially
-     * always false. Preserved deliberately, because changing it would widen the set of
-     * classpath entries the native image build picks up.
-     */
-    public static boolean isDir(Path path) {
-        return Files.isDirectory(path.getFileName());
+    public static boolean nonDirectory(Path path) {
+        return !Files.isDirectory(path);
     }
 
-    public static boolean isActualDirectory(Path path) {
-        return Files.isDirectory(path);
-    }
-
-    public static Path copyTo(Path source, Path context) {
-        return copyTo(source, context, null);
+    public static void copyTo(Path source, Path context) {
+        copyTo(source, context, null);
     }
 
     /**
      * Copies only when the target is absent, a different size, or older. Returns the
      * target either way.
      */
-    public static Path copyTo(Path source, Path context, String target) {
+    public static void copyTo(Path source, Path context, String target) {
         Path targetPath = context.resolve(target != null ? Path.of(target) : source.getFileName());
         try {
             if (shouldCopy(source, targetPath)) {
@@ -53,7 +42,6 @@ public final class FileIO {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to copy " + source + " to " + targetPath, e);
         }
-        return targetPath;
     }
 
     public static void clearRecursive(Path... paths) {

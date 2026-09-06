@@ -219,7 +219,7 @@ public final class StackReport {
         if (parent == null) {
             return List.of();
         }
-        try (Stream<Path> found = Files.find(parent, 1, (file, attributes) ->
+        try (Stream<Path> found = Files.find(parent, 1, (file, _) ->
             file.getFileName().toString().endsWith(".jar"))) {
             return found.toList();
         } catch (IOException e) {
