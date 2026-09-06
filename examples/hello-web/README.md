@@ -8,16 +8,16 @@ We need some groundwork to get started.
 
 * A running Docker service
 * Access key/secret for an IAM user with sufficient permissions in AWS
-* Gradle properties to select AWS account and region, and to point to the access key/secrets
+* Maven properties to select AWS account and region, and to point to the access key/secrets
 
-We will need docker to build, a working IAM user in AWS with sufficient permissions to deploy. Gradle also needs some properties to know about the IAM user. 
+We will need docker to build, and a working IAM user in AWS with sufficient permissions to deploy. Maven also needs some properties to know about the IAM user.
 
 ### 1. Run Docker
 
 Checklist for Docker:
 
 * A docker daemon should be running and authenticated so it can pull [temurin](https://hub.docker.com/_/eclipse-temurin/) and [ubuntu](https://hub.docker.com/_/ubuntu) images from the [Docker hub](https://hub.docker.com/).
-* The `docker` command line tool should be on `PATH` so that the Gradle process can execute it.
+* The `docker` command line tool should be on `PATH` so that the build can execute it.
 
 ### 2. Identify in AWS
 
@@ -35,16 +35,17 @@ aws_secret_access_key = < 123... >
 ... other other profiles ...
 ```
 
-### 3. Configure Gradle build
+### 3. Configure the build
 
-Add a `gradle.properties` file (based on e.g. [this one](./gradle.properties.template.txt)) file to point to the profile, along with your account number, and the desired region:
+Copy [the template](./.mvn/maven.config.template) to `.mvn/maven.config` and fill it in. It points to the profile, and gives your account number and the region you want:
 
 ```
-# Convert this to a gradle.properties file
-account=123456768910
-region=us-east-1
-profile=<profile with access keys to authorized role> 
+-Duplift.account=123456768910
+-Duplift.region=us-east-1
+-Duplift.profile=<profile with access keys to authorized role>
 ```
+
+If any of the three is missing, the build stops during `validate` and says which.
 
 ## Build and run
 
@@ -54,19 +55,19 @@ The libraries aren't published anywhere yet. So, you need to publish
 [uplift](../..) to your local repo before running:
 
 ```bash
-cd ../.. && ./gradlew \
- build \
- publishToMavenLocal \
- publishPluginMavenPublicationToMavenLocal \
- ; cd -
+mvn -f ../../pom.xml install
 ```
+
+This has to happen first, and not just the once. Maven resolves a build plugin before it
+builds anything, so `uplift-maven-plugin` must already be in your local repository before
+this example can start. Rerun it whenever the plugin changes.
 
 ### 2. Launch!
 
 Then, you should be able to:
 
 ```bash
-./gradlew uplift
+mvn uplift:deploy
 ```
 
 And find your lambda running in the cloud eventually!
@@ -74,5 +75,21 @@ And find your lambda running in the cloud eventually!
 To find the URL of your service:
 
 ```bash
-./gradlew uplift-ping
+mvn uplift:ping
+```
+
+### 3. Look before you leap
+
+To see the CloudFormation template that would be deployed, without touching AWS at all:
+
+```bash
+mvn uplift:init uplift:synth
+```
+
+The result lands in `hello-web-uplift/target/cdk-app/cdk.out/`.
+
+To take it down again:
+
+```bash
+mvn uplift:destroy
 ```

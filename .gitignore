@@ -36,6 +36,7 @@ bin/
 ### These are used to hold sensitive information (account id, profile etc.)
 examples/**/gradle.properties
 gradle.properties
+examples/**/.mvn/maven.config
 .aider*
 
 ### Java
