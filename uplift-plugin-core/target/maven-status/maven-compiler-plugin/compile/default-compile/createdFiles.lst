@@ -1,0 +1,13 @@
+com/github/kjetilv/uplift/plugins/core/Docker.class
+com/github/kjetilv/uplift/plugins/core/Zips.class
+com/github/kjetilv/uplift/plugins/core/Dist$Type.class
+com/github/kjetilv/uplift/plugins/core/Dist.class
+com/github/kjetilv/uplift/plugins/core/NativeImage.class
+com/github/kjetilv/uplift/plugins/core/Templates.class
+com/github/kjetilv/uplift/plugins/core/StackReport.class
+com/github/kjetilv/uplift/plugins/core/Cdk.class
+com/github/kjetilv/uplift/plugins/core/CdkApp$Dependency.class
+com/github/kjetilv/uplift/plugins/core/CdkApp.class
+com/github/kjetilv/uplift/plugins/core/Log.class
+com/github/kjetilv/uplift/plugins/core/NativeImage$Spec.class
+com/github/kjetilv/uplift/plugins/core/FileIO.class

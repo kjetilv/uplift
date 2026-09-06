@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.kjetilv.uplift</groupId>
+    <artifactId>uplift</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>uplift-plugin-core</artifactId>
+
+  <name>uplift-plugin-core</name>
+  <description>
+    Build logic for native lambdas and CDK deployment, with no build system types in it.
+    The Gradle tasks and the Maven mojos are both thin wrappers over this.
+  </description>
+
+  <dependencies>
+    <!-- Dockerfile and pom templating. -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>ST4</artifactId>
+      <version>${st4.version}</version>
+    </dependency>
+
+    <!-- Reading back what was deployed, for the ping report. -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>lambda</artifactId>
+      <version>${awssdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>cloudformation</artifactId>
+      <version>${awssdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>auth</artifactId>
+      <version>${awssdk.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>

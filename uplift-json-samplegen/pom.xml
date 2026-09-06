@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.kjetilv.uplift</groupId>
+    <artifactId>uplift</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>uplift-json-samplegen</artifactId>
+
+  <properties>
+    <!-- Not published by the Gradle build either. -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <!--
+    The Gradle build also lists uplift-hash under testImplementation. That is a
+    harmless duplicate there, but in Maven a second declaration overrides the
+    first, and the narrower test scope would drop Hash from the compile classpath.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-hash</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-json</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-json-anno</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-json-gen</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-json-mame</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-synchttp</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+              <path>
+                <groupId>com.github.kjetilv.uplift</groupId>
+                <artifactId>uplift-json-gen</artifactId>
+                <version>${project.version}</version>
+              </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

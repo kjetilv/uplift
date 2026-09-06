@@ -25,12 +25,10 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("software.amazon.awscdk:aws-cdk-lib:2.216.0")
-    implementation("software.amazon.awssdk:lambda:2.34.2")
-    implementation("software.amazon.awssdk:cloudformation:2.34.2")
-    implementation("software.amazon.awssdk:auth:2.34.2")
-    implementation("software.constructs:constructs:10.4.2")
-    implementation("org.antlr:ST4:4.3.4")
+    // Build logic and templates, shared with the Maven plugin. Resolved from mavenLocal,
+    // so `mvn -pl uplift-plugin-core install` must run before this module is built.
+    // Temporary: this module goes away at the end of the Maven migration.
+    implementation("com.github.kjetilv.uplift:uplift-plugin-core:0.1.1-SNAPSHOT")
 
     implementation(gradleApi())
 }
