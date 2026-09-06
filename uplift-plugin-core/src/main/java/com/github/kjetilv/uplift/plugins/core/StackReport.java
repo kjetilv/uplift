@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Reports what a deployed stack currently looks like: its functions, their function URLs,
@@ -129,6 +132,16 @@ public final class StackReport {
                     ))));
     }
 
+    /**
+     * What was uploaded, and where it came from.
+     * <p>
+     * Under Gradle the deploy task reported the zips in the producing project's build
+     * directory, so the native binary and any jars sat beside them. Maven stages the zips
+     * into the deploying module and resolves them from the local repository, so nothing
+     * sits beside them there. Files that are not present are therefore skipped, and the
+     * contents of each zip are listed instead, which carries the same size and time as the
+     * binary itself.
+     */
     private void reportSources(List<Path> sources) {
         if (sources == null || sources.isEmpty()) {
             return;
@@ -162,6 +175,37 @@ public final class StackReport {
                     time.atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ISO_ZONED_DATE_TIME),
                     size(path)
                 ));
+        }
+        sources.stream().filter(FileIO::isZip).forEach(this::reportEntries);
+    }
+
+    /** Entry times are optional in the format, so this can come back empty. */
+    private static String entryTime(ZipEntry entry) {
+        FileTime time = entry.getLastModifiedTime();
+        return time == null
+            ? "<none>"
+            : time.toInstant()
+                .truncatedTo(ChronoUnit.SECONDS)
+                .atZone(ZoneId.of("UTC"))
+                .format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+    }
+
+    /** The binary, as it went up. Not on disk beside the zip, so read out of it. */
+    private void reportEntries(Path zip) {
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            file.stream().forEach(entry ->
+                log.lifecycle(
+                    """
+                    ##     in %s : %s
+                    ##       real time : %s
+                    ##       size      : %s""".formatted(
+                        zip.getFileName(),
+                        entry.getName(),
+                        entryTime(entry),
+                        readable(entry.getSize())
+                    )));
+        } catch (IOException e) {
+            log.warn("Could not read " + zip + ": " + e);
         }
     }
 
@@ -211,7 +255,8 @@ public final class StackReport {
         if (!name.endsWith(".zip") || zip.getParent() == null) {
             return Optional.empty();
         }
-        return Optional.of(zip.getParent().resolve(name.substring(0, name.length() - ".zip".length())));
+        return Optional.of(zip.getParent().resolve(name.substring(0, name.length() - ".zip".length())))
+            .filter(Files::isRegularFile);
     }
 
     private static List<Path> jarsBeside(Path zip) {
@@ -239,18 +284,21 @@ public final class StackReport {
         }
     }
 
-    @SuppressWarnings("MagicNumber")
     private static String size(Path path) {
-        long limit = 4;
         try {
-            long size = Files.size(path);
-            if (size > limit * 1_000_000) {
-                return size / 1_000_000 + "Mb";
-            }
-            return size > limit * 1_000 ? size / 1_000 + "Kb" : size + "b";
+            return readable(Files.size(path));
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read size of " + path, e);
         }
+    }
+
+    @SuppressWarnings("MagicNumber")
+    private static String readable(long size) {
+        long limit = 4;
+        if (size > limit * 1_000_000) {
+            return size / 1_000_000 + "Mb";
+        }
+        return size > limit * 1_000 ? size / 1_000 + "Kb" : size + "b";
     }
 
     private CloudFormationClient cloudFormationClient() {

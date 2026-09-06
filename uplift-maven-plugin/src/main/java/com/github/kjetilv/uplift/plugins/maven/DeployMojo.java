@@ -15,7 +15,7 @@ public class DeployMojo extends AbstractLambdaZipMojo {
     protected void perform() throws MojoExecutionException {
         ensureCdkApp();
         collectLambdaZips();
-        cdk().run("cdk deploy " + profileOption() + " --require-approval=never " + stack());
+        // Before the deploy, not after: a check that runs afterwards can only report damage.
         var sources = stagedZips();
         sources.forEach(source -> {
             if (!Files.isRegularFile(source)) {
@@ -31,6 +31,7 @@ public class DeployMojo extends AbstractLambdaZipMojo {
                 throw new IllegalStateException("Empty or corrupt file, size " + size + ": " + source);
             }
         });
+        cdk().run("cdk deploy " + profileOption() + " --require-approval=never " + stack());
         report(sources);
     }
 }
