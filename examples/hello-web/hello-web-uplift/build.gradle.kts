@@ -28,23 +28,19 @@ tasks.withType<UpliftTask> {
     admonish() // TODO Remove this when you have your properties in order
 
     // Minimal config, assuming gradle.properties are found
-    configure(
-        stack = "hello-web-uplift"
-    )
+    stack.set("hello-web-uplift")
 
     if (this !is UpliftPingTask) {
         dependsOn(":hello-web-service:native-lambda", "jar")
     }
 
 // TODO: Either:
-//  1. Uncomment and tweak + replace above configure with this one, or
+//  1. Uncomment and tweak + replace the above stack.set with these, or
 //  2. Remove this block and provide the below settings in a gradle.properties file
-//    configure(
-//        account = "<your 12-digit AWS account id>"",
-//        region = "<your preferred region>",
-//        profile = "<AWS profile holding key/secret>",
-//        stack = "hello-web-uplift"
-//    )
+//    account.set("<your 12-digit AWS account id>")
+//    region.set("<your preferred region>")
+//    profile.set("<AWS profile holding key/secret>")
+//    stack.set("hello-web-uplift")
 }
 
 fun admonish() =
