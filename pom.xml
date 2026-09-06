@@ -39,7 +39,12 @@
       Preview features and the vector API are needed at compile time and at test runtime.
       Preview class files only run on the exact same JDK feature version.
     -->
-    <uplift.addModules>jdk.incubator.vector</uplift.addModules>
+    <!--
+      Deliberately not named uplift.*: the uplift plugin has its own
+      uplift.addModules parameter for the native image, and a shared name would
+      silently feed this value to native-image, which the Gradle build never did.
+    -->
+    <jvm.addModules>jdk.incubator.vector</jvm.addModules>
 
     <junit.version>6.0.3</junit.version>
     <assertj.version>3.27.7</assertj.version>
@@ -144,7 +149,7 @@
             <compilerArgs>
               <arg>--enable-preview</arg>
               <arg>--add-modules</arg>
-              <arg>${uplift.addModules}</arg>
+              <arg>${jvm.addModules}</arg>
             </compilerArgs>
           </configuration>
         </plugin>
@@ -154,7 +159,7 @@
           <version>${surefire.plugin.version}</version>
           <configuration>
             <!-- -ea matches Gradle's Test task, which enables assertions by default. -->
-            <argLine>-ea --enable-preview --add-modules ${uplift.addModules}</argLine>
+            <argLine>-ea --enable-preview --add-modules ${jvm.addModules}</argLine>
           </configuration>
         </plugin>
         <plugin>

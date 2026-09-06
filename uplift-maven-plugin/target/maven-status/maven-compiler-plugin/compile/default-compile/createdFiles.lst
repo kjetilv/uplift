@@ -1,11 +1,11 @@
-com/github/kjetilv/uplift/plugins/maven/PingMojo.class
 com/github/kjetilv/uplift/plugins/maven/AbstractUpliftMojo.class
-com/github/kjetilv/uplift/plugins/maven/AbstractLambdaZipMojo.class
 com/github/kjetilv/uplift/plugins/maven/DestroyMojo.class
-com/github/kjetilv/uplift/plugins/maven/DeployMojo.class
 com/github/kjetilv/uplift/plugins/maven/NativeLambdaMojo.class
+com/github/kjetilv/uplift/plugins/maven/BootstrapMojo.class
+com/github/kjetilv/uplift/plugins/maven/PingMojo.class
+com/github/kjetilv/uplift/plugins/maven/AbstractLambdaZipMojo.class
+com/github/kjetilv/uplift/plugins/maven/DeployMojo.class
 com/github/kjetilv/uplift/plugins/maven/AbstractCdkMojo.class
 com/github/kjetilv/uplift/plugins/maven/MavenLog.class
-com/github/kjetilv/uplift/plugins/maven/BootstrapMojo.class
 com/github/kjetilv/uplift/plugins/maven/SynthMojo.class
 com/github/kjetilv/uplift/plugins/maven/InitMojo.class
