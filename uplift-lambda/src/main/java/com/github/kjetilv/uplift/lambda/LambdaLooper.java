@@ -64,11 +64,11 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         this.startTime = this.time.get();
     }
 
-    @SuppressWarnings("EndlessStream")
     @Override
     public void run() {
         log.info("{}: Loop started", name);
         Stream.generate(source::next)
+            .takeWhile(Optional::isPresent)
             .flatMap(Optional::stream)
             .map(invocationFuture -> {
                 try {
