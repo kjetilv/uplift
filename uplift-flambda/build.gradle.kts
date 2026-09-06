@@ -1,5 +1,3 @@
-//import com.github.kjetilv.uplift.bld.Native
-//import com.github.kjetilv.uplift.bld.Native.runCommand
 
 dependencies {
     implementation(project(":uplift-synchttp"))
