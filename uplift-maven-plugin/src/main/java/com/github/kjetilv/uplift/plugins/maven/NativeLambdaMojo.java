@@ -75,6 +75,13 @@ public class NativeLambdaMojo extends AbstractMojo {
     @Parameter(property = "docker.binary", defaultValue = Docker.DEFAULT_BINARY)
     private String dockerBinary;
 
+    /**
+     * Skips the build. The goal needs a running docker daemon and takes minutes, so CI
+     * that only wants the libraries compiled and tested can leave it out.
+     */
+    @Parameter(property = "uplift.skipNativeLambda", defaultValue = "false")
+    private boolean skip;
+
     private final MavenProjectHelper projectHelper;
 
     @Inject
@@ -84,6 +91,10 @@ public class NativeLambdaMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
+        if (skip) {
+            getLog().info("Skipping native lambda build, uplift.skipNativeLambda is set");
+            return;
+        }
         Path uplift = buildSubDirectory("uplift");
         Path zipFile = uplift.resolve(identifier + ".zip");
 
