@@ -1,0 +1,4 @@
+# Copy this to .mvn/maven.config and fill it in. That file is ignored by git.
+-Duplift.account=<your 12-digit AWS account id>
+-Duplift.region=<your preferred region>
+-Duplift.profile=<AWS profile holding access key and secret>

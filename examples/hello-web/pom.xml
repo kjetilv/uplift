@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.github.kjetilv.uplift.examples</groupId>
+  <artifactId>hello-web</artifactId>
+  <version>0.1.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>hello-web</name>
+  <description>A small HTTP function, to show how uplift is used</description>
+
+  <!--
+    Deliberately a separate build, not part of the uplift reactor. The example should
+    consume uplift the way anyone else would, as published artifacts.
+
+    uplift itself must be installed or published first, including uplift-maven-plugin.
+  -->
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>25</maven.compiler.release>
+
+    <jvm.addModules>jdk.incubator.vector</jvm.addModules>
+    <uplift.version>0.1.1-SNAPSHOT</uplift.version>
+
+    <junit.version>6.0.3</junit.version>
+    <assertj.version>3.27.7</assertj.version>
+
+    <compiler.plugin.version>3.14.0</compiler.plugin.version>
+    <surefire.plugin.version>3.6.0</surefire.plugin.version>
+    <enforcer.plugin.version>3.5.0</enforcer.plugin.version>
+  </properties>
+
+  <modules>
+    <module>hello-web-service</module>
+    <module>hello-web-uplift</module>
+  </modules>
+
+
+
+  <!--
+    No <repositories> entry for GitHub Packages.
+    
+    Maven has no per-repository group filter, so declaring it here makes Maven query it
+    for every artifact, including everything on central. Without credentials that is 56
+    401s in one build; with them it is just as many pointless round trips. Gradle avoided
+    this with mavenContent { includeGroup("com.github.kjetilv.uplift") }.
+    
+    uplift is resolved from the local repository instead, which the two-phase build
+    already requires (see MAVEN-MIGRATION.md section 3). To consume published uplift
+    instead, put the repository and its credentials in ~/.m2/settings.xml, which is where
+    Maven expects a private registry to be configured.
+  -->
+
+  <dependencyManagement>
+    <dependencies>
+      <!--
+        aws-cdk-lib asks for constructs as the range [10.0.0,11.0.0). Maven resolves a
+        range by fetching the pom of every version in it, which cost 623 requests and
+        several minutes here. Pinning it makes the range moot.
+      -->
+      <dependency>
+        <groupId>software.constructs</groupId>
+        <artifactId>constructs</artifactId>
+        <version>10.4.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${compiler.plugin.version}</version>
+          <configuration>
+            <release>${maven.compiler.release}</release>
+            <compilerArgs>
+              <arg>--enable-preview</arg>
+              <arg>--add-modules</arg>
+              <arg>${jvm.addModules}</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.plugin.version}</version>
+          <configuration>
+            <argLine>-ea --enable-preview --add-modules ${jvm.addModules}</argLine>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.kjetilv.uplift</groupId>
+          <artifactId>uplift-maven-plugin</artifactId>
+          <version>${uplift.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

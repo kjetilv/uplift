@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.kjetilv.uplift.examples</groupId>
+    <artifactId>hello-web</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>hello-web-uplift</artifactId>
+
+  <description>Describes the stack, and lifts it to AWS</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>software.amazon.awscdk</groupId>
+      <artifactId>aws-cdk-lib</artifactId>
+      <version>2.216.0</version>
+    </dependency>
+    <dependency>
+      <groupId>software.constructs</groupId>
+      <artifactId>constructs</artifactId>
+      <version>10.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>cloudformation</artifactId>
+      <version>2.34.2</version>
+    </dependency>
+
+    <!--
+      The lambda, as the zip artifact attached by uplift:native-lambda. HelloWebBuilder
+      refers to it as /lambdas/hello-web-service.zip, and the deploy goal stages it under
+      that name.
+    -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>hello-web-service</artifactId>
+      <version>${project.version}</version>
+      <type>zip</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Replaces the admonish() function in the Gradle build, which only logged when the
+        deployment coordinates were missing and let the build carry on to a confusing
+        failure later. This stops the build with the same advice.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${enforcer.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>require-uplift-config</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireProperty>
+                  <property>uplift.account</property>
+                  <message>Set uplift.account, your 12-digit AWS account id. See .mvn/maven.config.template.</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>uplift.region</property>
+                  <message>Set uplift.region, the region to deploy into. See .mvn/maven.config.template.</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>uplift.profile</property>
+                  <message>Set uplift.profile, the AWS profile holding the access key. See .mvn/maven.config.template.</message>
+                </requireProperty>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.kjetilv.uplift</groupId>
+        <artifactId>uplift-maven-plugin</artifactId>
+        <configuration>
+          <stack>hello-web-uplift</stack>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
