@@ -28,6 +28,31 @@ public abstract class AbstractCdkMojo extends AbstractUpliftMojo {
     @Parameter(property = "uplift.stackbuilderClass", defaultValue = "")
     protected String stackbuilderClass;
 
+    /**
+     * Generates the CDK application unless one is already there.
+     * <p>
+     * Gradle chained the deploy task onto uplift-bootstrap onto uplift-init, so the app was
+     * always generated first. Maven has no such chain for a directly invoked goal, and the
+     * plugin is published on its own, so each goal that drives the container has to be able
+     * to stand alone.
+     * <p>
+     * The test is for {@code cdk.json}, not for the directory: {@link #cdkApp()} creates the
+     * directory. Generating is not idempotent either. {@code CdkApp.initialize} starts by
+     * clearing the directory, which would take {@code cdk.out} and the synthesised template
+     * with it, so this must not run when an app is already present.
+     * <p>
+     * An "is it there" test cannot tell a fresh app from one generated against different
+     * dependencies. That is why build.sh still runs {@code uplift:init} explicitly as the
+     * normal path. This is the fallback for a goal typed by hand, not a replacement.
+     */
+    protected final void ensureCdkApp() throws MojoExecutionException {
+        if (Files.isRegularFile(cdkApp().resolve("cdk.json"))) {
+            getLog().info("Using the CDK app already in " + cdkApp());
+            return;
+        }
+        initCdkApp();
+    }
+
     protected final void initCdkApp() throws MojoExecutionException {
         new CdkApp(
             cdk(),

@@ -11,9 +11,7 @@ public class DestroyMojo extends AbstractCdkMojo {
 
     @Override
     protected void perform() throws MojoExecutionException {
-        if (!FileIO.isActualDirectory(cdkApp())) {
-            initCdkApp();
-        }
+        ensureCdkApp();
         cdk().run("cdk destroy --require-approval=never " + profileOption() + " " + stack());
         FileIO.clearRecursive(cdkApp());
     }

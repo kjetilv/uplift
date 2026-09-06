@@ -9,8 +9,14 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-/** Base for the goals that need the lambda zips staged where the container can see them. */
-public abstract class AbstractLambdaZipMojo extends AbstractUpliftMojo {
+/**
+ * Base for the goals that need the lambda zips staged where the container can see them.
+ * <p>
+ * Extends the CDK base, unlike the Gradle version where UpliftLambdaZipTask sat beside
+ * UpliftCdkTask. These goals all need to be able to generate the CDK app themselves, since
+ * Maven has no task dependencies to do it for them.
+ */
+public abstract class AbstractLambdaZipMojo extends AbstractCdkMojo {
 
     /** Overrides discovery. Normally the zips come from dependencies of type zip. */
     @Parameter(property = "uplift.lambdaZips")
@@ -44,12 +50,17 @@ public abstract class AbstractLambdaZipMojo extends AbstractUpliftMojo {
 
     /** The staged zips, by the names they were given above. */
     protected final List<Path> stagedZips() {
-        if (lambdaZips != null && !lambdaZips.isEmpty()) {
-            return lambdaZips.stream().map(zip -> upliftDir().resolve(zip.toPath().getFileName())).toList();
+        if (lambdaZips == null || lambdaZips.isEmpty()) {
+            return project.getArtifacts()
+                .stream()
+                .filter(artifact -> "zip".equals(artifact.getType()))
+                .map(artifact ->
+                    upliftDir().resolve(artifact.getArtifactId() + ".zip"))
+                .toList();
         }
-        return project.getArtifacts().stream()
-            .filter(artifact -> "zip".equals(artifact.getType()))
-            .map(artifact -> upliftDir().resolve(artifact.getArtifactId() + ".zip"))
+        return lambdaZips.stream()
+            .map(zip ->
+                upliftDir().resolve(zip.toPath().getFileName()))
             .toList();
     }
 }
