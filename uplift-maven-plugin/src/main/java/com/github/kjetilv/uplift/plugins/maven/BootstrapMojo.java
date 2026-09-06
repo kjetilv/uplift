@@ -10,6 +10,7 @@ public class BootstrapMojo extends AbstractLambdaZipMojo {
 
     @Override
     protected void perform() throws MojoExecutionException {
+        ensureCdkApp();
         collectLambdaZips();
         cdk().run("cdk bootstrap " + profileOption() + " aws://" + account + "/" + region);
     }

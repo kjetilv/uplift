@@ -15,6 +15,7 @@ public class SynthMojo extends AbstractLambdaZipMojo {
 
     @Override
     protected void perform() throws MojoExecutionException {
+        ensureCdkApp();
         collectLambdaZips();
         cdk().run("cdk synth " + profileOption() + " " + stack());
     }
