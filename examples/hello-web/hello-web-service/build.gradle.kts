@@ -1,4 +1,4 @@
-import com.github.kjetilv.uplift.plugins.NativeLamdbdaTask
+import com.github.kjetilv.uplift.plugins.NativeLambdaTask
 
 plugins {
     java
@@ -37,4 +37,4 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<NativeLamdbdaTask> { main = "helloweb" }
+tasks.withType<NativeLambdaTask> { main.set("helloweb") }

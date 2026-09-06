@@ -1,5 +1,4 @@
 plugins {
-    kotlin("jvm") version "2.3.0-RC"
     `java-gradle-plugin`
     `maven-publish`
 }
@@ -33,8 +32,6 @@ dependencies {
     implementation("software.constructs:constructs:10.4.2")
     implementation("org.antlr:ST4:4.3.4")
 
-    implementation(kotlin("stdlib"))
-    implementation(kotlin("reflect"))
     implementation(gradleApi())
 }
 
@@ -46,8 +43,4 @@ java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
     withSourcesJar()
-}
-
-kotlin {
-    jvmToolchain(25)
 }
