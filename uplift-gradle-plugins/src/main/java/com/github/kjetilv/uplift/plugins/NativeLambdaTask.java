@@ -89,7 +89,7 @@ public abstract class NativeLambdaTask extends DefaultTask {
             getClassPath().get().forEach(file -> classPath.add(file.toPath()));
         }
         Projects.dependencyOutputs(this).stream()
-            .filter(path -> FileIO.isJar(path) || FileIO.isDir(path))
+            .filter(FileIO::isJar)
             .forEach(classPath::add);
         return classPath;
     }
