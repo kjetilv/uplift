@@ -42,3 +42,7 @@ gradle.properties
 **/src/main/generated
 **/src/test/generated
 **/src/test/generated_tests
+
+### Maven ###
+target/
+dependency-reduced-pom.xml
