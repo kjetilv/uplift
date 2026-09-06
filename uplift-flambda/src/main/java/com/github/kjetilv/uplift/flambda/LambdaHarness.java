@@ -78,8 +78,8 @@ public class LambdaHarness implements RuntimeCloseable {
             );
 
         var clientSettings = lambdaClientSettings != null
-            ? lambdaClientSettings.time(time)
-            : new LambdaClientSettings(new EmptyEnv(), time);
+            ? lambdaClientSettings.time(resolve(time))
+            : new LambdaClientSettings(new EmptyEnv(), resolve(time));
 
         this.flambda = new Flambda(settings);
         var managed = Lambda.managed(
