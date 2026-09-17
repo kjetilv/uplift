@@ -2,13 +2,14 @@ package com.github.kjetilv.uplift.jmh;
 
 import module java.base;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.json.JsonReader;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Warmup;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -17,10 +18,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Measurement(iterations = 1, time = 10)
 public class ReadBenchmark {
 
-    public static final ObjectMapper objectMapper = new ObjectMapper()
+    public static final ObjectMapper objectMapper = JsonMapper.builder()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT)
-        .setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        .changeDefaultPropertyInclusion(value ->
+            value
+                .withValueInclusion(JsonInclude.Include.NON_DEFAULT)
+                .withContentInclusion(JsonInclude.Include.NON_DEFAULT))
+        .build();
 
     static void main() throws IOException {
         IO.println("OK");

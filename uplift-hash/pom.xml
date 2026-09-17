@@ -10,7 +10,7 @@
     <version>0.1.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>uplift-hash</artifactId>
+  <artifactId>uplift.hash</artifactId>
 
   <dependencies>
     <dependency>

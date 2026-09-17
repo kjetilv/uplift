@@ -58,7 +58,7 @@ record FlambdaHandler(
             var split = path.split("/");
             for (var i = 0; i < split.length; i++) {
                 var s = split[i];
-                if (s == null || s.isBlank()) {
+                if (s.isBlank()) {
                     continue;
                 }
                 if (s.charAt(0) == 'i' && s.equals("invocation")) {

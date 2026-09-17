@@ -6,12 +6,14 @@ import com.github.kjetilv.uplift.json.JsonWriter;
 import org.slf4j.Logger;
 
 import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static javax.tools.StandardLocation.CLASS_OUTPUT;
-import static javax.tools.StandardLocation.SOURCE_OUTPUT;
+import static java.util.Locale.ROOT;
+import static javax.tools.StandardLocation.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 final class SessionsImpl {
@@ -20,7 +22,9 @@ final class SessionsImpl {
 
     static Session session(String source, Path tempDirectory) {
         var compiler = ToolProvider.getSystemJavaCompiler();
-        var fm = compiler.getStandardFileManager(null, Locale.ROOT, UTF_8);
+        var diagnostics = new DiagnosticCollector<JavaFileObject>();
+        var fileManager =
+            compiler.getStandardFileManager(diagnostics, ROOT, UTF_8);
 
         var tmp = tempDirectory == null ? tmp() : tempDirectory;
         var srcDir = createTemp(tmp, "src");
@@ -33,10 +37,10 @@ final class SessionsImpl {
         var sourceFile = writeSource(srcDir, file, src);
 
         try {
-            fm.setLocationFromPaths(CLASS_OUTPUT, List.of(classOut));
-            fm.setLocationFromPaths(SOURCE_OUTPUT, List.of(srcOut));
+            fileManager.setLocationFromPaths(CLASS_OUTPUT, List.of(classOut));
+            fileManager.setLocationFromPaths(SOURCE_OUTPUT, List.of(srcOut));
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to set file manager locations on " + fm, e);
+            throw new IllegalStateException("Failed to set file manager locations on " + fileManager, e);
         }
 
         var url = url(classOut);
@@ -45,26 +49,28 @@ final class SessionsImpl {
             Thread.currentThread().getContextClassLoader()
         );
 
-        try (var compilerOut = new ByteArrayOutputStream()) {
-            var units = fm.getJavaFileObjectsFromPaths(List.of(sourceFile));
-            var task =
-                compiler.getTask(
-                    new PrintWriter(new OutputStreamWriter(compilerOut, UTF_8)),
-                    fm,
-                    diagnostic -> {
-                        if (Objects.requireNonNull(diagnostic.getKind()) == Diagnostic.Kind.ERROR) {
-                            throw new IllegalStateException("Compilation failure: " + diagnostic);
-                        }
-                        var diagnosticString = diagnostic.toString();
-                        if (diagnosticString.contains("warning: Supported source version")) {
-                            return;
-                        }
-                        log.warn(diagnosticString);
-                    },
-                    null,
-                    null,
-                    units
-                );
+        try (
+            var compilerOut = new ByteArrayOutputStream();
+            var out = new PrintWriter(new OutputStreamWriter(compilerOut, UTF_8));
+        ) {
+            var units = fileManager.getJavaFileObjectsFromPaths(List.of(sourceFile));
+            var task = compiler.getTask(
+                out,
+                fileManager,
+                diagnostic -> {
+                    if (Objects.requireNonNull(diagnostic.getKind()) == Diagnostic.Kind.ERROR) {
+                        throw new IllegalStateException("Compilation failure: " + diagnostic);
+                    }
+                    var diagnosticString = diagnostic.toString();
+                    if (diagnosticString.contains("warning: Supported source version")) {
+                        return;
+                    }
+                    log.warn(diagnosticString);
+                },
+                null,
+                null,
+                units
+            );
             task.setProcessors(List.of(new JsonRecordProcessor()));
             var ok = task.call();
             if (ok == null || !ok) {
@@ -209,8 +215,7 @@ final class SessionsImpl {
         @Override
         public String write(Object object) {
             JsonWriter<String, Record, StringBuilder> writer = rwMethod("stringWriter");
-            var stringBuilder = writer.write((Record) type().cast(object));
-            return stringBuilder.toString();
+            return writer.write((Record) type().cast(object)).toString();
         }
 
         @Override

@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.jmh;
 
 import module java.base;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import com.github.kjetilv.uplift.util.GzipUtils;
@@ -9,6 +8,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Warmup;
+import tools.jackson.databind.ObjectMapper;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 
