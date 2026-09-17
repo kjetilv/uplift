@@ -2,23 +2,28 @@ package com.github.kjetilv.uplift.jmh;
 
 import module java.base;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 @Disabled
 public class ReadTest {
 
-    public static final ObjectMapper objectMapper = new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setDefaultPropertyInclusion(JsonInclude.Include.NON_DEFAULT);
+    public static final ObjectMapper objectMapper = JsonMapper.builder()
+        .disable(FAIL_ON_UNKNOWN_PROPERTIES)
+        .changeDefaultPropertyInclusion(value ->
+            value
+                .withValueInclusion(JsonInclude.Include.NON_DEFAULT)
+                .withContentInclusion(JsonInclude.Include.NON_DEFAULT))
+        .build();
 
     //    @Fork(value = 2, warmups = 2)
 //    @Threads(8)

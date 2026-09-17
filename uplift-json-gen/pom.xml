@@ -15,7 +15,7 @@
   <dependencies>
     <dependency>
       <groupId>com.github.kjetilv.uplift</groupId>
-      <artifactId>uplift-hash</artifactId>
+      <artifactId>uplift.hash</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -40,5 +40,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

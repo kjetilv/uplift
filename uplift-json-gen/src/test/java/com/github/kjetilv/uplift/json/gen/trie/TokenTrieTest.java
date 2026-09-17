@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TokenTrieTest {
 
     @Test
-    public void test() {
+    void test() {
         var q = tok("q");
         var singular = tok("singular");
 
