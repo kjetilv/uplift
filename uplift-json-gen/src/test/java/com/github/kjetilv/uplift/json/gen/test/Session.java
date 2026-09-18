@@ -1,18 +1,10 @@
-package com.github.kjetilv.uplift.json.gen;
+package com.github.kjetilv.uplift.json.gen.test;
 
 import module java.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public interface Session {
-
-    static Session create(String source) {
-        return create(source, (Path) null);
-    }
-
-    static Session create(String source, Path tempDirectory) {
-        return SessionsImpl.session(source, tempDirectory);
-    }
 
     default Path generatedFilesDir() {
         return generatedFiles().stream()

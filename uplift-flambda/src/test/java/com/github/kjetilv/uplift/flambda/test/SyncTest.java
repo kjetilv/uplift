@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.flambda;
+package com.github.kjetilv.uplift.flambda.test;
 
+import com.github.kjetilv.uplift.flambda.Sync;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;

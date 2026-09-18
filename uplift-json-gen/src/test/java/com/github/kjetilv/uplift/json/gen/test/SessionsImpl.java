@@ -1,8 +1,10 @@
-package com.github.kjetilv.uplift.json.gen;
+package com.github.kjetilv.uplift.json.gen.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.JsonWriter;
+import com.github.kjetilv.uplift.json.gen.JsonRW;
+import com.github.kjetilv.uplift.json.gen.JsonRecordProcessor;
 import org.slf4j.Logger;
 
 import javax.tools.Diagnostic;
@@ -13,7 +15,9 @@ import javax.tools.ToolProvider;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Locale.ROOT;
-import static javax.tools.StandardLocation.*;
+import static javax.tools.StandardLocation.CLASS_OUTPUT;
+import static javax.tools.StandardLocation.CLASS_PATH;
+import static javax.tools.StandardLocation.SOURCE_OUTPUT;
 import static org.slf4j.LoggerFactory.getLogger;
 
 final class SessionsImpl {
@@ -37,6 +41,7 @@ final class SessionsImpl {
         var sourceFile = writeSource(srcDir, file, src);
 
         try {
+            fileManager.setLocationFromPaths(CLASS_PATH, compileClasspath());
             fileManager.setLocationFromPaths(CLASS_OUTPUT, List.of(classOut));
             fileManager.setLocationFromPaths(SOURCE_OUTPUT, List.of(srcOut));
         } catch (Exception e) {
@@ -51,7 +56,7 @@ final class SessionsImpl {
 
         try (
             var compilerOut = new ByteArrayOutputStream();
-            var out = new PrintWriter(new OutputStreamWriter(compilerOut, UTF_8));
+            var out = new PrintWriter(new OutputStreamWriter(compilerOut, UTF_8))
         ) {
             var units = fileManager.getJavaFileObjectsFromPaths(List.of(sourceFile));
             var task = compiler.getTask(
@@ -105,6 +110,41 @@ final class SessionsImpl {
     }
 
     private static final Pattern PACKAGE = Pattern.compile("^package ([\\p{Alnum}.]+)\\s*;\\s*");
+
+    /**
+     * The snippets we compile live in the unnamed module, so javac resolves their types through
+     * {@link javax.tools.StandardLocation#CLASS_PATH}. When these tests run on the module path,
+     * {@code java.class.path} is near empty, and javac sees nothing. Rebuild the class path from
+     * the module graph we are running in, so the compiler and the test agree on every type.
+     */
+    private static List<Path> compileClasspath() {
+        return Stream.concat(resolvedModulePaths(), classPathProperty())
+            .distinct()
+            .toList();
+    }
+
+    private static Stream<Path> resolvedModulePaths() {
+        return Optional.ofNullable(SessionsImpl.class.getModule().getLayer())
+            .orElseGet(ModuleLayer::boot)
+            .configuration()
+            .modules()
+            .stream()
+            .map(ResolvedModule::reference)
+            .map(ModuleReference::location)
+            .flatMap(Optional::stream)
+            .filter(uri -> "file".equals(uri.getScheme()))
+            .map(Path::of);
+    }
+
+    private static Stream<Path> classPathProperty() {
+        return Arrays.stream(
+                Optional.ofNullable(System.getProperty("java.class.path"))
+                    .orElse("")
+                    .split(File.pathSeparator)
+            )
+            .filter(entry -> !entry.isBlank())
+            .map(Path::of);
+    }
 
     private static Path tmp() {
         try {

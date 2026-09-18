@@ -1,5 +1,8 @@
-package com.github.kjetilv.uplift.flambda;
+package com.github.kjetilv.uplift.flambda.test;
 
+import com.github.kjetilv.uplift.flambda.FlambdaState;
+import com.github.kjetilv.uplift.flambda.LambdaReq;
+import com.github.kjetilv.uplift.flambda.LambdaRes;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import org.junit.jupiter.api.Test;

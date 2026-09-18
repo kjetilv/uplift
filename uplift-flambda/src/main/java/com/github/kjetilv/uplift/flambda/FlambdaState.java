@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
-class FlambdaState {
+public class FlambdaState {
 
     private final BlockingQueue<LambdaReq> reqQueue;
 
@@ -18,11 +18,11 @@ class FlambdaState {
 
     private final Sync<Hash<K128>, LambdaRes> syncResponses = new Sync<>();
 
-    FlambdaState(int queueLength) {
+    public FlambdaState(int queueLength) {
         this.reqQueue = new ArrayBlockingQueue<>(Non.negativeOrZero(queueLength, "queueLength"));
     }
 
-    void exchange(LambdaReq lambdaReq, Consumer<LambdaRes> responseHandler) {
+    public void exchange(LambdaReq lambdaReq, Consumer<LambdaRes> responseHandler) {
         requireNonNull(lambdaReq, "lambdaReq");
         requireNonNull(responseHandler, "responseHandler");
         LambdaRes polled = null;
@@ -38,7 +38,7 @@ class FlambdaState {
         }
     }
 
-    LambdaReq fetchRequest() {
+    public LambdaReq fetchRequest() {
         try {
             var lambdaReq = reqQueue.take();
             syncRequests.put(lambdaReq.id(), lambdaReq);
@@ -49,7 +49,7 @@ class FlambdaState {
         }
     }
 
-    void submitResponse(LambdaRes lambdaRes) {
+    public void submitResponse(LambdaRes lambdaRes) {
         syncResponses.put(
             requireNonNull(lambdaRes, "lambdaRes").id(),
             lambdaRes
