@@ -6,8 +6,8 @@ module uplift.flambda.test {
     requires uplift.kernel;
     requires uplift.synchttp;
     requires uplift.util;
-    requires static uplift.json;
-    requires static uplift.json.gen;
+    requires uplift.json;
+    requires uplift.json.gen;
     requires uplift.lambda;
     requires uplift.flambda;
 

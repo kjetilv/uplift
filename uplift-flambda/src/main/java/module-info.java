@@ -8,8 +8,8 @@ module uplift.flambda {
     requires uplift.synchttp;
     requires uplift.util;
 
-    requires static uplift.json;
-    requires static uplift.json.gen;
+    requires uplift.json;
+    requires uplift.json.gen;
 
     exports com.github.kjetilv.uplift.flambda;
 }
