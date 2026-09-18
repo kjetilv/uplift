@@ -1,6 +1,5 @@
 module uplift.flambda.test {
     requires java.net.http;
-    requires org.jspecify;
     requires uplift.flogs;
     requires uplift.hash;
     requires uplift.kernel;
