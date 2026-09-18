@@ -9,7 +9,7 @@ module uplift.lambda {
     requires uplift.hash;
     requires uplift.s3;
     requires uplift.json;
-    requires static uplift.json.gen;
+    requires uplift.json.gen;
     requires java.compiler;
     requires uplift.json.anno;
 
