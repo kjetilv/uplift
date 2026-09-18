@@ -10,7 +10,6 @@ import com.github.kjetilv.uplift.lambda.ResponseInRW;
 import com.github.kjetilv.uplift.synchttp.HttpHandler;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +73,7 @@ record FlambdaHandler(
         throw new IllegalStateException("Failed to parse id from " + path);
     }
 
-    private static @NonNull Map<String, Object> idHeaders(LambdaReq lambdaReq) {
+    private static Map<String, Object> idHeaders(LambdaReq lambdaReq) {
         return Map.of(
             "lambda-runtime-aws-request-id", lambdaReq.id().digest(),
             "content-type", "application/json"

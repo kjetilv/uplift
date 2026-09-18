@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.gen;
+package com.github.kjetilv.uplift.json.gen.test;
 
 import module java.base;
 import org.junit.jupiter.api.Test;

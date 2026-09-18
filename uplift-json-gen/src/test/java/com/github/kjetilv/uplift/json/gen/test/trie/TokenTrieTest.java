@@ -1,6 +1,7 @@
-package com.github.kjetilv.uplift.json.gen.trie;
+package com.github.kjetilv.uplift.json.gen.test.trie;
 
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

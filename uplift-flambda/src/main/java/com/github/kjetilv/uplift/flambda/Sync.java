@@ -7,7 +7,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class Sync<K, V> {
+public final class Sync<K, V> {
 
     private final Lock lock = new ReentrantLock();
 
@@ -15,7 +15,7 @@ final class Sync<K, V> {
 
     private final Map<K, V> map = new HashMap<>();
 
-    void put(K key, V value) {
+    public void put(K key, V value) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(value, "value");
         lock.lock();
@@ -30,7 +30,7 @@ final class Sync<K, V> {
         }
     }
 
-    V get(K key) {
+    public V get(K key) {
         Objects.requireNonNull(key, "key");
         lock.lock();
         try {
@@ -51,7 +51,7 @@ final class Sync<K, V> {
         }
     }
 
-    int size() {
+    public int size() {
         lock.lock();
         try {
             return map.size();

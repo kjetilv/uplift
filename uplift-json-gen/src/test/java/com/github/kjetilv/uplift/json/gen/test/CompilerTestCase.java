@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.gen;
+package com.github.kjetilv.uplift.json.gen.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
@@ -57,7 +57,7 @@ public class CompilerTestCase {
 
     private Session compilerSession(String java) {
         var source = java.replace("TESTNAME", testName());
-        return Session.create(source, tempDirectory);
+        return Sessions.session(source, tempDirectory);
     }
 
     private String testName() {
@@ -263,15 +263,19 @@ public class CompilerTestCase {
         return context.getTestMethod()
             .map(method ->
                 method.getDeclaringClass().getName() + "." + method.getName())
-            .map(cutoff -> {
-                AtomicBoolean cutoffSeen = new AtomicBoolean();
-                return (Predicate<StackTraceElement>) stackTraceElement -> {
-                    if (cutoffSeen.get()) {
-                        return false;
-                    }
-                    cutoffSeen.set(stackTraceElement.toString().contains(cutoff));
-                    return true;
-                };
+            .map(new Function<String, Predicate<StackTraceElement>>() {
+
+                @Override
+                public Predicate<StackTraceElement> apply(String cutoff) {
+                    AtomicBoolean cutoffSeen = new AtomicBoolean();
+                    return (Predicate<StackTraceElement>) stackTraceElement -> {
+                        if (cutoffSeen.get()) {
+                            return false;
+                        }
+                        cutoffSeen.set(stackTraceElement.toString().contains(cutoff));
+                        return true;
+                    };
+                }
             })
             .orElse(_ -> true);
     }

@@ -1,8 +1,8 @@
 package com.github.kjetilv.uplift.json.gen.trie;
 
-final class Binary {
+public final class Binary {
 
-    static int search(int[] ints, int target) {
+    public static int search(int[] ints, int target) {
         if (ints.length == 0) {
             return NOT_FOUND;
         }

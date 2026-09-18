@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.json.gen.trie;
+package com.github.kjetilv.uplift.json.gen.test.trie;
 
+import com.github.kjetilv.uplift.json.gen.trie.Binary;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,10 +38,10 @@ class BinaryTest {
         assertAllFound(IS);
     }
 
-    private static final int[] IS = new int[] {1, 3, 5, 6, 10, 17, 42, 1234, 2345, 4567};
+    private static final int[] IS = {1, 3, 5, 6, 10, 17, 42, 1234, 2345, 4567};
 
     private static final int[] NIS =
-        new int[] {0, 2, 4, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 21, 234234, 13123};
+        {0, 2, 4, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 21, 234234, 13123};
 
     private static void assertAllFound(int[] is) {
         for (var j : is) {

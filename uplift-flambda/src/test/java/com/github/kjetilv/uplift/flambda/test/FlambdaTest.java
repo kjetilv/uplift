@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.flambda;
+package com.github.kjetilv.uplift.flambda.test;
 
+import com.github.kjetilv.uplift.flambda.Flambda;
+import com.github.kjetilv.uplift.flambda.FlambdaSettings;
 import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.LogFormatter;
 import com.github.kjetilv.uplift.flogs.LogLevel;
@@ -20,7 +22,6 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
