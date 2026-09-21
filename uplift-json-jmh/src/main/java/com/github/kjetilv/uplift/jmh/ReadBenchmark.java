@@ -26,10 +26,15 @@ public class ReadBenchmark {
                 .withContentInclusion(JsonInclude.Include.NON_DEFAULT))
         .build();
 
-    static void main() throws IOException {
+    static void main() {
         IO.println("OK");
 
-        var lines = Files.readAllLines(PATH_L, UTF_8);
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(PATH_L, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read " + PATH_L, e);
+        }
 
         var initTime = Instant.now();
         IO.println(TweetRW.INSTANCE.callbacks() + " in " + Duration.between(initTime, Instant.now())

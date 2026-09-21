@@ -16,4 +16,6 @@ module uplift.json.jmh {
     requires jmh.generator.annprocess;
     requires java.compiler;
     requires jdk.incubator.vector;
+
+    opens com.github.kjetilv.uplift.jmh;
 }
