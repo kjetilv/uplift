@@ -18,7 +18,7 @@
   </properties>
 
   <!--
-    The Gradle build also lists uplift-hash under testImplementation. That is a
+    The Gradle build also lists uplift.hash under testImplementation. That is a
     harmless duplicate there, but in Maven a second declaration overrides the
     first, and the narrower test scope would drop Hash from the compile classpath.
   -->

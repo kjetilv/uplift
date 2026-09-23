@@ -20,7 +20,7 @@ AWS Lambda, running as native images.
 These can be used by lambdas you want to deploy, but they are not required:
 
 * [`uplift-util`](uplift-util) contains various utilities
-* [`uplift-hash`](uplift-hash) hashes stuff
+* [`uplift.hash`](uplift.hash) hashes stuff
 * [`uplift-flogs`](uplift-flogs) contains mininmal, faked implementations of the dreaded slfj4 and apache commons logger interfaces.
   These will forward to the Java logging library. No other logging
   libraries needed,
