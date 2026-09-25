@@ -1,3 +1,5 @@
+/// @jenesis.alias jmh.core org.openjdk.jmh/jmh-core
+/// @jenesis.pin org.openjdk.jmh/jmh-core 1.37
 module uplift.synchttp.jmh {
 
     requires java.net.http;
