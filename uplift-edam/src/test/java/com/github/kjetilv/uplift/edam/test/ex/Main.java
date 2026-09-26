@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.edam.ex;
+package com.github.kjetilv.uplift.edam.test.ex;
 
 import module java.base;
 import com.github.kjetilv.uplift.edam.Analysis;

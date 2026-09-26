@@ -18,7 +18,7 @@ public record FlambdaSettings(
     int queueLength,
     Duration timeout,
     CorsSettings cors,
-    Supplier<Instant> time
+    InstantSource time
 ) {
 
     private static final Logger log = LoggerFactory.getLogger(FlambdaSettings.class);
@@ -27,7 +27,7 @@ public record FlambdaSettings(
         this(name, cors, null);
     }
 
-    public FlambdaSettings(String name, CorsSettings cors, Supplier<Instant> time) {
+    public FlambdaSettings(String name, CorsSettings cors, InstantSource time) {
         this(name, 0, 0, cors, time);
     }
 
@@ -36,7 +36,7 @@ public record FlambdaSettings(
         int requestBufferSize,
         int queueLength,
         CorsSettings cors,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this(
             name,
@@ -58,7 +58,7 @@ public record FlambdaSettings(
         int requestBufferSize,
         int queueLength,
         CorsSettings cors,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this(
             name,
@@ -82,7 +82,7 @@ public record FlambdaSettings(
         int queueLength,
         Duration timeout,
         CorsSettings cors,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.name = requireNonNull(name, "name");
         this.address = address == null

@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.edam.internal;
+package com.github.kjetilv.uplift.edam.test.internal;
 
+import com.github.kjetilv.uplift.edam.internal.Hasher;
+import com.github.kjetilv.uplift.edam.internal.ThrowableHasher;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import org.junit.jupiter.api.Test;
 

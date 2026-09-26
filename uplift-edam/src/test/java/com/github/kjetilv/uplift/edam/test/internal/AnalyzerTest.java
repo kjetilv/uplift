@@ -1,7 +1,8 @@
-package com.github.kjetilv.uplift.edam.internal;
+package com.github.kjetilv.uplift.edam.test.internal;
 
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.edam.internal.*;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.hash.Hash;
@@ -56,7 +57,7 @@ class AnalyzerTest {
             false,
             HashBuilder.forKind(K128)
         );
-        repeatAnalyzer = new Analyzer<>(hasher, storage, now::get, 0);
+        repeatAnalyzer = Analyzers.analyzer(hasher, storage, now::get, 0);
     }
 
     @AfterEach

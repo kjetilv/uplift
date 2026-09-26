@@ -27,7 +27,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
 
     private final ResultLog resultLog;
 
-    private final Supplier<Instant> time;
+    private final InstantSource time;
 
     private final LongAdder initiated = new LongAdder();
 
@@ -52,7 +52,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         ResponseResolver responseResolver,
         InvocationSink sink,
         ResultLog resultLog,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.name = requireNonNull(name, "name");
         this.source = requireNonNull(source, "source");
@@ -61,7 +61,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         this.sink = requireNonNull(sink, "sink");
         this.resultLog = requireNonNull(resultLog, "resultLog");
         this.time = requireNonNull(time, "time");
-        this.startTime = this.time.get();
+        this.startTime = this.time.instant();
     }
 
     @Override
@@ -161,7 +161,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
     }
 
     private Invocation fatalInvocation(Throwable exception) {
-        return Invocation.fatal(exception, time.get());
+        return Invocation.fatal(exception, time.instant());
     }
 
     private void updateTimes(Invocation invocation) {

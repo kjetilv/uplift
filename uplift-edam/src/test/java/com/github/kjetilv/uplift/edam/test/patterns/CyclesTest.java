@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.edam.patterns;
+package com.github.kjetilv.uplift.edam.test.patterns;
 
+import com.github.kjetilv.uplift.edam.patterns.Cycles;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

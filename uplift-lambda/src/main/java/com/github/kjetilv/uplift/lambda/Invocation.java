@@ -110,14 +110,14 @@ public record Invocation(
     public Invocation result(
         Supplier<LambdaResult> result,
         Throwable requestFailure,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
             aborted,
-            time.get(),
+            time.instant(),
             id,
             payload,
             result.get(),
@@ -128,13 +128,13 @@ public record Invocation(
         );
     }
 
-    Invocation result(Supplier<LambdaResult> result, Supplier<Instant> time) {
+    Invocation result(Supplier<LambdaResult> result, InstantSource time) {
         return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
             aborted,
-            time.get(),
+            time.instant(),
             id,
             this.payload,
             result.get(),
@@ -155,13 +155,13 @@ public record Invocation(
         return Duration.between(created, updated);
     }
 
-    Invocation completed(Supplier<HttpRequest> completionRequest, Supplier<Instant> time) {
+    Invocation completed(Supplier<HttpRequest> completionRequest, InstantSource time) {
         return empty() ? this : new Invocation(
             created,
             request,
             requestFailure,
             aborted,
-            time.get(),
+            time.instant(),
             id,
             payload,
             result,
@@ -174,14 +174,14 @@ public record Invocation(
 
     Invocation completionFuture(
         Supplier<CompletableFuture<HttpResponse<InputStream>>> completableFutureSupplier,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         return new Invocation(
             created,
             request,
             requestFailure,
             aborted,
-            time.get(),
+            time.instant(),
             id,
             payload,
             result,
@@ -192,7 +192,7 @@ public record Invocation(
         );
     }
 
-    CompletableFuture<Invocation> completedAt(Supplier<Instant> time) {
+    CompletableFuture<Invocation> completedAt(InstantSource time) {
         return completableFuture == null
             ? CompletableFuture.completedFuture(this)
             : completableFuture.thenApply(completion ->
@@ -201,7 +201,7 @@ public record Invocation(
                     request,
                     requestFailure,
                     aborted,
-                    time.get(),
+                    time.instant(),
                     id,
                     payload,
                     result,

@@ -2,10 +2,10 @@ package com.github.kjetilv.uplift.edam.patterns;
 
 import module java.base;
 
-final class Cycles {
+public final class Cycles {
 
     @SafeVarargs
-    static <T> List<T> find(T... ts) {
+    public static <T> List<T> find(T... ts) {
         return find(List.of(ts));
     }
 

@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.edam.internal;
+package com.github.kjetilv.uplift.edam.test.internal;
 
 import com.github.kjetilv.uplift.edam.patterns.Spanning;
 import com.github.kjetilv.uplift.edam.patterns.Timespan;

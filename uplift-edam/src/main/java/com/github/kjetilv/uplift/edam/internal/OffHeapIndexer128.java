@@ -12,11 +12,11 @@ import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 /// Uses an off-heap memory segment to store hashes.
-final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
+public final class OffHeapIndexer128 extends AbstractOffHeapIndexer<K128> {
 
     private final MemorySegment segment;
 
-    OffHeapIndexer128(Arena arena, HashFun<Hash<?>> hashFunction, long count) {
+    public OffHeapIndexer128(Arena arena, HashFun<Hash<?>> hashFunction, long count) {
         super(hashFunction, count);
         this.segment = Objects.requireNonNull(arena, "arena")
             .allocate(sequenceLayout(hashFunction.slotCount(count), HL));

@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.util;
 
 import module java.base;
 
-public record OnDemand(Supplier<Instant> clock) {
+public record OnDemand(InstantSource clock) {
 
     public <T> void force(Supplier<T> supplier, T t) {
         if (supplier instanceof BuilderImpl<T>.ResettableSupplier resettableSupplier) {
@@ -33,7 +33,7 @@ public record OnDemand(Supplier<Instant> clock) {
     }
 
     private record BuilderImpl<T>(
-        Supplier<Instant> clock,
+        InstantSource clock,
         TemporalAmount refreshInterval,
         AtomicReference<Instant> lastHolder,
         AtomicReference<T> holder,
@@ -59,7 +59,7 @@ public record OnDemand(Supplier<Instant> clock) {
                     if (existing == null) {
                         return supplier.get();
                     }
-                    var time = clock.get();
+                    var time = clock.instant();
                     if (reset.compareAndSet(true, false) || expiredAt(time)) {
                         lastHolder.set(time);
                         return supplier.get();
@@ -70,7 +70,7 @@ public record OnDemand(Supplier<Instant> clock) {
 
             private void force(T newValue) {
                 holder.updateAndGet(_ -> {
-                    lastHolder.set(clock.get());
+                    lastHolder.set(clock.instant());
                     reset.set(false);
                     return newValue;
                 });

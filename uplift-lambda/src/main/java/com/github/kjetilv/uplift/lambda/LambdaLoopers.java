@@ -16,7 +16,7 @@ final class LambdaLoopers {
         LambdaHandler handler,
         InvocationSource source,
         InvocationSink sink,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         return looper(name, source, handler, toResponsePost(), sink, resultLog(), time);
     }
@@ -28,7 +28,7 @@ final class LambdaLoopers {
         LambdaLooper.ResponseResolver resolver,
         InvocationSink sink,
         LambdaLooper.ResultLog resultLog,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         return new LambdaLooper(name, source, handler, resolver, sink, resultLog, time);
     }
@@ -61,8 +61,7 @@ final class LambdaLoopers {
                 log.warn("Empty invocation, no id resolved");
                 return false;
             }
-            var completion =
-                ((Invocation) invocation).completionResponse();
+            var completion = invocation.completionResponse();
             if (completion == null) {
                 return false;
             }

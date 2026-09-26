@@ -1,7 +1,9 @@
-package com.github.kjetilv.uplift.edam.internal;
+package com.github.kjetilv.uplift.edam.test.internal;
 
 import module java.base;
 import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.edam.internal.OffHeapIndexer128;
+import com.github.kjetilv.uplift.edam.internal.OffHeapStorage;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import org.junit.jupiter.api.Test;
@@ -27,10 +29,10 @@ class OffHeapStorageTest {
                 .mapToObj(_ -> K128.random())
                 .toArray(Hash[]::new);
             var instant = new AtomicReference<>(Instant.EPOCH);
-            Supplier<Instant> now = () -> instant.updateAndGet(i -> i.plusSeconds(1));
+            InstantSource now = () -> instant.updateAndGet(i -> i.plusSeconds(1));
 
             Occurrence<K128>[] occs = Arrays.stream(hs)
-                .map(hash -> new Occurrence<>(now.get(), hash))
+                .map(hash -> new Occurrence<>(now.instant(), hash))
                 .toArray(Occurrence[]::new);
 
             storage.store(occs[0]);

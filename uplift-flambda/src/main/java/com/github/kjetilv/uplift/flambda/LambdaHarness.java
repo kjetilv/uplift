@@ -43,7 +43,7 @@ public class LambdaHarness implements RuntimeCloseable {
         String name,
         LambdaHandler lambdaHandler,
         CorsSettings cors,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this(
             name,
@@ -62,7 +62,7 @@ public class LambdaHarness implements RuntimeCloseable {
         FlambdaSettings flambdaSettings,
         LambdaClientSettings lambdaClientSettings,
         CorsSettings corsSettings,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.name = Objects.requireNonNull(name, "name");
         this.handler = Objects.requireNonNull(lambdaHandler, "lambdaHandler");
@@ -108,9 +108,9 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private static final int SHORT_Q = 10;
 
-    private static final Supplier<Instant> SYSTEM_TIME = Instant::now;
+    private static final InstantSource SYSTEM_TIME = Instant::now;
 
-    private static Supplier<Instant> resolve(Supplier<Instant> time) {
+    private static InstantSource resolve(InstantSource time) {
         return time == null ? SYSTEM_TIME : time;
     }
 

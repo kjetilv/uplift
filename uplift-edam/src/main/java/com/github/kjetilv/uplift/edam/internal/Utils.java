@@ -19,7 +19,7 @@ public final class Utils {
 
         static final Clock UTC_CLOCK = Clock.system(UTC);
 
-        public static final Supplier<Instant> UTC_NOW = UTC_CLOCK::instant;
+        public static final InstantSource UTC_NOW = UTC_CLOCK::instant;
     }
 
     public static final class Lists {
