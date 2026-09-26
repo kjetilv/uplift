@@ -1,9 +1,11 @@
-package com.github.kjetilv.uplift.edam.internal;
+package com.github.kjetilv.uplift.edam.test.internal;
 
 import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.Handler;
 import com.github.kjetilv.uplift.edam.Handling;
 import com.github.kjetilv.uplift.edam.Window;
+import com.github.kjetilv.uplift.edam.internal.Hasher;
+import com.github.kjetilv.uplift.edam.internal.ThrowableHasher;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
 import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;

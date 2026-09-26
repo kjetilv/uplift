@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.edam;
+package com.github.kjetilv.uplift.edam.test;
 
+import com.github.kjetilv.uplift.edam.Analysis;
 import com.github.kjetilv.uplift.edam.patterns.HashPattern;
 import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.edam.patterns.PatternMatch;

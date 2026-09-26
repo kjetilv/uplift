@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 
-final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Throwable, H> {
+public final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Throwable, H> {
 
     private final HashBuilder<Bytes, H> hashBuilder;
 
@@ -18,7 +18,7 @@ final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Throwable, 
 
     private final HashBuilder<Integer, H> ints;
 
-    ThrowableHasher(boolean messages, HashBuilder<Bytes, H> hashBuilder) {
+    public ThrowableHasher(boolean messages, HashBuilder<Bytes, H> hashBuilder) {
         this.hashBuilder = Objects.requireNonNull(hashBuilder, "idBuilder");
         this.strings = this.hashBuilder.map(ThrowableHasher::bytes);
         this.ints = this.hashBuilder.map(Bytes.intToBytes());

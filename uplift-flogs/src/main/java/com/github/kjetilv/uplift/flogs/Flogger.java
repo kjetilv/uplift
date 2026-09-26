@@ -61,7 +61,7 @@ final class Flogger implements Logger {
     }
 
     private LogEntry entry(LogLevel level, String msg, Object[] args) {
-        return LogEntry.create(settings.time().get(), name, shortName, level, msg, args);
+        return LogEntry.create(settings.time().instant(), name, shortName, level, msg, args);
     }
 
     private String logLine(LogEntry logEntry) {

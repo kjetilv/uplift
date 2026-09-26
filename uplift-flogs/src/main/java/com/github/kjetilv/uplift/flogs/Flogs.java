@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.flogs;
 
 import module java.base;
-
 import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
@@ -42,7 +41,7 @@ public final class Flogs {
         String logger,
         LogLevel logLevel,
         Consumer<String> printer,
-        Supplier<Instant> time,
+        InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
         settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
@@ -82,7 +81,7 @@ public final class Flogs {
         Class<?> logger,
         LogLevel logLevel,
         Consumer<String> printer,
-        Supplier<Instant> time,
+        InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
         settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
@@ -112,7 +111,7 @@ public final class Flogs {
     public static void initialize(
         LogLevel logLevel,
         Consumer<String> printer,
-        Supplier<Instant> time,
+        InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
         settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
@@ -149,14 +148,14 @@ public final class Flogs {
     record Settings(
         LogLevel logLevel,
         Consumer<String> printer,
-        Supplier<Instant> time,
+        InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
 
         Settings(
             LogLevel logLevel,
             Consumer<String> printer,
-            Supplier<Instant> time,
+            InstantSource time,
             LogFormatter<LogEntry> formatter
         ) {
             this.logLevel = logLevel == null ? LogLevel.DEFAULT : logLevel;

@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.time.InstantSource;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -12,12 +13,12 @@ import static java.util.Objects.requireNonNull;
 
 record HttpInvocationSink(
     Function<? super HttpRequest, ? extends CompletableFuture<HttpResponse<InputStream>>> send,
-    Supplier<Instant> time
+    InstantSource time
 ) implements InvocationSink {
 
     HttpInvocationSink(
         Function<? super HttpRequest, ? extends CompletableFuture<HttpResponse<InputStream>>> send,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.send = requireNonNull(send, "send");
         this.time = requireNonNull(time, "time");

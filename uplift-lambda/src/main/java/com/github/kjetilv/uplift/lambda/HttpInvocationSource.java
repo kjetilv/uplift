@@ -15,7 +15,7 @@ final class HttpInvocationSource implements InvocationSource {
 
     private final URI endpoint;
 
-    private final Supplier<Instant> time;
+    private final InstantSource time;
 
     private final Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch;
 
@@ -31,12 +31,12 @@ final class HttpInvocationSource implements InvocationSource {
         Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch,
         URI endpoint,
         Duration timeout,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.fetch = requireNonNull(fetch, "fetch");
         this.endpoint = requireNonNull(endpoint, "api");
         this.time = () -> {
-            var instant = time.get();
+            var instant = time.instant();
             return instant == null ? Instant.now() : instant;
         };
         try {
@@ -84,18 +84,18 @@ final class HttpInvocationSource implements InvocationSource {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse " + response, e);
         }
-        return Invocation.create(id, request, payload, this.time.get());
+        return Invocation.create(id, request, payload, this.time.instant());
     }
 
     private Invocation failedInvocation() {
-        return Invocation.failed(request, this.time.get());
+        return Invocation.failed(request, this.time.instant());
     }
 
     private Invocation failedInvocation(Throwable throwable) {
         try {
             return closed.get()
-                ? Invocation.none(request, this.time.get())
-                : Invocation.failed(request, this.time.get(), throwable);
+                ? Invocation.none(request, this.time.instant())
+                : Invocation.failed(request, this.time.instant(), throwable);
         } finally {
             log.warn("Failed to fetch: {}", request, throwable);
         }

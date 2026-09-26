@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-interface Storage<H extends HashKind<H>> extends LongFunction<Occurrence<H>> {
+public interface Storage<H extends HashKind<H>> extends LongFunction<Occurrence<H>> {
 
     Occurrence<H> get(long index);
 

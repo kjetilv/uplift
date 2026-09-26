@@ -42,7 +42,7 @@ public final class Throwables {
     }
 
     public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> onHeap(
-        Supplier<Instant> now,
+        InstantSource now,
         Window window,
         H kind,
         HashBuilder<Bytes, H> hashBuilder,
@@ -95,7 +95,7 @@ public final class Throwables {
 
     public static <H extends HashKind<H>> Handler<Throwable, ThrowableInfo<H>, H> offHeap(
         Arena arena,
-        Supplier<Instant> now,
+        InstantSource now,
         Window window,
         H kind,
         HashBuilder<Bytes, H> hashBuilder,

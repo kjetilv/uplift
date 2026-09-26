@@ -12,9 +12,9 @@ import static java.lang.foreign.MemoryLayout.sequenceLayout;
 import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
-final class OffHeapStorage<H extends HashKind<H>> extends AbstractStorage<H> {
+public final class OffHeapStorage<H extends HashKind<H>> extends AbstractStorage<H> {
 
-    static <K extends HashKind<K>> Storage<K> create(
+    public static <K extends HashKind<K>> Storage<K> create(
         Window window,
         Indexer<Hash<K>> indexer,
         Arena arena

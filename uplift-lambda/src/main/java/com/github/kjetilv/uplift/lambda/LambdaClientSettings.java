@@ -3,8 +3,7 @@ package com.github.kjetilv.uplift.lambda;
 import com.github.kjetilv.uplift.kernel.Env;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.util.function.Supplier;
+import java.time.InstantSource;
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,10 +11,10 @@ public record LambdaClientSettings(
     Env env,
     Duration connectTimeout,
     Duration responseTimeout,
-    Supplier<Instant> time
+    InstantSource time
 ) {
 
-    public LambdaClientSettings(Env env, Supplier<Instant> time) {
+    public LambdaClientSettings(Env env, InstantSource time) {
         this(
             env,
             null,
@@ -28,7 +27,7 @@ public record LambdaClientSettings(
         Env env,
         Duration connectTimeout,
         Duration responseTimeout,
-        Supplier<Instant> time
+        InstantSource time
     ) {
         this.env = requireNonNull(env, "env");
         this.connectTimeout = sane(connectTimeout);
@@ -40,7 +39,7 @@ public record LambdaClientSettings(
         return connectTimeout.compareTo(Duration.ZERO) > 0;
     }
 
-    public LambdaClientSettings time(Supplier<Instant> time) {
+    public LambdaClientSettings time(InstantSource time) {
         return new LambdaClientSettings(env(), connectTimeout(), responseTimeout(), time);
     }
 

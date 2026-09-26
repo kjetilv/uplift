@@ -1,6 +1,9 @@
-package com.github.kjetilv.uplift.edam.patterns;
+package com.github.kjetilv.uplift.edam.test.patterns;
 
 import module java.base;
+import com.github.kjetilv.uplift.edam.patterns.HashPattern;
+import com.github.kjetilv.uplift.edam.patterns.PatternMatch;
+import com.github.kjetilv.uplift.edam.patterns.Timespan;
 import com.github.kjetilv.uplift.hash.Hash;
 import org.junit.jupiter.api.Test;
 
