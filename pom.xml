@@ -46,7 +46,7 @@
         -->
         <jvm.addModules>jdk.incubator.vector</jvm.addModules>
 
-        <junit.version>6.0.3</junit.version>
+        <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
 
         <compiler.plugin.version>3.14.0</compiler.plugin.version>
@@ -57,7 +57,7 @@
         <exec.plugin.version>3.6.1</exec.plugin.version>
 
         <st4.version>4.3.4</st4.version>
-        <awssdk.version>2.34.2</awssdk.version>
+        <awssdk.version>2.55.6</awssdk.version>
         <plugin.tools.version>3.15.2</plugin.tools.version>
     </properties>
 

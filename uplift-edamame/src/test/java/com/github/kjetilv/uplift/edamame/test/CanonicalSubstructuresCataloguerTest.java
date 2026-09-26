@@ -1,10 +1,13 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.edamame.CanonicalValue;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
+import com.github.kjetilv.uplift.edamame.impl.CanonicalSubstructuresCataloguer;
+import com.github.kjetilv.uplift.edamame.impl.RecursiveTreeHasher;
+import com.github.kjetilv.uplift.edamame.impl.TreeHasher;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.hash.HashKind.K128;

@@ -19,10 +19,10 @@ import static com.github.kjetilv.uplift.util.Maps.transformMap;
 /// This class ought to be thread-safe, as it only appends to [concurrent maps][ConcurrentMap].
 ///
 /// @param <K>
-final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
+public final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     implements Canonicalizer<K, H> {
 
-    static <MK, K extends HashKind<K>> Canonicalizer<MK, K> create() {
+    public static <MK, K extends HashKind<K>> Canonicalizer<MK, K> create() {
         return new CanonicalSubstructuresCataloguer<>();
     }
 

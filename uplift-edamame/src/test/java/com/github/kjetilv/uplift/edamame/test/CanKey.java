@@ -1,8 +1,7 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame.test;
 
 import module java.base;
 
-@SuppressWarnings("NullableProblems")
 public record CanKey(String key) implements Comparable<CanKey> {
 
     public static CanKey get(String key) {
