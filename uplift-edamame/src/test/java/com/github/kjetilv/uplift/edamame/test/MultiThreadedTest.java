@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.edamame.impl;
+package com.github.kjetilv.uplift.edamame.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind;

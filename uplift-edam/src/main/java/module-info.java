@@ -6,5 +6,6 @@ module uplift.edam {
     exports com.github.kjetilv.uplift.edam;
     exports com.github.kjetilv.uplift.edam.patterns;
     exports com.github.kjetilv.uplift.edam.throwables;
-    exports com.github.kjetilv.uplift.edam.internal;
+
+    exports com.github.kjetilv.uplift.edam.internal to uplift.edam.test;
 }

@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /// Normalizes input trees and builds [hashed trees][HashedTree]. Stateless and thread-safe.
 ///
 /// @param <I> Identifier type
-record RecursiveTreeHasher<I, H extends HashKind<H>>(
+public record RecursiveTreeHasher<I, H extends HashKind<H>>(
     Supplier<HashBuilder<Bytes, H>> newBuilder,
     KeyHandler<I> keyHandler,
     LeafHasher<H> leafHasher,
@@ -29,7 +29,7 @@ record RecursiveTreeHasher<I, H extends HashKind<H>>(
     /// @param keyHandler Key handler, not null
     /// @param leafHasher Hasher, not null
     /// @see MapsMemoizers#createWith(KeyHandler, HashKind)
-    RecursiveTreeHasher(
+    public RecursiveTreeHasher(
         Supplier<HashBuilder<Bytes, H>> newBuilder,
         KeyHandler<I> keyHandler,
         LeafHasher<H> leafHasher,
