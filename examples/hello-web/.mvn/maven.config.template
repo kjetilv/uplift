@@ -2,3 +2,5 @@
 -Duplift.account=<your 12-digit AWS account id>
 -Duplift.region=<your preferred region>
 -Duplift.profile=<AWS profile holding access key and secret>
+-Duplift.bucket=<S3 bucket to use>
+-Duplift.fb=<Facebook app token>
