@@ -10,24 +10,20 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.codehaus.plexus.util.StringUtils;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Builds a GraalVM native image in a container and attaches the result as a zip artifact.
- * <p>
- * The zip is attached rather than left on disk, because the deploy goal runs in a different
- * module and Maven has no way to reach into another module's build directory.
- */
+/// Builds a GraalVM native image in a container and attaches the result as a zip artifact.
+///
+/// The zip is attached rather than left on disk, because the deploy goal runs in a different
+/// module and Maven has no way to reach into another module's build directory.
+@SuppressWarnings("unused")
 @Mojo(
     name = "native-lambda",
     defaultPhase = LifecyclePhase.PACKAGE,
@@ -43,17 +39,15 @@ public class NativeLambdaMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    /** Entry point passed to native-image. */
+    /// Entry point passed to native-image.
     @Parameter(property = "uplift.main", required = true)
     private String main;
 
     @Parameter(property = "uplift.identifier", defaultValue = "${project.artifactId}")
     private String identifier;
 
-    /**
-     * Raw {@code os.arch}, which is what the lambda Dockerfile wants. Note this differs
-     * from the CDK goals, which translate it to docker's own naming.
-     */
+    /// Raw `os.arch`, which is what the lambda Dockerfile wants. Note this differs
+    /// from the CDK goals, which translate it to docker's own naming.
     @Parameter(property = "uplift.arch")
     private String arch;
 
@@ -66,19 +60,17 @@ public class NativeLambdaMojo extends AbstractMojo {
     @Parameter(property = "uplift.enablePreview", defaultValue = "false")
     private boolean enablePreview;
 
-    @Parameter(property = "uplift.addModules", defaultValue = "")
+    @Parameter(property = "uplift.addModules")
     private String addModules;
 
-    @Parameter(property = "uplift.otherOptions", defaultValue = "")
+    @Parameter(property = "uplift.otherOptions")
     private String otherOptions;
 
     @Parameter(property = "docker.binary", defaultValue = Docker.DEFAULT_BINARY)
     private String dockerBinary;
 
-    /**
-     * Skips the build. The goal needs a running docker daemon and takes minutes, so CI
-     * that only wants the libraries compiled and tested can leave it out.
-     */
+    /// Skips the build. The goal needs a running docker daemon and takes minutes, so CI
+    /// that only wants the libraries compiled and tested can leave it out.
     @Parameter(property = "uplift.skipNativeLambda", defaultValue = "false")
     private boolean skip;
 
@@ -126,14 +118,12 @@ public class NativeLambdaMojo extends AbstractMojo {
         }
     }
 
-    /**
-     * Dependency jars in resolution order, then this module's own jar.
-     * <p>
-     * {@code getRuntimeClasspathElements} puts {@code target/classes} first, which is the
-     * module's own compiled output. That is dropped in favour of the packaged jar appended
-     * at the end, so the container sees one jar per entry and the module's own code last,
-     * matching what the Gradle task produced.
-     */
+    /// Dependency jars in resolution order, then this module's own jar.
+    ///
+    /// `getRuntimeClasspathElements` puts `target/classes` first, which is the
+    /// module's own compiled output. That is dropped in favour of the packaged jar appended
+    /// at the end, so the container sees one jar per entry and the module's own code last,
+    /// matching what the Gradle task produced.
     private List<Path> classPath() throws MojoExecutionException {
         List<Path> classPath = new ArrayList<>();
         String ownClasses = project.getBuild().getOutputDirectory();
@@ -165,10 +155,9 @@ public class NativeLambdaMojo extends AbstractMojo {
     private Path buildSubDirectory(String name) {
         Path path = Path.of(project.getBuild().getDirectory()).resolve(name);
         try {
-            Files.createDirectories(path);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to create " + path, e);
+            return Files.createDirectories(path);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create " + path, e);
         }
-        return path;
     }
 }

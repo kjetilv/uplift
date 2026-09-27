@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Objects;
+import module java.base;
 
 public record Diff<T>(T expected, T found) {
 

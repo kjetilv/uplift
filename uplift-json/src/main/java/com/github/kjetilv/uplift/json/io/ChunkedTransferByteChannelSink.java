@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
-import java.util.concurrent.atomic.LongAdder;
+import module java.base;
 
 import static java.lang.System.arraycopy;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -74,7 +70,7 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
     private int write(ByteBuffer buffer) {
         try {
             return byteChannel.write(buffer);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(this + " failed to write " + buffer, e);
         }
     }

@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import module java.base;
 
 record DefaultStructureMatcher<T>(T main, Structure<T> str, Structures.ArrayStrategy arr)
     implements StructureMatcher<T>, StructureExtractor<T>, StructureDiffer<T> {

@@ -99,7 +99,7 @@ public class ReadBenchmark {
                 inputStream.transferTo(out);
             }
             data = out.toByteArray();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         try (
@@ -111,7 +111,7 @@ public class ReadBenchmark {
             var stream = Arrays.stream(out.toString(UTF_8)
                     .split("\n"))
                 .toList();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         bReader = TweetRW.INSTANCE.bytesReader();

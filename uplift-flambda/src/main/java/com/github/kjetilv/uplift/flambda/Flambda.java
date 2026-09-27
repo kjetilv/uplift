@@ -1,21 +1,13 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
+import module java.net.http;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.Server;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.time.Duration;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.StructuredTaskScope;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 

@@ -4,12 +4,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-/**
- * Synthesises the CloudFormation template without contacting AWS.
- * <p>
- * The Gradle plugin had no equivalent, which made the CDK path impossible to check without
- * a real deploy. It is the verification step for everything the deploy goal would do.
- */
+/// Synthesises the CloudFormation template without contacting AWS.
+///
+/// The Gradle plugin had no equivalent, which made the CDK path impossible to check without
+/// a real deploy. It is the verification step for everything the deploy goal would do.
+@SuppressWarnings("unused")
 @Mojo(name = "synth", requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class SynthMojo extends AbstractLambdaZipMojo {
 

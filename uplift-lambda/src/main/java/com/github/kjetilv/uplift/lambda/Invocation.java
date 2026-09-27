@@ -1,9 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
-
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import module java.net.http;
 
 public record Invocation(
     Instant created,

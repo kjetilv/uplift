@@ -9,27 +9,24 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Base for the goals that need the lambda zips staged where the container can see them.
- * <p>
- * Extends the CDK base, unlike the Gradle version where UpliftLambdaZipTask sat beside
- * UpliftCdkTask. These goals all need to be able to generate the CDK app themselves, since
- * Maven has no task dependencies to do it for them.
- */
+/// Base for the goals that need the lambda zips staged where the container can see them.
+///
+/// Extends the CDK base, unlike the Gradle version where UpliftLambdaZipTask sat beside
+/// UpliftCdkTask. These goals all need to be able to generate the CDK app themselves, since
+/// Maven has no task dependencies to do it for them.
+@SuppressWarnings("ProtectedField")
 public abstract class AbstractLambdaZipMojo extends AbstractCdkMojo {
 
-    /** Overrides discovery. Normally the zips come from dependencies of type zip. */
+    /// Overrides discovery. Normally the zips come from dependencies of type zip.
     @Parameter(property = "uplift.lambdaZips")
     protected List<File> lambdaZips;
 
-    /**
-     * Stages the zips under the directory mounted at {@code /lambdas}.
-     * <p>
-     * The name matters. Stack builders refer to assets by a fixed path, for example
-     * {@code /lambdas/kudu.zip}, but Maven resolves an artifact to
-     * {@code kudu-0.1.1-SNAPSHOT.zip}. Each zip is therefore copied under its artifact id,
-     * dropping the version.
-     */
+    /// Stages the zips under the directory mounted at `/lambdas`.
+    ///
+    /// The name matters. Stack builders refer to assets by a fixed path, for example
+    /// `/lambdas/kudu.zip`, but Maven resolves an artifact to
+    /// `kudu-0.1.1-SNAPSHOT.zip`. Each zip is therefore copied under its artifact id,
+    /// dropping the version.
     protected final void collectLambdaZips() throws MojoExecutionException {
         if (lambdaZips != null && !lambdaZips.isEmpty()) {
             lambdaZips.forEach(zip -> FileIO.copyTo(zip.toPath(), upliftDir()));
@@ -48,7 +45,7 @@ public abstract class AbstractLambdaZipMojo extends AbstractCdkMojo {
             FileIO.copyTo(artifact.getFile().toPath(), upliftDir(), artifact.getArtifactId() + ".zip"));
     }
 
-    /** The staged zips, by the names they were given above. */
+    /// The staged zips, by the names they were given above.
     protected final List<Path> stagedZips() {
         if (lambdaZips == null || lambdaZips.isEmpty()) {
             return project.getArtifacts()

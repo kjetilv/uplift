@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.s3;
 
 import module java.base;
+import module java.net.http;
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.Range;
@@ -12,10 +13,6 @@ import com.github.kjetilv.uplift.util.Maps;
 import com.github.kjetilv.uplift.util.Print;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
@@ -85,13 +82,13 @@ final class DefaultS3Accessor implements S3Accessor {
     }
 
     @Override
-    public Optional<? extends InputStream> stream(String name, Range range) {
-        return streamFrom(getObjectRequest(name, range));
+    public void put(String remoteName, String contents) {
+        streamFrom(putObjectRequest(remoteName, contents.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
-    public void put(String remoteName, String contents) {
-        streamFrom(putObjectRequest(remoteName, contents.getBytes(StandardCharsets.UTF_8)));
+    public Optional<? extends InputStream> stream(String name, Range range) {
+        return streamFrom(getObjectRequest(name, range));
     }
 
     @Override
@@ -305,7 +302,7 @@ final class DefaultS3Accessor implements S3Accessor {
         return stream -> {
             try {
                 stream.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new IllegalStateException("Failed to close put to " + remoteName, e);
             }
         };

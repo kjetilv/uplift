@@ -1,9 +1,8 @@
 package com.github.kjetilv.uplift.fq.flows;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.FqReader;
 import com.github.kjetilv.uplift.fq.Fqs;
-
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 

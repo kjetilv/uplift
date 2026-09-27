@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import module java.base;
 
 /**
  * Runs the docker CLI. Replaces Gradle's ExecOperations with ProcessBuilder, so the core
@@ -55,7 +49,7 @@ public final class Docker {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(failure(command, cwd), e);
-        } catch (IOException | RuntimeException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(failure(command, cwd), e);
         }
     }

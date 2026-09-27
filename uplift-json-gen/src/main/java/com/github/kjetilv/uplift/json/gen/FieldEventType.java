@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.gen;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import module java.base;
 
 public enum FieldEventType {
 

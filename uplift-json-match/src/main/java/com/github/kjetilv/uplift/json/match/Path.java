@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import module java.base;
 
 sealed interface Path<T> permits Paths.Destination,
     Paths.ExactMatches,

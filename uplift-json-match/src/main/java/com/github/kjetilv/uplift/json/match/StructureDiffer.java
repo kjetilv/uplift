@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Map;
-import java.util.Optional;
+import module java.base;
 
 public interface StructureDiffer<T> {
 

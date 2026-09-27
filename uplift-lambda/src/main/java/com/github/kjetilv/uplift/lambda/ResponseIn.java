@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
-
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

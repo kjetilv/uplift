@@ -1,10 +1,7 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import module java.net.http;
 
 @SuppressWarnings("unused")
 record ReqsImpl(URI uri) implements Reqs {

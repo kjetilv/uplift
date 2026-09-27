@@ -3,15 +3,7 @@ VOLUME [ "/out" ]
 RUN apt-get update
 RUN apt-get install -y build-essential gcc zlib1g-dev libz-dev libc6
 RUN mkdir /graalvm
-⎨if(disturi)⎬
-ADD ⎨disturi⎬ /graal.tar.gz
-WORKDIR /graalvm
-RUN tar xzf /graal.tar.gz
-WORKDIR /
-RUN rm /graal.tar.gz
-⎨else⎬
-ADD ⎨distfile⎬ /graalvm
-⎨endif⎬
+ADD ⎨dist⎬
 RUN chmod 777 /graalvm/*/bin/*
 
 FROM ⎨buildsite⎬ AS ⎨target⎬

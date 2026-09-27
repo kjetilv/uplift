@@ -1,15 +1,12 @@
 package com.github.kjetilv.uplift.flambda.test;
 
+import module java.base;
 import com.github.kjetilv.uplift.flambda.FlambdaState;
 import com.github.kjetilv.uplift.flambda.LambdaReq;
 import com.github.kjetilv.uplift.flambda.LambdaRes;
 import com.github.kjetilv.uplift.lambda.RequestOut;
 import com.github.kjetilv.uplift.lambda.ResponseIn;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,11 +1,10 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
+import module java.net.http;
 import com.github.kjetilv.uplift.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.http.HttpRequest;
 
 final class LambdaLoopers {
 

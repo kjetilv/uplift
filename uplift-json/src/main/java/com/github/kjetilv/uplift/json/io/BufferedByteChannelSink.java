@@ -1,10 +1,6 @@
 package com.github.kjetilv.uplift.json.io;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.LongAdder;
+import module java.base;
 
 public final class BufferedByteChannelSink extends AbstractBufferedSink {
 

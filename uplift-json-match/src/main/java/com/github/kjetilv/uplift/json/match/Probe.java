@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.List;
-import java.util.stream.Stream;
+import module java.base;
 
 import static com.github.kjetilv.uplift.json.match.Rate.FAILURE;
 import static com.github.kjetilv.uplift.json.match.Rate.SUCCESS;

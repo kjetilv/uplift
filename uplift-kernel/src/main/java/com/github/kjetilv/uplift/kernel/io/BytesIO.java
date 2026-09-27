@@ -1,15 +1,8 @@
 package com.github.kjetilv.uplift.kernel.io;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static com.github.kjetilv.uplift.hash.HashKind.K256;
@@ -63,7 +56,7 @@ public final class BytesIO {
         var bytes = new byte[userIdLength];
         try {
             input.readFully(bytes);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to read string", e);
         }
         return new String(bytes, StandardCharsets.UTF_8);
@@ -91,7 +84,7 @@ public final class BytesIO {
         try {
             output.writeLong(requireNonNull(value, "value"));
             return 8;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + value, e);
         }
     }
@@ -107,7 +100,7 @@ public final class BytesIO {
             output.writeInt(bytes.length);
             output.write(bytes);
             return 4 + bytes.length;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + value, e);
         }
     }
@@ -191,7 +184,7 @@ public final class BytesIO {
     private static int readInt(DataInput input) {
         try {
             return input.readInt();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Could not read count", e);
         }
     }
@@ -199,7 +192,7 @@ public final class BytesIO {
     private static long readLong(DataInput input) {
         try {
             return input.readLong();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Could not read count", e);
         }
     }
@@ -225,7 +218,7 @@ public final class BytesIO {
         try {
             output.writeInt(size);
             return 4;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to write " + size + "tracks", e);
         }
     }

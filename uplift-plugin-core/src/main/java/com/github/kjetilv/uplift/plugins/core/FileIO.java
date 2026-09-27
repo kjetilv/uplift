@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Stream;
+import module java.base;
 
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -39,8 +33,8 @@ public final class FileIO {
             if (shouldCopy(source, targetPath)) {
                 Files.copy(source, targetPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
             }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to copy " + source + " to " + targetPath, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to copy " + source + " to " + targetPath, e);
         }
     }
 
@@ -60,8 +54,8 @@ public final class FileIO {
                 }
             }
             Files.deleteIfExists(path);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to clear " + path, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to clear " + path, e);
         }
     }
 

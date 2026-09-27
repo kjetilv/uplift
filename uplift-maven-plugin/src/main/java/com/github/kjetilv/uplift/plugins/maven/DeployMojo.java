@@ -7,7 +7,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import java.io.IOException;
 import java.nio.file.Files;
 
-/** Deploys the stack, then reports what is now running. */
+/// Deploys the stack, then reports what is now running.
+@SuppressWarnings("unused")
 @Mojo(name = "deploy", requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class DeployMojo extends AbstractLambdaZipMojo {
 

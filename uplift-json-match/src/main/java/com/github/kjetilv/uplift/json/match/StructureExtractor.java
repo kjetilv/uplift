@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Optional;
+import module java.base;
 
 public interface StructureExtractor<T> {
 

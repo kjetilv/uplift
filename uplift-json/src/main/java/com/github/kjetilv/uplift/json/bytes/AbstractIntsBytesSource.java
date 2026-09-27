@@ -9,7 +9,7 @@ import static java.lang.Character.isDigit;
 
 public abstract class AbstractIntsBytesSource implements BytesSource {
 
-    private byte prev = 0;
+    private byte prev;
 
     private byte next1;
 
@@ -54,7 +54,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                     save();
                     quo = false;
                 } else {
-                    fail("Unescaped control char: " + (int) next1);
+                    fail("Unescaped control char: " + next1);
                 }
                 continue;
             }
@@ -182,9 +182,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return new Bytes(currentLexeme, 0, index);
     }
 
-    /**
-     * @return Next byte, -1 when done
-     */
+    /// @return Next byte, -1 when done
     protected abstract byte nextByte();
 
     private void save() {

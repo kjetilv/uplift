@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
-import java.util.Map;
-import java.util.Optional;
+import module java.base;
 
 interface Headered {
 

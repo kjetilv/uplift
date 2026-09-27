@@ -19,13 +19,6 @@
   </description>
 
   <dependencies>
-    <!-- Dockerfile and pom templating. -->
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>ST4</artifactId>
-      <version>${st4.version}</version>
-    </dependency>
-
     <!-- Reading back what was deployed, for the ping report. -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
@@ -43,5 +36,4 @@
       <version>${awssdk.version}</version>
     </dependency>
   </dependencies>
-
 </project>

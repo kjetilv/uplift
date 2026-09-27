@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import module java.base;
 
 public final class Zips {
 
@@ -28,7 +22,7 @@ public final class Zips {
                 in.transferTo(zip);
             }
             zip.closeEntry();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to zip " + source + " to " + target, e);
         }
         return target;

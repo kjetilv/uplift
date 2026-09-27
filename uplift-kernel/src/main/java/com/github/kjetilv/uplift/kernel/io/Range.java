@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.kernel.io;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.Print;
-
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public record Range(Long start, Long exclusiveEnd, Long length) {
 

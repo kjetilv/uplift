@@ -1,12 +1,9 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.util.Non;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 

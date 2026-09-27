@@ -9,20 +9,18 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Shared coordinates and plumbing for the goals that drive the CDK container.
- * <p>
- * The Gradle plugin read these from project properties. Here they are ordinary parameters,
- * so they can come from the pom, from {@code .mvn/maven.config}, or from the command line.
- */
+/// Shared coordinates and plumbing for the goals that drive the CDK container.
+///
+/// The Gradle plugin read these from project properties. Here they are ordinary parameters,
+/// so they can come from the pom, from `.mvn/maven.config`, or from the command line.
+@SuppressWarnings("ProtectedField")
 public abstract class AbstractUpliftMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -37,7 +35,13 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
     @Parameter(property = "uplift.profile", defaultValue = "default")
     protected String profile;
 
-    /** Defaults to the module's coordinates, normalised, as the Gradle plugin did. */
+    @Parameter(property = "uplift.bucket")
+    protected String bucket;
+
+    @Parameter(property = "uplift.fb")
+    protected String fb;
+
+    /// Defaults to the module's coordinates, normalised
     @Parameter(property = "uplift.stack")
     protected String stack;
 
@@ -53,17 +57,13 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
         try {
             cdk().initialize();
             perform();
-        } catch (MojoExecutionException e) {
-            throw e;
         } catch (RuntimeException e) {
             throw new MojoExecutionException(getClass().getSimpleName() + " failed", e);
         }
     }
 
-    protected abstract void perform() throws MojoExecutionException;
-
     protected final Cdk cdk() {
-        return new Cdk(upliftDir(), cdkApp(), awsAuth(), architecture(), env(), docker(), log());
+        return new Cdk(upliftDir(), cdkApp(), awsAuth(), architecture(), env(), docker());
     }
 
     protected final Docker docker() {
@@ -86,8 +86,8 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
         Path path = Path.of(project.getBuild().getDirectory()).resolve(name);
         try {
             Files.createDirectories(path);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to create " + path, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create " + path, e);
         }
         return path;
     }
@@ -104,33 +104,30 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
         return stack != null && !stack.isBlank() ? stack : composedName();
     }
 
+    protected abstract void perform() throws MojoExecutionException;
+
     private Map<String, String> env() {
-        return env == null ? Map.of() : env;
+        var env = new HashMap<>(this.env == null ? Map.of() : this.env);
+        if (fb != null) {
+            env.put("fbSec", fb);
+        }
+        if (bucket != null) {
+            env.put("taninimBucket", bucket);
+        }
+        return env;
     }
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private String composedName() {
         String group = project.getGroupId();
         String name = project.getArtifactId().startsWith(group)
             ? project.getArtifactId()
             : group + "-" + project.getArtifactId();
         StringBuilder normalized = new StringBuilder(name.length());
-        name.chars().forEach(character ->
-            normalized.append(Character.isLetterOrDigit(character) ? (char) character : '-'));
+        name.chars()
+            .forEach(character ->
+                normalized.append(Character.isLetterOrDigit(character) ? (char) character : '-'));
         return normalized.toString();
-    }
-
-    /** The CDK container image is tagged per architecture, using docker's naming. */
-    private static String architecture() {
-        String arch = System.getProperty("os.arch");
-        return switch (arch) {
-            case "aarch64" -> "arm64v8";
-            case "x86_64" -> "amd64";
-            default -> arch;
-        };
-    }
-
-    private static String awsAuth() {
-        return Path.of(System.getProperty("user.home")).resolve(".aws").toAbsolutePath().toString();
     }
 
     private void selfCheck() throws MojoExecutionException {
@@ -149,5 +146,19 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
                 "Missing config! Set these in the pom, in .mvn/maven.config, or on the command "
                 + "line as -Duplift.<name>:\n " + String.join("\n ", missing));
         }
+    }
+
+    /// The CDK container image is tagged per architecture, using docker's naming.
+    private static String architecture() {
+        String arch = System.getProperty("os.arch");
+        return switch (arch) {
+            case "aarch64" -> "arm64v8";
+            case "x86_64" -> "amd64";
+            default -> arch;
+        };
+    }
+
+    private static String awsAuth() {
+        return Path.of(System.getProperty("user.home")).resolve(".aws").toAbsolutePath().toString();
     }
 }

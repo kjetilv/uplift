@@ -1,11 +1,10 @@
 package com.github.kjetilv.uplift.flambda;
 
+import module java.base;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-
-import java.lang.reflect.Method;
 
 @SuppressWarnings("unused")
 public abstract class LambdaTestCase {

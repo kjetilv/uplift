@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.hash;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.Bytes;
-
-import java.nio.ByteBuffer;
 
 /// Hides the details of byte digestion
 interface ByteDigest<H extends HashKind<H>> {

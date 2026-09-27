@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json;
 
-import java.util.function.IntUnaryOperator;
+import module java.base;
 
 final class DefaultTokenResolver implements TokenResolver {
 

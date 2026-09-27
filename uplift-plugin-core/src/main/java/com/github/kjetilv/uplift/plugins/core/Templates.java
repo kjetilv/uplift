@@ -1,50 +1,43 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import org.stringtemplate.v4.ST;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import module java.base;
 
 /**
- * StringTemplate rendering. The delimiters are the same unusual pair the Kotlin version
+ * Template rendering. The delimiters are the same unusual pair the Kotlin version
  * used, because the templates themselves are unchanged.
  */
 public final class Templates {
-
-    private static final char OPEN = '⎨';
-
-    private static final char CLOSE = '⎬';
 
     /**
      * Renders a classpath resource, dropping blank lines. Null values are left unset,
      * which is how the templates express "absent" rather than "empty".
      */
-    public static List<String> renderResource(String resource, Map<String, String> parameters) {
-        ST st = new ST(loadResource(resource), OPEN, CLOSE);
-        parameters.forEach((key, value) -> {
+    public static List<String> renderResource(
+        String resource,
+        Map<String, String> parameters
+    ) {
+        var template = loadResource(resource);
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             if (value != null) {
-                st.add(key, value);
+                template = template.replaceAll(
+                    "⎨%s⎬".formatted(key),
+                    value
+                );
             }
-        });
-        return Arrays.stream(st.render().split("\n"))
+        }
+        return Arrays.stream(template.split("\n"))
             .filter(line -> !line.isBlank())
             .toList();
     }
 
     public static String loadResource(String resource) {
-        try (InputStream stream = open(resource)) {
-            if (stream == null) {
-                throw new IllegalStateException("No template `" + resource + "` in path");
-            }
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read template `" + resource + "`", e);
-        }
+        return open(resource)
+            .map(stream ->
+                readResoruce(resource, stream))
+            .orElseThrow(() ->
+                new IllegalStateException("Failed to locate template " + resource));
     }
 
     /**
@@ -56,14 +49,22 @@ public final class Templates {
         return new ArrayList<>(Arrays.asList(loadResource(resource).split("\n", -1)));
     }
 
-    // The context class loader is what the Kotlin version used, and it is what works
-    // inside a Gradle worker. The class loader fallback covers other hosts.
-    private static InputStream open(String resource) {
-        ClassLoader context = Thread.currentThread().getContextClassLoader();
-        InputStream stream = context == null ? null : context.getResourceAsStream(resource);
-        return stream != null ? stream : Templates.class.getClassLoader().getResourceAsStream(resource);
+    private Templates() {
     }
 
-    private Templates() {
+    private static String readResoruce(String resource, InputStream stream) {
+        try {
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read template " + resource, e);
+        }
+    }
+
+    private static Optional<InputStream> open(String resource) {
+        return Optional.ofNullable(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(resource))
+            .or(() ->
+                Optional.ofNullable(
+                    Templates.class.getClassLoader().getResourceAsStream(resource)));
     }
 }

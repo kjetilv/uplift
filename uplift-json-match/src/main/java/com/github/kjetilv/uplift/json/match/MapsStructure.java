@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import module java.base;
 
 final class MapsStructure implements Structure<Object> {
 
