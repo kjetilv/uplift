@@ -11,40 +11,39 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-/** Base for the goals that generate the throwaway CDK application. */
+/// Base for the goals that generate the throwaway CDK application.
+@SuppressWarnings("ProtectedField")
 public abstract class AbstractCdkMojo extends AbstractUpliftMojo {
 
-    /** CDK brings its own copies of these, so they are not injected into the generated pom. */
+    /// CDK brings its own copies of these, so they are not injected into the generated pom.
     private static final Set<String> AWS = Set.of(
         "software.amazon.awscdk:aws-cdk-lib",
         "software.constructs:constructs"
     );
 
-    /** Defaults to the jar this module builds. */
+    /// Defaults to the jar this module builds.
     @Parameter(property = "uplift.stackbuilderJar")
     protected File stackbuilderJar;
 
-    /** Empty means "take the first Consumer&lt;Stack&gt; found in the jar". */
-    @Parameter(property = "uplift.stackbuilderClass", defaultValue = "")
+    /// Empty means "take the first Consumer<Stack> found in the jar".
+    @Parameter(property = "uplift.stackbuilderClass")
     protected String stackbuilderClass;
 
-    /**
-     * Generates the CDK application unless one is already there.
-     * <p>
-     * Gradle chained the deploy task onto uplift-bootstrap onto uplift-init, so the app was
-     * always generated first. Maven has no such chain for a directly invoked goal, and the
-     * plugin is published on its own, so each goal that drives the container has to be able
-     * to stand alone.
-     * <p>
-     * The test is for {@code cdk.json}, not for the directory: {@link #cdkApp()} creates the
-     * directory. Generating is not idempotent either. {@code CdkApp.initialize} starts by
-     * clearing the directory, which would take {@code cdk.out} and the synthesised template
-     * with it, so this must not run when an app is already present.
-     * <p>
-     * An "is it there" test cannot tell a fresh app from one generated against different
-     * dependencies. That is why build.sh still runs {@code uplift:init} explicitly as the
-     * normal path. This is the fallback for a goal typed by hand, not a replacement.
-     */
+    /// Generates the CDK application unless one is already there.
+    ///
+    /// Gradle chained the deploy task onto uplift-bootstrap onto uplift-init, so the app was
+    /// always generated first. Maven has no such chain for a directly invoked goal, and the
+    /// plugin is published on its own, so each goal that drives the container has to be able
+    /// to stand alone.
+    ///
+    /// The test is for `cdk.json`, not for the directory: [#cdkApp()] creates the
+    /// directory. Generating is not idempotent either. `CdkApp.initialize` starts by
+    /// clearing the directory, which would take `cdk.out` and the synthesised template
+    /// with it, so this must not run when an app is already present.
+    ///
+    /// An "is it there" test cannot tell a fresh app from one generated against different
+    /// dependencies. That is why build.sh still runs `uplift:init` explicitly as the
+    /// normal path. This is the fallback for a goal typed by hand, not a replacement.
     protected final void ensureCdkApp() throws MojoExecutionException {
         if (Files.isRegularFile(cdkApp().resolve("cdk.json"))) {
             getLog().info("Using the CDK app already in " + cdkApp());
@@ -65,14 +64,12 @@ public abstract class AbstractCdkMojo extends AbstractUpliftMojo {
         ).initialize();
     }
 
-    /**
-     * The jar holding the stack builder.
-     * <p>
-     * When these goals are invoked directly, rather than bound to a phase, the package
-     * phase has not run and the project artifact has no file yet. The built jar is then
-     * looked up where package would have put it, so that both `mvn package uplift:init`
-     * and a bare `mvn uplift:init` after an earlier build work.
-     */
+    /// The jar holding the stack builder.
+    ///
+    /// When these goals are invoked directly, rather than bound to a phase, the package
+    /// phase has not run and the project artifact has no file yet. The built jar is then
+    /// looked up where package would have put it, so that both \`mvn package uplift:init\`
+    /// and a bare \`mvn uplift:init\` after an earlier build work.
     private Path resolvedStackbuilderJar() throws MojoExecutionException {
         if (stackbuilderJar != null) {
             return stackbuilderJar.toPath();
@@ -91,21 +88,17 @@ public abstract class AbstractCdkMojo extends AbstractUpliftMojo {
         return built;
     }
 
-    /**
-     * Only jars belong on the CDK app's classpath. The lambda zips are declared as
-     * dependencies purely to move them between modules, and the container has no
-     * repository to resolve them from anyway.
-     */
+    /// Only jars belong on the CDK app's classpath. The lambda zips are declared as
+    /// dependencies purely to move them between modules, and the container has no
+    /// repository to resolve them from anyway.
     private static boolean isJar(Dependency dependency) {
         String type = dependency.getType();
         return type == null || type.isBlank() || "jar".equals(type);
     }
 
-    /**
-     * Declared dependencies, not resolved ones. The Gradle version read the declared
-     * dependencies of compileClasspath, so using the resolved set here would inject the
-     * whole transitive tree into the generated CDK pom.
-     */
+    /// Declared dependencies, not resolved ones. The Gradle version read the declared
+    /// dependencies of compileClasspath, so using the resolved set here would inject the
+    /// whole transitive tree into the generated CDK pom.
     private List<CdkApp.Dependency> declaredDependencies() {
         return project.getDependencies().stream()
             .filter(dependency -> !"test".equals(dependency.getScope()))

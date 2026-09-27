@@ -6,6 +6,9 @@ import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+
+import module java.base;
+
 import java.util.List;
 
 import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;

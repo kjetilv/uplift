@@ -1,11 +1,9 @@
 package com.github.kjetilv.uplift.json.events;
 
+import module java.base;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.io.ByteChannelSink;
 import com.github.kjetilv.uplift.json.io.Sink;
-
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

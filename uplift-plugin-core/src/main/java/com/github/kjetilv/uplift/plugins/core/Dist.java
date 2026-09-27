@@ -1,12 +1,7 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Locale;
+import module java.base;
+import module java.net.http;
 
 /**
  * The GraalVM distribution can be given as a local file or as a download URL. The template
@@ -40,6 +35,10 @@ public final class Dist {
 
     public URI uri() {
         return uri;
+    }
+
+    public String uriString() {
+        return uri().toASCIIString();
     }
 
     public Path path() {

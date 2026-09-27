@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.kernel;
 
+import module java.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 public final class EnvLookup {
 

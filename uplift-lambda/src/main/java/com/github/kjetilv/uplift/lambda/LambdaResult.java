@@ -1,5 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
+import module java.base;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;

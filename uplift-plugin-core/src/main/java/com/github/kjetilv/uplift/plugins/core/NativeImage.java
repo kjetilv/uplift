@@ -1,39 +1,14 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import module java.base;
+
+import static com.github.kjetilv.uplift.plugins.core.Dist.Type.FILE;
 
 /**
  * Builds a native lambda binary by rendering a Dockerfile, building the image, running it
  * to produce the binary, and zipping the result.
  */
 public final class NativeImage {
-
-    private static final String TEMPLATE = "lambda-st4/Dockerfile";
-
-    /** Where the classpath lands inside the container, per the volume mount below. */
-    private static final String CONTAINED_CLASSPATH = "/out/classpath/";
-
-    public record Spec(
-        String identifier,
-        String arch,
-        String main,
-        URI javaDist,
-        String buildsite,
-        Path zipFile,
-        List<Path> classPath,
-        boolean enablePreview,
-        String addModules,
-        String otherOptions
-    ) {
-    }
 
     private final Spec spec;
 
@@ -69,12 +44,12 @@ public final class NativeImage {
         List<String> dockerfile = Templates.renderResource(TEMPLATE, parameters(dist, classPath));
         try {
             Files.write(upliftDir.resolve("Dockerfile"), dockerfile);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to write Dockerfile in " + upliftDir, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write Dockerfile in " + upliftDir, e);
         }
         log.info("Created new DockerFile for " + spec.buildsite());
 
-        if (dist.type() == Dist.Type.FILE) {
+        if (dist.type() == FILE) {
             FileIO.copyTo(dist.path(), upliftDir, "dist.tar.gz");
         }
 
@@ -89,6 +64,16 @@ public final class NativeImage {
     }
 
     private Map<String, String> parameters(Dist dist, List<Path> classPath) {
+        var distLines = switch (dist.type()) {
+            case FILE -> Templates.renderResource(
+                TEMPLATE_DISTFILE,
+                Map.of("distfile", dist.uriString())
+            );
+            case HTTP -> Templates.renderResource(
+                TEMPLATE_DISTURI,
+                Map.of("disturi", dist.uriString())
+            );
+        };
         Map<String, String> parameters = new LinkedHashMap<>();
         parameters.put("buildsite", spec.buildsite());
         parameters.put("target", spec.identifier());
@@ -97,11 +82,19 @@ public final class NativeImage {
         parameters.put("enablepreview", spec.enablePreview() ? "--enable-preview" : "");
         parameters.put("addmodules", option("--add-modules ", spec.addModules()));
         parameters.put("otheroptions", option("", spec.otherOptions()));
-        parameters.put("distfile", dist.ifType(Dist.Type.FILE));
-        parameters.put("disturi", dist.ifType(Dist.Type.HTTP));
+        parameters.put("dist", String.join("\n", distLines));
         parameters.put("classpath", contained(classPath));
         return parameters;
     }
+
+    private static final String TEMPLATE = "lambda/Dockerfile";
+
+    private static final String TEMPLATE_DISTFILE = "lambda/Dockerfile-distfile";
+
+    private static final String TEMPLATE_DISTURI = "lambda/Dockerfile-disturi";
+
+    /** Where the classpath lands inside the container, per the volume mount below. */
+    private static final String CONTAINED_CLASSPATH = "/out/classpath/";
 
     private static String option(String prefix, String value) {
         return value != null && !value.isBlank() ? prefix + value : "";
@@ -111,5 +104,19 @@ public final class NativeImage {
         return classPath.stream()
             .map(entry -> CONTAINED_CLASSPATH + entry.getFileName())
             .collect(Collectors.joining(":"));
+    }
+
+    public record Spec(
+        String identifier,
+        String arch,
+        String main,
+        URI javaDist,
+        String buildsite,
+        Path zipFile,
+        List<Path> classPath,
+        boolean enablePreview,
+        String addModules,
+        String otherOptions
+    ) {
     }
 }

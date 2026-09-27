@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.synchttp;
 
+import module java.base;
+import module java.net.http;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 public interface Server extends RuntimeCloseable {
 

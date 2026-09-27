@@ -1,0 +1,5 @@
+⎨disturi⎬ /graal.tar.gz
+WORKDIR /graalvm
+RUN tar xzf /graal.tar.gz
+WORKDIR /
+RUN rm /graal.tar.gz

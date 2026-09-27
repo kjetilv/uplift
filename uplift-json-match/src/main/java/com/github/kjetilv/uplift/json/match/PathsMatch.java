@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.List;
+import module java.base;
 
 record PathsMatch<T>(List<? extends Probe<T>> pathways) implements Match<T> {
 

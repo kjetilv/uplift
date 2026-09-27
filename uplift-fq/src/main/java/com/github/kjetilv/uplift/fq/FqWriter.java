@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.fq;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
-
-import java.util.List;
 
 public interface FqWriter<T> extends RuntimeCloseable {
 

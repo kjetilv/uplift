@@ -1,6 +1,6 @@
 package com.github.kjetilv.uplift.fq.paths;
 
-import java.util.function.Function;
+import module java.base;
 
 sealed interface Ledge extends Comparable<Ledge> permits LedgeImpl {
 

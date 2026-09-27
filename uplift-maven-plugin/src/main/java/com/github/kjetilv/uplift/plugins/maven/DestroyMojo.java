@@ -5,7 +5,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-/** Destroys the stack, then removes the generated CDK application. */
+/// Destroys the stack, then removes the generated CDK application.
 @Mojo(name = "destroy", requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class DestroyMojo extends AbstractCdkMojo {
 

@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.read;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Objects;
+import module java.base;
 
 final class BodyBytes implements ReadableByteChannel {
 

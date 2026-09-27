@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.flogs;
 
-import java.net.URL;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import module java.base;
+
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 

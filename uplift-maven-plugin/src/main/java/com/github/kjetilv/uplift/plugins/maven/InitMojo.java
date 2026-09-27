@@ -4,7 +4,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-/** Generates the CDK application. Touches no AWS resources. */
+/// Generates the CDK application. Touches no AWS resources.
+@SuppressWarnings("unused")
 @Mojo(name = "init", requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class InitMojo extends AbstractCdkMojo {
 

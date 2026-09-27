@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.json.match;
 
-import java.util.*;
-import java.util.stream.Stream;
+import module java.base;
 
 public final class Combine {
 

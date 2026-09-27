@@ -1,10 +1,9 @@
 package com.github.kjetilv.uplift.fq.paths;
 
+import module java.base;
 import com.github.kjetilv.uplift.fq.SourceProvider;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.util.SafeFiles;
-
-import java.nio.file.Path;
 
 public record PathProvider(Path root, String suffix) implements SourceProvider<Path> {
 

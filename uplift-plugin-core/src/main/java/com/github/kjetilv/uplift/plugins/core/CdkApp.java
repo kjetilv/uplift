@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,8 +77,8 @@ public final class CdkApp {
             Path copy = Files.copy(pom, app.resolve("pom.xml.orig"));
             Files.write(pom, templated(copy));
             FileIO.clearRecursive(copy);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to generate CDK app in " + app, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to generate CDK app in " + app, e);
         }
     }
 

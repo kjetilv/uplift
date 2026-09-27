@@ -1,5 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
+import module java.base;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
@@ -9,23 +10,6 @@ import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.FunctionConfiguration;
 import software.amazon.awssdk.services.lambda.model.FunctionUrlConfig;
 import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsRequest;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Reports what a deployed stack currently looks like: its functions, their function URLs,
@@ -204,7 +188,7 @@ public final class StackReport {
                         entryTime(entry),
                         readable(entry.getSize())
                     )));
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Could not read " + zip + ": " + e);
         }
     }
@@ -267,8 +251,8 @@ public final class StackReport {
         try (Stream<Path> found = Files.find(parent, 1, (file, _) ->
             file.getFileName().toString().endsWith(".jar"))) {
             return found.toList();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to list jars beside " + zip, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to list jars beside " + zip, e);
         }
     }
 
@@ -279,16 +263,16 @@ public final class StackReport {
     private static Instant modified(Path path) {
         try {
             return Files.getLastModifiedTime(path).toInstant();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to read time of " + path, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read time of " + path, e);
         }
     }
 
     private static String size(Path path) {
         try {
             return readable(Files.size(path));
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to read size of " + path, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read size of " + path, e);
         }
     }
 

@@ -1,11 +1,6 @@
 package com.github.kjetilv.uplift.flambda;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import module java.base;
 
 public final class Sync<K, V> {
 

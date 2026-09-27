@@ -11,10 +11,10 @@ import java.net.http.HttpClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 @SuppressWarnings({"UseOfSystemOutOrSystemErr", "MagicNumber"})
 class HumbleS3Test {
 
-    @Disabled
     @Test
     void getIds() {
         S3Accessor defaultS3Accessor = new DefaultS3Accessor(

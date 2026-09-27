@@ -1,9 +1,6 @@
 package com.github.kjetilv.uplift.s3.auth;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import module java.base;
 
 public final class Hashes {
 

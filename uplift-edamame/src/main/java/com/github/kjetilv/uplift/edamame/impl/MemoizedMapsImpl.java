@@ -1,10 +1,9 @@
 package com.github.kjetilv.uplift.edamame.impl;
 
+import module java.base;
 import com.github.kjetilv.uplift.edamame.MemoizedMaps;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
-
-import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 

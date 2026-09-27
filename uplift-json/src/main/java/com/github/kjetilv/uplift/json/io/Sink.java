@@ -1,11 +1,7 @@
 package com.github.kjetilv.uplift.json.io;
 
+import module java.base;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
-
-import java.io.OutputStream;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
-import java.util.regex.Pattern;
 
 import static com.github.kjetilv.uplift.json.io.Canonical.FALSE;
 import static com.github.kjetilv.uplift.json.io.Canonical.TRUE;

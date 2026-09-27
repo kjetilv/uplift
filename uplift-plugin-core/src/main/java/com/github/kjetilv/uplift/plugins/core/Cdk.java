@@ -1,12 +1,6 @@
 package com.github.kjetilv.uplift.plugins.core;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import module java.base;
 
 /**
  * Builds and drives the `cdk-site` container. The image carries the CDK CLI and maven, so
@@ -15,8 +9,6 @@ import java.util.stream.Collectors;
 public final class Cdk {
 
     public static final String IMAGE = "cdk-site:latest";
-
-    private static final String TEMPLATE = "cdk-st4/Dockerfile";
 
     private final Path upliftDir;
 
@@ -30,24 +22,20 @@ public final class Cdk {
 
     private final Docker docker;
 
-    private final Log log;
-
     public Cdk(
         Path upliftDir,
         Path cdkApp,
         String awsAuth,
         String arch,
         Map<String, String> env,
-        Docker docker,
-        Log log
+        Docker docker
     ) {
         this.upliftDir = upliftDir;
         this.cdkApp = cdkApp;
         this.awsAuth = awsAuth;
         this.arch = arch;
-        this.env = new LinkedHashMap<>(env == null ? Map.of() : env);
+        this.env = env == null ? Map.of() : Map.copyOf(env);
         this.docker = docker;
-        this.log = log;
     }
 
     public Path upliftDir() {
@@ -65,16 +53,15 @@ public final class Cdk {
                 upliftDir.resolve("Dockerfile"),
                 Templates.renderResource(TEMPLATE, Map.of("arch", arch))
             );
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to write CDK Dockerfile in " + upliftDir, e);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to write CDK Dockerfile in " + upliftDir, e);
         }
         docker.run(upliftDir, "build --tag " + IMAGE + " " + upliftDir);
     }
 
     public void run(String command) {
-        String volumes = padRight(volumes());
-        String environment = padRight(environment());
-        docker.run(upliftDir, "run " + volumes + environment + IMAGE + " " + command);
+        var dockerCommand = String.join(" ", "run", volumes(), environment(), IMAGE, command);
+        docker.run(upliftDir, dockerCommand);
     }
 
     private String volumes() {
@@ -84,14 +71,20 @@ public final class Cdk {
     }
 
     private String environment() {
-        return env.entrySet().stream()
+        return env.entrySet()
+            .stream()
             .map(entry -> "-e " + entry.getKey() + "=" + entry.getValue())
             .collect(Collectors.joining(" "));
     }
 
+    private static final String TEMPLATE = "cdk/Dockerfile";
+
     private static String padRight(String value) {
-        if (value == null || value.isBlank() || value.endsWith(" ")) {
-            return value == null ? "" : value;
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        if (value.endsWith(" ")) {
+            return value;
         }
         return value + " ";
     }

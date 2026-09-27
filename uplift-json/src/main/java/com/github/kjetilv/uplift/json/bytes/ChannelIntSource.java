@@ -1,8 +1,6 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Objects;
+import module java.base;
 
 public class ChannelIntSource extends AbstractIntsBytesSource {
 
