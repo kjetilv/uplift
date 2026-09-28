@@ -4,13 +4,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEntry>  {
+public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEntry> {
 
     @SuppressWarnings("DuplicatedCode")
     @Override
     final String loggableLine(LogEntry entry) {
         var sb = new StringBuilder();
-
         var dateTime = entry.zuluTime();
         var formattedMessage = formatMessage(
             entry.msg(),
@@ -19,8 +18,8 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
         );
         var dateFormatted =
             dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
-        sb.append(dateFormatted);
-        sb.append(SPACES, 0, ISO_LENGTH - dateFormatted.length());
+        sb.append(dateFormatted)
+            .append(SPACES, 0, ISO_LENGTH - dateFormatted.length());
         var level = entry.logLevel();
         sb.append(' ')
             .append(SPACES, 0, 5 - level.length())
@@ -32,16 +31,14 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
             .append(name(entry))
             .append(BOLD_OFF)
             .append(AWS_LAMBDA ? ": " : " ")
-            .append(formattedMessage);
-        if (entry.threadName() != null) {
-            sb.append(" ")
-                .append(BOLD_ON)
-                .append("🪡")
-                .append(BOLD_OFF)
-                .append(ITAL_ON)
-                .append(entry.threadName())
-                .append(ITAL_OFF);
-        }
+            .append(formattedMessage)
+            .append(" ")
+            .append(BOLD_ON)
+            .append("🪡")
+            .append(BOLD_OFF)
+            .append(ITAL_ON)
+            .append(entry.threadName())
+            .append(ITAL_OFF);
         return sb.toString();
     }
 
@@ -51,6 +48,8 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
     }
 
     protected abstract String name(LogEntry entry);
+
+    private static final int ISO_LENGTH = 24;
 
     private static final boolean AWS_LAMBDA = System.getProperty("_X_AMZN_TRACE_ID") != null;
 
@@ -83,8 +82,6 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
     private static final String SPACES = IntStream.range(0, 64)
         .mapToObj(_ -> " ")
         .collect(Collectors.joining());
-
-    public static final int ISO_LENGTH = 24;
 
     private static char[] color(LogLevel level) {
         return AWS_LAMBDA ? EMPTY
