@@ -62,10 +62,9 @@ public record LogEntry(
 
     @Override
     public String threadName() {
-        if (threadName.startsWith(WORKER)) {
-            return "🎱" + threadName.substring(WORKER.length());
-        }
-        return (virtual != null && virtual ? "𐄷" : "") + threadName;
+        return threadName.startsWith(WORKER)
+            ? "🎱" + threadName.substring(WORKER.length())
+            : (virtual != null && virtual ? "𐄷" : "") + threadName;
     }
 
     ZonedDateTime zuluTime() {
