@@ -158,10 +158,18 @@ public final class Flogs {
             InstantSource time,
             LogFormatter<LogEntry> formatter
         ) {
-            this.logLevel = logLevel == null ? LogLevel.DEFAULT : logLevel;
-            this.printer = printer == null ? IO::println : printer;
-            this.time = time == null ? Instant::now : time;
-            this.formatter = formatter == null ? LogFormatter.DEFAULT : formatter;
+            this.logLevel = logLevel != null
+                ? logLevel
+                : LogLevel.DEFAULT;
+            this.printer = printer != null
+                ? printer
+                : IO::println;
+            this.time = time != null
+                ? time
+                : Instant::now;
+            this.formatter = formatter != null
+                ? formatter
+                : LogFormatter.DEFAULT;
         }
 
         private Settings() {
