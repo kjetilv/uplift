@@ -47,9 +47,7 @@
   <build>
     <plugins>
       <!--
-        Replaces the admonish() function in the Gradle build, which only logged when the
-        deployment coordinates were missing and let the build carry on to a confusing
-        failure later. This stops the build with the same advice.
+         Stop the build when below properties are missing.
       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

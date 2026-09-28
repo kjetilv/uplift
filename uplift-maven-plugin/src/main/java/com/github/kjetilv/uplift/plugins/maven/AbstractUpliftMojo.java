@@ -18,8 +18,8 @@ import java.util.Map;
 
 /// Shared coordinates and plumbing for the goals that drive the CDK container.
 ///
-/// The Gradle plugin read these from project properties. Here they are ordinary parameters,
-/// so they can come from the pom, from `.mvn/maven.config`, or from the command line.
+/// They are ordinary parameters, so they can come from the pom, from `.mvn/maven.config`,
+/// or from the command line.
 @SuppressWarnings("ProtectedField")
 public abstract class AbstractUpliftMojo extends AbstractMojo {
 
