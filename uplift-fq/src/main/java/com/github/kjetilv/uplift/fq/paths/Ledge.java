@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.fq.paths;
 
 import module java.base;
 
-sealed interface Ledge extends Comparable<Ledge> permits LedgeImpl {
+public sealed interface Ledge extends Comparable<Ledge> permits LedgeImpl {
 
     static Function<Long, Ledge> forFormat(String format) {
         return ledge -> new LedgeImpl(ledge, format);

@@ -28,7 +28,7 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>cloudformation</artifactId>
-      <version>2.34.2</version>
+      <version>2.55.6</version>
     </dependency>
 
     <!--
@@ -46,48 +46,16 @@
 
   <build>
     <plugins>
-      <!--
-         Stop the build when below properties are missing.
-      -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${enforcer.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>require-uplift-config</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireProperty>
-                  <property>uplift.account</property>
-                  <message>Set uplift.account, your 12-digit AWS account id. See .mvn/maven.config.template.</message>
-                </requireProperty>
-                <requireProperty>
-                  <property>uplift.region</property>
-                  <message>Set uplift.region, the region to deploy into. See .mvn/maven.config.template.</message>
-                </requireProperty>
-                <requireProperty>
-                  <property>uplift.profile</property>
-                  <message>Set uplift.profile, the AWS profile holding the access key. See .mvn/maven.config.template.</message>
-                </requireProperty>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>com.github.kjetilv.uplift</groupId>
         <artifactId>uplift-maven-plugin</artifactId>
         <configuration>
           <stack>hello-web-uplift</stack>
+            <account>${uplift.account}</account>
+            <region>${uplift.region}</region>
+            <profile>${uplift.profile}</profile>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
 </project>

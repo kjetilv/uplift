@@ -34,23 +34,24 @@ public final class Dimensions {
         this.max = max;
         this.powers = IntStream.range(start, end + 1).toArray();
         this.expt10s = IntStream.range(start, end + 1)
-            .map(i -> (int) Math.pow(10, i))
+            .map(i -> Math.toIntExact(Math.round(Math.pow(10, i))))
             .toArray();
-        this.maxValue = (long) Math.pow(10, max);
+        this.maxValue = Math.round(Math.pow(10, max));
         this.format = format("%0{0}d", max);
     }
 
-    Ledge ledge(long count) {
+    public Ledge ledge(long count) {
         if (count > maxValue) {
             throw new IllegalArgumentException("#" + count + " exceeds max " + maxValue);
         }
         return ledges.computeIfAbsent(
             ledgeNumber(count),
-            Ledge.forFormat(format));
+            Ledge.forFormat(format)
+        );
     }
 
     private long ledgeNumber(long no) {
-        var power = (int) Math.floor(Math.log10(no));
+        var power = Math.toIntExact(Math.round(Math.floor(Math.log10(no))));
         var powerIndex = Arrays.binarySearch(powers, power);
         var exptIndex = powerIndex < 0 ? powers.length - 1 : powerIndex;
         return normalize(no, expt10s[exptIndex]);

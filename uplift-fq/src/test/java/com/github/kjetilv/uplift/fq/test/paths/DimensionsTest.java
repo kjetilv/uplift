@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.test.paths;
 
+import com.github.kjetilv.uplift.fq.paths.Dimensions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -119,7 +119,9 @@ public class CompilerTestCase {
                 },
                 () -> {
                     generatedFiles.forEach(this::print);
-                    log.info("That worked out nicely");
+                    if (PRINT_GENERATED) {
+                        log.info("That worked out nicely");
+                    }
                 }
             );
         session = null;
@@ -184,17 +186,21 @@ public class CompilerTestCase {
     }
 
     private void print(Path file) {
-        log.info("{}", session.generatedFile(file));
-        try (var lines = Files.lines(file)) {
-            lines.forEach(line -> IO.println("⏐⏐    " + line));
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to read " + file, e);
+        if (PRINT_GENERATED) {
+            log.info("{}", session.generatedFile(file));
+            try (var lines = Files.lines(file)) {
+                lines.forEach(line -> IO.println("⏐⏐    " + line));
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to read " + file, e);
+            }
         }
     }
 
     private static final Pattern PARS = Pattern.compile("\\(\\)");
 
     private static final Comparator<Path> LONGEST_FIRST = Comparator.comparing(Path::getNameCount).reversed();
+
+    private static final boolean PRINT_GENERATED = Boolean.getBoolean("print-generated");
 
     @SuppressWarnings({"EmptyClass"})
     private static String withImports(String java) {
@@ -263,19 +269,15 @@ public class CompilerTestCase {
         return context.getTestMethod()
             .map(method ->
                 method.getDeclaringClass().getName() + "." + method.getName())
-            .map(new Function<String, Predicate<StackTraceElement>>() {
-
-                @Override
-                public Predicate<StackTraceElement> apply(String cutoff) {
-                    AtomicBoolean cutoffSeen = new AtomicBoolean();
-                    return (Predicate<StackTraceElement>) stackTraceElement -> {
-                        if (cutoffSeen.get()) {
-                            return false;
-                        }
-                        cutoffSeen.set(stackTraceElement.toString().contains(cutoff));
-                        return true;
-                    };
-                }
+            .map(cutoff -> {
+                AtomicBoolean cutoffSeen = new AtomicBoolean();
+                return (Predicate<StackTraceElement>) stackTraceElement -> {
+                    if (cutoffSeen.get()) {
+                        return false;
+                    }
+                    cutoffSeen.set(stackTraceElement.toString().contains(cutoff));
+                    return true;
+                };
             })
             .orElse(_ -> true);
     }

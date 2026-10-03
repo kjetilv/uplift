@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.test.paths;
 
 import com.github.kjetilv.uplift.fq.paths.bytes.BytesSplitter;
 import org.junit.jupiter.api.Test;

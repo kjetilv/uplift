@@ -1,3 +1,6 @@
+/// Test module
+///
+/// @jenesis.test
 module uplift.edamame.test {
     requires org.junit.jupiter.api;
     requires uplift.edamame;

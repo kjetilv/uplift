@@ -1,8 +1,9 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.test.paths;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.flows.Name;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
+import com.github.kjetilv.uplift.fq.paths.*;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamAccessProvider;
 import com.github.kjetilv.uplift.fq.paths.bytes.StreamWriter;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class PathFqStreamTest {
         Chains.assertSimpleWriteRead(pfq);
     }
 
+    @SuppressWarnings("UnnecessaryCallToStringValueOf")
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testWriteAndRead(boolean compress, @TempDir(cleanup = ON_SUCCESS) Path tmp) {
@@ -142,6 +144,7 @@ class PathFqStreamTest {
 
     private static final int INT = 9999;
 
+    @SuppressWarnings("UnnecessaryCallToStringValueOf")
     private static Path getPath(Path tmp) {
         var fooTxt = tmp.resolve("foo.txt");
         try (

@@ -1,6 +1,8 @@
-package com.github.kjetilv.uplift.flogs;
+package com.github.kjetilv.uplift.flogs.test;
 
 import module java.base;
+import com.github.kjetilv.uplift.flogs.Flogs;
+import com.github.kjetilv.uplift.flogs.LogLevel;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 

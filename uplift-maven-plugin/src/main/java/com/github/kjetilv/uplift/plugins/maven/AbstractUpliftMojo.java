@@ -35,12 +35,6 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
     @Parameter(property = "uplift.profile", defaultValue = "default")
     protected String profile;
 
-    @Parameter(property = "uplift.bucket")
-    protected String bucket;
-
-    @Parameter(property = "uplift.fb")
-    protected String fb;
-
     /// Defaults to the module's coordinates, normalised
     @Parameter(property = "uplift.stack")
     protected String stack;
@@ -107,14 +101,7 @@ public abstract class AbstractUpliftMojo extends AbstractMojo {
     protected abstract void perform() throws MojoExecutionException;
 
     private Map<String, String> env() {
-        var env = new HashMap<>(this.env == null ? Map.of() : this.env);
-        if (fb != null) {
-            env.put("fbSec", fb);
-        }
-        if (bucket != null) {
-            env.put("taninimBucket", bucket);
-        }
-        return env;
+        return new HashMap<>(this.env == null ? Map.of() : this.env);
     }
 
     @SuppressWarnings("NumericCastThatLosesPrecision")

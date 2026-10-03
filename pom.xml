@@ -85,9 +85,13 @@
         <module>uplift-json-jmh</module>
         <module>uplift-synchttp-jmh</module>
 
+        <!-- Examples -->
+        <module>examples/hello-web</module>
+
         <!-- Build logic, shared by the Gradle tasks and the Maven mojos. -->
         <module>uplift-plugin-core</module>
         <module>uplift-maven-plugin</module>
+
     </modules>
 
     <dependencyManagement>
