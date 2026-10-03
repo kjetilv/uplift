@@ -1,20 +1,20 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json.test.events;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
-final class MyCallbacks implements Callbacks {
+final class MyMultiCallbacks implements Callbacks {
 
     static final AtomicInteger COUNT = new AtomicInteger();
 
-    private final List<String> stuff;
+    private final List<List<String>> stuff;
 
     private final int count;
 
@@ -22,76 +22,92 @@ final class MyCallbacks implements Callbacks {
 
     private final AtomicReference<Throwable> callStack = new AtomicReference<>();
 
-    MyCallbacks() {
+    MyMultiCallbacks() {
         this(null);
     }
 
-    MyCallbacks(List<String> stuff) {
+    MyMultiCallbacks(List<List<String>> stuff) {
         this.count = COUNT.getAndIncrement();
-        this.stuff = stuff == null ? Collections.emptyList() : List.copyOf(stuff);
+        if (stuff == null) {
+            this.stuff = new ArrayList<>();
+            this.stuff.add(new ArrayList<>());
+        } else {
+            this.stuff = stuff;
+        }
     }
 
-    List<String> getStuff() {
+    List<List<String>> getStuff() {
         return stuff;
     }
 
     @Override
-    public MyCallbacks objectStarted() {
+    public MyMultiCallbacks objectStarted() {
         return add("objectStarted");
     }
 
     @Override
-    public MyCallbacks field(Token.Field token) {
-        return add("field:" + token.value());
+    public boolean multi() {
+        return true;
     }
 
     @Override
-    public MyCallbacks objectEnded() {
+    public Callbacks line() {
+        stuff.add(new ArrayList<>());
+        return new MyMultiCallbacks(stuff);
+    }
+
+    @Override
+    public MyMultiCallbacks field(Token.Field token) {
+        return add("field:" + token);
+    }
+
+    @Override
+    public MyMultiCallbacks objectEnded() {
         return add("objectEnded");
     }
 
     @Override
-    public MyCallbacks arrayStarted() {
+    public MyMultiCallbacks arrayStarted() {
         return add("arrayStarted");
     }
 
     @Override
-    public MyCallbacks string(Token.Str str) {
+    public MyMultiCallbacks string(Token.Str str) {
         return add("str:" + str.value());
     }
 
     @Override
-    public MyCallbacks number(Token.Number number) {
+    public MyMultiCallbacks number(Token.Number number) {
         return add("number:" + number.number());
     }
 
     @Override
-    public MyCallbacks bool(boolean bool) {
+    public MyMultiCallbacks bool(boolean bool) {
         return add("truth:" + bool);
     }
 
     @Override
-    public MyCallbacks nuul() {
+    public MyMultiCallbacks nuul() {
         return add("nil");
     }
 
     @Override
-    public MyCallbacks arrayEnded() {
+    public MyMultiCallbacks arrayEnded() {
         return add("arrayEnded");
     }
 
-    private MyCallbacks add(String event) {
+    private MyMultiCallbacks add(String event) {
         if (called.compareAndSet(false, true)) {
-            var moreStuff = new ArrayList<String>(stuff);
-            moreStuff.add(event);
+            stuff.getLast().add(event);
             callStack.set(new Throwable());
-            return new MyCallbacks(moreStuff);
+            return new MyMultiCallbacks(stuff);
         }
         throw new IllegalStateException("Called again! Count is " + count + ", stuff: " + stuff + ", event: " + event, callStack.get());
     }
 
     @Override
     public String toString() {
-        return java.lang.String.join("\n", stuff);
+        return stuff.stream().map(part -> "  " + java.lang.String.join("\n  ", part))
+            .collect(Collectors.joining("\n---\n"));
     }
 }

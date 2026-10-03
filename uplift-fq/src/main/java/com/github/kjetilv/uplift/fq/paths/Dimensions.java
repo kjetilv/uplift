@@ -51,8 +51,11 @@ public final class Dimensions {
     }
 
     private long ledgeNumber(long no) {
-        var power = Math.toIntExact(Math.round(Math.floor(Math.log10(no))));
-        var powerIndex = Arrays.binarySearch(powers, power);
+        if (no == 0) {
+            return 0;
+        }
+        var round = Math.round(Math.floor(Math.log10(no)));
+        var powerIndex = Arrays.binarySearch(powers, Math.toIntExact(round));
         var exptIndex = powerIndex < 0 ? powers.length - 1 : powerIndex;
         return normalize(no, expt10s[exptIndex]);
     }

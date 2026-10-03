@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.events;
+package com.github.kjetilv.uplift.json.test.events;
 
 import com.github.kjetilv.uplift.json.Json;
 import org.junit.jupiter.api.Test;

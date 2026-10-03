@@ -1,11 +1,13 @@
-package com.github.kjetilv.uplift.json.mame;
+package com.github.kjetilv.uplift.json.mame.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.JsonSession;
+import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 
+@SuppressWarnings("JavaPrintToLogpoint")
 public final class Main {
 
     static void main(String[] args) {

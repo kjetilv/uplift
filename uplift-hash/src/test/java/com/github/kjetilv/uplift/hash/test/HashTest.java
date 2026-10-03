@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.hash;
+package com.github.kjetilv.uplift.hash.test;
 
+import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.hash.HashKind;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

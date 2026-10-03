@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.test;
 
+import com.github.kjetilv.uplift.json.Json;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
