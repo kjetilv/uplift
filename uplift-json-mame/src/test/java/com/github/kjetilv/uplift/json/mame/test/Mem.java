@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.mame;
+package com.github.kjetilv.uplift.json.mame.test;
 
 public record Mem(
     long usedM,

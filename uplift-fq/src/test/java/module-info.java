@@ -1,3 +1,6 @@
+/// Test module
+///
+/// @jenesis.test
 module uplift.fq.test {
 
     requires uplift.fq;

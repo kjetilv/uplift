@@ -1,8 +1,9 @@
-package com.github.kjetilv.uplift.json.mame;
+package com.github.kjetilv.uplift.json.mame.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ class JsonSessionTest {
         var objects = (List<Object>) reference.get();
         var foobar = (Map<String, Object>) objects.getFirst();
 
-        var reference2 = new AtomicReference<Object>();
+        var reference2 = new AtomicReference<>();
         Json.instance().parse(
             //language=json
             """
@@ -54,7 +55,7 @@ class JsonSessionTest {
 
     @Test
     void testListsSession() {
-        var reference = new AtomicReference<Object>();
+        var reference = new AtomicReference<>();
         var jsonSession = CachingJsonSessions.create(HashKind.K256);
         var json = Json.instance(jsonSession);
 
@@ -78,7 +79,7 @@ class JsonSessionTest {
     @SuppressWarnings("unchecked")
     @Test
     void testMaps() {
-        var reference = new AtomicReference<Object>();
+        var reference = new AtomicReference<>();
         var jsonSession = CachingJsonSessions.create(HashKind.K256);
         Json.instance().parse(
             //language=json
@@ -96,7 +97,7 @@ class JsonSessionTest {
 
         var foobar = ((Map<String, Object>) reference.get()).get("zip");
 
-        var reference2 = new AtomicReference<Object>();
+        var reference2 = new AtomicReference<>();
         Json.instance().parse(
             //language=json
             """
@@ -114,7 +115,7 @@ class JsonSessionTest {
                     allSame(map.values(), List.of(foobar));
                 }));
 
-        var reference3 = new AtomicReference<Object>();
+        var reference3 = new AtomicReference<>();
         Json.instance().parse(
             //language=json
             """
@@ -131,7 +132,7 @@ class JsonSessionTest {
 
     @Test
     void testMapsSession() {
-        var reference = new AtomicReference<Object>();
+        var reference = new AtomicReference<>();
         var jsonSession = CachingJsonSessions.create(HashKind.K256);
         var json =
             //language=json

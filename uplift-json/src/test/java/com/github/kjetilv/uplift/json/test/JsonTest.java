@@ -1,5 +1,8 @@
-package com.github.kjetilv.uplift.json;
+package com.github.kjetilv.uplift.json.test;
 
+import com.github.kjetilv.uplift.json.Json;
+import com.github.kjetilv.uplift.json.ParseException;
+import com.github.kjetilv.uplift.json.TokenType;
 import com.github.kjetilv.uplift.json.io.ReadException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.json.io;
+package com.github.kjetilv.uplift.json.test.io;
 
+import com.github.kjetilv.uplift.json.io.ChunkedTransferByteChannelSink;
+import com.github.kjetilv.uplift.json.io.JsonWrites;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;

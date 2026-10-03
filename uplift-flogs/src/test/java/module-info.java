@@ -1,3 +1,6 @@
+/// Test module
+///
+/// @jenesis.test
 module uplift.flogs.test {
     requires org.junit.jupiter.api;
     requires org.assertj.core;

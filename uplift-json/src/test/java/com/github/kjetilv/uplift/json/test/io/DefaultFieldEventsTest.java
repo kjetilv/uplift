@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.json.io;
+package com.github.kjetilv.uplift.json.test.io;
 
+import com.github.kjetilv.uplift.json.io.DefaultFieldEvents;
+import com.github.kjetilv.uplift.json.io.StringSink;
 import org.junit.jupiter.api.Test;
 
 class DefaultFieldEventsTest {
