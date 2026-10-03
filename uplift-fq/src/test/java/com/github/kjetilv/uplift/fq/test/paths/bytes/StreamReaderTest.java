@@ -1,7 +1,8 @@
-package com.github.kjetilv.uplift.fq.paths.bytes;
+package com.github.kjetilv.uplift.fq.test.paths.bytes;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.paths.Reader;
+import com.github.kjetilv.uplift.fq.paths.bytes.StreamReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;

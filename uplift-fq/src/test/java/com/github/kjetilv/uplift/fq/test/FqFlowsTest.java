@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.flows.FqFlows;

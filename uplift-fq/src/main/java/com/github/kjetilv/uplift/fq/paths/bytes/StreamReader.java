@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.fq.paths.Reader;
 
 import static java.util.Objects.requireNonNull;
 
-final class StreamReader implements Reader<byte[]> {
+public final class StreamReader implements Reader<byte[]> {
 
     private final Path path;
 
@@ -17,7 +17,7 @@ final class StreamReader implements Reader<byte[]> {
         this(path, inputStream, 0);
     }
 
-    StreamReader(Path path, InputStream inputStream, int bufferSize) {
+    public StreamReader(Path path, InputStream inputStream, int bufferSize) {
         this.path = requireNonNull(path, "path");
         this.inputStream = requireNonNull(inputStream, "inputStream");
         this.bytesSplitter = new BytesSplitter(inputStream, '\n', bufferSize);

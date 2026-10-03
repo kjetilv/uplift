@@ -7,6 +7,7 @@ import com.github.kjetilv.uplift.util.SafeFiles;
 import static java.nio.file.Files.delete;
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("unused")
 abstract class AbstractPathFq<I, T> {
 
     private final Fio<I, T> fio;

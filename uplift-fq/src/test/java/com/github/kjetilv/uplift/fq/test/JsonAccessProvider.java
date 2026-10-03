@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.fq;
+package com.github.kjetilv.uplift.fq.test;
 
+import com.github.kjetilv.uplift.fq.AccessProvider;
 import com.github.kjetilv.uplift.fq.io.ChannelIO;
 import com.github.kjetilv.uplift.fq.paths.Reader;
 import com.github.kjetilv.uplift.fq.paths.Writer;

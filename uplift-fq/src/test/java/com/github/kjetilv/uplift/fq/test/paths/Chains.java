@@ -1,7 +1,8 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.test.paths;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.flows.Name;
+import com.github.kjetilv.uplift.fq.paths.PathFqs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

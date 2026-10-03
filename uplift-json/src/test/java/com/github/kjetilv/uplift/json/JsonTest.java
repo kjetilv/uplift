@@ -122,7 +122,7 @@ class JsonTest {
               "question": "'The 1996 musical \\"Play On!\\" gets its title from the first line of this Shakespeare play, on which it is based'",
               "value": null,
               "answer": "\\\\\\"Twelfth Night\\\\\\"",
-              "round": "Final Jeopardy!",
+              "round": "Final com.github.kjetilv.uplift.fq.test.Jeopardy!",
               "show_number": "3834"
             }
             """;
@@ -149,7 +149,7 @@ class JsonTest {
               "question": "'The 1996 musical \\"Play On!\\" gets its title from the first line of this Shakespeare play, on which it is based'",
               "value": null,
               "answer": "\\\\\\"Twelfth Night\\\\\\"",
-              "round": "Final Jeopardy!",
+              "round": "Final com.github.kjetilv.uplift.fq.test.Jeopardy!",
               "show_number": "3834"
             }
             """);

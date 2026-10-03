@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.fq.partitions;
+package com.github.kjetilv.uplift.fq.test.partitions;
 
+import com.github.kjetilv.uplift.fq.partitions.Partition;
+import com.github.kjetilv.uplift.fq.partitions.Partitioning;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.IntStream;

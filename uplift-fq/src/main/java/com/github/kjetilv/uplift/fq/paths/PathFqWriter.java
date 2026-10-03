@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.fq.FqWriter;
 
 import static java.util.Objects.requireNonNull;
 
-final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
+public final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
     implements FqWriter<O> {
 
     private final Dimensions dimensions;
@@ -27,7 +27,7 @@ final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     private Path currentPath;
 
-    PathFqWriter(
+    public PathFqWriter(
         Path directory,
         Dimensions dimensions,
         Function<Path, Writer<I>> newWriter,

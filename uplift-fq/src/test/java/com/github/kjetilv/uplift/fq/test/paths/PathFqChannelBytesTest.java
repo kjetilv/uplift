@@ -1,9 +1,9 @@
-package com.github.kjetilv.uplift.fq.paths;
+package com.github.kjetilv.uplift.fq.test.paths;
 
 import module java.base;
 import com.github.kjetilv.uplift.fq.flows.Name;
-import com.github.kjetilv.uplift.fq.io.ByteBufferStringFio;
 import com.github.kjetilv.uplift.fq.io.BytesStringFio;
+import com.github.kjetilv.uplift.fq.paths.*;
 import com.github.kjetilv.uplift.fq.paths.ffm.ChannelWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,8 +11,9 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.io.CleanupMode.ON_SUCCESS;
 
-class PathFqChannelBufferTest {
+class PathFqChannelBytesTest {
 
+    @SuppressWarnings("UnnecessaryCallToStringValueOf")
     @Test
     void testWrite(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         var fooTxt = tmp.resolve("foo.txt");
@@ -24,7 +25,7 @@ class PathFqChannelBufferTest {
                     try {
                         return new ChannelWriter<>(
                             new RandomAccessFile(path.toFile(), "rw"),
-                            Function.identity(),
+                            ByteBuffer::wrap,
                             () -> ByteBuffer.wrap(new byte[] {'\n'})
                         );
                     } catch (Exception e) {
@@ -33,7 +34,7 @@ class PathFqChannelBufferTest {
                 },
                 () -> {
                 },
-                new ByteBufferStringFio(),
+                new BytesStringFio(),
                 new PathTombstone(fooTxt.resolve("done"))
             )
         ) {
@@ -59,21 +60,22 @@ class PathFqChannelBufferTest {
     @Test
     void testSimpleWriteAndReader(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         var pfq = new PathFqs<>(
-            new ByteBufferStringFio(),
+            new BytesStringFio(),
             new PathProvider(tmp),
-            AccessProviders.channelBuffers(),
+            AccessProviders.channelBytes(),
             new Dimensions(1, 2, 4)
         );
 
         Chains.assertSimpleWriteRead(pfq);
     }
 
+    @SuppressWarnings("UnnecessaryCallToStringValueOf")
     @Test
     void testWriteAndRead(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
         var pfq = new PathFqs<>(
             new BytesStringFio(),
             new PathProvider(tmp),
-            AccessProviders.channelBytes(),
+            AccessProviders.channelBytes((byte) '\n'),
             new Dimensions(1, 2, 4)
         );
         Name foo = Name.of("foo.txt");
@@ -98,7 +100,7 @@ class PathFqChannelBufferTest {
             executor
         );
 
-        var reader = CompletableFuture.supplyAsync(
+        var puller = CompletableFuture.supplyAsync(
             () -> {
                 var fqp = pfq.reader(foo);
 
@@ -113,7 +115,7 @@ class PathFqChannelBufferTest {
 
         var streamer = CompletableFuture.runAsync(
             () -> {
-                var fqs = pfq.reader(Name.of("foo.txt"))
+                var fqs = pfq.reader(foo)
                     .stream();
                 assertThat(fqs).containsExactlyElementsOf(expected);
             }, executor
@@ -126,10 +128,10 @@ class PathFqChannelBufferTest {
             }
         );
 
-        Stream.of(writer, reader, batcher, streamer)
+        Stream.of(writer, puller, batcher, streamer)
             .forEach(CompletableFuture::join);
 
-        assertThat(reader)
+        assertThat(puller)
             .isCompletedWithValueMatching(p -> p.next() == null);
     }
 
@@ -155,17 +157,6 @@ class PathFqChannelBufferTest {
         );
     }
 
-    @Test
-    void chain2(@TempDir(cleanup = ON_SUCCESS) Path tmp) {
-        assertChain(
-            tmp,
-            new Dimensions(1, 3, 5),
-            10,
-            111,
-            9999
-        );
-    }
-
     private static void assertChain(
         Path tmp,
         Dimensions dimensions,
@@ -180,7 +171,7 @@ class PathFqChannelBufferTest {
             new PathFqs<>(
                 new BytesStringFio(),
                 new PathProvider(tmp),
-                AccessProviders.channelBytes((byte) '\n'),
+                AccessProviders.channelBytes(),
                 dimensions
             )
         );
