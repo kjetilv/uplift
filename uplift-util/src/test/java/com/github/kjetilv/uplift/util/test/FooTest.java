@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.util;
+package com.github.kjetilv.uplift.util.test;
 
 import org.junit.jupiter.api.Test;
 

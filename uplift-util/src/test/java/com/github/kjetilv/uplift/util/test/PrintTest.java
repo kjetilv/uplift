@@ -1,5 +1,7 @@
-package com.github.kjetilv.uplift.util;
+package com.github.kjetilv.uplift.util.test;
 
+import com.github.kjetilv.uplift.util.Print;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,7 +10,7 @@ class PrintTest {
 
     @Test
     void semiSecrets() {
-        assertThat(Print.semiSecret("a")).isEqualTo("⁎");
+        Assertions.assertThat(Print.semiSecret("a")).isEqualTo("⁎");
         assertThat(Print.semiSecret("ab")).isEqualTo("a⁎");
         assertThat(Print.semiSecret("abc")).isEqualTo("a⁎");
         assertThat(Print.semiSecret("abcd")).isEqualTo("a⁎");

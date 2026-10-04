@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.util;
+package com.github.kjetilv.uplift.util.test;
 
+import com.github.kjetilv.uplift.util.DirectoryObserver;
 import com.github.kjetilv.uplift.util.DirectoryObserver.FileState;
 
 import java.io.BufferedReader;

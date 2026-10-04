@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.util;
+package com.github.kjetilv.uplift.util.test;
 
+import com.github.kjetilv.uplift.util.CaseInsensitiveHashMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
