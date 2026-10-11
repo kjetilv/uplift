@@ -1,12 +1,10 @@
-package main;
+package com.github.kjetilv.uplift.hash;
 
 import module java.base;
-import com.github.kjetilv.uplift.hash.HashBuilder;
-import com.github.kjetilv.uplift.hash.HashKind;
 
 import static com.github.kjetilv.uplift.hash.HashBuilder.forInputStream;
 
-public class Hash {
+public class Hasher {
 
     void main(String[] args) {
         var builder = forInputStream(HashKind.K256);
@@ -16,7 +14,7 @@ public class Hash {
             Arrays.stream(args)
                 .map(path ->
                     path.replace("~", System.getProperty("user.home")))
-                .map(Hash::toInputStream)
+                .map(Hasher::toInputStream)
                 .forEach(in ->
                     hashTo(builder, in));
         }
