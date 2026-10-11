@@ -1,12 +1,8 @@
 package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class Servers {
-
-    private static final Logger log = LoggerFactory.getLogger(Servers.class);
 
     public static Server.Init create() {
         return create(0);
@@ -28,16 +24,15 @@ public final class Servers {
         int port,
         HttpHandler handler
     ) {
-        var processor = new HttpCallbackProcessor(handler);
+        Server.Processor processor = new HttpCallbackProcessor(handler);
         switch (create(port).run(processor)) {
             case Result.OK(Server.Open openServer) -> {
                 try (openServer) {
                     return openServer.await(name);
                 }
             }
-            case Result.Denied(InetSocketAddress address) -> {
-                log.warn("{} was denied binding to {}", name, address);
-                return new Result.Denied<>(address);
+            case Result.Denied<?> denied -> {
+                return denied.retyped();
             }
         }
     }
@@ -51,22 +46,47 @@ public final class Servers {
 
     public sealed interface Result<T> {
 
+        @SuppressWarnings("UnusedReturnValue")
+        default Result<T> onOK(Consumer<T> consumer) {
+            return this;
+        }
+
+        @SuppressWarnings("UnusedReturnValue")
+        default Result<T> onDenied(Consumer<InetSocketAddress> consumer) {
+            return this;
+        }
+
         <R> Result<R> map(Function<T, R> function);
 
         record OK<T>(T result) implements Result<T> {
 
             @Override
+            public Result<T> onOK(Consumer<T> consumer) {
+                consumer.accept(result);
+                return this;
+            }
+
+            @Override
             public <R> Result<R> map(Function<T, R> function) {
                 return new OK<>(function.apply(result));
             }
-
         }
 
         @SuppressWarnings("unchecked")
         record Denied<T>(InetSocketAddress address) implements Result<T> {
 
             @Override
+            public Result<T> onDenied(Consumer<InetSocketAddress> consumer) {
+                consumer.accept(address);
+                return this;
+            }
+
+            @Override
             public <R> Result<R> map(Function<T, R> function) {
+                return (Result<R>) this;
+            }
+
+            <R> Result<R> retyped() {
                 return (Result<R>) this;
             }
         }

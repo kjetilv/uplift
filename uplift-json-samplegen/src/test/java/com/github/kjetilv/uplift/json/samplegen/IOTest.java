@@ -57,7 +57,7 @@ class IOTest {
             writer.write(USER, channel);
         }
         var userJson = baos.toString();
-        IO.println(userJson);
+        assertThat(userJson).isNotBlank();
     }
 
     public static final User USER = new User(

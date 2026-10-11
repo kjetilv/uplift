@@ -8,7 +8,7 @@ import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 
 @SuppressWarnings("JavaPrintToLogpoint")
-public final class Main {
+public final class MameTest {
 
     static void main(String[] args) {
         var list = Collections.synchronizedList(new ArrayList<>());
@@ -50,7 +50,7 @@ public final class Main {
         IO.println("After GC (" + gcTime + "ms): " + Mem.create());
     }
 
-    private Main() {
+    private MameTest() {
     }
 
     private static Stream<String> lines(String[] args) {

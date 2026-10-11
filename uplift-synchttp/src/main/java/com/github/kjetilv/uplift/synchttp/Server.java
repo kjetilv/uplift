@@ -38,7 +38,7 @@ public interface Server {
             var uptime = Duration.ofMillis(ManagementFactory.getRuntimeMXBean().getUptime());
             log.info("{} startup @ {}", name, Print.shortTime(uptime));
             join();
-            return new Servers.Result.OK<>((Server.Closed) () -> uptime);
+            return new Servers.Result.OK<>(() -> uptime);
         }
 
         InetSocketAddress address();
