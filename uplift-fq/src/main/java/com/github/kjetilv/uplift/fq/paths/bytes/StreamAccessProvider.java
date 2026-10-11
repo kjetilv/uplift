@@ -44,7 +44,7 @@ public final class StreamAccessProvider implements AccessProvider<Path, byte[]> 
 
     private GZIPInputStream gzipInputStream(Path path) {
         var in = fileInputStream(gzipFile(path, true));
-        var sleeper = Sleeper.deferred(
+        var sleeper = Sleeper.deferredThen(
             () -> "Unzip " + path.getFileName(),
             onMax == null
                 ? null

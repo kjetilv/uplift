@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.synchttp.jmh;
 
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.Server;
+import com.github.kjetilv.uplift.synchttp.Servers;
 import org.openjdk.jmh.annotations.*;
 
 import java.net.URI;
@@ -19,7 +20,7 @@ public class HttpBenchmark {
 
     private static final byte[] RESPONSE_BODY = "Hello, World!".getBytes(UTF_8);
 
-    private Server upliftServer;
+    private Server.Open upliftServer;
 
     private NettyServer nettyServer;
 
@@ -36,7 +37,7 @@ public class HttpBenchmark {
                 .contentType("text/plain; charset=UTF-8")
                 .contentLength(RESPONSE_BODY.length)
                 .body(RESPONSE_BODY));
-        upliftServer = Server.create().run(handler);
+        upliftServer = Servers.create().open(handler);
         upliftUri = upliftServer.uri();
 
         nettyServer = new NettyServer(RESPONSE_BODY);

@@ -2,38 +2,53 @@ package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
 import module java.net.http;
+import com.github.kjetilv.uplift.util.Print;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface Server extends RuntimeCloseable {
+import java.lang.management.ManagementFactory;
 
-    static Server create() {
-        return create(0);
+public interface Server {
+
+    interface Init extends Server {
+
+        default Server.Open open(Processor processor) {
+            return switch (run(processor)) {
+                case Servers.Result.OK<Open>(Server.Open result) -> result;
+                case Servers.Result.Denied<Server.Open>(InetSocketAddress address) -> throw new IllegalStateException(
+                    "Failed to open " + processor + " on " + address);
+            };
+        }
+
+        Servers.Result<Server.Open> run(Processor processor);
     }
 
-    static Server create(Integer port) {
-        return create(new InetSocketAddress(
-            InetAddress.getLoopbackAddress(),
-            resolvePort(port)
-        ));
+    interface Open extends Server, RuntimeCloseable {
+
+        Logger log = LoggerFactory.getLogger(Server.Open.class);
+
+        @SuppressWarnings("HttpUrlsUsage")
+        default URI uri() {
+            var address = address();
+            return URI.create("http://%s:%d".formatted(address.getHostName(), address.getPort()));
+        }
+
+        default Servers.Result<Server.Closed> await(String name) {
+            var uptime = Duration.ofMillis(ManagementFactory.getRuntimeMXBean().getUptime());
+            log.info("{} startup @ {}", name, Print.shortTime(uptime));
+            join();
+            return new Servers.Result.OK<>((Server.Closed) () -> uptime);
+        }
+
+        InetSocketAddress address();
+
+        void join();
     }
 
-    static Server create(InetSocketAddress address) {
-        return new DefaultServer(address);
-    }
+    interface Closed extends Server {
 
-    default URI uri() {
-        var address = address();
-        return URI.create("http://%s:%d".formatted(address.getHostName(), address.getPort()));
-    }
-
-    InetSocketAddress address();
-
-    void join();
-
-    Server run(Processor processor);
-
-    private static int resolvePort(Integer port) {
-        return port == null || port <= 0 ? 0 : port;
+        Duration time();
     }
 
     interface Processor extends RuntimeCloseable {

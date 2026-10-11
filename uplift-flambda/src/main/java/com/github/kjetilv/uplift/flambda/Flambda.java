@@ -3,7 +3,9 @@ package com.github.kjetilv.uplift.flambda;
 import module java.base;
 import module java.net.http;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
+import com.github.kjetilv.uplift.synchttp.HttpHandler;
 import com.github.kjetilv.uplift.synchttp.Server;
+import com.github.kjetilv.uplift.synchttp.Servers;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
@@ -15,9 +17,9 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(Flambda.class);
 
-    private final Server lambdaServer;
+    private final Server.Open lambdaServer;
 
-    private final Server apiServer;
+    private final Server.Open apiServer;
 
     private final String name;
 
@@ -26,11 +28,11 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
         var flambdaState = new FlambdaState(settings.queueLength());
 
-        this.apiServer = Server.create(settings.apiPort())
-            .run(new HttpCallbackProcessor(new ApiHandler(settings, flambdaState)));
+        HttpHandler apiHandler = new ApiHandler(settings, flambdaState);
+        HttpHandler flambdaHandler = new FlambdaHandler(settings, flambdaState);
 
-        this.lambdaServer = Server.create(settings.lambdaPort())
-            .run(new HttpCallbackProcessor(new FlambdaHandler(settings, flambdaState)));
+        this.apiServer = openServer(settings.apiPort(), apiHandler);
+        this.lambdaServer = openServer(settings.lambdaPort(), flambdaHandler);
 
         Runtime.getRuntime().addShutdownHook(Virtuals.thread(
             Flambda.class.getSimpleName().toLowerCase(Locale.ROOT) + "-shutdown",
@@ -76,7 +78,7 @@ public final class Flambda implements RuntimeCloseable, Runnable {
         return new ReqsImpl(apiUri());
     }
 
-    private void await(Function<Server, Runnable> task) {
+    private void await(Function<Server.Open, Runnable> task) {
         try (var executor = Virtuals.executor("flambda")) {
             CompletableFuture<Void> lambdaFuture = CompletableFuture.runAsync(task.apply(lambdaServer), executor);
             CompletableFuture<Void> apiFuture = CompletableFuture.runAsync(task.apply(apiServer), executor);
@@ -94,6 +96,11 @@ public final class Flambda implements RuntimeCloseable, Runnable {
                     .withName(name)
                     .withTimeout(Duration.ofMinutes(1))
         );
+    }
+
+    private static Server.Open openServer(Integer port, HttpHandler apiHandler) {
+        return Servers.create(port)
+            .open(new HttpCallbackProcessor(apiHandler));
     }
 
     @SuppressWarnings("HttpUrlsUsage")

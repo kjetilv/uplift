@@ -6,6 +6,7 @@ module uplift.synchttp {
     requires uplift.util;
 
     requires java.net.http;
+    requires java.management;
 
     exports com.github.kjetilv.uplift.synchttp;
     exports com.github.kjetilv.uplift.synchttp.rere;

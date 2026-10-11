@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("StatementWithEmptyBody")
-final class DefaultServer implements Server {
+final class DefaultServer implements Server.Open, Server.Init {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServer.class);
 
@@ -16,7 +16,7 @@ final class DefaultServer implements Server {
 
     private final ServerSocketChannel serverSocketChannel;
 
-    private final Runnable serverThread;
+    private final CompletableFuture<Void> serverThread;
 
     private final Processor processor;
 
@@ -47,35 +47,55 @@ final class DefaultServer implements Server {
         } else {
             this.serverSocketChannel = serverSocketChannel;
             this.processor = Objects.requireNonNull(processor, "processor");
-            this.serverThread = server(name)::join;
+            this.serverThread = serverFuture(name);
+
+            Runtime.getRuntime().addShutdownHook(Virtuals.thread(
+                name + "-shutdown",
+                () -> {
+                    log.info("Shutting down {}", this);
+                    close();
+                }
+            ));
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public InetSocketAddress address() {
-        requireRunning();
-        return new InetSocketAddress(address.getAddress(), serverSocketChannel.socket().getLocalPort());
+        requireBound();
+        return new InetSocketAddress(
+            address.getAddress(),
+            serverSocketChannel.socket().getLocalPort()
+        );
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void join() {
-        requireRunning();
-        serverThread.run();
+        requireBound().await();
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public Server run(Processor processor) {
-        requireNotRunning();
-        var serverSocketChannel = openServer();
-        var address = new InetSocketAddress(
-            this.address.getAddress(), serverSocketChannel.socket().getLocalPort()
-        );
-        return new DefaultServer(address, serverSocketChannel, processor);
+    public Servers.Result<Server.Open> run(Processor processor) {
+        return requireNotRunning()
+            .openNewChannel()
+            .map(channel ->
+                new DefaultServer(
+                    new InetSocketAddress(
+                        this.address.getAddress(),
+                        channel.socket().getLocalPort()
+                    ),
+                    channel,
+                    processor
+                ));
     }
 
     @Override
     public void close() {
-        requireRunning();
+        if (serverSocketChannel == null) {
+            return;
+        }
         if (closed.compareAndSet(false, true)) {
             try {
                 serverSocketChannel.close();
@@ -90,19 +110,28 @@ final class DefaultServer implements Server {
         }
     }
 
+    private void await() {
+        serverThread.join();
+    }
+
     @SuppressWarnings("resource")
-    private ServerSocketChannel openServer() {
+    private Servers.Result<ServerSocketChannel> openNewChannel() {
         try {
-            return ServerSocketChannel.open().bind(address);
+            return new Servers.Result.OK<>(ServerSocketChannel.open().bind(address));
+        } catch (BindException e) {
+            if (e.getMessage().contains("Permission denied")) {
+                return new Servers.Result.Denied<>(address);
+            }
+            throw new IllegalStateException(this + " could not open server @ " + address, e);
         } catch (Exception e) {
             throw new IllegalStateException(this + " could not open server @ " + address, e);
         }
     }
 
-    private CompletableFuture<Void> server(String name) {
+    private CompletableFuture<Void> serverFuture(String name) {
         return CompletableFuture.runAsync(
             () -> {
-                while (processSocket(openSocket())) {
+                while (!closed.get() && processSocket(openSocket())) {
                     requests.increment();
                 }
             },
@@ -148,16 +177,18 @@ final class DefaultServer implements Server {
         return true;
     }
 
-    private void requireNotRunning() {
+    private DefaultServer requireNotRunning() {
         if (this.serverSocketChannel != null) {
             throw new IllegalStateException(this + " is already running");
         }
+        return this;
     }
 
-    private void requireRunning() {
+    private DefaultServer requireBound() {
         if (serverSocketChannel == null) {
             throw new IllegalStateException(this + " is not running");
         }
+        return this;
     }
 
     @Override

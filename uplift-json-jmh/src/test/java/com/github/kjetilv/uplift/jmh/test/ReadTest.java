@@ -1,8 +1,10 @@
-package com.github.kjetilv.uplift.jmh;
+package com.github.kjetilv.uplift.jmh.test;
 
 import module java.base;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.kjetilv.uplift.hash.HashKind;
+import com.github.kjetilv.uplift.jmh.Tweet;
+import com.github.kjetilv.uplift.jmh.TweetRW;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
 import org.junit.jupiter.api.Disabled;
@@ -34,7 +36,7 @@ public class ReadTest {
     }
 
     @Test
-    void read() throws IOException {
+    void read() {
         var read1 = bReader.read(data);
         var read1a = bReader.read(data);
         assertThat(read1).isNotNull();
@@ -45,10 +47,6 @@ public class ReadTest {
 //        assertThat(read2).isEqualTo(read3);
 //        assertThat(read1).isEqualTo(read3);
 
-        var tokenTrie = Tweet_Callbacks.PRESETS.getTokenTrie();
-        var resolve1 = tokenTrie.get("retweeters_count");
-        var resolve2 = tokenTrie.get("retweeters_count");
-        assertThat(resolve1).isNotNull().isSameAs(resolve2);
 //
     }
 

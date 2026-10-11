@@ -4,8 +4,6 @@
 /// @jenesis.alias jmh.generator.annprocess org.openjdk.jmh/jmh-generator-annprocess
 /// @jenesis.alias jopt.simple net.sf.jopt-simple/jopt-simple
 /// @jenesis.alias commons.math3 org.apache.commons/commons-math3
-/// @jenesis.pin org.openjdk.jmh/jmh-core 1.37
-/// @jenesis.pin org.openjdk.jmh/jmh-generator-annprocess 1.37
 module uplift.json.jmh {
     requires java.net.http;
 
@@ -24,5 +22,5 @@ module uplift.json.jmh {
     requires java.compiler;
     requires jdk.incubator.vector;
 
-    opens com.github.kjetilv.uplift.jmh;
+    exports com.github.kjetilv.uplift.jmh to uplift.json.jmh.test;
 }

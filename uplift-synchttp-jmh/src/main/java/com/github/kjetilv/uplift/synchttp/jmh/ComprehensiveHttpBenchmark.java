@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.synchttp.jmh;
 
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.Server;
+import com.github.kjetilv.uplift.synchttp.Servers;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.write.HttpResponseCallback;
 import io.netty.bootstrap.ServerBootstrap;
@@ -30,7 +31,7 @@ public class ComprehensiveHttpBenchmark {
     @Param
     private Scenario scenario;
 
-    private Server upliftServer;
+    private Server.Open upliftServer;
 
     private Channel nettyChannel;
 
@@ -46,8 +47,8 @@ public class ComprehensiveHttpBenchmark {
 
     @Setup(Level.Trial)
     public void setup() {
-        upliftServer = Server.create().run(
-            new HttpCallbackProcessor(ComprehensiveHttpBenchmark::handleUplift));
+        upliftServer = Servers.create()
+            .open(new HttpCallbackProcessor(ComprehensiveHttpBenchmark::handleUplift));
 
         setupNetty();
 

@@ -1,6 +1,16 @@
 package com.github.kjetilv.uplift.util;
 
+import java.time.Duration;
+
 public final class Print {
+
+    public static String shortTime(Duration shortDuration) {
+        var ms = shortDuration.toMillis();
+        if (ms < 1000) {
+            return ms + "ms";
+        }
+        return shortDuration.toString();
+    }
 
     public static String semiSecret(String semi) {
         var length = semi.length();

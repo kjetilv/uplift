@@ -2,13 +2,14 @@ package com.github.kjetilv.uplift.util;
 
 import module java.base;
 
+@SuppressWarnings("unused")
 public record Sleeper(State state, LongConsumer doze, Consumer<State> onMax) {
 
     public static Supplier<Sleeper> deferred(Supplier<String> description) {
-        return deferred(description, (Consumer<State>) null);
+        return deferredThen(description, null);
     }
 
-    public static Supplier<Sleeper> deferred(Supplier<String> description, Consumer<State> onMax) {
+    public static Supplier<Sleeper> deferredThen(Supplier<String> description, Consumer<State> onMax) {
         return deferred(description, null, null, onMax);
     }
 

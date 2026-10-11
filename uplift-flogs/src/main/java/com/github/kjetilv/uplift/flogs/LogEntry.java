@@ -64,7 +64,7 @@ public record LogEntry(
     public String threadName() {
         return threadName.startsWith(WORKER)
             ? "🎱" + threadName.substring(WORKER.length())
-            : (virtual != null && virtual ? "𐄷" : "") + threadName;
+            : (virtual != null && virtual ? "👻" : "") + threadName;
     }
 
     ZonedDateTime zuluTime() {

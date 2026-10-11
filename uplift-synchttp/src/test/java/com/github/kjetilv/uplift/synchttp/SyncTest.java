@@ -4,14 +4,19 @@ import module java.base;
 import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.VectorSpecies;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 
 public class SyncTest {
+
+    private static final Logger log = LoggerFactory.getLogger(SyncTest.class);
 
     @Test
     void vectors() {
@@ -38,22 +43,26 @@ public class SyncTest {
     void testHttpCallbacks() {
         var handler = new HttpCallbackProcessor((_, callbacks) ->
             callbacks.status(200).contentLength(5).body("world"));
-        var server = Server.create().run(handler);
+        switch (Servers.create().run(handler)) {
+            case Servers.Result.OK<Server.Open>(Server.Open server) -> {
 
-        CompletableFuture<HttpResponse<String>> future;
-        try (var httpClient = HttpClient.newHttpClient()) {
-            future =
-                httpClient.sendAsync(
-                    HttpRequest.newBuilder(server.uri()).build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
+                CompletableFuture<HttpResponse<String>> future;
+                try (var httpClient = HttpClient.newHttpClient()) {
+                    future =
+                        httpClient.sendAsync(
+                            HttpRequest.newBuilder(server.uri()).build(),
+                            HttpResponse.BodyHandlers.ofString()
+                        );
+                }
+                assertThat(future)
+                    .isCompletedWithValueMatching(response ->
+                        response.body().equals("world"));
+
+                server.close();
+                server.join();
+            }
+            case Servers.Result.Denied(InetSocketAddress address) -> fail("Could not bind to " + address);
         }
-        assertThat(future)
-            .isCompletedWithValueMatching(response ->
-                response.body().equals("world"));
-
-        server.close();
-        server.join();
     }
 
     static final VectorSpecies<Byte> SPECIES = ByteVector.SPECIES_PREFERRED;
