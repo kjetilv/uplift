@@ -95,7 +95,7 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
         .collect(Collectors.joining())
         .toCharArray();
 
-    public static final String THREAD_ICON = "🧵";
+    public static final String THREAD_ICON = "🧵 ";
 
     private static char[] color(LogLevel level) {
         return switch (level) {

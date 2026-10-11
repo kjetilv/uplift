@@ -63,8 +63,8 @@ public record LogEntry(
     @Override
     public String threadName() {
         return threadName.startsWith(WORKER)
-            ? "🎱" + threadName.substring(WORKER.length())
-            : (virtual != null && virtual ? "👻" : "") + threadName;
+            ? POOL + threadName.substring(WORKER.length())
+            : (virtual != null && virtual ? GHOST : "") + threadName;
     }
 
     ZonedDateTime zuluTime() {
@@ -78,6 +78,10 @@ public record LogEntry(
     private static final String WORKER = "ForkJoinPool.commonPool-worker-";
 
     private static final ZoneId Z = ZoneId.of("Z");
+
+    private static final String POOL = "🎱 ";
+
+    private static final String GHOST = "👻 ";
 
     private static Throwable argumentThrowable(Object[] args) {
         return args.length > 0 && args[args.length - 1] instanceof Throwable lastArgThrowable ? lastArgThrowable
