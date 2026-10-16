@@ -1,6 +1,8 @@
-package com.github.kjetilv.uplift.lambda;
+package com.github.kjetilv.uplift.lambda.test;
 
 import module java.base;
+import com.github.kjetilv.uplift.lambda.Invocation;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpRequest;
@@ -11,7 +13,7 @@ class InvocationTest {
 
     @Test
     void noneIsEmpty() {
-        assertThat(Invocation.none(REQUEST, Instant.now()).empty()).isTrue();
+        Assertions.assertThat(Invocation.none(REQUEST, Instant.now()).empty()).isTrue();
     }
 
     @Test

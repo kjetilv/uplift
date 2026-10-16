@@ -5,11 +5,9 @@ import com.github.kjetilv.uplift.fq.FqWriter;
 import com.github.kjetilv.uplift.fq.Fqs;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 
-import java.util.concurrent.StructuredTaskScope.Configuration;
-
 import static com.github.kjetilv.uplift.fq.flows.DefaultFqFlows.Phase.*;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
+import static java.util.concurrent.Executors.newThreadPerTaskExecutor;
 
 final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
@@ -25,7 +23,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
     private final LongAdder counter = new LongAdder();
 
-    private final StableValue<FqWriter<T>> sourceWriter = StableValue.of();
+    private final AtomicReference<FqWriter<T>> sourceWriter = new AtomicReference<>();
 
     private final AtomicReference<Phase> phase = new AtomicReference<>(NEW);
 
@@ -108,7 +106,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
     private void closed() {
         if (transition(STARTED, DONE)) {
-            var sourceWriter = this.sourceWriter.orElse(null);
+            var sourceWriter = this.sourceWriter.get();
             if (sourceWriter != null) {
                 sourceWriter.close();
             }
@@ -124,19 +122,13 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
     private void startFlow() {
         this.flowsFuture = CompletableFuture.supplyAsync(() -> {
-            try (
-                var scope = StructuredTaskScope.open(
-                    allSuccessfulOrThrow(),
-                    configuration ->
-                        withTimeout(configuration
-                            .withName(name.name())
-                            .withThreadFactory(threadFactory(name)))
-                )
-            ) {
-                List<FlowRun<T>> flowRuns = new ArrayList<>(flows.size());
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+            List<FlowRun<T>> flowRuns = new ArrayList<>(flows.size());
+            try (var executorService = newThreadPerTaskExecutor(threadFactory(name))) {
                 for (var flow : this.flows) {
                     init(flow);
-                    scope.fork(() -> {
+                    futures.add(CompletableFuture.runAsync(
+                        () -> {
                             var runnable = flow.isFromSource()
                                 ? flow.from(this.name)
                                 : flow;
@@ -150,15 +142,27 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
                                 throw new IllegalStateException(runner + " failed to execute " + runnable, e);
                             }
                             var run = result;
-                            return flowRuns.add(run);
-                        }
-                    );
+                            flowRuns.add(run);
+                        },
+                        executorService
+                    ));
                 }
-                scope.join();
+                futures.forEach(completableFuture -> {
+                    try {
+                        completableFuture.get(
+                            timeout.toMillis(),
+                            TimeUnit.MILLISECONDS
+                        );
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Interrupted: " + this, e);
+                    } catch (Exception e) {
+                        throw new IllegalStateException("Failed: " + this, e);
+                    }
+                });
                 return flowRuns;
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Flow execution interrupted", e);
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed: " + this, e);
             }
         });
     }
@@ -170,8 +174,10 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
     @SuppressWarnings("resource")
     private void add(T item) {
         try {
-            sourceWriter
-                .orElseSet(() -> fqs.writer(this.name))
+            sourceWriter.updateAndGet(existing ->
+                    existing == null
+                        ? fqs.writer(this.name)
+                        : existing)
                 .write(requireNonNull(item, "item"));
         } finally {
             counter.increment();
@@ -180,11 +186,6 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
 
     private DefaultRun<T> run(LongSupplier itemCount) {
         return new DefaultRun<>(flowsFuture, itemCount);
-    }
-
-    private Configuration withTimeout(Configuration named) {
-        return timeout == null ? named
-            : named.withTimeout(Duration.ofMinutes(5));
     }
 
     private static ThreadFactory threadFactory(Name name) {

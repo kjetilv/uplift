@@ -1,6 +1,8 @@
-package com.github.kjetilv.uplift.json.samplegen;
+package com.github.kjetilv.uplift.json.samplegen.test;
 
 import com.github.kjetilv.uplift.json.events.BytesJsonReader;
+import com.github.kjetilv.uplift.json.samplegen.User;
+import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -57,7 +59,6 @@ public class BytesJsonReaderTest {
 
         var reader = new BytesJsonReader<>(Users.INSTANCE.callbacks());
         var user = reader.read(json.getBytes(StandardCharsets.UTF_8));
-        IO.println(user);
 
         var rwRead = Users.INSTANCE.bytesReader().read(json.getBytes());
         assertThat(rwRead.name()).isEqualTo("Kjetil");

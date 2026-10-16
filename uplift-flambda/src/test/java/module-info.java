@@ -1,6 +1,7 @@
 /// Test module
 ///
 /// @jenesis.test
+/// @jenesis.release 25
 module uplift.flambda.test {
     requires java.net.http;
     requires uplift.flogs;

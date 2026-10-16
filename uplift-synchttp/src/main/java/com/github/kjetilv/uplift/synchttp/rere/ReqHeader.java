@@ -12,7 +12,12 @@ public record ReqHeader(
 ) {
 
     public ReqHeader(MemorySegment segment, int offset, int separatorOffset, int length) {
-        var supplier = StableValue.supplier(() -> downcase(segment, offset, separatorOffset));
+        var ref = new AtomicReference<MemorySegment>();
+        Supplier<MemorySegment> supplier = () ->
+            ref.updateAndGet(existing ->
+                existing == null
+                    ? downcase(segment, offset, separatorOffset)
+                    : existing);
         this(segment, supplier, offset, separatorOffset, length);
     }
 

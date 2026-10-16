@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class LambdaLoopers {
+public final class LambdaLoopers {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaLoopers.class);
 
@@ -20,7 +20,7 @@ final class LambdaLoopers {
         return looper(name, source, handler, toResponsePost(), sink, resultLog(), time);
     }
 
-    static LambdaLooper looper(
+    public static LambdaLooper looper(
         String name,
         InvocationSource source,
         LambdaHandler handler,

@@ -170,7 +170,7 @@ public record Invocation(
         );
     }
 
-    Invocation completionFuture(
+    public Invocation completionFuture(
         Supplier<CompletableFuture<HttpResponse<InputStream>>> completableFutureSupplier,
         InstantSource time
     ) {
@@ -210,7 +210,7 @@ public record Invocation(
                 ));
     }
 
-    boolean empty() {
+    public boolean empty() {
         return id == null || id.isBlank() || payload == null || aborted;
     }
 

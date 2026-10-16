@@ -1,9 +1,11 @@
-package com.github.kjetilv.uplift.s3;
+package com.github.kjetilv.uplift.s3.test;
 
 import module java.base;
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.Range;
+import com.github.kjetilv.uplift.s3.DefaultS3Accessor;
+import com.github.kjetilv.uplift.s3.S3Accessor;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +26,6 @@ class HumbleS3Test {
         var abc = defaultS3Accessor.remoteInfos("abc");
         assertThat(abc).isNotEmpty().allSatisfy((s, _) ->
             assertThat(s).startsWith("abc"));
-        IO.println(abc);
 
         var contents = UUID.randomUUID().toString();
         defaultS3Accessor.put("foobar.txt", contents);

@@ -138,7 +138,6 @@
         <configuration>
           <executable>java</executable>
           <arguments>
-            <argument>--enable-preview</argument>
             <argument>--add-modules</argument>
             <argument>${uplift.addModules}</argument>
             <argument>-classpath</argument>

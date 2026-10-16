@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.json.samplegen;
+package com.github.kjetilv.uplift.json.samplegen.test;
 
+import com.github.kjetilv.uplift.json.samplegen.Users;
 import com.github.kjetilv.uplift.synchttp.HttpCallbackProcessor;
 import com.github.kjetilv.uplift.synchttp.Server;
 import com.github.kjetilv.uplift.synchttp.Servers;
@@ -29,7 +30,6 @@ public class HttpTest {
                         HttpRequest.newBuilder(run.uri()).build(),
                         HttpResponse.BodyHandlers.ofString()
                     );
-                    IO.println(response.body());
                 }
 
                 run.close();

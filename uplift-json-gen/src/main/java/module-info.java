@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.json.gen {
     requires java.compiler;
     requires uplift.hash;

@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.kernel {
     requires uplift.flogs;
     requires uplift.hash;

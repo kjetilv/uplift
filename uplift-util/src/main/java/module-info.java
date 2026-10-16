@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.util {
     requires uplift.flogs;
 

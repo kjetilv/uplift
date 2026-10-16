@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.edam {
     requires uplift.hash;
     requires uplift.util;

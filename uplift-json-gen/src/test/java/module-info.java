@@ -1,6 +1,7 @@
 /// Test module
 ///
 /// @jenesis.test
+/// @jenesis.release 25
 module uplift.json.gen.test {
     requires java.compiler;
     requires uplift.hash;

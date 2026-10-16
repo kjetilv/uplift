@@ -1,6 +1,7 @@
 /// Test module
 ///
 /// @jenesis.test
+/// @jenesis.release 25
 module uplift.json.test {
     requires uplift.json;
     requires org.junit.jupiter.api;

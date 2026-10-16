@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 @SuppressWarnings("module")
 module uplift.s3 {
     requires java.net.http;

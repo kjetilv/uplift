@@ -4,6 +4,7 @@
 /// @jenesis.alias jmh.generator.annprocess org.openjdk.jmh/jmh-generator-annprocess
 /// @jenesis.alias jopt.simple net.sf.jopt-simple/jopt-simple
 /// @jenesis.alias commons.math3 org.apache.commons/commons-math3
+/// @jenesis.release 25
 module uplift.json.jmh {
     requires java.net.http;
 

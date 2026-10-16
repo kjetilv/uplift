@@ -1,6 +1,8 @@
+/// @jenesis.release 25
 module uplift.flogs {
     requires java.logging;
     requires java.desktop;
+    requires java.smartcardio;
 
     exports org.slf4j;
     exports org.slf4j.event;

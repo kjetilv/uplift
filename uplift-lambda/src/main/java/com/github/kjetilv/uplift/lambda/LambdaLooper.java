@@ -231,12 +231,12 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         );
     }
 
-    interface ResponseResolver {
+    public interface ResponseResolver {
 
         HttpRequest resolve(Invocation invocation);
     }
 
-    interface ResultLog {
+    public interface ResultLog {
 
         boolean ok(Invocation invocation, Throwable throwable);
     }

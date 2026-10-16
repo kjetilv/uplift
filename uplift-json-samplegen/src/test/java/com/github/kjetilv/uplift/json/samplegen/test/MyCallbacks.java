@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.samplegen;
+package com.github.kjetilv.uplift.json.samplegen.test;
 
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;

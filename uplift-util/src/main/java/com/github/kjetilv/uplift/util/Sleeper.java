@@ -54,15 +54,11 @@ public record Sleeper(State state, LongConsumer doze, Consumer<State> onMax) {
         LongConsumer doze,
         Consumer<State> onMax
     ) {
-        return StableValue.supplier(() ->
-            new Sleeper(
-                description.get(),
-                0L,
-                0L,
-                doze,
-                timeout,
-                onMax
-            ));
+        var ref = new AtomicReference<Sleeper>();
+        return () -> ref.updateAndGet(existing ->
+            existing == null
+                ? new Sleeper(description.get(), 0L, 0L, doze, timeout, onMax)
+                : existing);
     }
 
     private Sleeper(

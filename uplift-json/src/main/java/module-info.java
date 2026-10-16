@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.json {
     requires uplift.util;
     requires uplift.hash;

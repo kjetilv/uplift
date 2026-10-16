@@ -1,6 +1,7 @@
-package com.github.kjetilv.uplift.lambda;
+package com.github.kjetilv.uplift.lambda.test;
 
 import module java.base;
+import com.github.kjetilv.uplift.lambda.*;
 import com.github.kjetilv.uplift.util.Virtuals;
 import org.junit.jupiter.api.Test;
 

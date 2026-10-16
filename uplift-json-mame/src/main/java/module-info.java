@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.json.mame {
     requires uplift.json;
     requires uplift.hash;

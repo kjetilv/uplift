@@ -258,7 +258,6 @@
                     <configuration>
                         <release>${maven.compiler.release}</release>
                         <compilerArgs>
-                            <arg>--enable-preview</arg>
                             <arg>--add-modules</arg>
                             <arg>${jvm.addModules}</arg>
                         </compilerArgs>
@@ -270,7 +269,7 @@
                     <version>${surefire.plugin.version}</version>
                     <configuration>
                         <!-- -ea matches Gradle's Test task, which enables assertions by default. -->
-                        <argLine>-ea --enable-preview --add-modules ${jvm.addModules}</argLine>
+                        <argLine>-ea --add-modules ${jvm.addModules}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>

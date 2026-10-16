@@ -1,9 +1,11 @@
-package com.github.kjetilv.uplift.json.samplegen;
+package com.github.kjetilv.uplift.json.samplegen.test;
 
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.JsonReader;
 import com.github.kjetilv.uplift.json.JsonWriter;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
+import com.github.kjetilv.uplift.json.samplegen.User;
+import com.github.kjetilv.uplift.json.samplegen.Users;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -101,7 +103,6 @@ public class JsonRecordTest {
                 }
                 """;
         var readUser = Users.INSTANCE.stringReader(CachingJsonSessions.create128()).read(json);
-        IO.println(readUser);
 
         assertThat(readUser.tags().get("foos"))
             .asInstanceOf(MAP)

@@ -1,5 +1,6 @@
-package com.github.kjetilv.uplift.lambda;
+package com.github.kjetilv.uplift.lambda.test;
 
+import com.github.kjetilv.uplift.lambda.LambdaPayload;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

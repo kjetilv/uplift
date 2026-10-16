@@ -44,7 +44,9 @@ public final class Flogs {
         InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
-        settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
+        settings.updateAndGet(existing -> existing == null
+            ? new Settings(logLevel, printer, time, formatter)
+            : existing);
         return LoggerFactory.getLogger(logger);
     }
 
@@ -84,7 +86,9 @@ public final class Flogs {
         InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
-        settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
+        settings.updateAndGet(existing -> existing == null
+            ? new Settings(logLevel, printer, time, formatter)
+            : existing);
         return LoggerFactory.getLogger(logger);
     }
 
@@ -114,7 +118,9 @@ public final class Flogs {
         InstantSource time,
         LogFormatter<LogEntry> formatter
     ) {
-        settings.orElseSet(() -> new Settings(logLevel, printer, time, formatter));
+        settings.updateAndGet(existing -> existing == null
+            ? new Settings(logLevel, printer, time, formatter)
+            : existing);
     }
 
     public static Logger get(Class<?> source) {
@@ -130,12 +136,21 @@ public final class Flogs {
 
     private static final Map<String, Logger> loggers = new ConcurrentHashMap<>();
 
-    private static final StableValue<Settings> settings = StableValue.of();
+    private static final AtomicReference<Settings> settings = new AtomicReference<>();
 
-    private static final Supplier<Floggers> floggers = StableValue.supplier(() -> {
-        var settings = Flogs.settings.orElseSet(Settings::new);
-        return new Floggers(settings.printer(), settings);
-    });
+    private static final AtomicReference<Floggers> floggersRef = new AtomicReference<>();
+
+    private static final Supplier<Floggers> floggers = () ->
+        floggersRef.updateAndGet(existing -> {
+            if (existing != null) {
+                return existing;
+            }
+            var settings = Flogs.settings.updateAndGet(existingSettings ->
+                existingSettings == null
+                    ? new Settings()
+                    : existingSettings);
+            return new Floggers(settings.printer(), settings);
+        });
 
     static {
         FjulFormatter.init();

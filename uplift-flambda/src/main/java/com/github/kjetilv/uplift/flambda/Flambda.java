@@ -11,8 +11,6 @@ import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
-
 public final class Flambda implements RuntimeCloseable, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(Flambda.class);
@@ -85,17 +83,6 @@ public final class Flambda implements RuntimeCloseable, Runnable {
             lambdaFuture.join();
             apiFuture.join();
         }
-    }
-
-    private StructuredTaskScope<Object, Stream<StructuredTaskScope.Subtask<Object>>> newScope() {
-        return StructuredTaskScope.open(
-            allSuccessfulOrThrow(),
-            configuration ->
-                configuration
-                    .withThreadFactory(Virtuals.virtualThreadFactory(name))
-                    .withName(name)
-                    .withTimeout(Duration.ofMinutes(1))
-        );
     }
 
     private static Server.Open openServer(Integer port, HttpHandler apiHandler) {

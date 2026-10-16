@@ -1,3 +1,5 @@
+/// @jenesis.main com.github.kjetilv.uplift.flambda.FlambdaServer
+/// @jenesis.release 25
 module uplift.flambda {
     requires java.net.http;
     requires org.junit.jupiter.api;
@@ -12,4 +14,7 @@ module uplift.flambda {
     requires uplift.json.gen;
 
     exports com.github.kjetilv.uplift.flambda;
+
+    //noinspection JavaModuleDefinition
+    opens com.github.kjetilv.uplift.flambda to org.graalvm.nativeimage.guest.staging;
 }

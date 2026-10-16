@@ -1,4 +1,5 @@
 /// @jenesis.plugin uplift.json.gen
+/// @jenesis.release 25
 module uplift.lambda {
     requires java.compiler;
     requires java.net.http;

@@ -18,7 +18,7 @@ import static com.github.kjetilv.uplift.s3.auth.Hashes.md5;
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
 import static java.util.Objects.requireNonNull;
 
-final class DefaultS3Accessor implements S3Accessor {
+public final class DefaultS3Accessor implements S3Accessor {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultS3Accessor.class);
 
@@ -34,7 +34,7 @@ final class DefaultS3Accessor implements S3Accessor {
 
     private final HttpClient httpClient;
 
-    DefaultS3Accessor(Env env, HttpClient httpClient, String bucket, String region) {
+    public DefaultS3Accessor(Env env, HttpClient httpClient, String bucket, String region) {
         requireNonNull(env, "env");
         this.httpClient = requireNonNull(httpClient, "httpClient");
         this.accessKey = requireNonNull(env.accessKey(), "Env.accessKey()");

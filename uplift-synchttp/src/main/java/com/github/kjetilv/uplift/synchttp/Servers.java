@@ -9,10 +9,7 @@ public final class Servers {
     }
 
     public static Server.Init create(Integer port) {
-        return create(new InetSocketAddress(
-            InetAddress.getLoopbackAddress(),
-            resolvePort(port)
-        ));
+        return create(new InetSocketAddress(InetAddress.getLoopbackAddress(), resolvePort(port)));
     }
 
     public static Server.Init create(InetSocketAddress address) {

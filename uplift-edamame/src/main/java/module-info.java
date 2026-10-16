@@ -1,3 +1,4 @@
+/// @jenesis.release 25
 module uplift.edamame {
     requires uplift.util;
     requires uplift.hash;

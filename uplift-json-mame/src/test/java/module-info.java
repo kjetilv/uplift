@@ -1,6 +1,7 @@
 /// Test module
 ///
 /// @jenesis.test
+/// @jenesis.release 25
 module uplift.json.mame.test {
     requires org.assertj.core;
     requires org.junit.jupiter.api;
