@@ -19,7 +19,9 @@ public final class Docker {
     private final Log log;
 
     public Docker(String binary, Log log) {
-        this.binary = binary != null && !binary.isBlank() ? binary : DEFAULT_BINARY;
+        this.binary = binary == null || binary.isBlank()
+            ? DEFAULT_BINARY
+            : binary;
         this.log = log;
     }
 

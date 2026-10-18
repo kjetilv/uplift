@@ -91,6 +91,7 @@
         <!-- Build logic, shared by the Gradle tasks and the Maven mojos. -->
         <module>uplift-plugin-core</module>
         <module>uplift-maven-plugin</module>
+        <module>uplift-jenesis-plugin</module>
 
     </modules>
 

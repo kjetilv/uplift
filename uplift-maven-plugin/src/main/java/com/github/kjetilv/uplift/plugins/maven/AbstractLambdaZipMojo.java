@@ -42,7 +42,11 @@ public abstract class AbstractLambdaZipMojo extends AbstractCdkMojo {
                 + "modules with <type>zip</type>, or set uplift.lambdaZips.");
         }
         zips.forEach(artifact ->
-            FileIO.copyTo(artifact.getFile().toPath(), upliftDir(), artifact.getArtifactId() + ".zip"));
+            FileIO.copyTo(
+                artifact.getFile().toPath(),
+                upliftDir(),
+                artifact.getArtifactId() + ".zip"
+            ));
     }
 
     /// The staged zips, by the names they were given above.

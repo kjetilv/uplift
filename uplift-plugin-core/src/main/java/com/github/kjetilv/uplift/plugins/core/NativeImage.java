@@ -20,7 +20,13 @@ public final class NativeImage {
 
     private final Log log;
 
-    public NativeImage(Spec spec, Path upliftDir, Path classpathDir, Docker docker, Log log) {
+    public NativeImage(
+        Spec spec,
+        Path upliftDir,
+        Path classpathDir,
+        Docker docker,
+        Log log
+    ) {
         this.spec = spec;
         this.upliftDir = upliftDir;
         this.classpathDir = classpathDir;

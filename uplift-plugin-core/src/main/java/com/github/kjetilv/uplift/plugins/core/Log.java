@@ -1,8 +1,7 @@
 package com.github.kjetilv.uplift.plugins.core;
 
 /**
- * Logging seam, so that the core carries no build system types. Gradle tasks and Maven
- * mojos each supply their own implementation.
+ * Logging interface to isalate core from particular build tools.
  */
 public interface Log {
 

@@ -6,6 +6,7 @@ import module java.base;
  * Builds and drives the `cdk-site` container. The image carries the CDK CLI and maven, so
  * that neither is needed on the host.
  */
+@SuppressWarnings("unused")
 public final class Cdk {
 
     public static final String IMAGE = "cdk-site:latest";
