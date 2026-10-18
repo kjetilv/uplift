@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
-
 import com.github.kjetilv.uplift.util.Virtuals;
 
 import java.net.http.HttpClient;
@@ -22,8 +21,6 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     private final HttpClient client;
 
-    private final ExecutorService executor;
-
     DefaultLamdbdaManaged(
         String name,
         URI lambdaUri,
@@ -34,10 +31,11 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
         this.lambdaUri = requireNonNull(lambdaUri, "lambdaUri");
         this.settings = requireNonNull(settings, "settings");
         this.handler = requireNonNull(handler, "handler");
-        this.executor = Virtuals.executor(name);
-        var builder = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_1_1);
-        this.client = applyTimeouts(this.settings, builder).build();
+
+        var builder = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1);
+        this.client = applyTimeouts(this.settings, builder)
+            .executor(Virtuals.executor(name))
+            .build();
     }
 
     @Override
@@ -47,18 +45,20 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     @Override
     public LambdaLooper looper(String name) {
-        Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch = request ->
-            this.client.sendAsync(
-                request,
-                HttpResponse.BodyHandlers.ofInputStream(),
-                null
+        Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch =
+            request ->
+                client.sendAsync(
+                    request,
+                    HttpResponse.BodyHandlers.ofInputStream(),
+                    null
+                );
+        InvocationSource source =
+            new HttpInvocationSource(
+                fetch,
+                lambdaUri,
+                settings.responseTimeout(),
+                settings.time()
             );
-        InvocationSource source = new HttpInvocationSource(
-            fetch,
-            lambdaUri,
-            settings.responseTimeout(),
-            settings.time()
-        );
         InvocationSink sink = new HttpInvocationSink(fetch, settings.time());
         return LambdaLoopers.looper(name, handler, source, sink, settings.time());
     }
@@ -69,7 +69,8 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
     }
 
     private static HttpClient.Builder applyTimeouts(
-        LambdaClientSettings settings, HttpClient.Builder builder
+        LambdaClientSettings settings,
+        HttpClient.Builder builder
     ) {
         return settings.hasConnectTimeout()
             ? builder.connectTimeout(settings.connectTimeout())

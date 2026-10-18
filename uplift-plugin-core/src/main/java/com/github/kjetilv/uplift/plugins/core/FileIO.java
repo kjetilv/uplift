@@ -46,6 +46,9 @@ public final class FileIO {
         paths.forEach(FileIO::clear);
     }
 
+    private FileIO() {
+    }
+
     private static void clear(Path path) {
         try {
             if (Files.isDirectory(path)) {
@@ -67,8 +70,5 @@ public final class FileIO {
 
     private static Instant modified(Path path) throws IOException {
         return Files.getLastModifiedTime(path).toInstant();
-    }
-
-    private FileIO() {
     }
 }

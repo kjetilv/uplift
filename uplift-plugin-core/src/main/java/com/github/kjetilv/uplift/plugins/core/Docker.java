@@ -12,8 +12,6 @@ import module java.base;
  */
 public final class Docker {
 
-    public static final String BINARY_PROPERTY = "docker.binary";
-
     public static final String DEFAULT_BINARY = "docker";
 
     private final String binary;

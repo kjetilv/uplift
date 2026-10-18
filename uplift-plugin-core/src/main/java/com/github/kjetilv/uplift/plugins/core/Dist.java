@@ -9,20 +9,15 @@ import module java.net.http;
  */
 public final class Dist {
 
-    public enum Type {
-        FILE,
-        HTTP
-    }
-
-    private final Type type;
-
-    private final URI uri;
-
     public static Dist verified(URI uri) {
         Dist dist = new Dist(typeOf(uri), uri);
         dist.verify();
         return dist;
     }
+
+    private final Type type;
+
+    private final URI uri;
 
     private Dist(Type type, URI uri) {
         this.type = type;
@@ -45,11 +40,6 @@ public final class Dist {
         return Path.of(uri);
     }
 
-    /** Renders as the ASCII form when the type matches, and as null otherwise. */
-    public String ifType(Type wanted) {
-        return type == wanted ? uri.toASCIIString() : null;
-    }
-
     private void verify() {
         switch (type) {
             case FILE -> {
@@ -58,9 +48,11 @@ public final class Dist {
                 }
             }
             case HTTP -> {
-                try (HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.ALWAYS)
-                    .build()) {
+                try (
+                    HttpClient client = HttpClient.newBuilder()
+                        .followRedirects(HttpClient.Redirect.ALWAYS)
+                        .build()
+                ) {
                     HttpRequest request = HttpRequest.newBuilder(uri)
                         .method("HEAD", HttpRequest.BodyPublishers.noBody())
                         .build();
@@ -68,7 +60,7 @@ public final class Dist {
                         client.send(request, HttpResponse.BodyHandlers.discarding());
                     if (response.statusCode() >= 400) {
                         throw new IllegalStateException(
-                            response.statusCode() + ": Failed to fetch: " + uri);
+                            response.statusCode() + ": Failed to fetch: " + request + " -> " + response);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -83,14 +75,19 @@ public final class Dist {
     }
 
     private static Type typeOf(URI uri) {
-        String scheme = uri.getScheme() == null
-            ? ""
-            : uri.getScheme().toLowerCase(Locale.ROOT);
-        return switch (scheme) {
+        if (uri.getScheme() == null) {
+            throw new IllegalStateException("javaDist property must be file/http/https URI: " + uri);
+        }
+        return switch (uri.getScheme().toLowerCase(Locale.ROOT)) {
             case "file" -> Type.FILE;
             case "http", "https" -> Type.HTTP;
             default -> throw new IllegalStateException(
                 "javaDist property must be file/http/https URI: " + uri);
         };
+    }
+
+    public enum Type {
+        FILE,
+        HTTP
     }
 }

@@ -16,14 +16,6 @@ import java.util.Map;
  */
 public final class CdkApp {
 
-    private static final String CLOUD_APP = "CloudApp.java";
-
-    private static final String APP_PACKAGE = "src/main/java/lambda/uplift/app";
-
-    private static final String GENERATED_MAIN = "lambda.uplift.app.CloudApp";
-
-    private static final String TEMPLATE_MAIN = "com.myorg.AppApp";
-
     private final Cdk cdk;
 
     private final Path stackbuilderJar;
@@ -37,10 +29,6 @@ public final class CdkApp {
     private final String stack;
 
     private final List<Dependency> dependencies;
-
-    /** A dependency to inject into the generated pom. */
-    public record Dependency(String group, String name, String version) {
-    }
 
     public CdkApp(
         Cdk cdk,
@@ -137,11 +125,23 @@ public final class CdkApp {
         return stackbuilderJar;
     }
 
+    private static final String CLOUD_APP = "CloudApp.java";
+
+    private static final String APP_PACKAGE = "src/main/java/lambda/uplift/app";
+
+    private static final String GENERATED_MAIN = "lambda.uplift.app.CloudApp";
+
+    private static final String TEMPLATE_MAIN = "com.myorg.AppApp";
+
     private static String indent(String line) {
         int end = 0;
         while (end < line.length() && Character.isWhitespace(line.charAt(end))) {
             end++;
         }
         return line.substring(0, end);
+    }
+
+    /** A dependency to inject into the generated pom. */
+    public record Dependency(String group, String name, String version) {
     }
 }

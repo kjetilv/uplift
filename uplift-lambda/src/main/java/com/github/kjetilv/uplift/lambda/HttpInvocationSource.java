@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.lambda;
 
 import module java.base;
+import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,8 @@ final class HttpInvocationSource implements InvocationSource {
     private final LongAdder requestsMade = new LongAdder();
 
     private final LongAdder requestsFailed = new LongAdder();
+
+    private final AtomicBoolean disconnected = new AtomicBoolean();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -62,28 +65,26 @@ final class HttpInvocationSource implements InvocationSource {
 
     @Override
     public Optional<CompletableFuture<Invocation>> next() {
-        return closed.get()
-            ? Optional.empty()
-            : Optional.of(fetch.apply(request)
-                .thenApply(response ->
-                    invocationId(response)
-                        .map(invocationId ->
-                            invocation(invocationId, response))
+        if (disconnected.get()) {
+            log.info("Trying to reconnect ...");
+        }
+        if (closed.get()) {
+            return Optional.empty();
+        }
+        var exceptionally =
+            fetch.apply(request)
+                .thenApply(this::resetDisconnected)
+                .thenApply(res ->
+                    invocationId(res)
+                        .map(id ->
+                            toInvocation(id, toPayload(res)))
                         .orElseGet(this::failedInvocation))
-                .exceptionally(this::failedInvocation)
-            );
+                .exceptionally(this::failedInvocation);
+
+        return Optional.of(exceptionally);
     }
 
-    private Invocation invocation(
-        String id,
-        HttpResponse<InputStream> response
-    ) {
-        LambdaPayload payload;
-        try {
-            payload = LambdaPayload.parse(response.body());
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse " + response, e);
-        }
+    private Invocation toInvocation(String id, LambdaPayload payload) {
         return Invocation.create(id, request, payload, this.time.instant());
     }
 
@@ -92,13 +93,42 @@ final class HttpInvocationSource implements InvocationSource {
     }
 
     private Invocation failedInvocation(Throwable throwable) {
-        try {
-            return closed.get()
-                ? Invocation.none(request, this.time.instant())
-                : Invocation.failed(request, this.time.instant(), throwable);
-        } finally {
-            log.warn("Failed to fetch: {}", request, throwable);
+        var closedExceptions = Throwables.chain(throwable)
+            .filter(e ->
+                e instanceof ConnectException || e instanceof ClosedChannelException)
+            .toList();
+        if (closedExceptions.isEmpty()) {
+            log.warn("Failed to fetch {}", request, throwable);
+        } else {
+            var printed = closedExceptions.stream()
+                .map(Throwable::toString)
+                .collect(Collectors.joining(", "));
+            log.warn("Failed to fetch {}, connection closed: {}", request, printed);
         }
+
+        if (closed.get()) {
+            return Invocation.none(request, this.time.instant());
+        }
+        disconnected.set(true);
+        return Invocation.failed(request, this.time.instant(), throwable);
+    }
+
+    private HttpResponse<InputStream> resetDisconnected(HttpResponse<InputStream> response) {
+        try {
+            return response;
+        } finally {
+            disconnected.set(false);
+        }
+    }
+
+    private static LambdaPayload toPayload(HttpResponse<InputStream> response) {
+        LambdaPayload payload;
+        try {
+            payload = LambdaPayload.parse(response.body());
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to parse " + response, e);
+        }
+        return payload;
     }
 
     private static Optional<String> invocationId(HttpResponse<? extends InputStream> pollResponse) {

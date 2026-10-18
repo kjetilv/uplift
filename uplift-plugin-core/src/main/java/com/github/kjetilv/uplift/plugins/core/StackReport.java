@@ -17,11 +17,6 @@ import software.amazon.awssdk.services.lambda.model.ListFunctionUrlConfigsReques
  */
 public final class StackReport {
 
-    private static final String FUNCTION = "AWS::Lambda::Function";
-
-    /** CDK adds its own log retention functions. They are noise in this report. */
-    private static final String LOG_RETENTION = "-LogRetention";
-
     private final String stack;
 
     private final String region;
@@ -42,7 +37,8 @@ public final class StackReport {
             CloudFormationClient cloudFormation = cloudFormationClient();
             LambdaClient lambda = lambdaClient()
         ) {
-            cloudFormation.describeStacks().stacks().stream()
+            cloudFormation.describeStacks().stacks()
+                .stream()
                 .filter(candidate -> candidate.stackName().equals(stack))
                 .forEach(found -> report(cloudFormation, lambda, found, sources));
         }
@@ -61,7 +57,9 @@ public final class StackReport {
             log.warn(summary("No resources found for stack", found));
             return;
         }
-        List<StackResource> functions = resources.stream().filter(StackReport::isFunction).toList();
+        List<StackResource> functions = resources.stream()
+            .filter(StackReport::isFunction)
+            .toList();
         if (functions.isEmpty()) {
             log.warn(summary("No functions found for stack", found));
             resources.forEach(resource ->
@@ -70,15 +68,15 @@ public final class StackReport {
         }
         log.lifecycle(
             """
-            ##
-            ## uplifted `%s`
-            ##
-            ##   Stack id  : %s
-            ##   Created   : %s
-            ##   Modified  : %s
-            ##   Resources : %d
-            ##
-            ##  Lambdas:""".formatted(
+                ##
+                ## uplifted `%s`
+                ##
+                ##   Stack id  : %s
+                ##   Created   : %s
+                ##   Modified  : %s
+                ##   Resources : %d
+                ##
+                ##  Lambdas:""".formatted(
                 found.stackName(),
                 found.stackId(),
                 found.creationTime(),
@@ -97,13 +95,13 @@ public final class StackReport {
             urls(lambda, function).forEach(url ->
                 log.lifecycle(
                     """
-                    ##   [%d] %s: %s
-                    ##    modified @ %s
-                    ##    Function URL %s
-                    ##      created @ %s
-                    ##     modified @ %s
-                    ##         cors : %s
-                    ##         auth : %s""".formatted(
+                        ##   [%d] %s: %s
+                        ##    modified @ %s
+                        ##    Function URL %s
+                        ##      created @ %s
+                        ##     modified @ %s
+                        ##         cors : %s
+                        ##         auth : %s""".formatted(
                         number,
                         function.functionName(),
                         description(function),
@@ -132,8 +130,8 @@ public final class StackReport {
         }
         log.lifecycle(
             """
-            ##
-            ##  Zips/binaries/jars:""");
+                ##
+                ##  Zips/binaries/jars:""");
         List<Path> all = new ArrayList<>();
         sources.forEach(zip -> {
             all.add(zip);
@@ -147,10 +145,10 @@ public final class StackReport {
             Instant time = modified(path).truncatedTo(ChronoUnit.SECONDS);
             log.lifecycle(
                 """
-                ##   [%d] %s %s → %s
-                ##     full path : %s
-                ##     real time : %s
-                ##     size      : %s""".formatted(
+                    ##   [%d] %s %s → %s
+                    ##     full path : %s
+                    ##     real time : %s
+                    ##     size      : %s""".formatted(
                     index + 1,
                     local(time, DateTimeFormatter.ISO_LOCAL_TIME),
                     local(time, DateTimeFormatter.ISO_LOCAL_DATE),
@@ -160,8 +158,49 @@ public final class StackReport {
                     size(path)
                 ));
         }
-        sources.stream().filter(FileIO::isZip).forEach(this::reportEntries);
+        sources.stream()
+            .filter(FileIO::isZip)
+            .forEach(this::reportEntries);
     }
+
+    /** The binary, as it went up. Not on disk beside the zip, so read out of it. */
+    private void reportEntries(Path zip) {
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            file.stream()
+                .forEach(entry ->
+                    log.lifecycle(
+                        """
+                            ##     in %s : %s
+                            ##       real time : %s
+                            ##       size      : %s""".formatted(
+                            zip.getFileName(),
+                            entry.getName(),
+                            entryTime(entry),
+                            readable(entry.getSize())
+                        )));
+        } catch (Exception e) {
+            log.warn("Could not read " + zip + ": " + e);
+        }
+    }
+
+    private CloudFormationClient cloudFormationClient() {
+        return CloudFormationClient.builder()
+            .region(Region.of(region))
+            .credentialsProvider(ProfileCredentialsProvider.create(profile))
+            .build();
+    }
+
+    private LambdaClient lambdaClient() {
+        return LambdaClient.builder()
+            .region(Region.of(region))
+            .credentialsProvider(ProfileCredentialsProvider.create(profile))
+            .build();
+    }
+
+    private static final String FUNCTION = "AWS::Lambda::Function";
+
+    /** CDK adds its own log retention functions. They are noise in this report. */
+    private static final String LOG_RETENTION = "-LogRetention";
 
     /** Entry times are optional in the format, so this can come back empty. */
     private static String entryTime(ZipEntry entry) {
@@ -172,25 +211,6 @@ public final class StackReport {
                 .truncatedTo(ChronoUnit.SECONDS)
                 .atZone(ZoneId.of("UTC"))
                 .format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
-    }
-
-    /** The binary, as it went up. Not on disk beside the zip, so read out of it. */
-    private void reportEntries(Path zip) {
-        try (ZipFile file = new ZipFile(zip.toFile())) {
-            file.stream().forEach(entry ->
-                log.lifecycle(
-                    """
-                    ##     in %s : %s
-                    ##       real time : %s
-                    ##       size      : %s""".formatted(
-                        zip.getFileName(),
-                        entry.getName(),
-                        entryTime(entry),
-                        readable(entry.getSize())
-                    )));
-        } catch (Exception e) {
-            log.warn("Could not read " + zip + ": " + e);
-        }
     }
 
     private static String summary(String headline, Stack found) {
@@ -218,7 +238,8 @@ public final class StackReport {
         LambdaClient lambda,
         StackResource resource
     ) {
-        return lambda.listFunctions().functions().stream()
+        return lambda.listFunctions().functions()
+            .stream()
             .filter(function -> function.functionName().equals(resource.physicalResourceId()))
             .findFirst();
     }
@@ -248,8 +269,12 @@ public final class StackReport {
         if (parent == null) {
             return List.of();
         }
-        try (Stream<Path> found = Files.find(parent, 1, (file, _) ->
-            file.getFileName().toString().endsWith(".jar"))) {
+        try (
+            Stream<Path> found = Files.find(
+                parent, 1, (file, _) ->
+                    file.getFileName().toString().endsWith(".jar")
+            )
+        ) {
             return found.toList();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to list jars beside " + zip, e);
@@ -283,19 +308,5 @@ public final class StackReport {
             return size / 1_000_000 + "Mb";
         }
         return size > limit * 1_000 ? size / 1_000 + "Kb" : size + "b";
-    }
-
-    private CloudFormationClient cloudFormationClient() {
-        return CloudFormationClient.builder()
-            .region(Region.of(region))
-            .credentialsProvider(ProfileCredentialsProvider.create(profile))
-            .build();
-    }
-
-    private LambdaClient lambdaClient() {
-        return LambdaClient.builder()
-            .region(Region.of(region))
-            .credentialsProvider(ProfileCredentialsProvider.create(profile))
-            .build();
     }
 }

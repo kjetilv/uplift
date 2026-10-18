@@ -60,7 +60,7 @@ public final class NativeImage {
             "run -v " + upliftDir.toAbsolutePath() + ":/out " + spec.buildsite() + ":latest"
         );
 
-        return Zips.zip(upliftDir.resolve(spec.identifier()), spec.zipFile());
+        return zip(upliftDir.resolve(spec.identifier()), spec.zipFile());
     }
 
     private Map<String, String> parameters(Dist dist, List<Path> classPath) {
@@ -87,6 +87,13 @@ public final class NativeImage {
         return parameters;
     }
 
+    /**
+     * AWS Lambda expects the custom runtime entry point to be named `bootstrap`, and the
+     * stack builders declare `handler("bootstrap")`. The single entry name is therefore
+     * part of the contract and must not change.
+     */
+    private static final String ENTRY = "bootstrap";
+
     private static final String TEMPLATE = "lambda/Dockerfile";
 
     private static final String TEMPLATE_DISTFILE = "lambda/Dockerfile-distfile";
@@ -95,6 +102,25 @@ public final class NativeImage {
 
     /** Where the classpath lands inside the container, per the volume mount below. */
     private static final String CONTAINED_CLASSPATH = "/out/classpath/";
+
+    private static Path zip(Path source, Path zipFile) {
+        Path target = zipFile == null
+            ? Path.of(Objects.requireNonNull(source, "source") + ".zip")
+            : zipFile;
+        try (
+            OutputStream out = Files.newOutputStream(target);
+            ZipOutputStream zip = new ZipOutputStream(out)
+        ) {
+            zip.putNextEntry(new ZipEntry(ENTRY));
+            try (InputStream in = Files.newInputStream(source)) {
+                in.transferTo(zip);
+            }
+            zip.closeEntry();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to zip " + source + " to " + target, e);
+        }
+        return target;
+    }
 
     private static String option(String prefix, String value) {
         return value != null && !value.isBlank() ? prefix + value : "";
