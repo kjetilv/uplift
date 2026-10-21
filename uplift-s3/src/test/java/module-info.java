@@ -1,4 +1,5 @@
 /// @jenesis.test
+/// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 @SuppressWarnings("module")
 module uplift.s3.test {

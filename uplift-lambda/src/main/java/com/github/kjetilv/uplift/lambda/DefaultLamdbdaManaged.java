@@ -45,21 +45,19 @@ final class DefaultLamdbdaManaged implements LamdbdaManaged {
 
     @Override
     public LambdaLooper looper(String name) {
-        Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> fetch =
-            request ->
-                client.sendAsync(
-                    request,
-                    HttpResponse.BodyHandlers.ofInputStream(),
-                    null
-                );
-        InvocationSource source =
-            new HttpInvocationSource(
-                fetch,
-                lambdaUri,
-                settings.responseTimeout(),
-                settings.time()
+        Function<HttpRequest, CompletableFuture<HttpResponse<InputStream>>> requestResponse = request ->
+            client.sendAsync(
+                request,
+                HttpResponse.BodyHandlers.ofInputStream(),
+                null
             );
-        InvocationSink sink = new HttpInvocationSink(fetch, settings.time());
+        InvocationSource source = new HttpInvocationSource(
+            requestResponse,
+            lambdaUri,
+            settings.responseTimeout(),
+            settings.time()
+        );
+        InvocationSink sink = new HttpInvocationSink(requestResponse, settings.time());
         return LambdaLoopers.looper(name, handler, source, sink, settings.time());
     }
 

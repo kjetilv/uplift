@@ -1,6 +1,7 @@
 /// Test modjule
 ///
 /// @jenesis.test
+/// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 module uplift.util.test {
     requires uplift.util;

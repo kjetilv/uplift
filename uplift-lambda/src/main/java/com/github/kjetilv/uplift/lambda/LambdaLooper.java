@@ -70,16 +70,9 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         Stream.generate(source::next)
             .takeWhile(Optional::isPresent)
             .flatMap(Optional::stream)
-            .map(invocationFuture -> {
-                try {
-                    return Optional.of(invocationFuture
-                        .thenCompose(this::run)
-                        .whenComplete(this::handleOutcome));
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to respond", e);
-                }
-            })
-            .flatMap(Optional::stream)
+            .map(future -> future
+                .thenCompose(this::run)
+                .whenComplete(this::handleOutcome))
             .forEach(CompletableFuture::join);
     }
 
@@ -102,29 +95,28 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
             .exceptionally(this::fatalInvocation);
     }
 
-    private void handleOutcome(Invocation qr, Throwable throwable) {
-        if (qr.requestFailure() == null && throwable == null) {
+    private void handleOutcome(Invocation qr, Throwable e) {
+        if (qr.requestFailure() == null && e == null) {
             if (lastException.get() != null) {
                 var last = lastException.getAndSet(null);
                 log.info("{}: Service restored, last exception: {}", name, last.toString());
             } else {
-                log.debug("{}: Completed: {}", name, qr, throwable);
+                log.debug("{}: Completed: {}", name, qr, e);
             }
             return;
         }
-        if (qr.requestFailure() instanceof CompletionException completionException) {
-            var combined = combine(throwable, completionException.getCause());
-            lastException.set(combined);
-            if (connectOrTimeout(combined)) {
-                log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
-                sleep(WAIT_MS);
-            } else {
-                log.warn("{}: Request failed: {}", name, qr, combined);
-            }
+        var combined = combine(
+            e,
+            qr.requestFailure() instanceof CompletionException ce
+                ? ce.getCause()
+                : qr.requestFailure()
+        );
+        lastException.set(combined);
+        if (connectOrTimeout(combined)) {
+            log.warn("Connection failed, pausing {}ms: {}", WAIT_MS, combined.toString());
+            sleep(WAIT_MS);
         } else {
-            var combined = combine(throwable, qr.requestFailure());
-            lastException.set(combined);
-            log.warn("Request failed: {}", qr, combined);
+            log.warn("{}: Request failed: {}", name, qr, combined);
         }
     }
 

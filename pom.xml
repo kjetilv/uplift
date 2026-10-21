@@ -58,6 +58,7 @@
         <exec.plugin.version>3.6.4</exec.plugin.version>
 
         <!-- Dept of builds -->
+        <jenesis.version>0.16.1</jenesis.version>
         <awssdk.version>2.55.6</awssdk.version>
         <maven.api.version>3.9.16</maven.api.version>
         <maven.plugin.version>3.16.0</maven.plugin.version>

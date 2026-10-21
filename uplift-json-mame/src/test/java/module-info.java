@@ -1,6 +1,7 @@
 /// Test module
 ///
 /// @jenesis.test
+/// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 module uplift.json.mame.test {
     requires org.assertj.core;

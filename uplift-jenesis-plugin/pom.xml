@@ -9,19 +9,19 @@
         <artifactId>uplift</artifactId>
         <version>0.1.1-SNAPSHOT</version>
     </parent>
-
     <artifactId>uplift-jenesis-plugin</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>build.jenesis</groupId>
-            <artifactId>build.jenesis</artifactId>
-            <version>0.16.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.kjetilv.uplift</groupId>
             <artifactId>uplift-plugin-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>build.jenesis</groupId>
+            <artifactId>build.jenesis</artifactId>
+            <version>${jenesis.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -1,5 +1,6 @@
 /// @jenesis.main com.github.kjetilv.uplift.flambda.FlambdaServer
 /// @jenesis.release 25
+/// @jenesis.bom pin-test.properties
 module uplift.flambda {
     requires java.net.http;
     requires org.junit.jupiter.api;

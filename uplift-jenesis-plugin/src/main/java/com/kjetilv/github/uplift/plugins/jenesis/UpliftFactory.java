@@ -1,7 +1,7 @@
 package com.kjetilv.github.uplift.plugins.jenesis;
 
+import module build.jenesis;
 import module java.base;
-import build.jenesis.*;
 
 public class UpliftFactory implements BuildModuleFactory {
 

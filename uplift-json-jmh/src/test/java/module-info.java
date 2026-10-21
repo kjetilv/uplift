@@ -4,6 +4,7 @@
 /// @jenesis.alias jmh.core org.openjdk.jmh/jmh-core
 /// @jenesis.alias jmh.generator.annprocess org.openjdk.jmh/jmh-generator-annprocess
 /// @jenesis.test
+/// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 module uplift.json.jmh.test {
     requires com.fasterxml.jackson.annotation;

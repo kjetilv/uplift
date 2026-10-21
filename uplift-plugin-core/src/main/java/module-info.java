@@ -1,4 +1,5 @@
 /// @jenesis.release 25
+///@jenesis.bom pin-aws.properties
 module uplift.plugin.core {
     requires java.net.http;
 

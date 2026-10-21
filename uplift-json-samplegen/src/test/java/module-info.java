@@ -1,4 +1,5 @@
 /// @jenesis.test
+/// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 module uplift.json.samplegen.test {
     requires java.compiler;
