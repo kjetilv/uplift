@@ -1,5 +1,5 @@
 /// @jenesis.alias jmh.core org.openjdk.jmh/jmh-core
-/// @jenesis.pin org.openjdk.jmh/jmh-core 1.37
+/// @jenesis.bom pin-jmh.properties
 /// @jenesis.release 25
 module uplift.synchttp.jmh {
 

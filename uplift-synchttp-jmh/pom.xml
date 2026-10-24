@@ -13,7 +13,6 @@
   <artifactId>uplift-synchttp-jmh</artifactId>
 
   <properties>
-    <!-- A benchmark harness. Not published by the Gradle build either. -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
@@ -30,7 +29,7 @@
     </dependency>
     <dependency>
       <groupId>com.github.kjetilv.uplift</groupId>
-      <artifactId>uplift.hash</artifactId>
+      <artifactId>uplift-hash</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -46,7 +45,7 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.2.10.Final</version>
+      <version>4.2.19.Final</version>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
