@@ -51,22 +51,18 @@
     <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
-      <version>1.37</version>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
-      <version>1.37</version>
     </dependency>
   </dependencies>
 
