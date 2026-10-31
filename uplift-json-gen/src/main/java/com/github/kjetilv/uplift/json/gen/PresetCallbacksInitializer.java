@@ -229,7 +229,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         return objects;
     }
 
-    public TokenResolver getTokenTable() {
+    public TokenResolver getTokenResolver() {
         return tokenResolver;
     }
 

@@ -197,7 +197,7 @@ final class Generator {
                                PRESETS.getBooleans(),
                                PRESETS.getObjects(),
                                onDone,
-                               PRESETS.getTokenTable()
+                               PRESETS.getTokenResolver()
                            );
                        }
                    

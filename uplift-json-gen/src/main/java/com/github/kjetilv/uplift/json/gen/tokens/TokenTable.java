@@ -26,7 +26,8 @@ public final class TokenTable implements TokenResolver {
     }
 
     public TokenTable(Collection<Token.Field> fields) {
-        var distinct = fields.stream().distinct().toList();
+        var distinct = fields.stream().distinct()
+            .toList();
         var capacity = Integer.highestOneBit(Math.max(distinct.size(), 1) * LOAD_FACTOR_INVERSE - 1) << 1;
         var sampledTable = table(distinct, capacity, true);
         var sampledRun = longestRun(sampledTable);
@@ -52,8 +53,7 @@ public final class TokenTable implements TokenResolver {
             if (field == null) {
                 return null;
             }
-            if (field.length() == length &&
-                Arrays.equals(field.bytes(), 0, length, bytes, offset, offset + length)) {
+            if (equals(bytes, offset, length, field)) {
                 return field;
             }
             index = index + 1 & mask;
@@ -70,15 +70,26 @@ public final class TokenTable implements TokenResolver {
         return get(copy, 0, length);
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + size + " " + (sampled ? "sampled" : "full") + "]";
-    }
-
     /// Longest accepted run of occupied slots for the sampled hash
-    static final int MAX_RUN = 8;
+    private static final int MAX_RUN = 8;
 
     private static final int LOAD_FACTOR_INVERSE = 8;
+
+    private static boolean equals(
+        byte[] bytes,
+        int offset,
+        int length,
+        Token.Field field
+    ) {
+        return field.length() == length && Arrays.equals(
+            field.bytes(),
+            0,
+            length,
+            bytes,
+            offset,
+            offset + length
+        );
+    }
 
     private static Token.Field[] table(List<Token.Field> fields, int capacity, boolean sampled) {
         var table = new Token.Field[capacity];
@@ -96,9 +107,14 @@ public final class TokenTable implements TokenResolver {
     }
 
     private static int longestRun(Token.Field[] table) {
-        var firstEmpty = IntStream.range(0, table.length)
-            .filter(i -> table[i] == null)
-            .findFirst()
+        OptionalInt found = OptionalInt.empty();
+        for (int i = 0; i < table.length; i++) {
+            if (table[i] == null) {
+                found = OptionalInt.of(i);
+                break;
+            }
+        }
+        var firstEmpty = found
             .orElseThrow();
         // Start after an empty slot, so runs that wrap around the end are counted whole
         var longest = 0;
@@ -135,5 +151,10 @@ public final class TokenTable implements TokenResolver {
     private static int mix(int hash) {
         var h = hash * 0x9E3779B9;
         return h ^ h >>> 16;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + size + " " + (sampled ? "sampled" : "full") + "]";
     }
 }
