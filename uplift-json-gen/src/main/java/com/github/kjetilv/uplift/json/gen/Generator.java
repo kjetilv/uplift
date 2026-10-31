@@ -7,718 +7,422 @@ import com.github.kjetilv.uplift.json.FieldEvents;
 import com.github.kjetilv.uplift.json.MapWriter;
 import com.github.kjetilv.uplift.json.ObjectWriter;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
+import com.github.kjetilv.uplift.json.callbacks.MapCallbacks;
 
-import static com.github.kjetilv.uplift.json.gen.GenUtils.*;
+import javax.lang.model.type.TypeKind;
 
+import static com.github.kjetilv.uplift.json.gen.Names.*;
+import static com.github.kjetilv.uplift.json.gen.SourceTypes.render;
+
+/// Generates the sources for one record type. All types in generated code are fully qualified, so
+/// generated sources need no imports, and cannot conflict with user types.
 final class Generator {
-
-    private final PackageElement jsonRecordPackage;
 
     private final TypeElement jsonRecord;
 
-    private final String timestamp;
+    private final PackageElement jsonRecordPackage;
+
+    private final Provenance provenance;
 
     private final Function<String, JavaFileObject> fileForName;
 
     private final GenUtils utils;
 
-    private final List<RecordAttribute> recordAttributes;
+    private final List<RecordAttribute> attributes;
+
+    private final String recordName;
 
     Generator(
         TypeElement jsonRecord,
         PackageElement jsonRecordPackage,
-        String timestamp,
+        Provenance provenance,
         Function<String, JavaFileObject> fileForName,
         GenUtils utils
     ) {
-        this.jsonRecordPackage = jsonRecordPackage;
-        this.jsonRecord = jsonRecord;
-
-        this.timestamp = timestamp;
-        this.fileForName = fileForName;
-        this.utils = utils;
-        this.recordAttributes = this.recordAttributes(jsonRecord);
+        this.jsonRecord = Objects.requireNonNull(jsonRecord, "jsonRecord");
+        this.jsonRecordPackage = Objects.requireNonNull(jsonRecordPackage, "jsonRecordPackage");
+        this.provenance = provenance;
+        this.fileForName = Objects.requireNonNull(fileForName, "fileForName");
+        this.utils = Objects.requireNonNull(utils, "utils");
+        this.attributes = jsonRecord.getRecordComponents()
+            .stream()
+            .map(utils::attribute)
+            .toList();
+        this.recordName = relativeName(jsonRecord);
     }
 
-    public void write() {
+    void write() {
         if (isRoot()) {
-            generateRWEntrypoint();
+            write(factoryClass(), rwSource());
         }
-        generateWriter();
-        generateBuilder();
-        generateCallbacks();
-        try {
-            var obj = jsonSchema();
-//            IO.println(Json.instance().write(obj));
-        } catch (Exception e) {
-//            IO.println(fqName(jsonRecord) + " could not be parsed");
-//            e.printStackTrace();
-        }
+        write(writerClass(), writerSource());
+        write(builderClass(), builderSource());
+        write(callbacksClass(), callbacksSource());
     }
 
-    void generateCallbacks() {
-        var unqualifiedName = unqTypeName();
-        try (var bw = writer(callbackFile())) {
-            if (!jsonRecordPackage.isUnnamed()) {
-                write(
-                    bw,
-                    "package " + jsonRecordPackage.getQualifiedName() + ";"
-                );
-            }
-            javaBase(bw);
-            write(
-                bw,
-                importType(Generated.class),
-                "",
-                importType(Callbacks.class),
-                importType(JsonRecordProcessor.class),
-                importType(PresetCallbacks.class),
-                importType(PresetCallbacksInitializer.class),
-                "",
-                "/// Callbacks for [" + unqualifiedName + "]",
-                "///",
-                "/// Generated at " + timestamp + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + timestamp + "\",",
-                "    comments = \"Callbacks for " + unqualifiedName + "\"",
-                ")",
-                "@SuppressWarnings(\"unchecked\")",
-                "final class " + callbacksClassPlain(jsonRecord) + " {",
-                "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(jsonRecord) + ", " + unqualifiedName + "> create(",
-                "        " + CONSUMER + "<" + unqualifiedName + "> onDone",
-                "    ) {",
-                "        return create(null, onDone);",
-                "    }",
-                "",
-                "    static " + PRESET_CALLBACKS + "<" + builderClassPlain(jsonRecord) + ", " + unqualifiedName + "> create(",
-                "        " + CALLBACKS + " parent, ",
-                "        " + CONSUMER + "<" + unqualifiedName + "> onDone",
-                "    ) {",
-                "        return new " + PRESET_CALLBACKS + "<>(",
-                "            " + builderClassPlain(jsonRecord) + ".create(),",
-                "            parent,",
-                "            PRESETS.getNumbers(),",
-                "            PRESETS.getStrings(),",
-                "            PRESETS.getBooleans(),",
-                "            PRESETS.getObjects(),",
-                "            onDone,",
-                "            PRESETS.getTokenTrie()",
-                "        );",
-                "    }",
-                "",
-                "    static final " + PRESET_CALLBACKS_INITIALIZER + "<" + builderClassPlain(jsonRecord) + ", " + unqualifiedName + "> PRESETS;"
-            );
-            write(bw, "");
-            write(bw, "    static {");
-            write(bw, "        PRESETS = new " + PRESET_CALLBACKS_INITIALIZER + "<>(");
-            write(bw, "            " + jsonRecord.getQualifiedName() + ".class");
-            write(bw, "        );");
-            write(
-                bw,
-                recordAttributes(jsonRecord)
-                    .stream()
-                    .map(recordAttribute ->
-                        "        PRESETS." + recordAttribute.callbackHandler(jsonRecord) + ";")
-                    .toList()
-            );
-            write(
-                bw,
-                recordAttributes.stream()
-                    .filter(RecordAttribute::isGenerated)
-                    .map(RecordAttribute::actualType)
-                    .map(GenUtils::callbacksClassPlain)
-                    .map(callbacksClassName ->
-                        "        PRESETS.sub(" + callbacksClassName + ".PRESETS);")
-                    .toList()
-            );
-
-            if (isRoot()) {
-                write(bw, "        PRESETS.buildTokens();");
-            }
-            write(bw, "    }", "}");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write callbacks for " + jsonRecord, e);
-        }
+    private String rwSource() {
+        return header("Reading and writing") +
+               """
+                   public final class %1$s implements %2$s<%3$s> {
+                   
+                       public static final %2$s<%3$s> INSTANCE = new %1$s();
+                   
+                       @Override
+                       public %4$s<%5$s<%3$s>, %6$s> callbacks() {
+                           return %7$s::create;
+                       }
+                   
+                       @Override
+                       public %6$s callbacks(%5$s<%3$s> onDone) {
+                           return %7$s.create(onDone);
+                       }
+                   
+                       @Override
+                       public %8$s<%3$s> objectWriter() {
+                           return new %9$s();
+                       }
+                   
+                       private %1$s() {
+                       }
+                   }
+                   """.formatted(
+                   factoryClass(),
+                   name(JsonRW.class),
+                   recordName,
+                   name(Function.class),
+                   name(Consumer.class),
+                   name(Callbacks.class),
+                   callbacksClass(),
+                   name(ObjectWriter.class),
+                   writerClass()
+               );
     }
 
-    void generateRWEntrypoint() {
-        var unqualifiedName = unqTypeName();
-        var file = factoryFile(jsonRecordPackage, jsonRecord);
-        try (var bw = writer(file)) {
-            if (!jsonRecordPackage.isUnnamed()) {
-                write(
-                    bw,
-                    "package " + jsonRecordPackage.getQualifiedName() + ";",
-                    ""
-                );
-            }
-            javaBase(bw);
-            write(
-                bw,
-                importType(Generated.class),
-                "",
-                importType(Callbacks.class),
-                importType(ObjectWriter.class),
-                importType(JsonRW.class),
-                "",
-                "/// Reading and writing instances of [" + unqualifiedName + "]",
-                "///",
-                "/// Generated @ " + timestamp + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + timestamp + "\",",
-                "    comments = \"Reading and writing " + unqualifiedName + "\"",
-                ")",
-                "@SuppressWarnings(\"unchecked\")",
-                "public final class " + factoryClass(jsonRecord) + " implements " + JSON_RW + "<" + unqualifiedName + "> {",
-                "",
-                "    public static final " + JSON_RW + "<" + unqualifiedName + "> INSTANCE = new " + factoryClass(
-                    jsonRecord) + "();",
-                "",
-                "    @Override",
-                "    public " + FUNCTION + "<" + CONSUMER + "<" + unqualifiedName + ">, " + CALLBACKS + "> callbacks() {",
-                "        return " + callbacksClassPlain(jsonRecord) + "::create;",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + CALLBACKS + " callbacks(" + CONSUMER + "<" + unqualifiedName + "> onDone) {",
-                "        return " + callbacksClassPlain(jsonRecord) + ".create(onDone);",
-                "    }",
-                "",
-                "    @Override",
-                "    public " + OBJECT_WRITER + "<" + unqualifiedName + "> objectWriter() {",
-                "        return new " + writerClassPlain(jsonRecord) + "();",
-                "    }",
-                "",
-                "    private " + factoryClass(jsonRecord) + "() {",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write factory for " + jsonRecord, e);
-        }
-
+    private String writerSource() {
+        var calls = attributes.stream()
+            .map(attribute ->
+                "\n            ." + writeCall(attribute))
+            .collect(Collectors.joining());
+        return header("Writer for") +
+               """
+                   final class %1$s extends %2$s<%3$s> {
+                   
+                       @Override
+                       protected %4$s doWrite(%3$s object, %4$s events) {
+                           return events%5$s;
+                       }
+                   }
+                   """.formatted(
+                   writerClass(),
+                   name(AbstractObjectWriter.class),
+                   recordName,
+                   name(FieldEvents.class),
+                   calls
+               );
     }
 
-    void generateWriter() {
-        var file = writerFile(jsonRecord);
-        try (var bw = writer(file)) {
-            var unqualifiedName = unqTypeName();
-            if (!jsonRecordPackage.isUnnamed()) {
-                write(
-                    bw,
-                    "package " + jsonRecordPackage.getQualifiedName() + ";",
-                    ""
-                );
-            }
-            javaBase(bw);
-            write(
-                bw,
-                importType(Generated.class),
-                "",
-                importType(AbstractObjectWriter.class),
-                importType(FieldEvents.class),
-                "",
-                "/// Writer for [" + unqualifiedName + "]",
-                "///",
-                "/// Generated at " + timestamp + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + timestamp + "\",",
-                "    comments = \"Writer for " + unqualifiedName + "\"",
-                ")",
-                "@SuppressWarnings(\"unchecked\")",
-                "final class " + writerClassPlain(jsonRecord),
-                "    extends " + ABSTRACT_OBJECT_WRITER + "<" + unqualifiedName + ">",
-                "{",
-                "    protected " + FIELD_EVENTS + " doWrite(",
-                "        " + unqualifiedName + " " + variableName(jsonRecord) + ", ",
-                "        " + FIELD_EVENTS + " events",
-                "    ) {",
-                "        return events"
-            );
-            recordAttributes.forEach(attr ->
-                write(
-                    bw,
-                    "            ." + writeCall(attr, jsonRecord)
-                ));
-            write(
-                bw,
-                "        ;",
-                "    }",
-                "}"
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write callbacks for " + jsonRecord, e);
-        }
+    private String builderSource() {
+        var members = attributes.stream()
+            .map(this::builderMembers)
+            .collect(Collectors.joining());
+        var arguments = attributes.stream()
+            .map(attribute ->
+                "            " + constructorArgument(attribute))
+            .collect(Collectors.joining(",\n"));
+        var converters = attributes.stream()
+            .filter(RecordAttribute::isPrimitiveArray)
+            .map(attribute ->
+                attribute.componentType().getKind())
+            .distinct()
+            .map(this::converter)
+            .collect(Collectors.joining());
+        return header("Builder for") +
+               """
+                   final class %1$s implements %2$s<%3$s> {
+                   
+                       static %1$s create() {
+                           return new %1$s();
+                       }
+                   
+                       private %1$s() {
+                       }
+                   %4$s
+                       @Override
+                       public %3$s get() {
+                           return new %3$s(
+                   %5$s
+                           );
+                       }
+                   %6$s}
+                   """.formatted(
+                   builderClass(),
+                   name(Supplier.class),
+                   recordName,
+                   members,
+                   arguments,
+                   converters
+               );
     }
 
-    void generateBuilder() {
-        var file = builderFile(jsonRecord);
-        var setters = jsonRecord.getRecordComponents()
-            .stream()
-            .flatMap(el -> {
-                var type = el.asType();
-                return Stream.of(
-                    "    private " + print(type) + " " + fieldName(el) + ";",
-                    "",
-                    "    void " + setter(el) + "(" + print(type) + " " + fieldName(el) + ") {",
-                    "        this." + fieldName(el) + " = " + fieldName(el) + ";",
-                    "    }",
-                    ""
-                );
-            })
-            .toList();
+    private String callbacksSource() {
+        var registrations = attributes.stream()
+            .map(attribute ->
+                "        PRESETS." + callbackRegistration(attribute) + ";");
+        var subs = attributes.stream()
+            .filter(RecordAttribute::isRecord)
+            .map(attribute ->
+                generatedClass(attribute.componentType(), "_Callbacks"))
+            .distinct()
+            .map(callbacksClass ->
+                "        PRESETS.sub(" + callbacksClass + ".PRESETS);");
+        var buildTokens = Stream.of("        PRESETS.buildTokens();")
+            .filter(_ -> isRoot());
+        var initializers = Stream.of(registrations, subs, buildTokens)
+            .flatMap(Function.identity())
+            .collect(Collectors.joining("\n"));
+        return header("Callbacks for") +
+               """
+                   final class %1$s {
+                   
+                       static %2$s<%3$s, %4$s> create(%5$s<%4$s> onDone) {
+                           return create(null, onDone);
+                       }
+                   
+                       static %2$s<%3$s, %4$s> create(%6$s parent, %5$s<%4$s> onDone) {
+                           return new %2$s<>(
+                               %3$s.create(),
+                               parent,
+                               PRESETS.getNumbers(),
+                               PRESETS.getStrings(),
+                               PRESETS.getBooleans(),
+                               PRESETS.getObjects(),
+                               onDone,
+                               PRESETS.getTokenTable()
+                           );
+                       }
+                   
+                       static final %7$s<%3$s, %4$s> PRESETS;
+                   
+                       static {
+                           PRESETS = new %7$s<>(%8$s.class);
+                   %9$s
+                       }
+                   }
+                   """.formatted(
+                   callbacksClass(),
+                   name(PresetCallbacks.class),
+                   builderClass(),
+                   recordName,
+                   name(Consumer.class),
+                   name(Callbacks.class),
+                   name(PresetCallbacksInitializer.class),
+                   jsonRecord.getQualifiedName(),
+                   initializers
+               );
+    }
 
-        var adders = jsonRecord.getRecordComponents()
-            .stream()
-            .flatMap(element ->
-                utils.iterableType(element).or(() -> utils.arrayType(element))
-                    .stream()
-                    .flatMap(listType ->
-                        Stream.of(
-                            "    void " + adder(element) + "(" + listType + " " + singularVariableName(element) + ") {",
-                            "        if (this." + fieldName(element) + " == null) {",
-                            "            this." + fieldName(element) + " = new " + ArrayList.class.getName() + "();",
-                            "        }",
-                            "        this." + fieldName(element) + ".add(" + singularVariableName(element) + ");",
-                            "    }",
-                            ""
-                        ))
-            )
-            .toList();
+    private String header(String description) {
+        var packageDeclaration = jsonRecordPackage.isUnnamed()
+            ? ""
+            : "package " + jsonRecordPackage.getQualifiedName() + ";\n\n";
+        var generatedBy = provenance == null
+            ? "Generated using uplift"
+            : "Generated at " + provenance.timestamp() + " by " + provenance.user() + " using uplift";
+        var date = provenance == null
+            ? ""
+            : "\n    date = " + quoted(provenance.timestamp()) + ",";
+        return packageDeclaration +
+               """
+                   /// %1$s [%2$s]
+                   ///
+                   /// %3$s
+                   @%4$s(
+                       value = %5$s,%6$s
+                       comments = %7$s
+                   )
+                   """.formatted(
+                   description,
+                   recordName,
+                   generatedBy,
+                   name(Generated.class),
+                   quoted(name(JsonRecordProcessor.class)),
+                   date,
+                   quoted(description + " " + recordName)
+               );
+    }
 
-        var unqualifiedName = unqTypeName();
-        var creatorStart = List.of(
-            "    @Override",
-            "    public " + unqualifiedName + " get() {",
-            "        return new " + unqualifiedName + "("
+    private String callbackRegistration(RecordAttribute attribute) {
+        var jsonName = quoted(attribute.jsonName());
+        return switch (attribute.kind()) {
+            case VALUE -> "on%s(%s, %s::%s)".formatted(
+                attribute.callbackEvent(),
+                jsonName,
+                builderClass(),
+                attribute.mutator()
+            );
+            case ENUM -> "onEnum(%s, %s::valueOf, %s::%s)".formatted(
+                jsonName,
+                render(attribute.componentType()),
+                builderClass(),
+                attribute.mutator()
+            );
+            case RECORD -> "onObject(%s, (callbacks, builder) -> %s.create(callbacks, builder::%s))".formatted(
+                jsonName,
+                generatedClass(attribute.componentType(), "_Callbacks"),
+                attribute.mutator()
+            );
+            case MAP -> "onObject(%s, (callbacks, builder) -> %s.create(callbacks, builder::%s))".formatted(
+                jsonName,
+                name(MapCallbacks.class),
+                attribute.mutator()
+            );
+        };
+    }
+
+    private String writeCall(RecordAttribute attribute) {
+        var writer = switch (attribute.kind()) {
+            case MAP -> ", new " + name(MapWriter.class) + "()";
+            case RECORD -> ", new " + generatedClass(attribute.componentType(), "_Writer") + "()";
+            case VALUE, ENUM -> attribute.requiresConversion() ? ", this::value" : "";
+        };
+        return "%s(%s, object.%s()%s)".formatted(
+            attribute.fieldEvent(),
+            quoted(attribute.jsonName()),
+            attribute.javaName(),
+            writer
         );
-
-        List<Converter> arrayConvertersCollector = new ArrayList<>();
-        List<String> creatorMeat = jsonRecord.getRecordComponents()
-            .stream()
-            .map(el ->
-                "            " + fieldName(el) + unpack(el, arrayConvertersCollector) + ",")
-            .collect(Collectors.toCollection(LinkedList::new));
-        var last = creatorMeat.removeLast();
-        creatorMeat.addLast(last.substring(0, last.length() - 1));
-
-        var creatorEnd = List.of(
-            "        );",
-            "     }"
-        );
-
-        try (var bw = writer(file)) {
-            if (!jsonRecordPackage.isUnnamed()) {
-                write(
-                    bw,
-                    "package " + jsonRecordPackage.getQualifiedName() + ";",
-                    ""
-                );
-            }
-            javaBase(bw);
-            write(
-                bw,
-                importType(Generated.class),
-                "",
-                "/// Builder for [" + unqualifiedName + "]",
-                "///",
-                "/// Generated at " + timestamp + " by " + System.getProperty("user.name") + " using uplift",
-                "@" + GENERATED + "(",
-                "    value = \"" + JsonRecordProcessor.class.getName() + "\",",
-                "    date = \"" + timestamp + "\",",
-                "    comments = \"Builder for " + unqualifiedName + "\"",
-                ")",
-                "@SuppressWarnings(\"unchecked\")",
-                "final class " + builderClassPlain(jsonRecord) + " implements " + SUPPLIER + "<" + unqualifiedName + "> {",
-                "",
-                "    static " + builderClassPlain(jsonRecord) + " create() {",
-                "        return new " + builderClassPlain(jsonRecord) + "();",
-                "    }",
-                "",
-                "    private " + builderClassPlain(jsonRecord) + "() {",
-                "    }"
-            );
-            write(bw, "");
-            write(bw, setters);
-            write(bw, adders);
-            write(bw, creatorStart);
-            write(bw, creatorMeat);
-            write(bw, creatorEnd);
-            arrayConvertersCollector.forEach(converter ->
-                write(bw, converter.toCode()));
-            write(bw, "}");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write builder for " + jsonRecord, e);
-        }
     }
 
-    private String unpack(RecordComponentElement el, Collection<Converter> arrayConvertersCollector) {
-        if (el.asType() instanceof ArrayType arrayType) {
-            var guard = " == null ? null : ";
-            var componentType = arrayType.getComponentType();
-            if (componentType instanceof PrimitiveType primitiveType) {
-                Converter converter = Converter.forType(primitiveType);
-                arrayConvertersCollector.add(converter);
-                return guard + converter.getCall() + "(" + fieldName(el) + ")";
-            }
-            return guard + fieldName(el) + ".toArray(" + componentType + "[]::new)";
+    private String builderMembers(RecordAttribute attribute) {
+        return switch (attribute.cardinality()) {
+            case SINGLE -> """
+                
+                    private %1$s %2$s;
+                
+                    void %3$s(%1$s %2$s) {
+                        this.%2$s = %2$s;
+                    }
+                """.formatted(
+                render(attribute.element().asType()),
+                attribute.javaName(),
+                attribute.setter()
+            );
+            case LIST, ARRAY -> """
+                
+                    private %1$s<%2$s> %3$s;
+                
+                    void %4$s(%5$s %6$s) {
+                        if (this.%3$s == null) {
+                            this.%3$s = new %7$s<>();
+                        }
+                        this.%3$s.add(%6$s);
+                    }
+                """.formatted(
+                name(List.class),
+                utils.boxedName(attribute.componentType()),
+                attribute.javaName(),
+                attribute.adder(),
+                render(attribute.componentType()),
+                attribute.singularName(),
+                name(ArrayList.class)
+            );
+        };
+    }
+
+    private String constructorArgument(RecordAttribute attribute) {
+        var name = attribute.javaName();
+        if (attribute.cardinality() != RecordAttribute.Cardinality.ARRAY) {
+            return name;
         }
-        return "";
+        var conversion = attribute.isPrimitiveArray()
+            ? converterName(attribute.componentType().getKind()) + "(" + name + ")"
+            : name + ".toArray(" + render(attribute.componentType()) + "[]::new)";
+        return name + " == null ? null : " + conversion;
+    }
+
+    private String converter(TypeKind primitiveKind) {
+        return """
+            
+                private static %1$s[] %2$s(%3$s<%4$s> list) {
+                    var result = new %1$s[list.size()];
+                    var i = 0;
+                    for (%4$s value : list) {
+                        result[i++] = value;
+                    }
+                    return result;
+                }
+            """.formatted(
+            primitiveName(primitiveKind),
+            converterName(primitiveKind),
+            name(List.class),
+            utils.boxedName(primitiveKind)
+        );
     }
 
     private boolean isRoot() {
-        return Optional.ofNullable(jsonRecord.getAnnotation(JsonRecord.class))
-            .map(JsonRecord::root)
-            .orElse(false);
+        var annotation = jsonRecord.getAnnotation(JsonRecord.class);
+        return annotation != null && annotation.root();
     }
 
-    private Map<String, ?> jsonSchema() {
-        Map<String, ?> type = jsonRecord.getRecordComponents()
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    GenUtils::fieldName,
-                    this::jsonType,
-                    (e1, e2) -> {
-                        throw new IllegalStateException("Duplicate field name: " + e1 + "/" + e2);
-                    },
-                    LinkedHashMap::new
-                ));
-        return Map.ofEntries(
-            Map.entry("$schema", "https://json-schema.org/draft/2020-12/schema"),
-            Map.entry("description", unqTypeName()),
-            Map.entry("type", "object"),
-            Map.entry("properties", type)
-        );
-    }
-
-    private List<RecordAttribute> recordAttributes(TypeElement jsonRecord) {
-        return jsonRecord.getRecordComponents()
-            .stream()
-            .filter(element ->
-                element.getKind() == ElementKind.RECORD_COMPONENT)
-            .map(utils::create)
-            .toList();
-    }
-
-    private String writeCall(RecordAttribute recordAttribute, TypeElement te) {
-        var attribute = recordAttribute.attribute();
-        if (isMap(attribute.asType())) {
-            return "map(" +
-                   quote(attribute.getSimpleName()) + ", " +
-                   variableName(te) + "." + attribute.getSimpleName() + "()" +
-                   ", new " + MapWriter.class.getName() + "())";
-        }
-        var generated = recordAttribute.isGenerated();
-        var convert = recordAttribute.requiresConversion();
-        Optional<TypeMirror> listType = utils.iterableType(attribute);
-        Optional<TypeMirror> arrayType = utils.arrayType(attribute);
-        return recordAttribute.fieldEvent() +
-               listType.or(() -> arrayType)
-                   .map(_ -> "Array").orElse("") +
-               "(" +
-               quote(attribute.getSimpleName()) + ", " + variableName(te) + "." + attribute.getSimpleName() + "()" +
-               (convert ? ", this::value)"
-                   : generated ? ", new " + writerClassPlain(utils.iterableType(attribute)
-                       .or(() -> utils.arrayType(attribute))
-                       .orElseGet(attribute::asType)) + "())"
-                       : ")");
-    }
-
-    private boolean isMap(TypeMirror type) {
-        return utils.isMap(type);
-    }
-
-    private Map<String, Object> jsonType(RecordComponentElement element) {
-        return utils.iterableType(element)
-            .map(listType ->
-                Map.of(
-                    "type", "array",
-                    "items", Map.of(
-                        "type", listType
-                    )
-                ))
-            .orElseGet(() ->
-                Map.of(
-                    "type", jsonTypeSingular(element)
-                ));
-    }
-
-    private String jsonTypeSingular(RecordComponentElement element) {
-        return utils.isIterable(element) ? "array"
-            : switch (element.asType().getKind()) {
-                case BOOLEAN -> "boolean";
-                case BYTE, SHORT, INT, LONG -> "integer";
-                case FLOAT, DOUBLE -> "number";
-                case ARRAY -> "array";
-                case DECLARED -> "map";
-                case CHAR -> "string";
-                default -> throw new IllegalArgumentException("Not a JSON element: " + element);
-            };
-    }
-
-    private String unqTypeName() {
-        var name = jsonRecord.getQualifiedName();
-        var fullName = name.toString();
-        if (jsonRecordPackage.isUnnamed()) {
-            return fullName;
-        }
-        var prefix = jsonRecordPackage.getQualifiedName().toString();
-        return fullName.startsWith(prefix)
-            ? fullName.substring(prefix.length() + 1)
-            : fullName;
-    }
-
-    private JavaFileObject factoryFile(PackageElement packageEl, TypeElement typeEl) {
-        return file(factoryClassQ(packageEl, typeEl));
-    }
-
-    private JavaFileObject callbackFile() {
-        return classFileName(jsonRecord, "Callbacks");
-    }
-
-    private JavaFileObject writerFile(TypeElement typeEl) {
-        return classFileName(typeEl, "Writer");
-    }
-
-    private JavaFileObject builderFile(TypeElement typeEl) {
-        return classFileName(typeEl, "Builder");
-    }
-
-    private JavaFileObject classFileName(TypeElement typeEl, String callbacks) {
-        return file(fqName(typeEl) + '_' + callbacks);
-    }
-
-    private JavaFileObject file(String name) {
-        try {
-            return fileForName.apply(name);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not open file " + name, e);
+    private void write(String className, String source) {
+        var name = qualified(jsonRecordPackage, className);
+        try (var writer = fileForName.apply(name).openWriter()) {
+            writer.write(source);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write " + name, e);
         }
     }
 
-    private String writerClassPlain(TypeMirror te) {
-        return utils.simpleName(te) + "_Writer";
+    private String factoryClass() {
+        var annotation = jsonRecord.getAnnotation(JsonRecord.class);
+        return annotation == null || annotation.factoryClass().isBlank()
+            ? jsonRecord.getSimpleName() + DEFAULT_FACTORY_SUFFIX
+            : annotation.factoryClass();
     }
 
-    private String print(TypeMirror type) {
-        if (type instanceof ArrayType arrayType) {
-            var componentType = arrayType.getComponentType();
-            if (componentType instanceof PrimitiveType primitiveType) {
-                return "java.util.List<" + utils.boxedType(primitiveType) + ">";
-            }
-            return "java.util.List<" + componentType + ">";
-        }
-        return type.toString();
+    private String writerClass() {
+        return flatName(jsonRecord) + "_Writer";
     }
 
-    private static final String GENERATED = Generated.class.getSimpleName();
-
-    private static final String PRESET_CALLBACKS = PresetCallbacks.class.getSimpleName();
-
-    private static final String PRESET_CALLBACKS_INITIALIZER = PresetCallbacksInitializer.class.getSimpleName();
-
-    private static final String ABSTRACT_OBJECT_WRITER = AbstractObjectWriter.class.getSimpleName();
-
-    private static final String FIELD_EVENTS = FieldEvents.class.getSimpleName();
-
-    private static final String SUPPLIER = Supplier.class.getSimpleName();
-
-    private static final String JSON_RW = JsonRW.class.getSimpleName();
-
-    private static final String CONSUMER = Consumer.class.getSimpleName();
-
-    private static final String CALLBACKS = Callbacks.class.getSimpleName();
-
-    private static final String FUNCTION = Function.class.getSimpleName();
-
-    private static final String OBJECT_WRITER = ObjectWriter.class.getSimpleName();
-
-    private static final String QUO = "\"";
-
-    private static void javaBase(BufferedWriter bw) {
-        write(
-            bw,
-            "",
-            "import module java.base;",
-            ""
-        );
+    private String builderClass() {
+        return flatName(jsonRecord) + "_Builder";
     }
 
-    private static String quote(Object string) {
-        return QUO + string + QUO;
+    private String callbacksClass() {
+        return flatName(jsonRecord) + "_Callbacks";
     }
 
-    private static void write(BufferedWriter bw, String... strs) {
-        write(bw, Arrays.asList(strs));
+    /// @param recordType Another record type
+    /// @param suffix Suffix of the generated class
+    /// @return Qualified name of a class generated for the other record type
+    private String generatedClass(TypeMirror recordType, String suffix) {
+        var typeElement = utils.typeElement(recordType);
+        return qualified(utils.packageOf(typeElement), flatName(typeElement) + suffix);
     }
 
-    private static void write(BufferedWriter bw, List<String> strs) {
-        strs.forEach(str -> {
-            try {
-                write(bw, str);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to write line `" + str + "`", e);
-            }
-        });
+    private static final String DEFAULT_FACTORY_SUFFIX = "RW";
+
+    private static String name(Class<?> type) {
+        return type.getCanonicalName();
     }
 
-    private static void write(BufferedWriter bw, String str) {
-        try {
-            bw.write(str + "\n");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write line `" + str + "`", e);
-        }
+    private static String primitiveName(TypeKind primitiveKind) {
+        return primitiveKind.name().toLowerCase(Locale.ROOT);
     }
 
-    private static BufferedWriter writer(JavaFileObject javaFileObject) {
-        try {
-            return new BufferedWriter(javaFileObject.openWriter());
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write to " + javaFileObject, e);
-        }
+    private static String converterName(TypeKind primitiveKind) {
+        return "to" + upcased(primitiveName(primitiveKind)) + "Array";
     }
 
-    private static String writerClassPlain(TypeElement te) {
-        return simpleName(te) + "_Writer";
+    /// Origin of generated code, written to the generated sources
+    ///
+    /// @param timestamp Time of generation
+    /// @param user Name of user
+    record Provenance(String timestamp, String user) {
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + jsonRecordPackage.getSimpleName() + "." + jsonRecord.getSimpleName() + "]";
-    }
-
-    private enum Converter {
-
-        BOOLEAN(
-            "boolean",
-            //language=java
-            """
-                    private static boolean[] toBooleanArray(List<Boolean> list) {
-                        boolean[] result = new boolean[list.size()];
-                        int i = 0;
-                        for (boolean f : list) {
-                            result[i++] = f;
-                        }
-                        return result;
-                    }
-                """
-        ),
-
-        FLOAT(
-            "float",
-            //language=java
-            """
-                    private static float[] toFloatArray(List<Float> list) {
-                        float[] result = new float[list.size()];
-                        int i = 0;
-                        for (float f : list) {
-                            result[i++] = f;
-                        }
-                        return result;
-                    }
-                """
-        ),
-
-        SHORT(
-            "short",
-            //language=java
-            """
-                    private static short[] toShortArray(List<Short> list) {
-                        short[] result = new short[list.size()];
-                        int i = 0;
-                        for (short f : list) {
-                            result[i++] = f;
-                        }
-                        return result;
-                    }
-                """
-        ),
-
-        BYTE(
-            "byte",
-            //language=java
-            """
-                    private static byte[] toByteArray(List<Byte> list) {
-                        byte[] result = new byte[list.size()];
-                        int i = 0;
-                        for (byte f : list) {
-                            result[i++] = f;
-                        }
-                        return result;
-                    }
-                """
-        ),
-
-        INTEGER(
-            "int",
-            //language=java
-            """
-                    private static int[] toIntArray(List<Integer> list) {
-                        return list.stream().mapToInt(Integer::intValue).toArray();
-                    }
-                """
-        ),
-
-        DOUBLE(
-            "double",
-            //language=java
-            """
-                    private static double[] toDoubleArray(List<Double> list) {
-                        return list.stream().mapToDouble(Double::doubleValue).toArray();
-                    }
-                """
-        ),
-
-        LONG(
-            "long",
-            //language=java
-            """
-                    private static long[] toLongArray(List<Long> list) {
-                        return list.stream().mapToLong(Long::longValue).toArray();
-                    }
-                """
-        );
-
-        private final String type;
-
-        private final String java;
-
-        Converter(
-            String type,
-            String java
-        ) {
-            this.type = type;
-            this.java = java;
-        }
-
-        public List<String> toCode() {
-            return Stream.concat(
-                    Stream.of(""),
-                    Arrays.stream(java.split("\n"))
-                )
-                .toList();
-        }
-
-        String getCall() {
-            return "to" + type.substring(0, 1).toUpperCase(Locale.ROOT) + type.substring(1) + "Array";
-        }
-
-        String getJava() {
-            return java;
-        }
-
-        private static Converter forType(PrimitiveType type) {
-            return Arrays.stream(values())
-                .filter(converter ->
-                    converter.type.equalsIgnoreCase(type.toString()))
-                .findFirst()
-                .orElseThrow(() ->
-                    new IllegalStateException("No converter for " + type));
-        }
+        return getClass().getSimpleName() + "[" + jsonRecord.getQualifiedName() + "]";
     }
 }

@@ -29,8 +29,4 @@ public enum FieldEventType {
     public String getName() {
         return name;
     }
-
-    String getArrayName() {
-        return name + "Array";
-    }
 }

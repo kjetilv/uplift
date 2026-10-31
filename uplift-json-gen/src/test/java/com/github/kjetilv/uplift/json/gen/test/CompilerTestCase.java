@@ -36,7 +36,11 @@ public class CompilerTestCase {
         this.testInfo = testInfo;
     }
 
-    protected void ver(String java, String... jsons) {
+    /// Verify roundtrip JSON/record type.
+    ///
+    /// @param java Java code
+    /// @param jsons JSON expressions that should survive parsing, writing, and parsing back
+    protected void verifyRoundTrip(String java, String... jsons) {
         for (String source : List.of(
             withImports(java),
             addPackage(withImports(java))
@@ -53,6 +57,44 @@ public class CompilerTestCase {
                 session.readAndVerify(json);
             }
         }
+    }
+
+    /// Verify that two JSON expressions are read to equal objects.
+    ///
+    /// @param java Java code
+    /// @param json JSON expression
+    /// @param expectedJson JSON expression that should read to the same object
+    protected void verifyReadsAs(String java, String json, String expectedJson) {
+        for (String source : List.of(
+            withImports(java),
+            addPackage(withImports(java))
+        )) {
+            session = compilerSession(source);
+            assertThat(session.compilationFailed())
+                .describedAs("Compilation failed:\n%s", session.compileError())
+                .isFalse();
+            assertThat(session.read(json))
+                .describedAs("Read from %s", json)
+                .isEqualTo(session.read(expectedJson));
+        }
+    }
+
+    /// Verify that annotation processing rejects the record type.
+    ///
+    /// @param java Java code
+    /// @param expectedMessage Fragment expected in the compilation error
+    protected void verifyCompilationFails(String java, String expectedMessage) {
+        session = compilerSession(withImports(java));
+        assertThat(session.compilationFailed())
+            .describedAs("Compilation should fail")
+            .isTrue();
+        assertThat(Stream.iterate(session.compileError(), Objects::nonNull, Throwable::getCause)
+            .map(Throwable::getMessage)
+            .filter(Objects::nonNull)
+            .anyMatch(message -> message.contains(expectedMessage)))
+            .describedAs("Compilation error should mention `%s`: %s", expectedMessage, session.compileError())
+            .isTrue();
+        session = null;
     }
 
     private Session compilerSession(String java) {

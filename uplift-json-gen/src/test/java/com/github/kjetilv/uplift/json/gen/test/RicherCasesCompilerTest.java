@@ -8,7 +8,7 @@ public class RicherCasesCompilerTest extends CompilerTestCase {
 
     @Test
     void simpleCase() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Foo(
                     Boolean foo,
@@ -51,7 +51,7 @@ public class RicherCasesCompilerTest extends CompilerTestCase {
 
     @Test
     void maps() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record FooMap(Map<String, ?> map) {
                 }

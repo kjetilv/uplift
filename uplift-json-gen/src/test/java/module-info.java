@@ -16,5 +16,5 @@ module uplift.json.gen.test {
     requires org.assertj.core;
 
     opens com.github.kjetilv.uplift.json.gen.test to org.junit.platform.commons;
-    opens com.github.kjetilv.uplift.json.gen.test.trie to org.junit.platform.commons;
+    opens com.github.kjetilv.uplift.json.gen.test.tokens to org.junit.platform.commons;
 }

@@ -8,7 +8,7 @@ class NestedCompilerTest extends CompilerTestCase {
 
     @Test
     void nestedType() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Eagle(Nest nest) {
                     record Nest(String foo) {}
@@ -39,7 +39,7 @@ class NestedCompilerTest extends CompilerTestCase {
 
     @Test
     void nestedTypeList() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Eagle(List<Nest> nests) {
                     record Nest(String foo) {}
@@ -62,7 +62,7 @@ class NestedCompilerTest extends CompilerTestCase {
 
     @Test
     void nestedTypeArray() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Eagle(Nest[] nests) {
                 
@@ -96,7 +96,7 @@ class NestedCompilerTest extends CompilerTestCase {
 
     @Test
     void compelexNestedTypeList() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Eagle(List<Nest> nests) {
                     record Nest(String foo, List<Integer> nums) {}
@@ -161,7 +161,7 @@ class NestedCompilerTest extends CompilerTestCase {
 
     @Test
     void compelexNestedTypeArray() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record Eagle(List<Nest> nests) {
                     record Nest(String foo, int[] nums) {

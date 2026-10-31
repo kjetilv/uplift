@@ -8,7 +8,7 @@ public class ArraysCompilerTest extends CompilerTestCase {
 
     @Test
     void stringArrayFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleArrayField(String[] ss) {
                 
@@ -54,7 +54,7 @@ public class ArraysCompilerTest extends CompilerTestCase {
 
     @Test
     void longPrimitiveArrayFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(long[] ls) {
                 
@@ -94,7 +94,7 @@ public class ArraysCompilerTest extends CompilerTestCase {
 
     @Test
     void longArrayFields() {
-        ver(
+        verifyRoundTrip(
             //language=java
             """
                 public record SingleField(Long[] ls) {
@@ -142,7 +142,7 @@ public class ArraysCompilerTest extends CompilerTestCase {
     }
     @Test
     void floatPrimitiveArrayFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(float[] fs) {
                 
@@ -181,7 +181,7 @@ public class ArraysCompilerTest extends CompilerTestCase {
     }
     @Test
     void booleanArrayFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(boolean[] bs) {
                 

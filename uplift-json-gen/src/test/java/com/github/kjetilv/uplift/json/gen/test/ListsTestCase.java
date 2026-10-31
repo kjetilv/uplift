@@ -8,7 +8,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void stringListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<String> ss) {
                 }
@@ -44,7 +44,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void longListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Long> ls) {
                 }
@@ -74,7 +74,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void intListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Integer> ls) {
                 }
@@ -104,7 +104,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void shortListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Short> ls) {
                 }
@@ -134,7 +134,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void byteListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Byte> ls) {
                 }
@@ -164,7 +164,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void floatListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Float> ls) {
                 }
@@ -194,7 +194,7 @@ public class ListsTestCase extends CompilerTestCase {
 
     @Test
     void doubleListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Double> ls) {
                 }
@@ -223,7 +223,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void bigDecimalListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<BigDecimal> ls) {
                 }
@@ -252,7 +252,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void bigIntegerListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<BigInteger> ls) {
                 }
@@ -281,7 +281,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void uuidListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<UUID> ls) {
                 }
@@ -304,7 +304,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void enumListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record ListField(List<HttpClient.Version> version) {
                 }
@@ -333,7 +333,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void durationListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Duration> ds) {
                 }
@@ -362,7 +362,7 @@ public class ListsTestCase extends CompilerTestCase {
     }
     @Test
     void booleanListFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(List<Boolean> ls) {
                 }

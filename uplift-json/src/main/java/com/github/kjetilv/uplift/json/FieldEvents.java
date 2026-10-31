@@ -37,6 +37,18 @@ public interface FieldEvents {
 
     FieldEvents stringArray(String field, String[] values);
 
+    default FieldEvents stringArray(String field, char[] values) {
+        List<String> strings = values == null ? null
+            : IntStream.range(0, values.length)
+                .mapToObj(i -> String.valueOf(values[i]))
+                .toList();
+        return stringArray(field, strings);
+    }
+
+    default <T> FieldEvents stringArray(String field, T[] values, Function<T, String> toString) {
+        return stringArray(field, values == null ? null : Arrays.asList(values), toString);
+    }
+
     FieldEvents stringArray(String field, List<String> values);
 
     <T extends Record> FieldEvents objectArray(String field, T[] values, ObjectWriter<T> writer);

@@ -5,7 +5,7 @@ import module java.compiler;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.json.TokenResolver;
-import com.github.kjetilv.uplift.json.gen.trie.TokenTrie;
+import com.github.kjetilv.uplift.json.gen.tokens.TokenTable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -24,7 +24,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
 
     private final List<PresetCallbacksInitializer<?, ?>> subs = new ArrayList<>();
 
-    private TokenResolver tokenTrie;
+    private TokenResolver tokenResolver;
 
     public PresetCallbacksInitializer(Class<?> host) {
         this.host = Objects.requireNonNull(host, "host");
@@ -229,8 +229,8 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         return objects;
     }
 
-    public TokenResolver getTokenTrie() {
-        return tokenTrie;
+    public TokenResolver getTokenTable() {
+        return tokenResolver;
     }
 
     public void buildTokens() {
@@ -241,18 +241,18 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         if (handled != null && handled.contains(this)) {
             return;
         }
-        this.tokenTrie = tokenResolver != null ? tokenResolver : newTokenTrie();
-        this.numbers = replace(this.numbers, this.tokenTrie);
-        this.strings = replace(this.strings, this.tokenTrie);
-        this.objects = replace(this.objects, this.tokenTrie);
-        this.booleans = replace(this.booleans, this.tokenTrie);
+        this.tokenResolver = tokenResolver != null ? tokenResolver : newTokenTable();
+        this.numbers = replace(this.numbers, this.tokenResolver);
+        this.strings = replace(this.strings, this.tokenResolver);
+        this.objects = replace(this.objects, this.tokenResolver);
+        this.booleans = replace(this.booleans, this.tokenResolver);
         var newHandled = Stream.concat(
                 Stream.ofNullable(handled).flatMap(Set::stream),
                 Stream.of(this)
             )
             .collect(Collectors.toSet());
         for (var sub : subs) {
-            sub.buildTokens(this.tokenTrie, newHandled);
+            sub.buildTokens(this.tokenResolver, newHandled);
         }
     }
 
@@ -279,8 +279,8 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
             .toList();
     }
 
-    private TokenTrie newTokenTrie() {
-        return new TokenTrie(fields().toList());
+    private TokenTable newTokenTable() {
+        return new TokenTable(fields().toList());
     }
 
     private <V> Map<Token.Field, V> replace(
@@ -327,7 +327,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         if (string == null || string.isEmpty()) {
             return null;
         }
-        if (string.length() != 1) {
+        if (string.length() == 1) {
             return string.charAt(0);
         }
         throw new IllegalStateException("Not a char: `" + string + "`'");

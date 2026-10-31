@@ -59,12 +59,12 @@ public final class DefaultFieldEvents implements FieldEvents {
 
     @Override
     public <T> FieldEvents numberArray(String field, T[] values, Function<T, Number> toNumber) {
-        return writeArray(field, values, sink::accept);
+        return writeArray(field, values, toNumber, sink::accept);
     }
 
     @Override
     public <T> FieldEvents boolArray(String field, T[] value, Function<T, Boolean> toBool) {
-        return writeArray(field, value, sink::accept);
+        return writeArray(field, value, toBool, sink::accept);
     }
 
     @Override
@@ -95,6 +95,29 @@ public final class DefaultFieldEvents implements FieldEvents {
     @Override
     public FieldEvents stringArray(String field, String[] values) {
         return writeArray(field, values, sink::acceptQuoted);
+    }
+
+    @Override
+    public FieldEvents stringArray(String field, char[] values) {
+        if (values == null || values.length == 0) {
+            return this;
+        }
+        prepareArray(field);
+        boolean first = true;
+        try {
+            for (var value : values) {
+                first = commaUnless(first);
+                sink.acceptQuoted(String.valueOf(value));
+            }
+        } finally {
+            closeArray();
+        }
+        return this;
+    }
+
+    @Override
+    public <T> FieldEvents stringArray(String field, T[] values, Function<T, String> toString) {
+        return writeArray(field, values, toString, sink::acceptQuoted);
     }
 
     @Override

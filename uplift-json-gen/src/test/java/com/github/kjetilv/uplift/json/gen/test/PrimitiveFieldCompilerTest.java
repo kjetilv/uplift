@@ -8,7 +8,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void longPrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(long l) {
                 }
@@ -32,7 +32,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void longFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Long l) {
                 }
@@ -48,7 +48,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void intPrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(int i) {
                 }
@@ -72,7 +72,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void shortPrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(short s) {
                 }
@@ -96,7 +96,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void bytePrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(byte b) {
                 }
@@ -114,7 +114,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void floatPrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(float f) {
                 }
@@ -138,7 +138,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void doublePrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(double d) {
                 }
@@ -156,7 +156,7 @@ public class PrimitiveFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void booleanPrimitiveFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(boolean b) {
                 }

@@ -6,7 +6,7 @@ module uplift.json.gen {
     requires uplift.json.anno;
 
     exports com.github.kjetilv.uplift.json.gen;
-    exports com.github.kjetilv.uplift.json.gen.trie;
+    exports com.github.kjetilv.uplift.json.gen.tokens;
 
     provides javax.annotation.processing.Processor with com.github.kjetilv.uplift.json.gen.JsonRecordProcessor;
 }

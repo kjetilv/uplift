@@ -8,7 +8,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void stringFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(String s) {
                 }
@@ -38,7 +38,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void intFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Integer i) {
                 }
@@ -54,7 +54,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void shortFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Short s) {
                 }
@@ -78,7 +78,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void byteFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Byte b) {
                 }
@@ -102,7 +102,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void floatFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Float f) {
                 }
@@ -126,7 +126,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void doubleFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Double d) {
                 }
@@ -150,7 +150,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void bigDecimalFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(BigDecimal bd) {
                 }
@@ -174,7 +174,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void bigIntegerFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(BigInteger bi) {
                 }
@@ -198,7 +198,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void uuidFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(UUID id) {
                 }
@@ -216,7 +216,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void enumFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(HttpClient.Version version) {
                 }
@@ -234,7 +234,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void durationFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Duration dura) {
                 }
@@ -264,7 +264,7 @@ class SingleFieldCompilerTest extends CompilerTestCase {
 
     @Test
     void booleanFields() {
-        ver(//language=java
+        verifyRoundTrip(//language=java
             """
                 public record SingleField(Boolean b) {
                 }

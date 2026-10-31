@@ -24,6 +24,10 @@ public abstract class AbstractObjectWriter<T extends Record> implements ObjectWr
         return "\"%s\"".formatted(contents);
     }
 
+    protected String value(Character value) {
+        return String.valueOf(value);
+    }
+
     protected String value(Boolean value) {
         return value.toString();
     }
