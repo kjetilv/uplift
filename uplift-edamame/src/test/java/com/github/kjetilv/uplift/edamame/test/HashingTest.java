@@ -132,10 +132,21 @@ class HashingTest {
         assertThat(second).isEqualTo(Map.of("t", LocalDateTime.of(2024, 1, 1, 0, 0)));
     }
 
-    @Disabled("B3: POJO hash uses the hash builder class, not the leaf class")
     @Test
     void pojoClassIsHashed() {
         assertDifferentHashes(new Left("x"), new Right("x"));
+    }
+
+    @Test
+    void pojoClassIsHashedWithHashCodeBytes() {
+        var hashCodeHasher = LeafHasher.create(K128, PojoBytes.HASHCODE);
+        assertThat(new Left("x").hashCode()).isEqualTo(new Right("x").hashCode());
+        assertThat(hashCodeHasher.hash(new Left("x"))).isNotEqualTo(hashCodeHasher.hash(new Right("x")));
+    }
+
+    @Test
+    void equalPojosHashEqual() {
+        assertThat(LEAF_HASHER.hash(new Left("x"))).isEqualTo(LEAF_HASHER.hash(new Left("x")));
     }
 
     @Disabled("B4: map hash depends on key iteration order")

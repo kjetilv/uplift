@@ -118,13 +118,14 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         return hb.hash(Bytes.intBytes(bytes.length())).hash(bytes);
     }
 
+    /// Hashes the leaf's class name, then the [PojoBytes] of the leaf. The class name keeps leaves
+    /// of different classes apart when their pojo bytes are equal.
     private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashLeaf(
         HashBuilder<Bytes, K> hb,
         Object leaf,
         PojoBytes anyHash
     ) {
-        return hb
-            .hash(Bytes.from(hb.getClass().getName()))
+        return hashText(hb, leaf.getClass().getName())
             .hash(anyHash.bytes(leaf));
     }
 
