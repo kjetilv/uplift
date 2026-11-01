@@ -103,7 +103,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -254,7 +254,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -276,7 +276,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -297,7 +297,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 if (first) {
@@ -322,7 +322,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 if (first) {
@@ -347,7 +347,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -368,7 +368,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -389,7 +389,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -410,7 +410,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -431,7 +431,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -452,7 +452,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);
@@ -473,7 +473,7 @@ public final class DefaultFieldEvents implements FieldEvents {
             return this;
         }
         prepareArray(field);
-        boolean first = true;
+        var first = true;
         try {
             for (var value : values) {
                 first = commaUnless(first);

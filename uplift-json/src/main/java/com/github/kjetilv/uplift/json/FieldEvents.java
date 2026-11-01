@@ -38,7 +38,7 @@ public interface FieldEvents {
     FieldEvents stringArray(String field, String[] values);
 
     default FieldEvents stringArray(String field, char[] values) {
-        List<String> strings = values == null ? null
+        var strings = values == null ? null
             : IntStream.range(0, values.length)
                 .mapToObj(i -> String.valueOf(values[i]))
                 .toList();

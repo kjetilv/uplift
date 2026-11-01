@@ -118,7 +118,7 @@ class JsonTest {
     @Test
     void escapedEscape2() {
         //language=json
-        String sdf = """
+        var sdf = """
             {
               "category": "THEATRE",
               "air_date": "2001-04-12",

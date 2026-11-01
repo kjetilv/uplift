@@ -334,10 +334,9 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
     }
 
     private static URI uri(String str) {
-        if (str.indexOf('\\') == -1) {
-            return URI.create(str);
-        }
-        return URI.create(BACKSLASHES.matcher(str).replaceAll(""));
+        return str.indexOf('\\') == -1
+            ? URI.create(str)
+            : URI.create(BACKSLASHES.matcher(str).replaceAll(""));
     }
 
     @Override

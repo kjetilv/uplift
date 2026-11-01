@@ -78,8 +78,8 @@ public final class Flambda implements RuntimeCloseable, Runnable {
 
     private void await(Function<Server.Open, Runnable> task) {
         try (var executor = Virtuals.executor("flambda")) {
-            CompletableFuture<Void> lambdaFuture = CompletableFuture.runAsync(task.apply(lambdaServer), executor);
-            CompletableFuture<Void> apiFuture = CompletableFuture.runAsync(task.apply(apiServer), executor);
+            var lambdaFuture = CompletableFuture.runAsync(task.apply(lambdaServer), executor);
+            var apiFuture = CompletableFuture.runAsync(task.apply(apiServer), executor);
             lambdaFuture.join();
             apiFuture.join();
         }

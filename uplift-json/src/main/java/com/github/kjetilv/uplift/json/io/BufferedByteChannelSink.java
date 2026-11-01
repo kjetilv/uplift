@@ -55,7 +55,7 @@ public final class BufferedByteChannelSink extends AbstractBufferedSink {
 
     private int flush(ByteBuffer buffer) {
         buffer.flip();
-        int written = 0;
+        var written = 0;
         try {
             while (buffer.hasRemaining()) {
                 written += byteChannel.write(buffer);

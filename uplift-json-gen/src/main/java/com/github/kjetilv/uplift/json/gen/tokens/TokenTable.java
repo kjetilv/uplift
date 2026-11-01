@@ -47,16 +47,19 @@ public final class TokenTable implements TokenResolver {
 
     @Override
     public Token.Field get(byte[] bytes, int offset, int length) {
-        var index = (sampled ? sampledHash(bytes, offset, length) : fullHash(bytes, offset, length)) & mask;
+        var rawIndex = sampled
+            ? sampledHash(bytes, offset, length)
+            : fullHash(bytes, offset, length);
+        var searchIndex = rawIndex & mask;
         while (true) {
-            var field = table[index];
+            var field = table[searchIndex];
             if (field == null) {
                 return null;
             }
             if (equals(bytes, offset, length, field)) {
                 return field;
             }
-            index = index + 1 & mask;
+            searchIndex = searchIndex + 1 & mask;
         }
     }
 
@@ -107,20 +110,18 @@ public final class TokenTable implements TokenResolver {
     }
 
     private static int longestRun(Token.Field[] table) {
-        OptionalInt found = OptionalInt.empty();
-        for (int i = 0; i < table.length; i++) {
+        var found = 0;
+        for (var i = 0; i < table.length; i++) {
             if (table[i] == null) {
-                found = OptionalInt.of(i);
+                found = i;
                 break;
             }
         }
-        var firstEmpty = found
-            .orElseThrow();
         // Start after an empty slot, so runs that wrap around the end are counted whole
         var longest = 0;
         var run = 0;
         for (var i = 1; i <= table.length; i++) {
-            if (table[(firstEmpty + i) % table.length] == null) {
+            if (table[(found + i) % table.length] == null) {
                 run = 0;
             } else {
                 longest = Math.max(longest, ++run);

@@ -23,9 +23,9 @@ class IOTest {
     @Test
     void files() {
         var writer = Users.INSTANCE.fileWriter();
-        Path path = writer.write(USER);
+        var path = writer.write(USER);
 
-        User user = Users.INSTANCE.fileReader().read(path);
+        var user = Users.INSTANCE.fileReader().read(path);
         assertThat(user).isEqualTo(USER);
     }
 

@@ -71,7 +71,7 @@ public class FlambdaTest {
                 HttpResponse.BodyHandlers.ofString()
             );
 
-            for (int i = 0; i < 2; i++) {
+            for (var i = 0; i < 2; i++) {
 
                 var lambdaGet = getRequest(client, lambdaUri);
                 assertThat(lambdaGet.statusCode()).isEqualTo(200);
@@ -125,7 +125,7 @@ public class FlambdaTest {
         var postUri = lambdaUri.resolve("/2018-06-01/runtime/invocation/" + response.reqId() + "/response");
         var write = ResponseInRW.INSTANCE.stringWriter().write(response).toString();
         log.info("Posting response to: {} with body: {}", postUri, write);
-        HttpResponse<Void> lambdaPost = client.send(
+        var lambdaPost = client.send(
             HttpRequest.newBuilder()
                 .uri(postUri)
                 .POST(HttpRequest.BodyPublishers.ofString(write))

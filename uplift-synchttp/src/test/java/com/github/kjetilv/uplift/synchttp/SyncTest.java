@@ -44,7 +44,7 @@ public class SyncTest {
         var handler = new HttpCallbackProcessor((_, callbacks) ->
             callbacks.status(200).contentLength(5).body("world"));
         switch (Servers.create().run(handler)) {
-            case Servers.Result.OK<Server.Open>(Server.Open server) -> {
+            case Servers.Result.OK<Server.Open>(var server) -> {
 
                 CompletableFuture<HttpResponse<String>> future;
                 try (var httpClient = HttpClient.newHttpClient()) {
@@ -61,7 +61,7 @@ public class SyncTest {
                 server.close();
                 server.join();
             }
-            case Servers.Result.Denied(InetSocketAddress address) -> fail("Could not bind to " + address);
+            case Servers.Result.Denied(var address) -> fail("Could not bind to " + address);
         }
     }
 

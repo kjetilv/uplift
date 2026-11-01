@@ -41,7 +41,7 @@ public class CompilerTestCase {
     /// @param java Java code
     /// @param jsons JSON expressions that should survive parsing, writing, and parsing back
     protected void verifyRoundTrip(String java, String... jsons) {
-        for (String source : List.of(
+        for (var source : List.of(
             withImports(java),
             addPackage(withImports(java))
         )) {
@@ -53,7 +53,7 @@ public class CompilerTestCase {
                     session.compileError()
                 )
                 .isFalse();
-            for (String json : jsons) {
+            for (var json : jsons) {
                 session.readAndVerify(json);
             }
         }
@@ -65,7 +65,7 @@ public class CompilerTestCase {
     /// @param json JSON expression
     /// @param expectedJson JSON expression that should read to the same object
     protected void verifyReadsAs(String java, String json, String expectedJson) {
-        for (String source : List.of(
+        for (var source : List.of(
             withImports(java),
             addPackage(withImports(java))
         )) {
@@ -312,7 +312,7 @@ public class CompilerTestCase {
             .map(method ->
                 method.getDeclaringClass().getName() + "." + method.getName())
             .map(cutoff -> {
-                AtomicBoolean cutoffSeen = new AtomicBoolean();
+                var cutoffSeen = new AtomicBoolean();
                 return (Predicate<StackTraceElement>) stackTraceElement -> {
                     if (cutoffSeen.get()) {
                         return false;

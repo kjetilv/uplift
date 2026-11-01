@@ -48,7 +48,7 @@ record ApiHandler(
             var headers = settings.cors()
                 .applyTo(origin, callback.status(in.statusCode()))
                 .headers(in.headers());
-            byte[] bodyBytes = in.bytes();
+            var bodyBytes = in.bytes();
             if (bodyBytes.length == 0) {
                 headers.nobody();
             } else {

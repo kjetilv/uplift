@@ -119,7 +119,7 @@ public final class PathFqs<I, O> implements Fqs<O> {
 
     @Override
     public void init(Name... names) {
-        for (Name name : names) {
+        for (var name : names) {
             ensureWritable(sourceProvider.source(name));
         }
     }

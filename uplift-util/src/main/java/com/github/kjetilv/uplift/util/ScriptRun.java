@@ -60,7 +60,7 @@ class ScriptRun {
         InputStream inputStream,
         BiFunction<LineListener, String, LineListener.Result> processor
     ) {
-        CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+        var completableFuture = new CompletableFuture<Integer>();
         var thread = Thread.ofVirtual().name(stream).start(() -> {
             int lines;
             try (
@@ -83,7 +83,7 @@ class ScriptRun {
         BiFunction<LineListener, String, LineListener.Result> processor
     ) {
         String line;
-        int lines = 0;
+        var lines = 0;
         while (true) {
             try {
                 if ((line = reader.readLine()) == null) {

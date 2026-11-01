@@ -87,8 +87,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         var canonical = canonicalValues.canonical(hashedTree);
         return switch (canonical) {
             case CanonicalValue.Node<?, H>(
-                Hash<H> hash,
-                Map<?, Object> node
+                var hash,
+                var node
             ) -> withWriteLock(() ->
                 putCanonical(
                     identifier,

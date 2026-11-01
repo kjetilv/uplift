@@ -45,7 +45,7 @@ final class FromMap implements Consumer<Object> {
     private void doArray(Iterable<?> list) {
         try {
             callbacks.arrayStarted();
-            for (Object item : list) {
+            for (var item : list) {
                 accept(item);
             }
         } finally {

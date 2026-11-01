@@ -77,8 +77,8 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
 
     private byte[] header(ByteBuffer buffer) {
         var chunkSize = buffer.position() - maxHeader;
-        byte[] countBytes = Integer.toHexString(chunkSize).getBytes(UTF_8);
-        byte[] header = new byte[countBytes.length + CRLF.length];
+        var countBytes = Integer.toHexString(chunkSize).getBytes(UTF_8);
+        var header = new byte[countBytes.length + CRLF.length];
         arraycopy(countBytes, 0, header, 0, countBytes.length);
         arraycopy(CRLF, 0, header, countBytes.length, CRLF.length);
         return header;

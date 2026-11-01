@@ -81,7 +81,7 @@ public class Jeopardy {
             )
             .build();
 
-        Instant now = Instant.now();
+        var now = Instant.now();
         if (flows.start()) {
             var run = flows.run();
             run.join()

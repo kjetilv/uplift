@@ -60,7 +60,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
         if (items == null || items.isEmpty()) {
             return counter.longValue();
         }
-        for (T item : items) {
+        for (var item : items) {
             add(item);
         }
         return counter.longValue();
@@ -134,7 +134,7 @@ final class DefaultFqFlows<T> implements FqFlows<T>, RuntimeCloseable {
                                 : flow;
                             FlowRun<T> result;
                             try {
-                                Instant start = Instant.now();
+                                var start = Instant.now();
                                 runner.run(fqs, runnable);
                                 var end = Instant.now();
                                 result = new FlowRun<>(runnable, start, end);

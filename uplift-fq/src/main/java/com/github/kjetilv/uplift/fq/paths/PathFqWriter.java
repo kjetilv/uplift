@@ -51,7 +51,7 @@ public final class PathFqWriter<I, O> extends AbstractPathFq<I, O>
 
     @Override
     public void write(List<O> items) {
-        for (O item : items) {
+        for (var item : items) {
             var count = lineCount.longValue();
             var ledge = dimensions.ledge(count);
             if (currentLedge == null || currentLedge.ledge() != ledge.ledge()) {

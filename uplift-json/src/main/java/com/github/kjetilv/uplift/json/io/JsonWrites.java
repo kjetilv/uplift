@@ -83,7 +83,7 @@ public final class JsonWrites {
             return;
         }
         sink.accept("{");
-        boolean first = true;
+        var first = true;
         for (var value : map.entrySet()) {
             if (first) {
                 first = false;
@@ -136,7 +136,7 @@ public final class JsonWrites {
 
     private static void writeNonEmptyArray(Sink sink, Iterator<?> iterator) {
         sink.accept("[");
-        boolean first = true;
+        var first = true;
         while (iterator.hasNext()) {
             if (first) {
                 first = false;

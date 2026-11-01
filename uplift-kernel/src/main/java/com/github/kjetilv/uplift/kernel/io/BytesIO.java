@@ -165,7 +165,7 @@ public final class BytesIO {
     }
 
     public static String toBase64(InputStream body) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        var byteArrayOutputStream = new ByteArrayOutputStream();
         var base64Encoder = Base64.getEncoder().wrap(byteArrayOutputStream);
         try {
             body.transferTo(base64Encoder);

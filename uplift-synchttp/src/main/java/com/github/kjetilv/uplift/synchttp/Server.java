@@ -15,8 +15,8 @@ public interface Server {
 
         default Server.Open open(Processor processor) {
             return switch (run(processor)) {
-                case Servers.Result.OK<Open>(Server.Open result) -> result;
-                case Servers.Result.Denied<Server.Open>(InetSocketAddress address) -> throw new IllegalStateException(
+                case Servers.Result.OK<Open>(var result) -> result;
+                case Servers.Result.Denied<Server.Open>(var address) -> throw new IllegalStateException(
                     "Failed to open " + processor + " on " + address);
             };
         }

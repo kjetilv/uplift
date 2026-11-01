@@ -19,7 +19,7 @@ public record FlowRun<T>(Flow<T> flow, Instant start, Instant end) {
 
     @Override
     public String toString() {
-        Duration duration = truncated(Duration.between(start, end));
+        var duration = truncated(Duration.between(start, end));
         return getClass().getSimpleName() + "[" + flow.description() + " " + start + "+" + duration + "]";
     }
 }

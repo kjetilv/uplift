@@ -22,7 +22,7 @@ class LambdaLoopTest {
         var failed = new AtomicReference<Throwable>();
         var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
         try (var executor = Virtuals.executor("test")) {
-            LambdaLooper test = LambdaLoopers.looper(
+            var test = LambdaLoopers.looper(
                 "test",
                 invocationSource(responses, request, executor),
                 _ ->

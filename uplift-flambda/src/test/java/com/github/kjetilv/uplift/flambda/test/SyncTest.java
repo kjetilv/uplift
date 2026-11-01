@@ -115,7 +115,7 @@ class SyncTest {
             var count = 100;
             var latch = new CountDownLatch(count * 2);
 
-            for (int i = 0; i < count; i++) {
+            for (var i = 0; i < count; i++) {
                 var key = i;
                 executor.submit(() -> {
                     syncPoint.put(key, key * 2);

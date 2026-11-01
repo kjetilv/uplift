@@ -35,7 +35,7 @@ public class JsonAccessProvider implements AccessProvider<Path, Map<String, Obje
     public Reader<Map<String, Object>> reader(Path source) {
         try (var randomAccessFile = ChannelIO.randomAccessFile(source)) {
             MemorySegment result;
-            Arena arena1 = arena.get();
+            var arena1 = arena.get();
             try {
                 result = randomAccessFile.getChannel()
                     .map(

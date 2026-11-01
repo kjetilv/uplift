@@ -35,7 +35,7 @@ public class HttpTest {
                 run.close();
                 run.join();
             }
-            case Servers.Result.Denied(InetSocketAddress address) -> fail("Could not bind to " + address);
+            case Servers.Result.Denied(var address) -> fail("Could not bind to " + address);
         }
     }
 }

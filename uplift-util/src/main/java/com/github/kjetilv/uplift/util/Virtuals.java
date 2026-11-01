@@ -9,7 +9,7 @@ public final class Virtuals {
     }
 
     public static ThreadFactory virtualThreadFactory(String name) {
-        LongAdder threadNo = new LongAdder();
+        var threadNo = new LongAdder();
         return r -> {
             try {
                 return thread(name + "-" + threadNo.longValue(), r);

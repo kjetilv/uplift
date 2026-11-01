@@ -67,7 +67,7 @@ public class LambdaHarness implements RuntimeCloseable {
         this.name = Objects.requireNonNull(name, "name");
         this.handler = Objects.requireNonNull(lambdaHandler, "lambdaHandler");
 
-        FlambdaSettings settings = flambdaSettings != null ? flambdaSettings
+        var settings = flambdaSettings != null ? flambdaSettings
             : new FlambdaSettings(
                 name,
                 _64K,
