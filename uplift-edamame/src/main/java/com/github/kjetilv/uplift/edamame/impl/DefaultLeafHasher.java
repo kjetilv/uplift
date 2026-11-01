@@ -55,26 +55,67 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         };
     }
 
+    /// Hashes all fields compared by the type's `equals` method.
     private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashTemporal(
         HashBuilder<Bytes, K> hb,
         TemporalAccessor t
     ) {
         return switch (t) {
             case Instant i -> hashInstant(INSTANT.tag(hb), i);
-            case ChronoLocalDate l -> hashNumber(LOCAL_DATE.tag(hb), l.toEpochDay());
-            case ChronoLocalDateTime<?> l -> hashNumber(LOCAL_DATE_TIME.tag(hb), l.toEpochSecond(ZoneOffset.UTC));
-            case ChronoZonedDateTime<?> z -> hashNumber(ZONED_DATETIME.tag(hb), z.toEpochSecond());
-            case OffsetTime o -> hashNumber(OFFSET_TIME.tag(hb), o.toEpochSecond(LocalDate.EPOCH));
-            case OffsetDateTime o -> hashNumber(OFFSET_DATETIME.tag(hb), o.toEpochSecond());
-            case Year y -> hashNumber(YEAR.tag(hb), y.getValue());
-            case YearMonth y -> hashNumber(YEAR_MONTH.tag(hb), y.getYear() * 12 + y.getMonthValue());
-            case Month m -> hashNumber(MONTH.tag(hb), m.getValue());
-            case MonthDay m -> hashNumber(MONTH_DAY.tag(hb), m.getMonthValue() * 12 + m.getDayOfMonth());
-            case DayOfWeek d -> hashNumber(DAY_OF_WEEK.tag(hb), d.getValue());
-            case Era e -> hashNumber(ERA.tag(hb), e.getValue());
-            case ZoneOffset z -> hashNumber(ZONE_OFFSET.tag(hb), z.getTotalSeconds());
-            case TemporalAccessor ta -> hashString(OTHER_TEMPORAL.tag(hb), ta.toString());
+            case ChronoLocalDate d -> hashLongs(
+                hashText(LOCAL_DATE.tag(hb), d.getChronology().getId()),
+                d.toEpochDay()
+            );
+            case ChronoLocalDateTime<?> l -> hashLongs(
+                hashText(LOCAL_DATE_TIME.tag(hb), l.getChronology().getId()),
+                l.toLocalDate().toEpochDay(),
+                l.toLocalTime().toNanoOfDay()
+            );
+            case ChronoZonedDateTime<?> z -> hashLongs(
+                hashText(hashText(ZONED_DATETIME.tag(hb), z.getChronology().getId()), z.getZone().getId()),
+                z.toEpochSecond(),
+                z.toLocalTime().getNano(),
+                z.getOffset().getTotalSeconds()
+            );
+            case OffsetTime o -> hashLongs(
+                OFFSET_TIME.tag(hb),
+                o.toLocalTime().toNanoOfDay(),
+                o.getOffset().getTotalSeconds()
+            );
+            case OffsetDateTime o -> hashLongs(
+                OFFSET_DATETIME.tag(hb),
+                o.toEpochSecond(),
+                o.getNano(),
+                o.getOffset().getTotalSeconds()
+            );
+            case Year y -> hashLongs(YEAR.tag(hb), y.getValue());
+            case YearMonth y -> hashLongs(YEAR_MONTH.tag(hb), y.getYear(), y.getMonthValue());
+            case Month m -> hashLongs(MONTH.tag(hb), m.getValue());
+            case MonthDay m -> hashLongs(MONTH_DAY.tag(hb), m.getMonthValue(), m.getDayOfMonth());
+            case DayOfWeek d -> hashLongs(DAY_OF_WEEK.tag(hb), d.getValue());
+            case Era e -> hashLongs(hashText(ERA.tag(hb), e.getClass().getName()), e.getValue());
+            case ZoneOffset z -> hashLongs(ZONE_OFFSET.tag(hb), z.getTotalSeconds());
+            case TemporalAccessor ta -> hashText(hashText(OTHER_TEMPORAL.tag(hb), ta.getClass().getName()), ta.toString());
         };
+    }
+
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashLongs(
+        HashBuilder<Bytes, K> hb,
+        long... values
+    ) {
+        for (var value : values) {
+            hb.hash(Bytes.longBytes(value));
+        }
+        return hb;
+    }
+
+    /// Hashes the length, then the string. The length keeps consecutive strings apart.
+    private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashText(
+        HashBuilder<Bytes, K> hb,
+        String string
+    ) {
+        var bytes = Bytes.from(string);
+        return hb.hash(Bytes.intBytes(bytes.length())).hash(bytes);
     }
 
     private static <K extends HashKind<K>> HashBuilder<Bytes, K> hashLeaf(

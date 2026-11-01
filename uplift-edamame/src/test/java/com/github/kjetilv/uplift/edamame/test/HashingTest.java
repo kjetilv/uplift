@@ -41,13 +41,43 @@ class HashingTest {
         assertThat(second).isEqualTo(Map.of("k", List.of("x")));
     }
 
-    @Disabled("B2: MonthDay is hashed as month * 12 + day")
+    @Test
+    void equalTemporalsHashEqual() {
+        List<Supplier<Object>> temporals = List.of(
+            () -> Instant.parse("2024-01-01T12:00:00.000000001Z"),
+            () -> LocalDate.of(2024, 1, 1),
+            () -> JapaneseDate.of(2024, 1, 1),
+            () -> LocalDateTime.of(2024, 1, 1, 12, 0, 0, 1),
+            () -> ZonedDateTime.parse("2024-01-01T12:00:00.000000001+01:00[Europe/Oslo]"),
+            () -> OffsetTime.of(12, 0, 0, 1, ZoneOffset.ofHours(1)),
+            () -> OffsetDateTime.parse("2024-01-01T12:00:00.000000001+01:00"),
+            () -> Year.of(2024),
+            () -> YearMonth.of(2024, 12),
+            () -> MonthDay.of(12, 31),
+            () -> JapaneseEra.REIWA,
+            () -> LocalTime.of(12, 0, 0, 1)
+        );
+        temporals.forEach(temporal -> {
+            var one = temporal.get();
+            var other = temporal.get();
+            assertThat(one).isEqualTo(other);
+            assertThat(LEAF_HASHER.hash(one)).as("%s", one).isEqualTo(LEAF_HASHER.hash(other));
+        });
+    }
+
+    @Test
+    void zoneIdIsHashed() {
+        assertDifferentHashes(
+            ZonedDateTime.parse("2024-01-01T12:00+01:00[Europe/Oslo]"),
+            ZonedDateTime.parse("2024-01-01T12:00+01:00")
+        );
+    }
+
     @Test
     void monthDayHashesDiffer() {
         assertDifferentHashes(MonthDay.of(1, 13), MonthDay.of(2, 1));
     }
 
-    @Disabled("B2: LocalDateTime nanoseconds are not hashed")
     @Test
     void localDateTimeNanosAreHashed() {
         assertDifferentHashes(
@@ -56,7 +86,6 @@ class HashingTest {
         );
     }
 
-    @Disabled("B2: OffsetTime nanoseconds are not hashed")
     @Test
     void offsetTimeNanosAreHashed() {
         assertDifferentHashes(
@@ -65,7 +94,6 @@ class HashingTest {
         );
     }
 
-    @Disabled("B2: ZonedDateTime zone is not hashed")
     @Test
     void zonedDateTimeZoneIsHashed() {
         assertDifferentHashes(
@@ -74,7 +102,6 @@ class HashingTest {
         );
     }
 
-    @Disabled("B2: OffsetDateTime offset is not hashed")
     @Test
     void offsetDateTimeOffsetIsHashed() {
         assertDifferentHashes(
@@ -83,20 +110,17 @@ class HashingTest {
         );
     }
 
-    @Disabled("B2: ChronoLocalDate chronology is not hashed")
     @Test
     void chronologyIsHashed() {
         var isoDate = LocalDate.of(2024, 1, 1);
         assertDifferentHashes(isoDate, JapaneseDate.from(isoDate));
     }
 
-    @Disabled("B2: Era is hashed by number only")
     @Test
     void eraTypeIsHashed() {
         assertDifferentHashes(IsoEra.CE, JapaneseEra.SHOWA);
     }
 
-    @Disabled("B2: LocalDateTime nanoseconds are not hashed")
     @Test
     void noCollisionsCanonicalizerKeepsNanos() {
         var canonicalizer = noCollisionsCanonicalizer();
