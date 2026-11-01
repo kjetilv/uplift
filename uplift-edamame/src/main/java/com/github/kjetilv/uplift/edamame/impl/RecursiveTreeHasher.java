@@ -71,16 +71,22 @@ public record RecursiveTreeHasher<I, H extends HashKind<H>>(
     /// Hashes `MAP` tag, size, then for each entry: key length, key bytes and value hash.
     ///
     /// The tag separates maps from lists and leaves. The key length makes the encoding unambiguous.
+    /// Entries are hashed in [key bytes order][HashedEntry#ORDER], so the hash does not depend on the
+    /// iteration order of the map.
     private Hash<H> hashMap(Map<I, ? extends HashedTree<I, H>> tree) {
         var hb = MAP.tag(newBuilder.get());
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
         hb.hash(Bytes.intBytes(tree.size()));
-        tree.forEach((key, value) -> {
-            var keyBytes = keyHandler.bytes(key);
-            hb.hash(Bytes.intBytes(keyBytes.length()));
-            hb.hash(keyBytes);
-            hashHb.hash(value.hash());
-        });
+        tree.entrySet()
+            .stream()
+            .map(entry ->
+                new HashedEntry<>(keyHandler.bytes(entry.getKey()), entry.getValue().hash()))
+            .sorted(HashedEntry.order())
+            .forEachOrdered(entry -> {
+                hb.hash(Bytes.intBytes(entry.keyBytes().length()));
+                hb.hash(entry.keyBytes());
+                hashHb.hash(entry.valueHash());
+            });
         return hb.build();
     }
 
@@ -111,6 +117,25 @@ public record RecursiveTreeHasher<I, H extends HashKind<H>>(
                 entry -> keyHandler.normalize(entry.getKey()),
                 entry -> transform.apply(entry.getValue())
             )));
+    }
+
+    /// Map entry as hashed: key bytes and value hash.
+    private record HashedEntry<H extends HashKind<H>>(Bytes keyBytes, Hash<H> valueHash) {
+
+        /// Orders by key bytes, unsigned. Two keys may have the same bytes if a [KeyHandler] maps them so;
+        /// then the value hash decides.
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        static <H extends HashKind<H>> Comparator<HashedEntry<H>> order() {
+            return (Comparator) ORDER;
+        }
+
+        private static final Comparator<HashedEntry<?>> ORDER = (one, other) -> {
+            var keyOrder = Arrays.compareUnsigned(
+                one.keyBytes().bytes(), one.keyBytes().offset(), one.keyBytes().offset() + one.keyBytes().length(),
+                other.keyBytes().bytes(), other.keyBytes().offset(), other.keyBytes().offset() + other.keyBytes().length()
+            );
+            return keyOrder != 0 ? keyOrder : Arrays.compareUnsigned(one.valueHash().bytes(), other.valueHash().bytes());
+        };
     }
 
     private static Predicate<Map.Entry<?, ?>> empty() {

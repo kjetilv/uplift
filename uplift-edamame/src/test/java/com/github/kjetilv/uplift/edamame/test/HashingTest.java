@@ -3,6 +3,7 @@ package com.github.kjetilv.uplift.edamame.test;
 import module java.base;
 import com.github.kjetilv.uplift.edamame.Canonicalizer;
 import com.github.kjetilv.uplift.edamame.Canonicalizers;
+import com.github.kjetilv.uplift.edamame.KeyHandler;
 import com.github.kjetilv.uplift.edamame.LeafHasher;
 import com.github.kjetilv.uplift.edamame.MapsMemoizers;
 import com.github.kjetilv.uplift.edamame.PojoBytes;
@@ -10,6 +11,7 @@ import com.github.kjetilv.uplift.edamame.impl.RecursiveTreeHasher;
 import com.github.kjetilv.uplift.edamame.impl.TreeHasher;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
+import com.github.kjetilv.uplift.util.Bytes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -149,7 +151,6 @@ class HashingTest {
         assertThat(LEAF_HASHER.hash(new Left("x"))).isEqualTo(LEAF_HASHER.hash(new Left("x")));
     }
 
-    @Disabled("B4: map hash depends on key iteration order")
     @Test
     void keyOrderDoesNotAffectHash() {
         var random = new Random(42);
@@ -165,7 +166,31 @@ class HashingTest {
         });
     }
 
-    @Disabled("B4: map hash depends on key iteration order")
+    @Test
+    void keyOrderDoesNotAffectHashWhenKeyBytesAreEqual() {
+        TreeHasher<String, K128> sameBytesHasher = new RecursiveTreeHasher<>(
+            () -> HashBuilder.forKind(K128),
+            new KeyHandler<>() {
+
+                @Override
+                public String normalize(Object key) {
+                    return key.toString();
+                }
+
+                @Override
+                public Bytes bytes(String key) {
+                    return Bytes.from("same");
+                }
+            },
+            LEAF_HASHER,
+            K128
+        );
+        var keys = List.of("AaAa", "AaBB", "BBAa", "BBBB");
+
+        assertThat(sameBytesHasher.tree(map(keys)).hash())
+            .isEqualTo(sameBytesHasher.tree(map(keys.reversed())).hash());
+    }
+
     @Test
     void keyOrderDoesNotAffectSharing() {
         var memoizer = MapsMemoizers.<Long, K128>create(K128);
