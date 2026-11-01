@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.s3.auth;
 
 import module java.base;
-import com.github.kjetilv.uplift.s3.util.BinaryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +25,10 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
         super(endpointUrl, httpMethod, serviceName, regionName);
     }
 
-    /// Computes an AWS4 signature for a request, ready for inclusion as an
-    /// 'Authorization' header.
+    /// Computes an AWS4 signature for a request, for inclusion as an `Authorization` header.
     ///
-    /// @param headers         The request headers; 'Host' and 'X-Amz-Date' will be added to
+    /// @param time            Time of the request
+    /// @param headers         The request headers. `Host` and `X-Amz-Date` will be added to
     ///                        this set.
     /// @param queryParameters Any query parameters that will be added to the endpoint. The
     ///                        parameters should be specified in canonical format.
@@ -39,9 +38,10 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
     /// @param awsAccessKey    The user's AWS Access Key.
     /// @param awsSecretKey    The user's AWS Secret Key.
     /// @return The computed authorization string for the request. This value
-    /// needs to be set as the header 'Authorization' on the subsequent
+    /// needs to be set as the header `Authorization` on the subsequent
     /// HTTP request.
     public String computeSignature(
+        Instant time,
         Map<String, String> headers,
         Map<String, String> queryParameters,
         String bodyHash,
@@ -50,8 +50,7 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
     ) {
         // first get the date and time for the subsequent request, and convert
         // to ISO 8601 format for use in signature generation
-        var now = now();
-        var dateTimeStamp = formatDateTime(now);
+        var dateTimeStamp = formatDateTime(time);
 
         // update the headers with required 'x-amz-date' and 'host' values
         headers.put("x-amz-date", dateTimeStamp);
@@ -83,7 +82,7 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
         log.trace("------------------------------------");
 
         // construct the string to be signed
-        var dateStamp = formatDatestamp(now);
+        var dateStamp = formatDatestamp(time);
         var scope = dateStamp + "/" + getRegionName() + "/" + getServiceName() + "/" + AwsAuths.TERMINATOR;
         var stringToSign = AwsAuths.getStringToSign(dateTimeStamp, scope, canonicalRequest);
 
@@ -101,7 +100,7 @@ public final class AwsAuthHeaderSigner extends AbstractSigner {
 
         var credentialsAuthorizationHeader = "Credential=" + awsAccessKey + "/" + scope;
         var signedHeadersAuthorizationHeader = "SignedHeaders=" + canonicalizedHeaderNames;
-        var signatureAuthorizationHeader = "Signature=" + BinaryUtils.toHex(signature);
+        var signatureAuthorizationHeader = "Signature=" + AwsAuths.HEX.formatHex(signature);
 
         var authorizationHeader = AwsAuths.SCHEME + "-" + AwsAuths.ALGORITHM + " "
                                   + credentialsAuthorizationHeader + ", "

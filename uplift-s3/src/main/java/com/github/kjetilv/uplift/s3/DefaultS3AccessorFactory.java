@@ -5,21 +5,26 @@ import com.github.kjetilv.uplift.kernel.Env;
 
 final class DefaultS3AccessorFactory implements S3AccessorFactory {
 
-    private final AtomicReference<S3Accessor> s3Accessor = new AtomicReference<>();
-
     private final Env env;
+
+    private S3Accessor s3Accessor;
+
+    private final Object createLock = new Object();
 
     DefaultS3AccessorFactory(Env env) {
         this.env = env;
     }
 
+    /// @return The shared accessor, created on first call
     @Override
     public S3Accessor create() {
-        return s3Accessor.updateAndGet(current ->
-            current == null
-                ? S3Accessor.fromEnvironment(this.env, VIRTUAL_THREADS)
-                : current);
+        synchronized (createLock) {
+            return s3Accessor != null
+                ? s3Accessor
+                : (s3Accessor = S3Accessor.fromEnvironment(
+                    env,
+                    Executors.newVirtualThreadPerTaskExecutor()
+                ));
+        }
     }
-
-    private static final ExecutorService VIRTUAL_THREADS = Executors.newSingleThreadExecutor();
 }

@@ -4,6 +4,7 @@ import module java.base;
 import module java.net.http;
 import com.github.kjetilv.uplift.kernel.Env;
 import com.github.kjetilv.uplift.kernel.EnvLookup;
+import com.github.kjetilv.uplift.kernel.io.BytesIO;
 import com.github.kjetilv.uplift.kernel.io.Range;
 
 import static java.net.http.HttpClient.Version.HTTP_1_1;
@@ -53,15 +54,8 @@ public interface S3Accessor {
     }
 
     default Optional<RemoteInfo> remoteInfo(String name) {
-        var remoteInfo = remoteInfos(name);
-        if (remoteInfo == null || remoteInfo.isEmpty()) {
-            return Optional.empty();
-        }
-        if (remoteInfo.size() == 1) {
-            return remoteInfo.values()
-                .stream().findAny();
-        }
-        throw new IllegalArgumentException(remoteInfo.size() + " entries for prefix " + name);
+        return Optional.ofNullable(remoteInfos(name))
+            .map(remoteInfos -> remoteInfos.get(name));
     }
 
     default Optional<Instant> lastModifiedRemote(String name) {
@@ -85,16 +79,22 @@ public interface S3Accessor {
     }
 
     default void put(String remoteName, String contents) {
-        var bytes = contents.getBytes(StandardCharsets.UTF_8);
-        put(remoteName, new ByteArrayInputStream(bytes), bytes.length);
+        put(remoteName, contents.getBytes(StandardCharsets.UTF_8));
     }
 
-    default void put(String remoteName, byte[] bytes) {
-        try (var data = new ByteArrayInputStream(bytes)) {
-            put(remoteName, data, bytes.length);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to put " + bytes.length + " bytes @ " + remoteName, e);
+    /// Reads the stream fully into memory and uploads it. The stream is not closed.
+    ///
+    /// @param remoteName  Object key
+    /// @param inputStream Contents
+    /// @param length      Expected number of bytes, or a negative number if not known
+    /// @throws IllegalArgumentException If length is not negative and differs from the number of bytes read
+    default void put(String remoteName, InputStream inputStream, long length) {
+        var bytes = BytesIO.readInputStream(inputStream);
+        if (length >= 0 && bytes.length != length) {
+            throw new IllegalArgumentException(
+                "Expected " + length + " bytes for " + remoteName + ", got " + bytes.length);
         }
+        put(remoteName, bytes);
     }
 
     default void remove(String... objects) {
@@ -103,7 +103,9 @@ public interface S3Accessor {
 
     Optional<? extends InputStream> stream(String name, Range range);
 
-    void put(String remoteName, InputStream inputStream, long length);
+    /// @param remoteName Object key
+    /// @param bytes      Contents. Must not be modified while the call is in progress.
+    void put(String remoteName, byte[] bytes);
 
     Map<String, RemoteInfo> remoteInfos(String prefix);
 

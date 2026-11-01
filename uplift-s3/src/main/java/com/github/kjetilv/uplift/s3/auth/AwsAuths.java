@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.s3.auth;
 
 import module java.base;
-import com.github.kjetilv.uplift.s3.util.BinaryUtils;
+import com.github.kjetilv.uplift.s3.util.UriEncoding;
 
 import static com.github.kjetilv.uplift.s3.auth.Hashes.sha256;
 
@@ -21,9 +21,9 @@ final class AwsAuths {
     /// Examines the specified query string parameters and returns a
     /// canonicalized form.
     ///
-    /// The canonicalized query string is formed by first sorting all the query
-    /// string parameters, then URI encoding both the key and value and then
-    /// joining them, in order, separating key value pairs with an '&'.
+    /// The canonicalized query string is formed by URI encoding both the key and value,
+    /// sorting by encoded key, and then joining them, in order, separating key value
+    /// pairs with an '&'.
     ///
     /// @param parameters The query string parameters to be canonicalized.
     /// @return A canonicalized form for the specified query string parameters.
@@ -38,8 +38,8 @@ final class AwsAuths {
             var key = pair.getKey();
             var value = pair.getValue();
             sorted.put(
-                urlEncode(key, false),
-                urlEncode(value, false)
+                UriEncoding.encode(key, false),
+                UriEncoding.encode(value, false)
             );
         }
 
@@ -89,9 +89,9 @@ final class AwsAuths {
         var buffer = new StringBuilder();
         for (var key : sortedHeaders) {
             buffer
-                .append(WS.matcher(key.toLowerCase()).replaceAll(" "))
+                .append(key.toLowerCase(Locale.ROOT).trim())
                 .append(":")
-                .append(WS.matcher(headers.get(key)).replaceAll(" "));
+                .append(WS.matcher(headers.get(key).trim()).replaceAll(" "));
             buffer.append("\n");
         }
         return buffer.toString();
@@ -125,7 +125,7 @@ final class AwsAuths {
         return SCHEME + "-" + ALGORITHM + "\n" +
                dateTime + "\n" +
                scope + "\n" +
-               BinaryUtils.toHex(sha256(canonicalRequest));
+               HEX.formatHex(sha256(canonicalRequest));
     }
 
     private AwsAuths() {
@@ -146,16 +146,11 @@ final class AwsAuths {
 
     static final ZoneId UTC = ZoneId.of("UTC");
 
+    static final HexFormat HEX = HexFormat.of();
+
     private static final Pattern WS = Pattern.compile("\\s+");
 
     private static final String HMAC_SHA_256 = "HmacSHA256";
-
-    private static String urlEncode(String url, boolean keepPathSlash) {
-        var encoded = URLEncoder.encode(url, StandardCharsets.UTF_8);
-        return keepPathSlash
-            ? encoded.replace("%2F", "/")
-            : encoded;
-    }
 
     /// Returns the canonicalized resource path for the service endpoint.
     private static String getCanonicalizedResourcePath(URI endpoint) {
@@ -167,7 +162,7 @@ final class AwsAuths {
             return "/";
         }
 
-        var encodedPath = urlEncode(path, true);
+        var encodedPath = UriEncoding.encode(path, true);
         return encodedPath.startsWith("/")
             ? encodedPath
             : "/" + encodedPath;

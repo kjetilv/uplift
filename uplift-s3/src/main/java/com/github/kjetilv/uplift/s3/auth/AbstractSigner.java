@@ -4,12 +4,12 @@ import module java.base;
 
 class AbstractSigner {
 
-    static String formatDateTime(TemporalAccessor now) {
-        return AwsAuths.DATETIME_FORMATTER.format(now);
+    static String formatDateTime(Instant time) {
+        return AwsAuths.DATETIME_FORMATTER.format(time.atZone(AwsAuths.UTC));
     }
 
-    static String formatDatestamp(TemporalAccessor now) {
-        return AwsAuths.DATESTAMP_FORMATTER.format(now);
+    static String formatDatestamp(Instant time) {
+        return AwsAuths.DATESTAMP_FORMATTER.format(time.atZone(AwsAuths.UTC));
     }
 
     private final URI endpointUrl;
@@ -41,9 +41,5 @@ class AbstractSigner {
 
     String getRegionName() {
         return regionName;
-    }
-
-    protected static ZonedDateTime now() {
-        return Instant.now().atZone(AwsAuths.UTC);
     }
 }

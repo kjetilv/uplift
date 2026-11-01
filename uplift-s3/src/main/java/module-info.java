@@ -9,4 +9,7 @@ module uplift.s3 {
     requires uplift.json;
 
     exports com.github.kjetilv.uplift.s3;
+
+    exports com.github.kjetilv.uplift.s3.auth to uplift.s3.test;
+    exports com.github.kjetilv.uplift.s3.util to uplift.s3.test;
 }
