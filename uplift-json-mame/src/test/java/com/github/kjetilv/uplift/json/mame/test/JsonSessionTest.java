@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.mame.CachingJsonSessions;
+import com.github.kjetilv.uplift.json.mame.CachingSettings;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +52,25 @@ class JsonSessionTest {
         assertThat(list)
             .satisfies(JsonSessionTest::sameValues)
             .allSatisfy(m -> assertThat(m).isSameAs(foobar));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void preservesNullValues() {
+        var reference = new AtomicReference<>();
+        var jsonSession = CachingJsonSessions.create(HashKind.K256, new CachingSettings(true, false));
+        Json.instance().parse(
+            //language=json
+            """
+                { "a": null, "b": 1, "c": { "d": null } }
+                """,
+            jsonSession.callbacks(reference::set)
+        );
+
+        var map = (Map<String, Object>) reference.get();
+        assertThat(map).containsOnlyKeys("a", "b", "c");
+        assertThat(map.get("a")).isNull();
+        assertThat(((Map<String, Object>) map.get("c")).get("d")).isNull();
     }
 
     @Test

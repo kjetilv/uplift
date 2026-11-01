@@ -64,18 +64,20 @@ public final class Maps {
         return Collections.unmodifiableMap(sizedMap);
     }
 
+    /// Transforms the values of a map. Null values are passed to the transform, and null results are kept.
+    ///
+    /// @param map       Map
+    /// @param transform Value transform
+    /// @return Unmodifiable map with the same keys and transformed values
     public static <K, V, R> Map<K, R> transformMap(
         Map<K, V> map,
         Function<V, R> transform
     ) {
-        return Collections.unmodifiableMap(map.entrySet()
-            .stream()
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                entry -> transform.apply(entry.getValue()),
-                noMerge(),
-                getSizedMap(map.size())
-            )));
+        // Collectors.toMap rejects null values, so the map is filled directly
+        Map<K, R> transformed = sizedMap(map.size());
+        map.forEach((key, value) ->
+            transformed.put(key, transform.apply(value)));
+        return Collections.unmodifiableMap(transformed);
     }
 
     public static <R> BinaryOperator<R> noMerge() {
