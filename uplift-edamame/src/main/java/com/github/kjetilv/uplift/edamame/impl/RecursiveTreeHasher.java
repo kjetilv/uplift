@@ -11,6 +11,8 @@ import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.edamame.HashedTree.*;
+import static com.github.kjetilv.uplift.edamame.impl.Tag.LIST;
+import static com.github.kjetilv.uplift.edamame.impl.Tag.MAP;
 import static com.github.kjetilv.uplift.util.Collectioons.*;
 import static com.github.kjetilv.uplift.util.Maps.sizedMap;
 import static java.util.Objects.requireNonNull;
@@ -66,22 +68,27 @@ public record RecursiveTreeHasher<I, H extends HashKind<H>>(
         };
     }
 
+    /// Hashes `MAP` tag, size, then for each entry: key length, key bytes and value hash.
+    ///
+    /// The tag separates maps from lists and leaves. The key length makes the encoding unambiguous.
     private Hash<H> hashMap(Map<I, ? extends HashedTree<I, H>> tree) {
-        var hb = newBuilder.get();
+        var hb = MAP.tag(newBuilder.get());
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        var keyHb = hb.map(keyHandler::bytes);
-        hb.map(Bytes::intBytes).hash(tree.size());
+        hb.hash(Bytes.intBytes(tree.size()));
         tree.forEach((key, value) -> {
-            keyHb.hash(key);
+            var keyBytes = keyHandler.bytes(key);
+            hb.hash(Bytes.intBytes(keyBytes.length()));
+            hb.hash(keyBytes);
             hashHb.hash(value.hash());
         });
         return hb.build();
     }
 
+    /// Hashes `LIST` tag, size, then the hash of each element.
     private Hash<H> hashList(List<? extends HashedTree<I, H>> trees) {
-        var hb = newBuilder.get();
+        var hb = LIST.tag(newBuilder.get());
         HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        hb.map(Bytes::intBytes).hash(trees.size());
+        hb.hash(Bytes.intBytes(trees.size()));
         trees.stream()
             .map(HashedTree::hash)
             .forEach(hashHb::hash);

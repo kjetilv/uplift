@@ -32,7 +32,9 @@ enum Tag {
     INSTANT,
     ZONE_OFFSET,
     OTHER_TEMPORAL,
-    UUID;
+    UUID,
+    MAP,
+    LIST;
 
     private final Bytes bytes = new Bytes(new byte[] {(byte) ordinal()});
 

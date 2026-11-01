@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.edamame;
 
 import module java.base;
 
-/// Read-only access to memoized maps.
+/// Read-only access to [memoized maps][MapsMemoizers].
 ///
 /// @param <I> Id type, used to identify maps
 /// @param <K> Key type, used as keys in stored maps
