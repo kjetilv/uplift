@@ -47,6 +47,7 @@ examples/**/.mvn/maven.config
 ### Maven ###
 target/
 dependency-reduced-pom.xml
+**/.mvn/maven.config
 
 ###
 **/.classpath

@@ -3,20 +3,16 @@ package com.github.kjetilv.uplift.json.mame;
 import module java.base;
 import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
-import com.github.kjetilv.uplift.json.Token;
 import com.github.kjetilv.uplift.util.Bytes;
 
 abstract sealed class StructureClimber<H extends HashKind<H>>
     extends AbstractClimber<H>
     permits ListClimber, MapClimber {
 
-    private final HashBuilder<Bytes, H> builder;
-
-    private final HashBuilder<Hash<H>, H> hashBuilder;
+    private final Supplier<HashBuilder<Bytes, H>> newBuilder;
 
     private final Callbacks parent;
 
@@ -32,30 +28,26 @@ abstract sealed class StructureClimber<H extends HashKind<H>>
         super(hashStrategy, keyHandler, cacher);
         this.onDone = onDone;
         this.parent = parent;
-        this.builder = hashStrategy.supplier().get();
-        this.hashBuilder = this.builder.map(Hash::toBytes);
+        this.newBuilder = hashStrategy.supplier();
     }
 
     @Override
     protected final void done(HashedTree<String, H> tree) {
-        hashBuilder.hash(tree.hash());
         cache(tree);
         set(tree);
     }
 
+    /// The structure is hashed when it is complete, from the children it actually holds.
+    ///
+    /// @return Parent callbacks
     protected Callbacks close() {
-        var hash = builder.build();
-        onDone.accept(hashedTree(hash));
+        onDone.accept(hashedTree(newBuilder.get()));
         return parent;
     }
 
-    protected final String hashedField(Token.Field key) {
-        var field = normalized(key);
-        builder.hash(Bytes.from(field.getBytes()));
-        return field;
-    }
-
-    protected abstract HashedTree<String, H> hashedTree(Hash<H> hash);
+    /// @param builder New hash builder
+    /// @return Hashed tree for the completed structure
+    protected abstract HashedTree<String, H> hashedTree(HashBuilder<Bytes, H> builder);
 
     protected abstract void set(HashedTree<String, H> tree);
 }

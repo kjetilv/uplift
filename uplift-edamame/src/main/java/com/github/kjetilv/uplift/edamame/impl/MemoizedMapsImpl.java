@@ -15,8 +15,6 @@ final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMap
 
     private final Map<I, Map<K, Object>> overflow;
 
-    private final int size;
-
     MemoizedMapsImpl(
         Map<I, Hash<H>> hashes,
         Map<Hash<H>, Map<K, Object>> objects,
@@ -25,12 +23,12 @@ final class MemoizedMapsImpl<I, K, H extends HashKind<H>> implements MemoizedMap
         this.hashes = requireNonNull(hashes, "hashes");
         this.objects = requireNonNull(objects, "objects");
         this.overflow = requireNonNull(overflow, "overflow");
-        this.size = hashes.size() + overflow.size();
     }
 
+    /// Computed on each call, since the maps may be live views
     @Override
     public int size() {
-        return size;
+        return hashes.size() + overflow.size();
     }
 
     @Override

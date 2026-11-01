@@ -12,15 +12,12 @@ import com.github.kjetilv.uplift.edamame.impl.TreeHasher;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind.K128;
 import com.github.kjetilv.uplift.util.Bytes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /// Hash invariants: equal values must hash equal, different values must hash different.
-///
-/// Disabled tests document known defects, by id from the uplift-edamame review. Remove `@Disabled` when fixed.
 class HashingTest {
 
     @Test
@@ -207,7 +204,27 @@ class HashingTest {
         assertThat(memoizer.get(2L)).isSameAs(memoizer.get(1L));
     }
 
-    @Disabled("B10: doubles are hashed by raw bits, NaN values that are equal hash different")
+    @Test
+    void otherNumberClassIsHashed() {
+        var atomicInteger = new AtomicInteger(5);
+        var atomicLong = new AtomicLong(5);
+        assertThat(atomicInteger.toString()).isEqualTo(atomicLong.toString());
+        assertDifferentHashes(atomicInteger, atomicLong);
+    }
+
+    @Test
+    void equalFloatNaNsHashEqual() {
+        var nan = Float.intBitsToFloat(0x7fc00001);
+        assertThat(Float.valueOf(nan)).isEqualTo(Float.valueOf(Float.NaN));
+        assertThat(LEAF_HASHER.hash(nan)).isEqualTo(LEAF_HASHER.hash(Float.NaN));
+    }
+
+    @Test
+    void signedZerosHashDifferent() {
+        assertDifferentHashes(0.0d, -0.0d);
+        assertDifferentHashes(0.0f, -0.0f);
+    }
+
     @Test
     void equalNaNsHashEqual() {
         var nan = Double.longBitsToDouble(0x7ff8000000000001L);

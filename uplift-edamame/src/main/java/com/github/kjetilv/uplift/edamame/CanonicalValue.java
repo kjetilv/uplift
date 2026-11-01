@@ -67,6 +67,6 @@ public sealed interface CanonicalValue<H extends HashKind<H>> {
 
         private static final Null<?, HashKind.K128> NULL_K128 = new Null<>(HashKind.K128);
 
-        private static final Null<?, HashKind.K128> NULL_K256 = new Null<>(HashKind.K128);
+        private static final Null<?, HashKind.K256> NULL_K256 = new Null<>(HashKind.K256);
     }
 }

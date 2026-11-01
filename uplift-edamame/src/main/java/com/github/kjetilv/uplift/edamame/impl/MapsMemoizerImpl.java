@@ -73,9 +73,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
             new MemoizedMapsImpl<>(
                 copy ? copyOf(hashes) : unmodifiableMap(hashes),
                 copy ? copyOf(objects) : unmodifiableMap(objects),
-                overflow.isEmpty() ? Map.of()
-                    : copy ? copyOf(overflow)
-                        : unmodifiableMap(overflow)
+                copy ? copyOf(overflow) : unmodifiableMap(overflow)
             ));
     }
 
@@ -90,45 +88,54 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
                 var hash,
                 var node
             ) -> withWriteLock(() ->
-                putCanonical(
+                putIfNew(
                     identifier,
-                    hash,
-                    (Map<K, Object>) node,
-                    requireAbsent
+                    requireAbsent,
+                    () ->
+                        putCanonical(identifier, hash, (Map<K, Object>) node)
                 )
             );
-            case CanonicalValue.Collision<H> _ -> withWriteLock(() ->
-                putOverflow(identifier, (Map<K, Object>) value)
-            );
+            case CanonicalValue.Collision<H> _ -> {
+                var normalized = (Map<K, Object>) hashedTree.unwrap();
+                yield withWriteLock(() ->
+                    putIfNew(
+                        identifier,
+                        requireAbsent,
+                        () ->
+                            overflow.put(identifier, normalized)
+                    )
+                );
+            }
             case CanonicalValue<H> other -> fail("Unexpected canonical value: " + other);
         };
     }
 
-    private boolean putCanonical(
-        I identifier,
-        Hash<H> hash,
-        Map<K, Object> value,
-        boolean requireAbsent
-    ) {
-        return withWriteLock(() -> {
-            var existingHash = hashes.putIfAbsent(identifier, hash);
-            if (existingHash == null) {
-                var existingValue = objects.putIfAbsent(hash, value);
-                if (existingValue == null || existingValue.equals(value)) {
-                    return true;
-                }
-                return fail("Illegal state: " + existingValue + " != " + value);
-            }
+    /// Stores the value if the identifier is not known, in either the canonical or the overflow store.
+    /// Call with the write lock held.
+    ///
+    /// @param identifier    Identifier
+    /// @param requireAbsent If true, a known identifier is an error
+    /// @param store         Stores the value
+    /// @return true iff the value was stored
+    /// @throws IllegalArgumentException If requireAbsent is true and the identifier is known
+    private boolean putIfNew(I identifier, boolean requireAbsent, Runnable store) {
+        if (hashes.containsKey(identifier) || overflow.containsKey(identifier)) {
             if (requireAbsent) {
                 throw new IllegalArgumentException("Identifier " + identifier + " was: " + get(identifier));
             }
             return false;
-        });
+        }
+        store.run();
+        return true;
     }
 
-    private boolean putOverflow(I identifier, Map<K, Object> value) {
-        return withWriteLock(() ->
-            overflow.putIfAbsent(identifier, value) == null);
+    /// Call with the write lock held. The identifier is registered only after the value is accepted.
+    private void putCanonical(I identifier, Hash<H> hash, Map<K, Object> value) {
+        var existingValue = objects.putIfAbsent(hash, value);
+        if (existingValue != null && !existingValue.equals(value)) {
+            fail("Illegal state: " + existingValue + " != " + value);
+        }
+        hashes.put(identifier, hash);
     }
 
     private <T> T withReadLock(Supplier<T> action) {

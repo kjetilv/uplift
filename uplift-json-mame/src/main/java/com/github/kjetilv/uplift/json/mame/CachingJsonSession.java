@@ -70,9 +70,11 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
         private final Map<Object, String> keys = new ConcurrentHashMap<>();
 
+        private final Map<String, Bytes> keyBytes = new ConcurrentHashMap<>();
+
         @Override
         public Bytes bytes(String key) {
-            throw new IllegalStateException("Should not receive " + key);
+            return keyBytes.computeIfAbsent(key, Bytes::from);
         }
 
         @Override

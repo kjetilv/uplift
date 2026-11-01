@@ -47,11 +47,12 @@ public record DefaultLeafHasher<H extends HashKind<H>>(Supplier<HashBuilder<Byte
         return switch (n) {
             case Long l -> LONG.tag(hb).hash(Bytes.longBytes(l));
             case Integer i -> INT.tag(hb).hash(Bytes.intBytes(i));
-            case Double d -> DOUBLE.tag(hb).hash(Bytes.longBytes(Double.doubleToRawLongBits(d)));
-            case Float f -> FLOAT.tag(hb).hash(Bytes.intBytes(Float.floatToRawIntBits(f)));
+            // Non-raw bits: all NaN values are equal, as in Double.equals and Float.equals
+            case Double d -> DOUBLE.tag(hb).hash(Bytes.longBytes(Double.doubleToLongBits(d)));
+            case Float f -> FLOAT.tag(hb).hash(Bytes.intBytes(Float.floatToIntBits(f)));
             case Short s -> SHORT.tag(hb).hash(Bytes.intBytes(s));
             case Byte b -> BYTE.tag(hb).hash(Bytes.from(b));
-            default -> hashString(OTHER_NUMERIC.tag(hb), n.toString());
+            default -> hashString(hashText(OTHER_NUMERIC.tag(hb), n.getClass().getName()), n.toString());
         };
     }
 

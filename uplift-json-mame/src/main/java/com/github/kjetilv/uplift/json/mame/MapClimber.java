@@ -3,14 +3,18 @@ package com.github.kjetilv.uplift.json.mame;
 import module java.base;
 import com.github.kjetilv.uplift.edamame.HashedTree;
 import com.github.kjetilv.uplift.edamame.KeyHandler;
-import com.github.kjetilv.uplift.hash.Hash;
+import com.github.kjetilv.uplift.edamame.StructureHashes;
+import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.json.Callbacks;
 import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.util.Bytes;
 
 final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
 
     private final Map<String, HashedTree<String, H>> map = new HashMap<>();
+
+    private final KeyHandler<String> keyHandler;
 
     private String currentField;
 
@@ -22,11 +26,12 @@ final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
         Consumer<HashedTree<String, H>> onDone
     ) {
         super(hashStrategy, keyHandler, cacher, onDone, parent);
+        this.keyHandler = keyHandler;
     }
 
     @Override
     public Callbacks field(Token.Field key) {
-        this.currentField = hashedField(key);
+        this.currentField = normalized(key);
         return this;
     }
 
@@ -36,8 +41,8 @@ final class MapClimber<H extends HashKind<H>> extends StructureClimber<H> {
     }
 
     @Override
-    protected HashedTree<String, H> hashedTree(Hash<H> hash) {
-        return new HashedTree.Node<>(hash, map);
+    protected HashedTree<String, H> hashedTree(HashBuilder<Bytes, H> builder) {
+        return new HashedTree.Node<>(StructureHashes.map(builder, map, keyHandler), map);
     }
 
     @Override

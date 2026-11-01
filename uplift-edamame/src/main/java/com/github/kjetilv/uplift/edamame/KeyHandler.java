@@ -40,6 +40,10 @@ public interface KeyHandler<K> {
     /// Note that this method must accept [any][Object] value. The [MapsMemoizer] needs to work
     /// on `Map<?, ?>`, so it is up to the handler to resolve maps' keys into [K]'s.
     ///
+    /// Different keys in one map must normalize to different keys. If two keys normalize to the same key,
+    /// for example `1` and `"1"` with the [default handler][#defaultHandler()], storing the map fails with
+    /// [IllegalArgumentException].
+    ///
     /// @param key Key
     /// @return A K instance
     K normalize(Object key);

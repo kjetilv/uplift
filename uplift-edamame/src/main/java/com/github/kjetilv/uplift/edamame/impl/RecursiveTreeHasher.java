@@ -11,10 +11,7 @@ import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
 
 import static com.github.kjetilv.uplift.edamame.HashedTree.*;
-import static com.github.kjetilv.uplift.edamame.impl.Tag.LIST;
-import static com.github.kjetilv.uplift.edamame.impl.Tag.MAP;
 import static com.github.kjetilv.uplift.util.Collectioons.*;
-import static com.github.kjetilv.uplift.util.Maps.sizedMap;
 import static java.util.Objects.requireNonNull;
 
 /// Normalizes input trees and builds [hashed trees][HashedTree]. Stateless and thread-safe.
@@ -68,78 +65,57 @@ public record RecursiveTreeHasher<I, H extends HashKind<H>>(
         };
     }
 
-    /// Hashes `MAP` tag, size, then for each entry: key length, key bytes and value hash.
-    ///
-    /// The tag separates maps from lists and leaves. The key length makes the encoding unambiguous.
-    /// Entries are hashed in [key bytes order][HashedEntry#ORDER], so the hash does not depend on the
-    /// iteration order of the map.
     private Hash<H> hashMap(Map<I, ? extends HashedTree<I, H>> tree) {
-        var hb = MAP.tag(newBuilder.get());
-        HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        hb.hash(Bytes.intBytes(tree.size()));
-        tree.entrySet()
-            .stream()
-            .map(entry ->
-                new HashedEntry<>(keyHandler.bytes(entry.getKey()), entry.getValue().hash()))
-            .sorted(HashedEntry.order())
-            .forEachOrdered(entry -> {
-                hb.hash(Bytes.intBytes(entry.keyBytes().length()));
-                hb.hash(entry.keyBytes());
-                hashHb.hash(entry.valueHash());
-            });
-        return hb.build();
+        return StructureHasher.hashMap(newBuilder.get(), tree, keyHandler);
     }
 
-    /// Hashes `LIST` tag, size, then the hash of each element.
     private Hash<H> hashList(List<? extends HashedTree<I, H>> trees) {
-        var hb = LIST.tag(newBuilder.get());
-        HashBuilder<Hash<H>, H> hashHb = hb.map(Hash::toBytes);
-        hb.hash(Bytes.intBytes(trees.size()));
-        trees.stream()
-            .map(HashedTree::hash)
-            .forEach(hashHb::hash);
-        return hb.build();
+        return StructureHasher.hashList(newBuilder.get(), trees);
     }
 
     private Hash<H> hashLeaf(Object value) {
         return leafHasher.hash(value);
     }
 
+    /// Normalizes keys and hashes values. Entries with empty values are left out.
+    ///
+    /// @throws IllegalArgumentException If two keys normalize to the same key
     private static <MK, K extends HashKind<K>> Map<MK, HashedTree<MK, K>> transformMap(
         Map<?, ?> value,
         KeyHandler<MK> keyHandler,
         Function<Object, HashedTree<MK, K>> transform
     ) {
-        return sizedMap(value.entrySet()
+        Map<MK, HashedTree<MK, K>> transformed = HashMap.newHashMap(value.size());
+        value.forEach((key, val) -> {
+            if (!isEmpty(val)) {
+                var normalized = keyHandler.normalize(key);
+                if (transformed.putIfAbsent(normalized, transform.apply(val)) != null) {
+                    throw duplicateKey(value, key, normalized, keyHandler);
+                }
+            }
+        });
+        return Collections.unmodifiableMap(transformed);
+    }
+
+    private static IllegalArgumentException duplicateKey(
+        Map<?, ?> value,
+        Object key,
+        Object normalized,
+        KeyHandler<?> keyHandler
+    ) {
+        var otherKey = value.keySet()
             .stream()
-            .filter(empty().negate())
-            .collect(Collectors.toMap(
-                entry -> keyHandler.normalize(entry.getKey()),
-                entry -> transform.apply(entry.getValue())
-            )));
+            .filter(other -> other != key && !isEmpty(value.get(other)))
+            .filter(other -> normalized.equals(keyHandler.normalize(other)))
+            .findFirst()
+            .map(RecursiveTreeHasher::describe)
+            .orElse("?");
+        return new IllegalArgumentException(
+            "Keys " + otherKey + " and " + describe(key) + " both normalize to " + describe(normalized));
     }
 
-    /// Map entry as hashed: key bytes and value hash.
-    private record HashedEntry<H extends HashKind<H>>(Bytes keyBytes, Hash<H> valueHash) {
-
-        /// Orders by key bytes, unsigned. Two keys may have the same bytes if a [KeyHandler] maps them so;
-        /// then the value hash decides.
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        static <H extends HashKind<H>> Comparator<HashedEntry<H>> order() {
-            return (Comparator) ORDER;
-        }
-
-        private static final Comparator<HashedEntry<?>> ORDER = (one, other) -> {
-            var keyOrder = Arrays.compareUnsigned(
-                one.keyBytes().bytes(), one.keyBytes().offset(), one.keyBytes().offset() + one.keyBytes().length(),
-                other.keyBytes().bytes(), other.keyBytes().offset(), other.keyBytes().offset() + other.keyBytes().length()
-            );
-            return keyOrder != 0 ? keyOrder : Arrays.compareUnsigned(one.valueHash().bytes(), other.valueHash().bytes());
-        };
-    }
-
-    private static Predicate<Map.Entry<?, ?>> empty() {
-        return entry -> isEmpty(entry.getValue());
+    private static String describe(Object key) {
+        return key + " (" + key.getClass().getSimpleName() + ")";
     }
 
     private static boolean isEmpty(Object value) {
