@@ -83,7 +83,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
             (builder, value) ->
-                build(builder, set, value.intValue())
+                build(builder, set, (int) exact(value, Integer.MIN_VALUE, Integer.MAX_VALUE, "int"))
         );
     }
 
@@ -91,7 +91,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
             (builder, value) ->
-                build(builder, set, value.longValue())
+                build(builder, set, exact(value, Long.MIN_VALUE, Long.MAX_VALUE, "long"))
             );
     }
 
@@ -99,7 +99,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
             (builder, value) ->
-                build(builder, set, BigInteger.valueOf(value.longValue()))
+                build(builder, set, bigInteger(value))
         );
     }
 
@@ -168,7 +168,7 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
             (builder, num) ->
-                build(builder, set, Instant.ofEpochMilli(num.longValue()))
+                build(builder, set, Instant.ofEpochMilli(exact(num, Long.MIN_VALUE, Long.MAX_VALUE, "long")))
         );
     }
 
@@ -181,23 +181,23 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
             (builder, number) ->
-                build(builder, set, BigDecimal.valueOf(number.doubleValue()))
+                build(builder, set, bigDecimal(number))
         );
     }
 
     public void onShort(String name, BiConsumer<B, Short> set) {
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
-            (B builder, Long l) ->
-                build(builder, set, l.shortValue())
+            (builder, value) ->
+                build(builder, set, (short) exact(value, Short.MIN_VALUE, Short.MAX_VALUE, "short"))
         );
     }
 
     public void onByte(String name, BiConsumer<B, Byte> set) {
         numbers.put(
             new Token.Field(name.getBytes(UTF_8)),
-            (B builder, Long l) ->
-                build(builder, set, l.byteValue())
+            (builder, value) ->
+                build(builder, set, (byte) exact(value, Byte.MIN_VALUE, Byte.MAX_VALUE, "byte"))
         );
     }
 
@@ -348,5 +348,57 @@ public final class PresetCallbacksInitializer<B extends Supplier<T>, T extends R
                " obj:" + objects.size() +
                " subs:" + subs.size() +
                "]";
+    }
+
+    /// Exact conversion. The parser gives [Long], [BigInteger] or [BigDecimal].
+    ///
+    /// @throws ArithmeticException If the number has a fractional part
+    private static BigInteger bigInteger(Number number) {
+        return switch (number) {
+            case BigInteger bigInteger -> bigInteger;
+            case BigDecimal bigDecimal -> bigDecimal.toBigIntegerExact();
+            case Long l -> BigInteger.valueOf(l);
+            case Integer i -> BigInteger.valueOf(i);
+            default -> new BigDecimal(number.toString()).toBigIntegerExact();
+        };
+    }
+
+    /// Exact conversion. The parser gives [Long], [BigInteger] or [BigDecimal].
+    private static BigDecimal bigDecimal(Number number) {
+        return switch (number) {
+            case BigDecimal bigDecimal -> bigDecimal;
+            case BigInteger bigInteger -> new BigDecimal(bigInteger);
+            case Long l -> BigDecimal.valueOf(l);
+            case Integer i -> BigDecimal.valueOf(i);
+            default -> new BigDecimal(number.toString());
+        };
+    }
+
+    /// Exact conversion to an integral type. A number with a fractional part, or outside the range, is an error.
+    ///
+    /// @param number Number from the parser: [Long], [BigInteger] or [BigDecimal]
+    /// @param min    Smallest allowed value
+    /// @param max    Largest allowed value
+    /// @param type   Name of the target type, for the message
+    /// @return The value
+    /// @throws ArithmeticException If the number does not fit
+    private static long exact(Number number, long min, long max, String type) {
+        try {
+            var value = switch (number) {
+                case Long l -> l;
+                case Integer i -> (long) i;
+                case Short s -> (long) s;
+                case Byte b -> (long) b;
+                case BigInteger bigInteger -> bigInteger.longValueExact();
+                case BigDecimal bigDecimal -> bigDecimal.longValueExact();
+                default -> new BigDecimal(number.toString()).longValueExact();
+            };
+            if (value < min || value > max) {
+                throw new ArithmeticException("out of range");
+            }
+            return value;
+        } catch (ArithmeticException e) {
+            throw new ArithmeticException("Value " + number + " does not fit in " + type);
+        }
     }
 }

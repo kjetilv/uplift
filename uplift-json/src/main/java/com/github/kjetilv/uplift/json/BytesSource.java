@@ -19,4 +19,9 @@ public interface BytesSource {
     void skip(char c1, char c2, char c3, char c4);
 
     boolean done();
+
+    /// @return Approximate byte offset of the next unread byte, or -1 if not known
+    default long position() {
+        return -1;
+    }
 }

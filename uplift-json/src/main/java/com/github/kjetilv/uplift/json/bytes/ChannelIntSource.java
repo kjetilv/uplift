@@ -20,10 +20,12 @@ public class ChannelIntSource extends AbstractIntsBytesSource {
     }
 
     @Override
+    /// @return Next byte, or 0 after `len` bytes. Never reads past `len` bytes from the channel.
     protected byte nextByte() {
-        if (i++ == len) {
+        if (i >= len) {
             return 0;
         }
+        i++;
         var allocate = ByteBuffer.allocate(1);
         int read;
         try {

@@ -4,6 +4,7 @@ import module java.base;
 import com.github.kjetilv.uplift.json.bytes.*;
 import com.github.kjetilv.uplift.json.callbacks.DefaultJsonSession;
 import com.github.kjetilv.uplift.json.io.JsonWrites;
+import com.github.kjetilv.uplift.json.io.ReadException;
 import com.github.kjetilv.uplift.json.io.Sink;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -68,15 +69,16 @@ record JsonImpl(JsonSession jsonSession) implements Json {
         return parseMulti(new InputStreamIntsBytesSource(source), callbacks);
     }
 
+    /// Parses one value. Anything but whitespace after the value is an error; use
+    /// [#parseMulti(BytesSource, Callbacks)] for several values.
     @Override
     public Callbacks parse(BytesSource bytesSource, Callbacks callbacks) {
-        return JSON_PULL_PARSER.pull(
-            new BytesSourceTokens(
-                bytesSource,
-                TokenResolver.orDefault(callbacks)
-            ),
-            callbacks
-        );
+        var tokens = new BytesSourceTokens(bytesSource, TokenResolver.orDefault(callbacks));
+        var result = JSON_PULL_PARSER.pull(tokens, callbacks);
+        if (!tokens.done()) {
+            throw new ReadException("Unexpected content after value", null, tokens.position());
+        }
+        return result;
     }
 
     @Override

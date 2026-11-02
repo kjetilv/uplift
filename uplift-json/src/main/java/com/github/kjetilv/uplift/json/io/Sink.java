@@ -32,12 +32,7 @@ public sealed interface Sink extends RuntimeCloseable
     }
 
     static String quoted(String value) {
-        var quoted = value.indexOf('"') >= 0;
-        var unquoted = quoted
-            ? replaceAll(value)
-            : value;
-        var formatted = "\"%s\"".formatted(unquoted);
-        return formatted;
+        return "\"" + JsonStrings.escape(value) + "\"";
     }
 
     static String replaceAll(String value) {

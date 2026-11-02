@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.gen.test;
 
 import module java.base;
+import com.github.kjetilv.uplift.json.Json;
 import com.github.kjetilv.uplift.json.anno.JsonRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Execution(ExecutionMode.CONCURRENT)
 public class CompilerTestCase {
@@ -57,6 +59,49 @@ public class CompilerTestCase {
                 session.readAndVerify(json);
             }
         }
+    }
+
+    /// Verify that values survive reading into the record and writing back: the written JSON has the same
+    /// values as the input, as read by the plain parser.
+    ///
+    /// @param java  Java code
+    /// @param jsons JSON expressions
+    protected void verifyValuesKept(String java, String... jsons) {
+        for (var source : List.of(
+            withImports(java),
+            addPackage(withImports(java))
+        )) {
+            session = compilerSession(source);
+            assertThat(session.compilationFailed())
+                .describedAs("Compilation failed:\n%s", session.compileError())
+                .isFalse();
+            for (var json : jsons) {
+                var written = session.write(session.read(json));
+                assertThat(Json.instance().read(written))
+                    .describedAs("Written from %s: %s", json, written)
+                    .isEqualTo(Json.instance().read(json));
+            }
+        }
+    }
+
+    /// Verify that reading fails, with a message somewhere in the cause chain.
+    ///
+    /// @param java    Java code
+    /// @param json    JSON expression
+    /// @param message Expected part of a message in the cause chain
+    protected void verifyReadFails(String java, String json, String message) {
+        session = compilerSession(withImports(java));
+        assertThat(session.compilationFailed())
+            .describedAs("Compilation failed:\n%s", session.compileError())
+            .isFalse();
+        assertThatThrownBy(() -> session.read(json))
+            .describedAs("Read from %s", json)
+            .satisfies(e -> assertThat(
+                Stream.iterate(e, Objects::nonNull, Throwable::getCause)
+                    .map(Throwable::getMessage)
+                    .filter(Objects::nonNull)
+                    .anyMatch(text -> text.contains(message))
+            ).describedAs("Cause chain of %s mentions %s", e, message).isTrue());
     }
 
     /// Verify that two JSON expressions are read to equal objects.

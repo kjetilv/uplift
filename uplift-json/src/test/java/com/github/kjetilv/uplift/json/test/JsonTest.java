@@ -54,7 +54,7 @@ class JsonTest {
     ) {
         try {
             fail("Unexpected success: " + JSON.read(bytesSource));
-        } catch (IllegalStateException e) {
+        } catch (ReadException e) {
             failer.accept(e);
         } catch (Exception e) {
             fail("Unexpected exception", e);
@@ -270,7 +270,6 @@ class JsonTest {
     }
 
     @SuppressWarnings("JsonStandardCompliance")
-    @Disabled // TODO
     @Test
     void readWriteLineBreak() {
         //language=json
@@ -342,8 +341,9 @@ class JsonTest {
                 }
                 """)).
             satisfies(e -> {
+                    assertThat(e).isInstanceOf(ReadException.class);
                     assertThat(e.toString()).contains("Failed to set `bar`");
-                    assertThat(e.getCause().toString()).contains("Failed to parse: `.`");
+                    assertThat(e.toString()).contains("Unrecognized character");
                 }
             );
     }
@@ -356,8 +356,9 @@ class JsonTest {
             }
             """))
             .satisfies(e -> {
+                    assertThat(e).isInstanceOf(ReadException.class);
                     assertThat(e.toString()).contains("Failed to set `bar`");
-                    assertThat(e.getCause().toString()).contains("Failed to parse: `-`");
+                    assertThat(e.toString()).contains("Invalid number: <->");
                 }
             );
     }
@@ -374,7 +375,8 @@ class JsonTest {
                     }
                     """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: `-.`");
+            assertThat(e).isInstanceOf(ReadException.class);
+            assertThat(e.getMessage()).contains("Invalid number: <-.>");
         }
     }
 
@@ -387,8 +389,9 @@ class JsonTest {
                 }
                 """))
             .satisfies(e -> {
+                assertThat(e).isInstanceOf(ReadException.class);
                 assertThat(e.toString()).contains("Failed to set `bar`");
-                assertThat(e.getCause().toString()).contains("Failed to parse: `-.`");
+                assertThat(e.toString()).contains("Invalid number: <-.>");
             });
     }
 
@@ -401,8 +404,9 @@ class JsonTest {
                 }
                 """))
             .satisfies(e -> {
+                assertThat(e).isInstanceOf(ReadException.class);
                 assertThat(e.toString()).contains("Failed to set `bar`");
-                assertThat(e.getCause().toString()).contains("Failed to parse: `.`");
+                assertThat(e.toString()).contains("Unrecognized character");
             });
     }
 
@@ -415,7 +419,8 @@ class JsonTest {
                 }
                 """));
         } catch (Exception e) {
-            assertThat(e.getMessage()).contains("Failed to parse: `-`");
+            assertThat(e).isInstanceOf(ReadException.class);
+            assertThat(e.getMessage()).contains("Invalid number: <0.>");
         }
     }
 
@@ -485,7 +490,7 @@ class JsonTest {
                 }
                 """,
             e ->
-                assertThat(e).isInstanceOf(IllegalStateException.class)
+                assertThat(e).isInstanceOf(ReadException.class)
         );
     }
 
@@ -507,7 +512,7 @@ class JsonTest {
                 tru
                 """,
             e ->
-                assertThat(e).isInstanceOf(IllegalStateException.class)
+                assertThat(e).isInstanceOf(ReadException.class)
         );
     }
 
@@ -518,7 +523,7 @@ class JsonTest {
                 falsy
                 """,
             e ->
-                assertThat(e).isInstanceOf(IllegalStateException.class)
+                assertThat(e).isInstanceOf(ReadException.class)
         );
     }
 
@@ -529,7 +534,7 @@ class JsonTest {
                 nil
                 """,
             e ->
-                assertThat(e).isInstanceOf(IllegalStateException.class)
+                assertThat(e).isInstanceOf(ReadException.class)
         );
     }
 

@@ -21,7 +21,12 @@ public interface Tokens {
         if (token == expected) {
             return this;
         }
-        throw new ReadException("Unexpected token " + token + ", expected " + expected);
+        throw new ParseException(this, position(), token, expected.tokenType());
+    }
+
+    /// @return Approximate byte offset of the next unread byte, or -1 if not known
+    default long position() {
+        return -1;
     }
 
     Token next(boolean fieldName, boolean canonical);

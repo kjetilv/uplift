@@ -509,7 +509,7 @@ public final class DefaultFieldEvents implements FieldEvents {
     }
 
     private static String quoted(String field) {
-        return "\"%s\":".formatted(field);
+        return "\"" + JsonStrings.escape(field) + "\":";
     }
 
 }

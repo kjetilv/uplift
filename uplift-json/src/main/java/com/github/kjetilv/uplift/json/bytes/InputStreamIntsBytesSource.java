@@ -12,6 +12,8 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
 
     private int read;
 
+    private boolean ended;
+
     public InputStreamIntsBytesSource(InputStream stream) {
         this.stream = Objects.requireNonNull(stream, "stream");
         this.buffer = new byte[1024];
@@ -19,7 +21,11 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
     }
 
     @Override
+    /// @return Next byte, or 0 at the end of the stream, and on every call after that
     protected byte nextByte() {
+        if (ended) {
+            return 0;
+        }
         if (index == read) {
             index = 0;
             try {
@@ -28,7 +34,8 @@ public final class InputStreamIntsBytesSource extends AbstractIntsBytesSource {
                 throw new IllegalStateException("Failed to read from " + stream, e);
             }
             if (read < 0) {
-                return -1;
+                ended = true;
+                return 0;
             }
         }
         return buffer[index++];
