@@ -54,7 +54,7 @@ final class RandomTrees {
             case Map<?, ?> map -> {
                 var entries = new ArrayList<Map.Entry<?, ?>>(map.entrySet());
                 Collections.shuffle(entries, random);
-                var copy = new LinkedHashMap<Object, Object>();
+                var copy = new LinkedHashMap<>();
                 entries.forEach(entry ->
                     copy.put(copyLeaf(entry.getKey()), shuffledCopy(entry.getValue(), random)));
                 yield copy;
@@ -75,8 +75,8 @@ final class RandomTrees {
     ///
     /// @param stored Stored values
     static void assertEqualPartsShared(Collection<?> stored) {
-        var seenKeys = new HashMap<Object, Object>();
-        var seenValues = new HashMap<Object, Object>();
+        var seenKeys = new HashMap<>();
+        var seenValues = new HashMap<>();
         stored.forEach(value -> assertShared(value, seenKeys, seenValues));
     }
 

@@ -19,15 +19,15 @@ class SequenceOccurrenceOccTest {
         var h1 = K128.random();
         var h2 = K128.random();
         var h3 = K128.random();
-        var hashPattern = new HashPattern<K128>(h1, h2, h3);
-        var occ1 = new PatternOccurrence<K128>(hashPattern);
+        var hashPattern = new HashPattern<>(h1, h2, h3);
+        var occ1 = new PatternOccurrence<>(hashPattern);
         assertTrue(occ1.matchesNext(h1));
         assertFalse(occ1.matchesNext(h2));
         assertFalse(occ1.matchesNext(h3));
 
-        var to1 = new Occurrence<K128>(Instant.now(), h1);
-        var to2 = new Occurrence<K128>(Instant.now(), h2);
-        var to3 = new Occurrence<K128>(Instant.now(), h3);
+        var to1 = new Occurrence<>(Instant.now(), h1);
+        var to2 = new Occurrence<>(Instant.now(), h2);
+        var to3 = new Occurrence<>(Instant.now(), h3);
 
         assertTrue(occ1.matchingOccurrence(to1).isPresent());
         assertTrue(occ1.matchingOccurrence(to2).isEmpty());

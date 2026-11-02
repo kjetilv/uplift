@@ -133,7 +133,7 @@ class MapsMemoizerStorageTest {
     @Test
     void keysNormalizingToSameKeyAreRejected() {
         var memoizer = MapsMemoizers.<Long, K128>create(K128);
-        var map = new LinkedHashMap<Object, Object>();
+        var map = new LinkedHashMap<>();
         map.put(1, "x");
         map.put("1", "y");
 
@@ -148,7 +148,7 @@ class MapsMemoizerStorageTest {
     @Test
     void emptyValuesDoNotCountAsDuplicateKeys() {
         var memoizer = MapsMemoizers.<Long, K128>create(K128);
-        var map = new LinkedHashMap<Object, Object>();
+        var map = new LinkedHashMap<>();
         map.put(1, List.of());
         map.put("1", "y");
 

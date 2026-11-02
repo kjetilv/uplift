@@ -15,7 +15,7 @@ class HashPatternMatchTest {
 
     @Test
     void counts() {
-        var patternMatch = new PatternMatch<K128>(
+        var patternMatch = new PatternMatch<>(
             HASH_PATTERN,
             List.of(
                 HASH_PATTERN.at(ep(0), ep(1), ep(2)),
@@ -32,7 +32,7 @@ class HashPatternMatchTest {
 
     @Test
     void nonMatch() {
-        var patternMatch = new PatternMatch<K128>(
+        var patternMatch = new PatternMatch<>(
             HASH_PATTERN,
             List.of(
                 HASH_PATTERN.at(ep(0), ep(1)),
