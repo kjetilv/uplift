@@ -28,7 +28,6 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
             );
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public int compareTo(Pointer<T> pointer) {
             if (pointer instanceof NameChain chain) {
@@ -37,7 +36,6 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
             return 1;
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + name + ": " + next + "]";
@@ -70,7 +68,6 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
                 : elementStream();
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public int compareTo(Pointer<T> pointer) {
             return pointer instanceof Pointer.Array<T> array
@@ -82,7 +79,6 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
             return IntStream.of(index).mapToObj(Integer::toString);
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + index + ": " + elem + "]";
@@ -101,13 +97,12 @@ public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
             return leaf;
         }
 
-        @SuppressWarnings({"ComparatorMethodParameterNotUsed", "NullableProblems"})
+        @SuppressWarnings("ComparatorMethodParameterNotUsed")
         @Override
         public int compareTo(Pointer<T> pointer) {
             return -1;
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[]";

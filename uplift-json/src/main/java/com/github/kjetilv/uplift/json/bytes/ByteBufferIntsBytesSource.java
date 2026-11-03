@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
+import com.github.kjetilv.uplift.json.BytesSource;
 
 /// Source over the remaining bytes of a buffer, from its position to its limit. The buffer's position is not
 /// changed. A buffer backed by an array is scanned in place.
@@ -19,7 +20,7 @@ public final class ByteBufferIntsBytesSource extends AbstractIntsBytesSource {
     ///
     /// @param bytes Buffer
     /// @return Source
-    public static AbstractIntsBytesSource of(ByteBuffer bytes) {
+    public static BytesSource of(ByteBuffer bytes) {
         return bytes.hasArray()
             ? new ByteArrayIntsBytesSource(bytes.array(), bytes.arrayOffset() + bytes.position(), bytes.remaining())
             : new ByteBufferIntsBytesSource(bytes);

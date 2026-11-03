@@ -36,7 +36,6 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
     private Bytes lexeme = EMPTY;
 
     /// Streaming source: input is supplied by [#read(byte\[\], int, int)]
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     protected AbstractIntsBytesSource() {
         this.buf = new byte[BUFFER_SIZE];
         this.streaming = true;
@@ -189,13 +188,12 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                     ? new Bytes(buf, start, i - start)
                     : collect(start, i);
             }
+            append(start, i);
             if (b == '\\') {
-                append(start, i);
                 pos = i + 1;
                 unescape();
                 start = pos;
             } else {
-                append(start, i);
                 pos = i;
                 fail("Unescaped control character " + b);
             }
@@ -220,6 +218,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     /// Decodes the hex digits of a unicode escape, and a following low surrogate escape if the first is a high
     /// surrogate. A lone surrogate becomes U+FFFD.
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private void unicodeEscape() {
         var unit = (char) hex4();
         if (!Character.isHighSurrogate(unit)) {
@@ -334,6 +333,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         collected[index++] = b;
     }
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private void addUtf8(int codePoint) {
         if (codePoint < 0x80) {
             add((byte) codePoint);
@@ -373,10 +373,13 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private static final int REPLACEMENT = 0xFFFD;
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private static final byte BOM_1 = (byte) 0xEF;
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private static final byte BOM_2 = (byte) 0xBB;
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private static final byte BOM_3 = (byte) 0xBF;
 
     /// Number characters: digits, `.`, `e`, `E`, and `+` or `-` right after `e` or `E`. A `-` elsewhere ends the

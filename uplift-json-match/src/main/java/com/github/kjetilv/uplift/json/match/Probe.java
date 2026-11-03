@@ -50,7 +50,6 @@ public sealed interface Probe<T> permits Probe.Leaf, Probe.Node {
             );
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + Print.trace(trace) + " -> " + branches + "]";
@@ -72,7 +71,6 @@ public sealed interface Probe<T> permits Probe.Leaf, Probe.Node {
             );
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" + Print.trace(trace) + ": " + main + "]";
@@ -98,7 +96,6 @@ public sealed interface Probe<T> permits Probe.Leaf, Probe.Node {
             );
         }
 
-        @SuppressWarnings("NullableProblems")
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[" +

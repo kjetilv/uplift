@@ -11,6 +11,7 @@ public class JsonExtractorTest {
     @Test
     void canExtractSimple() {
         var main = JsonDings.json(
+            //language=json
             """
                 {
                   "foo": {
@@ -40,6 +41,7 @@ public class JsonExtractorTest {
         var differ = differ(main);
 
         var mask = JsonDings.json(
+            //language=json
             """
                 {
                   "foo": {

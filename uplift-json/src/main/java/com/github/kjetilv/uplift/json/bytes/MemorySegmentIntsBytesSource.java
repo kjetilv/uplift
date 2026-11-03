@@ -1,10 +1,32 @@
 package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
+import com.github.kjetilv.uplift.json.BytesSource;
 
 /// Source over a memory segment, copied in chunks. Use [#of(MemorySegment)] to scan a heap segment over a byte
 /// array in place.
 public final class MemorySegmentIntsBytesSource extends AbstractIntsBytesSource {
+
+    /// Creates a source for the segment: in place for a heap segment over a byte array, otherwise copying in
+    /// chunks
+    ///
+    /// @param segment Segment
+    /// @return Source
+    @SuppressWarnings("NumericCastThatLosesPrecision")
+    public static BytesSource of(MemorySegment segment) {
+        return segment.heapBase()
+            .filter(byte[].class::isInstance)
+            .map(byte[].class::cast)
+            .filter(_ -> segment.byteSize() <= Integer.MAX_VALUE)
+            .<AbstractIntsBytesSource>map(array ->
+                new ByteArrayIntsBytesSource(
+                    array,
+                    Math.toIntExact(segment.address()),
+                    (int) segment.byteSize()
+                ))
+            .orElseGet(() ->
+                new MemorySegmentIntsBytesSource(segment));
+    }
 
     private final MemorySegment segment;
 
@@ -13,21 +35,6 @@ public final class MemorySegmentIntsBytesSource extends AbstractIntsBytesSource 
     public MemorySegmentIntsBytesSource(MemorySegment segment) {
         this.segment = Objects.requireNonNull(segment, "segment");
         super();
-    }
-
-    /// Creates a source for the segment: in place for a heap segment over a byte array, otherwise copying in
-    /// chunks
-    ///
-    /// @param segment Segment
-    /// @return Source
-    public static AbstractIntsBytesSource of(MemorySegment segment) {
-        return segment.heapBase()
-            .filter(byte[].class::isInstance)
-            .map(byte[].class::cast)
-            .filter(_ -> segment.byteSize() <= Integer.MAX_VALUE)
-            .<AbstractIntsBytesSource>map(array ->
-                new ByteArrayIntsBytesSource(array, Math.toIntExact(segment.address()), (int) segment.byteSize()))
-            .orElseGet(() -> new MemorySegmentIntsBytesSource(segment));
     }
 
     @Override

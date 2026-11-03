@@ -8,7 +8,6 @@ public record Diff<T>(T expected, T found) {
         return !Objects.equals(expected, found);
     }
 
-    @SuppressWarnings("NullableProblems")
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + (isDiff() ? expected + " != " + found : expected) + "]";

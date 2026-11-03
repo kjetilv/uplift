@@ -35,6 +35,7 @@ public final class BytesSourceTokens implements Tokens {
         return scanToken(fieldName, canonical);
     }
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     private Token scanToken(boolean fieldName, boolean canonical) {
         var c = bytesSource.chomp();
         return switch (c) {
@@ -46,9 +47,9 @@ public final class BytesSourceTokens implements Tokens {
             case ']' -> Token.END_ARRAY;
             case '"' -> fieldName ? fieldToken(canonical) : stringToken();
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' -> numberToken();
-            case 'f' -> _alse();
-            case 't' -> _rue();
-            case 'n' -> _ull();
+            case 'f' -> alse();
+            case 't' -> rue();
+            case 'n' -> ull();
             case 0 -> fail("Unexpected end of stream", bytesSource.lexeme().string());
             default -> fail("Unrecognized character", Character.toString((char) c));
         };
@@ -171,17 +172,17 @@ public final class BytesSourceTokens implements Tokens {
 
     private static final BigDecimal LONG_MAX = BigDecimal.valueOf(Long.MAX_VALUE);
 
-    private Token.False _alse() {
+    private Token.False alse() {
         bytesSource.skip('a', 'l', 's', 'e');
         return Token.FALSE;
     }
 
-    private Token.True _rue() {
+    private Token.True rue() {
         bytesSource.skip('r', 'u', 'e');
         return Token.TRUE;
     }
 
-    private Token.Null _ull() {
+    private Token.Null ull() {
         bytesSource.skip('u', 'l', 'l');
         return Token.NULL;
     }

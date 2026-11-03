@@ -2,6 +2,7 @@ package com.github.kjetilv.uplift.json.match;
 
 import module java.base;
 
+@SuppressWarnings("SameParameterValue")
 final class Maps {
 
     static <K, V> Map<K, V> toMap(Stream<Map.Entry<K, V>> entryStream) {

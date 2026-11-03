@@ -17,8 +17,6 @@ class JsonMatcherTest {
 
     private StructureMatcher<Object> exactMatcher1;
 
-    private StructureMatcher<Object> exactMatcher2;
-
     @BeforeEach
     void setUp() {
         subsetMatcher1 = Structures.matcher(
@@ -33,11 +31,6 @@ class JsonMatcherTest {
         );
         exactMatcher1 = Structures.matcher(
             JsonDings.json(JSON),
-            Structures.MAPS,
-            Structures.ArrayStrategy.EXACT
-        );
-        exactMatcher2 = Structures.matcher(
-            JsonDings.map(JSON),
             Structures.MAPS,
             Structures.ArrayStrategy.EXACT
         );
