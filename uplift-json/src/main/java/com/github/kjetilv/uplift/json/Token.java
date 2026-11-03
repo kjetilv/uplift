@@ -122,14 +122,16 @@ public sealed interface Token permits
         }
     }
 
-    record Str(byte[] bytes) implements Token {
+    /// String value, decoded once
+    record Str(String value) implements Token {
 
-        public Str(String str) {
-            this(str.getBytes(UTF_8));
+        public Str(byte[] bytes) {
+            this(new String(bytes, UTF_8));
         }
 
-        public String value() {
-            return new String(bytes, UTF_8);
+        /// @return UTF-8 bytes of the value, as a new array
+        public byte[] bytes() {
+            return value.getBytes(UTF_8);
         }
 
         @Override
@@ -151,22 +153,24 @@ public sealed interface Token permits
         }
     }
 
-    record Field(byte[] bytes, int length, int hash) implements Token {
+    /// Field name, as UTF-8 bytes and as a [String], decoded once
+    ///
+    /// @param bytes  UTF-8 bytes
+    /// @param length Number of bytes
+    /// @param hash   [Arrays#hashCode(byte\[\])] of the bytes
+    /// @param value  The name
+    record Field(byte[] bytes, int length, int hash, String value) implements Token {
 
         public Field(String string) {
-            this(string.getBytes(UTF_8));
+            this(string.getBytes(UTF_8), string);
         }
 
         public Field(byte[] bytes) {
-            this(
-                bytes,
-                bytes.length,
-                Arrays.hashCode(bytes)
-            );
+            this(bytes, new String(bytes, UTF_8));
         }
 
-        public String value() {
-            return new String(bytes, UTF_8);
+        private Field(byte[] bytes, String value) {
+            this(bytes, bytes.length, Arrays.hashCode(bytes), value);
         }
 
         public byte[] bytes() {

@@ -13,7 +13,7 @@ public final class BytesSourceTokens implements Tokens {
 
     private final TokenResolver knownTokens;
 
-    private final char[] buffer = new char[1024];
+    private char[] buffer = new char[0];
 
     public BytesSourceTokens(BytesSource bytesSource, TokenResolver knownTokens) {
         this.bytesSource = bytesSource;
@@ -60,26 +60,82 @@ public final class BytesSourceTokens implements Tokens {
             var resolved = knownTokens.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
-        return new Token.Field(lexeme.copyBytes());
+        return TokenResolver.DEFAULT.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
     }
 
     private Token.Str stringToken() {
-        return new Token.Str(bytesSource.spoolString().copyBytes());
+        return new Token.Str(bytesSource.spoolString().string());
     }
 
     private Token numberToken() {
         var lexeme = bytesSource.spoolNumber();
-        var len = lexeme.length();
-        var bytes = lexeme.bytes();
-        if (!isValidNumber(bytes, len)) {
+        var number = parseNumber(lexeme.bytes(), lexeme.offset(), lexeme.length());
+        if (number == null) {
             throw new ReadException("Invalid number", "<" + lexeme.string() + ">", bytesSource.position());
         }
-        var chars = len <= buffer.length ? buffer : new char[len];
-        for (var i = 0; i < len; i++) {
-            chars[i] = (char) bytes[i];
+        return new Token.Number(number);
+    }
+
+    /// Checks the JSON number grammar, `-? (0 | [1-9][0-9]*) (.[0-9]+)? ([eE][+-]?[0-9]+)?`, and parses.
+    /// Numbers without exponent and with at most 18 digits are parsed directly; others go via [BigDecimal].
+    ///
+    /// @return [Long] for integers in range, [BigInteger] for larger integers, [BigDecimal] otherwise, or
+    ///     null if the grammar is not followed
+    private java.lang.Number parseNumber(byte[] bytes, int offset, int length) {
+        var end = offset + length;
+        var i = offset;
+        var negative = i < end && bytes[i] == '-';
+        if (negative) {
+            i++;
         }
-        var number = new BigDecimal(chars, 0, len);
-        return new Token.Number(number.scale() == 0 ? integer(number) : number);
+        var intStart = i;
+        if (i < end && bytes[i] == '0') {
+            i++;
+        } else if (i < end && bytes[i] >= '1' && bytes[i] <= '9') {
+            i = digits(bytes, i, end);
+        } else {
+            return null;
+        }
+        var intEnd = i;
+        var fracStart = i;
+        var fracEnd = i;
+        if (i < end && bytes[i] == '.') {
+            fracStart = i + 1;
+            i = fracEnd = digits(bytes, fracStart, end);
+            if (fracEnd == fracStart) {
+                return null;
+            }
+        }
+        var exponent = i < end && (bytes[i] == 'e' || bytes[i] == 'E');
+        if (exponent) {
+            i++;
+            if (i < end && (bytes[i] == '+' || bytes[i] == '-')) {
+                i++;
+            }
+            var expStart = i;
+            i = digits(bytes, expStart, end);
+            if (i == expStart) {
+                return null;
+            }
+        }
+        if (i != end) {
+            return null;
+        }
+        var scale = fracEnd - fracStart;
+        if (!exponent && intEnd - intStart + scale <= MAX_SAFE_LONG_DIGITS) {
+            var unscaled = accumulate(bytes, fracStart, fracEnd, accumulate(bytes, intStart, intEnd, 0L));
+            var signed = negative ? -unscaled : unscaled;
+            return scale == 0 ? (java.lang.Number) signed : BigDecimal.valueOf(signed, scale);
+        }
+        if (buffer.length < length) {
+            buffer = new char[Math.max(length, 64)];
+        }
+        var chars = buffer;
+        for (var j = 0; j < length; j++) {
+            chars[j] = (char) bytes[offset + j];
+        }
+        var number = new BigDecimal(chars, 0, length);
+        return number.scale() == 0 ? integer(number) : number;
     }
 
     /// @param number Number with scale 0
@@ -91,59 +147,29 @@ public final class BytesSourceTokens implements Tokens {
             : number.toBigInteger();
     }
 
+    /// @return Index of the first non-digit at or after `from`
+    private static int digits(byte[] bytes, int from, int end) {
+        var i = from;
+        while (i < end && bytes[i] >= '0' && bytes[i] <= '9') {
+            i++;
+        }
+        return i;
+    }
+
+    private static long accumulate(byte[] bytes, int from, int to, long initial) {
+        var value = initial;
+        for (var i = from; i < to; i++) {
+            value = value * 10 + bytes[i] - '0';
+        }
+        return value;
+    }
+
     /// Any integer with this many digits or fewer fits in a long
     private static final int MAX_SAFE_LONG_DIGITS = 18;
 
     private static final BigDecimal LONG_MIN = BigDecimal.valueOf(Long.MIN_VALUE);
 
     private static final BigDecimal LONG_MAX = BigDecimal.valueOf(Long.MAX_VALUE);
-
-    /// Checks the JSON number grammar: `-? (0 | [1-9][0-9]*) (.[0-9]+)? ([eE][+-]?[0-9]+)?`
-    ///
-    /// @param bytes Number characters, from index 0
-    /// @param len   Number of characters
-    /// @return true iff valid
-    private static boolean isValidNumber(byte[] bytes, int len) {
-        var i = 0;
-        if (i < len && bytes[i] == '-') {
-            i++;
-        }
-        if (i < len && bytes[i] == '0') {
-            i++;
-        } else if (i < len && bytes[i] >= '1' && bytes[i] <= '9') {
-            i = digits(bytes, i, len);
-        } else {
-            return false;
-        }
-        if (i < len && bytes[i] == '.') {
-            var start = i + 1;
-            i = digits(bytes, start, len);
-            if (i == start) {
-                return false;
-            }
-        }
-        if (i < len && (bytes[i] == 'e' || bytes[i] == 'E')) {
-            i++;
-            if (i < len && (bytes[i] == '+' || bytes[i] == '-')) {
-                i++;
-            }
-            var start = i;
-            i = digits(bytes, start, len);
-            if (i == start) {
-                return false;
-            }
-        }
-        return i == len;
-    }
-
-    /// @return Index of the first non-digit at or after `from`
-    private static int digits(byte[] bytes, int from, int len) {
-        var i = from;
-        while (i < len && bytes[i] >= '0' && bytes[i] <= '9') {
-            i++;
-        }
-        return i;
-    }
 
     private Token.False _alse() {
         bytesSource.skip('a', 'l', 's', 'e');

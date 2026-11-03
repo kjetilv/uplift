@@ -46,16 +46,24 @@ public final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
     public CanonicalValue<H> canonical(HashedTree<K, H> hashedTree) {
         return switch (hashedTree) {
             case Node<K, H>(var hash, var map) -> {
+                var known = maps.get(hash);
+                if (known != null && (noCollisions || sameAs(known, hashedTree))) {
+                    yield new CanonicalValue.Node<>(hash, known);
+                }
                 var node = transformMap(map, this::canonical);
                 var collision = noCollisions ? null : collision(node.values());
                 yield noCollisions || collision == null ? canonicalize(
-                    transformMap(node, CanonicalValue::value),
+                    compact(node),
                     hash,
                     maps,
                     t -> new CanonicalValue.Node<>(hash, t)
                 ) : collision;
             }
             case Nodes<K, H>(var hash, var list) -> {
+                var known = lists.get(hash);
+                if (known != null && (noCollisions || sameAs(known, hashedTree))) {
+                    yield new CanonicalValue.Nodes<>(hash, known);
+                }
                 var nodes = transformList(list, this::canonical);
                 var collision = noCollisions ? null : collision(nodes);
                 yield noCollisions || collision == null ? canonicalize(
@@ -65,14 +73,69 @@ public final class CanonicalSubstructuresCataloguer<K, H extends HashKind<H>>
                     t -> new CanonicalValue.Nodes<>(hash, t)
                 ) : collision;
             }
-            case HashedTree.Leaf<?, H>(var hash, var value) -> canonicalize(
-                value,
-                hash,
-                leaves,
-                t -> new CanonicalValue.Leaf<>(hash, t)
-            );
+            case HashedTree.Leaf<?, H>(var hash, var value) -> {
+                var known = leaves.get(hash);
+                yield known != null && (noCollisions || known.equals(value))
+                    ? new CanonicalValue.Leaf<>(hash, known)
+                    : canonicalize(value, hash, leaves, t -> new CanonicalValue.Leaf<>(hash, t));
+            }
             case HashedTree.Null<?, H>(var kind) -> CanonicalValue.Null.instanceFor(kind);
         };
+    }
+
+    /// Stores a map in compact form, without one entry object per entry, unless it holds a null value, which
+    /// the compact form does not allow.
+    ///
+    /// @param node Canonical values by key
+    /// @return Immutable map of the values
+    @SuppressWarnings("unchecked")
+    private static <K, H extends HashKind<H>> Map<K, Object> compact(Map<K, CanonicalValue<H>> node) {
+        var entries = new Map.Entry[node.size()];
+        var i = 0;
+        for (var entry : node.entrySet()) {
+            var value = entry.getValue().value();
+            if (value == null) {
+                return transformMap(node, CanonicalValue::value);
+            }
+            entries[i++] = Map.entry(entry.getKey(), value);
+        }
+        return Map.ofEntries(entries);
+    }
+
+    /// Compares a known canonical value with a hashed tree, without building anything. Used to confirm that a
+    /// tree with a known hash is equal to the known value, and not a hash collision.
+    ///
+    /// @param canonical Known canonical value: map, list, leaf or null
+    /// @param tree      Hashed tree
+    /// @return true iff equal
+    private boolean sameAs(Object canonical, HashedTree<K, H> tree) {
+        return switch (tree) {
+            case Node<K, H>(_, var map) ->
+                canonical instanceof Map<?, ?> known && known.size() == map.size() && sameEntries(known, map);
+            case Nodes<K, H>(_, var list) ->
+                canonical instanceof List<?> known && known.size() == list.size() && sameElements(known, list);
+            case HashedTree.Leaf<?, H>(_, var value) -> value.equals(canonical);
+            case HashedTree.Null<?, H> _ -> canonical == null;
+        };
+    }
+
+    private boolean sameEntries(Map<?, ?> known, Map<K, HashedTree<K, H>> map) {
+        for (var entry : map.entrySet()) {
+            var value = known.get(entry.getKey());
+            if (value == null && !known.containsKey(entry.getKey()) || !sameAs(value, entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean sameElements(List<?> known, List<HashedTree<K, H>> list) {
+        for (var i = 0; i < list.size(); i++) {
+            if (!sameAs(known.get(i), list.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Collision<H> collision(Iterable<CanonicalValue<H>> values) {

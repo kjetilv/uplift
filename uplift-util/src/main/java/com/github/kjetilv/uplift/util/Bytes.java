@@ -117,6 +117,6 @@ public record Bytes(byte[] bytes, int offset, int length) {
     }
 
     public byte[] copyBytes() {
-        return Arrays.copyOf(bytes, length);
+        return Arrays.copyOfRange(bytes, offset, offset + length);
     }
 }

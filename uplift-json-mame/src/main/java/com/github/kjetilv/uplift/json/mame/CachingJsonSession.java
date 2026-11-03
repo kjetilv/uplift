@@ -74,12 +74,14 @@ final class CachingJsonSession<H extends HashKind<H>> implements JsonSession {
 
         @Override
         public Bytes bytes(String key) {
-            return keyBytes.computeIfAbsent(key, Bytes::from);
+            var bytes = keyBytes.get(key);
+            return bytes != null ? bytes : keyBytes.computeIfAbsent(key, Bytes::from);
         }
 
         @Override
         public String normalize(Object key) {
-            return keys.computeIfAbsent(key, _ -> ((Token.Field) key).value());
+            var normalized = keys.get(key);
+            return normalized != null ? normalized : keys.computeIfAbsent(key, _ -> ((Token.Field) key).value());
         }
     }
 

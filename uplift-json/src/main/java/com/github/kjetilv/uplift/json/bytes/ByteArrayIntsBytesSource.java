@@ -1,23 +1,13 @@
 package com.github.kjetilv.uplift.json.bytes;
 
-import module java.base;
-
+/// Source over a byte array, scanned in place
 public final class ByteArrayIntsBytesSource extends AbstractIntsBytesSource {
 
-    private final byte[] bytes;
-
-    private int i;
-
-    private final int len;
-
     public ByteArrayIntsBytesSource(byte[] bytes) {
-        this.bytes = Objects.requireNonNull(bytes, "bytes");
-        this.len = bytes.length;
-        super();
+        super(bytes, 0, bytes.length);
     }
 
-    @Override
-    protected byte nextByte() {
-        return i == len ? 0 : bytes[i++];
+    public ByteArrayIntsBytesSource(byte[] bytes, int offset, int length) {
+        super(bytes, offset, length);
     }
 }

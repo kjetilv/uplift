@@ -2,13 +2,14 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
 
+/// Source over the next `len` bytes of a channel, read in chunks. Never reads past `len` bytes.
 public class ChannelIntSource extends AbstractIntsBytesSource {
 
     private final ReadableByteChannel channel;
 
     private final long len;
 
-    private long i;
+    private long consumed;
 
     public ChannelIntSource(ReadableByteChannel channel, long len) {
         this.channel = Objects.requireNonNull(channel, "channel");
@@ -20,21 +21,20 @@ public class ChannelIntSource extends AbstractIntsBytesSource {
     }
 
     @Override
-    /// @return Next byte, or 0 after `len` bytes. Never reads past `len` bytes from the channel.
-    protected byte nextByte() {
-        if (i >= len) {
-            return 0;
+    protected int read(byte[] dst, int offset, int length) {
+        var remaining = len - consumed;
+        if (remaining <= 0) {
+            return -1;
         }
-        i++;
-        var allocate = ByteBuffer.allocate(1);
         int read;
         try {
-            read = channel.read(allocate);
+            read = channel.read(ByteBuffer.wrap(dst, offset, (int) Math.min(length, remaining)));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read from " + channel, e);
         }
-        return read == 1
-            ? allocate.get(0)
-            : 0;
+        if (read > 0) {
+            consumed += read;
+        }
+        return read;
     }
 }

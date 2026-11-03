@@ -7,7 +7,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
 
-/// Stateful interface for building hashes from input type `T`.
+/// Stateful interface for building hashes from input type `T`. Not thread-safe: use one builder per thread at
+/// a time.
 ///
 /// Maintains an underlying hasher which can be progressively added to:
 /// * {@link #hash(Object)}
@@ -27,7 +28,7 @@ public interface HashBuilder<T, H extends HashKind<H>> {
     }
 
     static <H extends HashKind<H>> HashBuilder<Bytes, H> forKind(H kind) {
-        return new DigestiveHashBuilder<>(MessageByteDigest.get(kind), IDENTITY);
+        return DigestiveHashBuilder.forBytes(MessageByteDigest.get(kind));
     }
 
     static Function<InputStream, Stream<Bytes>> inputStream2Bytes() {

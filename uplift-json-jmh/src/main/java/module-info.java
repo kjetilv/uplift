@@ -21,6 +21,7 @@ module uplift.json.jmh {
 
     requires uplift.json.anno;
     requires uplift.json.mame;
+    requires uplift.edamame;
     requires uplift.json;
     requires uplift.hash;
     requires uplift.util;

@@ -21,12 +21,12 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public Object read(MemorySegment memorySegment) {
-        return process(new MemorySegmentIntsBytesSource(memorySegment));
+        return process(MemorySegmentIntsBytesSource.of(memorySegment));
     }
 
     @Override
     public Object read(ByteBuffer inputStream) {
-        return process(new ByteBufferIntsBytesSource(inputStream));
+        return process(ByteBufferIntsBytesSource.of(inputStream));
     }
 
     @Override
@@ -51,12 +51,12 @@ record JsonImpl(JsonSession jsonSession) implements Json {
 
     @Override
     public Callbacks parse(ByteBuffer source, Callbacks callbacks) {
-        return parse(new ByteBufferIntsBytesSource(source), callbacks);
+        return parse(ByteBufferIntsBytesSource.of(source), callbacks);
     }
 
     @Override
     public Callbacks parseMulti(ByteBuffer source, Callbacks callbacks) {
-        return parseMulti(new ByteBufferIntsBytesSource(source), callbacks);
+        return parseMulti(ByteBufferIntsBytesSource.of(source), callbacks);
     }
 
     @Override
@@ -101,8 +101,8 @@ record JsonImpl(JsonSession jsonSession) implements Json {
     }
 
     @Override
-    public Object read(char[] bytes) {
-        return read(new String(bytes));
+    public Object read(char[] chars) {
+        return process(ByteBufferIntsBytesSource.of(UTF_8.encode(CharBuffer.wrap(chars))));
     }
 
     @Override

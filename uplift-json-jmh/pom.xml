@@ -13,7 +13,6 @@
   <artifactId>uplift-json-jmh</artifactId>
 
   <properties>
-    <!-- A benchmark harness. Not published by the Gradle build either. -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
@@ -41,6 +40,11 @@
     <dependency>
       <groupId>com.github.kjetilv.uplift</groupId>
       <artifactId>uplift-json-mame</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.kjetilv.uplift</groupId>
+      <artifactId>uplift-edamame</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

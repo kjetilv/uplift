@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.Map.copyOf;
 import static java.util.Objects.requireNonNull;
 
 /// Works by hashing nodes and leaves and storing them under their hashes. When structures and/or values
@@ -24,13 +23,16 @@ import static java.util.Objects.requireNonNull;
 class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     implements MapsMemoizer<I, K> {
 
-    private final Map<I, Hash<H>> hashes = new HashMap<>();
+    // Concurrent maps: reads take no lock. Writes are serialized by the lock, and store the value before the
+    // identifier, so a reader that finds an identifier also finds its value.
 
-    private final Map<Hash<H>, Map<K, Object>> objects = new HashMap<>();
+    private final Map<I, Hash<H>> hashes = new ConcurrentHashMap<>();
 
-    private final Map<I, Map<K, Object>> overflow = new HashMap<>();
+    private final Map<Hash<H>, Map<K, Object>> objects = new ConcurrentHashMap<>();
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Map<I, Map<K, Object>> overflow = new ConcurrentHashMap<>();
+
+    private final Lock lock = new ReentrantLock();
 
     private final TreeHasher<K, H> treeHasher;
 
@@ -45,16 +47,14 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public int size() {
-        return withReadLock(() -> hashes.size() + overflow.size());
+        return hashes.size() + overflow.size();
     }
 
     @Override
     public Map<K, ?> get(I id) {
         requireNonNull(id, "id");
-        return withReadLock(() -> {
-            var hash = hashes.get(id);
-            return hash == null ? overflow.get(id) : objects.get(hash);
-        });
+        var hash = hashes.get(id);
+        return hash == null ? overflow.get(id) : objects.get(hash);
     }
 
     @Override
@@ -69,12 +69,19 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public MemoizedMaps<I, K> maps(boolean copy) {
-        return withReadLock(() ->
-            new MemoizedMapsImpl<>(
-                copy ? copyOf(hashes) : unmodifiableMap(hashes),
-                copy ? copyOf(objects) : unmodifiableMap(objects),
-                copy ? copyOf(overflow) : unmodifiableMap(overflow)
-            ));
+        return copy
+            ? withWriteLock(this::flatCopy)
+            : new MemoizedMapsImpl<>(unmodifiableMap(hashes), unmodifiableMap(objects), unmodifiableMap(overflow));
+    }
+
+    /// Call with the write lock held.
+    ///
+    /// @return Copy with one lookup per identifier, which does not retain the hashes
+    private MemoizedMaps<I, K> flatCopy() {
+        Map<I, Map<K, ?>> flat = HashMap.newHashMap(hashes.size() + overflow.size());
+        hashes.forEach((id, hash) -> flat.put(id, objects.get(hash)));
+        flat.putAll(overflow);
+        return new FlatMemoizedMaps<>(Map.copyOf(flat));
     }
 
     @SuppressWarnings({"unused"})
@@ -111,7 +118,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
     }
 
     /// Stores the value if the identifier is not known, in either the canonical or the overflow store.
-    /// Call with the write lock held.
+    /// Call with the lock held.
     ///
     /// @param identifier    Identifier
     /// @param requireAbsent If true, a known identifier is an error
@@ -129,7 +136,7 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         return true;
     }
 
-    /// Call with the write lock held. The identifier is registered only after the value is accepted.
+    /// Call with the lock held. The identifier is registered only after the value is accepted.
     private void putCanonical(I identifier, Hash<H> hash, Map<K, Object> value) {
         var existingValue = objects.putIfAbsent(hash, value);
         if (existingValue != null && !existingValue.equals(value)) {
@@ -138,12 +145,8 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
         hashes.put(identifier, hash);
     }
 
-    private <T> T withReadLock(Supplier<T> action) {
-        return withLock(lock.readLock(), action);
-    }
-
     private <T> T withWriteLock(Supplier<T> action) {
-        return withLock(lock.writeLock(), action);
+        return withLock(lock, action);
     }
 
     private String describe() {
@@ -174,6 +177,6 @@ class MapsMemoizerImpl<I, K, H extends HashKind<H>>
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + withReadLock(this::describe) + "]";
+        return getClass().getSimpleName() + "[" + describe() + "]";
     }
 }

@@ -18,12 +18,14 @@ final class CanonicalKeysCataloguer<K> implements KeyHandler<K> {
 
     @Override
     public Bytes bytes(K key) {
-        return canonicalBytes.computeIfAbsent(key, keyHandler::bytes);
+        var bytes = canonicalBytes.get(key);
+        return bytes != null ? bytes : canonicalBytes.computeIfAbsent(key, keyHandler::bytes);
     }
 
     @Override
     public K normalize(Object key) {
-        return canonicalKeys.computeIfAbsent(key, keyHandler::normalize);
+        var normalized = canonicalKeys.get(key);
+        return normalized != null ? normalized : canonicalKeys.computeIfAbsent(key, keyHandler::normalize);
     }
 
     @Override
