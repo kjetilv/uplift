@@ -17,6 +17,10 @@ final class HttpResCallbackImpl implements
 
     private final ByteBuffer buffer;
 
+    private final boolean closeConnection;
+
+    private boolean connectionHeader;
+
     private long contentLength = -1;
 
     private boolean started;
@@ -27,22 +31,24 @@ final class HttpResCallbackImpl implements
 
     private boolean failed;
 
-    HttpResCallbackImpl(WritableByteChannel out, ByteBuffer buffer) {
+    /// @param out             Connection
+    /// @param buffer          Buffer for the status line and headers
+    /// @param closeConnection True if the server will close the connection after this response. A
+    ///                        `connection: close` header is added, unless the handler sets a connection header.
+    HttpResCallbackImpl(WritableByteChannel out, ByteBuffer buffer, boolean closeConnection) {
         this.out = Objects.requireNonNull(out, "out");
         this.buffer = Objects.requireNonNull(buffer, "buffer");
+        this.closeConnection = closeConnection;
     }
 
     @Override
     public Headers status(int statusCode) {
-        started = true;
-        try {
-            buffer(ByteBuffer.wrap(VERSION));
-            buffer(statusCode(statusCode));
-            buffer(ByteBuffer.wrap(CRLF));
-            return this;
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to respond " + statusCode, e);
+        if (started) {
+            throw new IllegalStateException("Status already set");
         }
+        started = true;
+        buffer(ByteBuffer.wrap(StatusLine.bytes(statusCode)));
+        return this;
     }
 
     @Override
@@ -60,17 +66,26 @@ final class HttpResCallbackImpl implements
 
     @Override
     public Headers header(String name, Object value) {
-        buffer(ByteBuffer.wrap(name.getBytes()));
-        buffer(ByteBuffer.wrap(COLON));
-        buffer(ByteBuffer.wrap(value.toString().getBytes()));
-        buffer(ByteBuffer.wrap(CRLF));
+        if (name.equalsIgnoreCase(CONNECTION)) {
+            connectionHeader = true;
+        }
+        put(name);
+        put(COLON);
+        put(value.toString());
+        put(CRLF);
         return this;
     }
 
     @Override
     public Headers headers(String... literalHeaders) {
-        var byteBuffer = ByteBuffer.wrap(sanitize(literalHeaders).getBytes());
-        buffer(byteBuffer);
+        var lines = lines(literalHeaders);
+        if (lines.stream().anyMatch(HttpResCallbackImpl::isConnectionHeader)) {
+            connectionHeader = true;
+        }
+        buffer(ByteBuffer.wrap(lines.stream()
+            .map(line -> line + "\r\n")
+            .collect(Collectors.joining())
+            .getBytes()));
         return this;
     }
 
@@ -82,7 +97,9 @@ final class HttpResCallbackImpl implements
     @Override
     public Body contentLength(long contentLength) {
         this.contentLength = contentLength;
-        header("content-length", String.valueOf(this.contentLength));
+        put(CONTENT_LENGTH);
+        putDigits(contentLength);
+        put(CRLF);
         return this;
     }
 
@@ -109,9 +126,17 @@ final class HttpResCallbackImpl implements
                 flushHeaders();
             } else {
                 checkDeclaredLength(bytes.length);
-                flushHeaders();
-                var written = stream(ByteBuffer.wrap(bytes));
-                checkWrittenLength(written);
+                endHeaders();
+                if (bytes.length <= buffer.remaining()) {
+                    var headerLength = buffer.position();
+                    buffer.put(bytes);
+                    var written = stream(buffer.flip());
+                    checkWrittenLength(written.minus(headerLength));
+                } else {
+                    var headerLength = buffer.flip().remaining();
+                    var written = stream(buffer, ByteBuffer.wrap(bytes));
+                    checkWrittenLength(written.minus(headerLength));
+                }
             }
         });
     }
@@ -178,9 +203,10 @@ final class HttpResCallbackImpl implements
         }
     }
 
+    /// Copies the body through the header buffer, which is free once the headers are written
     private WriteResult transferFrom(ReadableByteChannel body) {
         var written = new WriteResult();
-        var buffer = ByteBuffer.allocateDirect(8192);
+        buffer.clear();
         while (!written.terminated() && Utils.didRead(body, buffer)) {
             written = written.add(stream(buffer));
             buffer.clear();
@@ -189,69 +215,156 @@ final class HttpResCallbackImpl implements
     }
 
     private void flushHeaders() {
-        buffer(ByteBuffer.wrap(CRLF));
-        buffer.flip();
-        committed = true;
-        stream(buffer);
+        endHeaders();
+        stream(buffer.flip());
     }
 
+    /// Adds the last header lines and the empty line to the buffer
+    private void endHeaders() {
+        if (closeConnection && !connectionHeader) {
+            header(CONNECTION, "close");
+        }
+        put(CRLF);
+        committed = true;
+    }
+
+    /// Adds a string to the header buffer. ASCII is copied directly, anything else is encoded as UTF-8.
+    private void put(String string) {
+        var length = string.length();
+        if (length <= buffer.remaining()) {
+            if (done) {
+                throw new IllegalStateException("Already done");
+            }
+            var start = buffer.position();
+            for (var i = 0; i < length; i++) {
+                var c = string.charAt(i);
+                if (c >= 0x80) {
+                    buffer.position(start);
+                    buffer(ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8)));
+                    return;
+                }
+                buffer.put((byte) c);
+            }
+        } else {
+            buffer(ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8)));
+        }
+    }
+
+    private void putDigits(long value) {
+        if (value < 0 || MAX_DIGITS > buffer.remaining()) {
+            put(Long.toString(value));
+            return;
+        }
+        var digits = 1;
+        for (var rest = value / 10; rest > 0; rest /= 10) {
+            digits++;
+        }
+        var position = buffer.position();
+        var rest = value;
+        for (var i = digits - 1; i >= 0; i--) {
+            buffer.put(position + i, (byte) ('0' + rest % 10));
+            rest /= 10;
+        }
+        buffer.position(position + digits);
+    }
+
+    /// Adds to the header buffer. If the buffer is full, it is written to the connection first, so the
+    /// header section has no size limit.
     private void buffer(ByteBuffer delta) {
         if (done) {
             throw new IllegalStateException("Already done");
         }
-        try {
-            this.buffer.put(delta);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to write " + delta + ", capacity: " + buffer.capacity(), e);
+        if (delta.remaining() > buffer.remaining()) {
+            buffer.flip();
+            committed = true;
+            stream(buffer);
+            buffer.clear();
+            if (delta.remaining() > buffer.remaining()) {
+                stream(delta);
+                return;
+            }
         }
+        buffer.put(delta);
     }
 
     private WriteResult stream(ByteBuffer buffer) {
-        var written = 0;
+        var written = 0L;
         try {
             while (buffer.hasRemaining()) {
                 written += out.write(buffer);
             }
             return new WriteResult(written, false);
         } catch (Exception e) {
-            if (Throwables.clientFailure(e)) {
-                log.warn("Failed to write {}, connection was closed: {}", buffer, Throwables.summary(e));
-                return new WriteResult(written, true);
-            } else {
-                throw new IllegalArgumentException("Failed to write " + buffer, e);
-            }
+            return failed(e, written, buffer);
         }
     }
 
-    private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
+    /// Writes the buffers in order, with a gathering write if the channel supports it
+    private WriteResult stream(ByteBuffer first, ByteBuffer second) {
+        var written = 0L;
+        try {
+            if (out instanceof GatheringByteChannel gathering) {
+                var buffers = new ByteBuffer[] {first, second};
+                while (second.hasRemaining()) {
+                    written += gathering.write(buffers);
+                }
+            } else {
+                written += stream(first).count();
+                written += stream(second).count();
+            }
+            return new WriteResult(written, false);
+        } catch (Exception e) {
+            return failed(e, written, second);
+        }
+    }
 
-    private static final byte[] COLON = ": ".getBytes();
+    private static WriteResult failed(Exception e, long written, ByteBuffer buffer) {
+        if (Throwables.clientFailure(e)) {
+            log.warn("Failed to write {}, connection was closed: {}", buffer, Throwables.summary(e));
+            return new WriteResult(written, true);
+        }
+        throw new IllegalArgumentException("Failed to write " + buffer, e);
+    }
 
-    private static final byte[] CRLF = "\r\n".getBytes();
+    private static final String COLON = ": ";
 
-    private static String sanitize(String... literalHeaders) {
+    private static final String CRLF = "\r\n";
+
+    private static final String CONTENT_LENGTH = "content-length: ";
+
+    /// Digits in Long.MAX_VALUE
+    private static final int MAX_DIGITS = 19;
+
+    private static final String CONNECTION = "connection";
+
+    private static boolean isConnectionHeader(String line) {
+        return line.regionMatches(true, 0, CONNECTION + ":", 0, CONNECTION.length() + 1);
+    }
+
+    /// @return Header lines, without line breaks and blank lines. A blank line would end the header section.
+    private static List<String> lines(String... literalHeaders) {
         return Arrays.stream(literalHeaders)
             .map(header -> header.split("\n"))
             .flatMap(Arrays::stream)
             .map(String::trim)
-            .flatMap(line ->
-                Stream.of(line, "\r\n"))
-            .collect(Collectors.joining());
+            .filter(line -> !line.isEmpty())
+            .toList();
     }
 
-    private static ByteBuffer statusCode(int code) {
-        return ByteBuffer.wrap(String.valueOf(code).getBytes());
-    }
+    private record WriteResult(long count, boolean terminated) {
 
-    private record WriteResult(int count, boolean terminated) {
         private WriteResult() {
             this(0, false);
         }
 
-        public WriteResult add(WriteResult stream) {
+        WriteResult add(WriteResult stream) {
             return terminated
                 ? this
                 : new WriteResult(count + stream.count(), stream.terminated());
+        }
+
+        WriteResult minus(long bytes) {
+            return new WriteResult(count - bytes, terminated);
         }
     }
 

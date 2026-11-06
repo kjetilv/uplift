@@ -4,16 +4,17 @@
 
 ### Status
 
-All identified bottlenecks have been addressed. Latest benchmark:
+Latest benchmark (2026-11-06, after review sections A, B and C, macOS ARM, loopback):
 
 | Benchmark | Score (ops/s) | Error |
 |---|---|---|
-| Netty | 19,949 | +/- 151 |
-| upliftSynchttp | 15,301 | +/- 412 |
+| Netty | 17,990 | +/- 1,462 |
+| upliftSynchttp | 17,102 | +/- 946 |
 
-Throughput up ~88% from baseline (8,151 -> 15,301). Gap to Netty stabilizes at ~1.3x.
-The remaining delta is fundamental: Netty's event loop with epoll/kqueue vs blocking
-NIO on virtual threads, plus Netty's optimized buffer pooling and zero-copy pipeline.
+The gap to Netty in `HttpBenchmark` is now about 1.05x. The earlier note that the remaining
+~1.3x gap was fundamental did not hold: most of it was per-request allocation (a direct
+ByteBuffer per header lookup caused heavy GC) and two writes per response.
+`HttpBenchmark` is dominated by the JDK HttpClient; use `RawSocketBenchmark` for server cost.
 
 ### What was done
 
@@ -47,6 +48,21 @@ NIO on virtual threads, plus Netty's optimized buffer pooling and zero-copy pipe
 | + body(byte[]) shortcut | 15,027 | +/- 221 | 1.2x |
 | + all remaining optimizations | 14,631 | +/- 209 | 1.3x |
 | + resSegments pool fix | 15,301 | +/- 412 | 1.3x |
+| 2026-11-06, after A (correctness) fixes | 14,549 | +/- 577 | 1.24x |
+| + B (protocol) fixes | 14,254 | +/- 1,281 | 1.25x |
+| + C (allocation-free headers, single write, TCP_NODELAY) | 17,102 | +/- 946 | 1.05x |
+
+`RawSocketBenchmark` (added 2026-11-06) measures the server without the JDK HttpClient:
+one keep-alive connection, browser-like headers, handler reads headers and query parameters.
+Run: `java --enable-preview --add-modules jdk.incubator.vector -jar target/*-jmh.jar
+'.*\.(RawSocketBenchmark|HttpBenchmark)\..*' -jvmArgsAppend '--enable-preview --add-modules
+jdk.incubator.vector' -prof gc`
+
+| Stage | requestResponse ops/s | pipelined ops/s | B/op |
+|---|---|---|---|
+| After A | 26,440 +/- 2,327 | 164,143 +/- 11,083 | 4,680 |
+| After B | 26,717 +/- 872 | 163,511 +/- 8,967 | 5,968 |
+| After C | 38,327 +/- 232 | 231,177 +/- 16,956 | 1,424 |
 
 ### Key files
 
@@ -62,33 +78,55 @@ NIO on virtual threads, plus Netty's optimized buffer pooling and zero-copy pipe
 
 ### Architecture notes
 
-Updated 2026-11-06 (correctness fixes: pool race, split reads, pipelining, body limits,
-handler failures):
+Updated 2026-11-06 (review sections A, B and C):
 
+Connections (`DefaultServer`, `Connection`):
 - `Server.Processor.serve(in, out)` serves one whole connection, on its own thread.
-  `DefaultServer` calls it once per connection, then closes the socket
-- `HttpCallbackProcessor` owns two `Segments` pools (thread-safe): `reqSegments` for
-  request parsing and `resSegments` for response header buffering. Each connection
-  holds one segment from each pool until it closes
+  `DefaultServer` wraps each socket in a `Connection`, sets `TCP_NODELAY`, and closes it
+  afterwards with a lingering close (shutdown output, discard input up to 1 s / 1 MiB),
+  so that a TCP reset does not lose the last response
+- Read timeout (default 60 s, `Servers.create(address, readTimeout)`): `Connection`
+  records when a blocking read starts; a background thread closes connections whose
+  read has waited too long. Covers idle keep-alive and slow clients
+- The accept loop logs failures and continues after a pause
+- `Servers.create` removes its shutdown hook on close
+
+Requests (`HttpReqReader`, `RequestBody`):
+- `HttpCallbackProcessor` owns two `Segments` pools (thread-safe, lock-free deque). Each
+  connection holds one request and one response segment until it closes. An empty pool
+  allocates a new segment instead of failing
 - `HttpReqReader` is per connection. It keeps bytes read past the end of a request
   and parses them as the next request (pipelining). It searches only bytes already read
-- The request body (`BodyBytes`) is limited to `Content-Length`. No `Content-Length`
-  means no body. `Transfer-Encoding` is rejected
-- After the handler: an unread body of up to 64 KiB is drained; a larger one, or one
-  with `Expect: 100-continue`, closes the connection with a lingering close
-  (shutdown output, discard input up to 1 s / 1 MiB) to avoid TCP reset losing the response
+- Invalid or unsupported requests throw `HttpReqException` with a status: 400 (malformed,
+  bad Content-Length, both Content-Length and Transfer-Encoding), 431 (headers over 4 KiB),
+  501 (unknown method, transfer coding other than chunked), 505 (version other than 1.0/1.1).
+  The processor responds with that status, logs at WARN, and closes
+- Bodies: `BodyBytes` for Content-Length, `ChunkedBody` for `Transfer-Encoding: chunked`.
+  No body header means no body. `ChunkedBody` hands bytes read past the end of the body
+  back to the reader (`leftover()`)
+- `Expect: 100-continue`: `100 Continue` is sent when the handler first reads body bytes
+  that are not already buffered
+- After the handler: an unread body is drained up to 64 KiB; a larger one, or one the client
+  holds back waiting for 100 Continue, closes the connection
+- HTTP/1.1 keeps the connection unless `Connection: close`; HTTP/1.0 only with
+  `Connection: keep-alive`. When closing, the response gets `connection: close` unless the
+  handler set a connection header
+- Header names are compared case-insensitively in place (no allocation). Header values are
+  trimmed of spaces and tabs. `headerMap()` and `queryParametersMap()` join duplicates with `,`
+- Query parameters are parsed with the bounded `Utils.indexOf`, and names and values are
+  percent-decoded (`+` as space). `path()` is not decoded
+- `HttpReq` points into the connection's buffer; it is valid until the handler returns
+
+Responses (`HttpResCallbackImpl`):
+- Status lines with reason phrases are precomputed (`StatusLine`)
+- Headers are written into the response segment without allocating; ASCII is copied
+  directly. Headers larger than the buffer are flushed early (no size limit)
+- `body(byte[])`: a body that fits is sent in the same write as the headers, a larger one
+  with a gathering write. `body(channel)` copies through the response segment
+- `body(byte[])` and `body(String)` check the declared length before writing anything
 - `HttpResponseCallback.finish()`: a handler that set a status but did not complete
   the response gets it sent with no body. No status, or a declared length with no
   body, gives 500 and close. A handler exception gives 500 only if nothing was written
-- Query parameters are parsed with the bounded `Utils.indexOf` (vector loop plus scalar
-  tail, never past the range). `name` without `=` has value `""`; empty parameters are
-  skipped. `headerMap()` and `queryParametersMap()` join duplicate names with `,`
-- Header values are trimmed of spaces and tabs
-- Both pools are closed when `HttpCallbackProcessor.close()` is called
-- `HttpResCallbackImpl` buffers all header writes into a ByteBuffer, then flushes
-  once via `flushHeaders()` when transitioning to body writing. `body(byte[])` and
-  `body(String)` check the declared length against the body before writing anything
-- `nobody()` and `contentLength(0)` write `content-length: 0`
 
 ## Build & test
 

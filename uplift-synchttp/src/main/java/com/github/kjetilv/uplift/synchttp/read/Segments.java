@@ -29,19 +29,22 @@ public final class Segments {
             .collect(Collectors.toCollection(ConcurrentLinkedDeque::new));
     }
 
+    /// @return A segment from the pool. If the pool is empty, a new segment, which is freed by the
+    ///     garbage collector after it is released.
     public Pooled acquire() {
         var pooled = free.pollFirst();
-        if (pooled == null) {
-            throw new IllegalStateException("No more segments available: " + this);
-        }
-        return pooled;
+        return pooled == null
+            ? new Pooled(Arena.ofAuto().allocate(baseSize), baseSize, UNPOOLED)
+            : pooled;
     }
 
     public void release(Pooled pooled) {
-        if (pooled != null) {
+        if (pooled != null && pooled.index() != UNPOOLED) {
             free.offerFirst(pooled);
         }
     }
+
+    private static final int UNPOOLED = -1;
 
     /// 4KiB min
     private static final int DEFAULT_BASE_SIZE = 1 << 12;

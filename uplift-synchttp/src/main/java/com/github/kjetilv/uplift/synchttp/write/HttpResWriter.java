@@ -23,8 +23,7 @@ public class HttpResWriter {
 
     public void write(HttpRes response) {
         try (var body = response.body()) {
-            write(ByteBuffer.wrap(VERSION));
-            write(statusCode(response));
+            write(ByteBuffer.wrap(StatusLine.bytes(response.statusCode())));
 
             var wroteContentLength = false;
             for (var header : response.headers()) {
@@ -76,12 +75,6 @@ public class HttpResWriter {
         return written;
     }
 
-    private static final byte[] VERSION = "HTTP/1.1 ".getBytes();
-
     private static final byte[] LN = {'\r', '\n'};
 
-    private static ByteBuffer statusCode(HttpRes response) {
-        var statusCode = response.statusCode() + "\r\n";
-        return ByteBuffer.wrap(statusCode.getBytes());
-    }
 }

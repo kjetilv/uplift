@@ -6,5 +6,6 @@ public enum HttpMethod {
     PUT,
     DELETE,
     HEAD,
-    OPTIONS
+    OPTIONS,
+    PATCH
 }

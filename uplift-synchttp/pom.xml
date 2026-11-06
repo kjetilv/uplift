@@ -35,4 +35,34 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <!-- Tests use java.net.http, which the module itself does not need. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <compilerArgs combine.children="append">
+                <arg>--add-modules</arg>
+                <arg>java.net.http</arg>
+                <arg>--add-reads</arg>
+                <arg>uplift.synchttp=java.net.http</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-ea --add-modules ${jvm.addModules},java.net.http --add-reads uplift.synchttp=java.net.http</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

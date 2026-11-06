@@ -21,7 +21,7 @@ class HttpResWriterTest {
             ));
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200\r
+                HTTP/1.1 200 OK\r
                 foo: bar\r
                 content-length: 0\r
                 \r
@@ -51,7 +51,7 @@ class HttpResWriterTest {
         }
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200\r
+                HTTP/1.1 200 OK\r
                 foo: bar\r
                 content-length: 13\r
                 \r

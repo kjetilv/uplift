@@ -13,7 +13,15 @@ public final class Servers {
     }
 
     public static Server.Init create(InetSocketAddress address) {
-        return new DefaultServer(address);
+        return create(address, null);
+    }
+
+    /// @param address     Address
+    /// @param readTimeout Max time to wait for input, including idle time between requests on a
+    ///                    keep-alive connection. A connection that waits longer is closed. Default 60 seconds.
+    /// @return Server
+    public static Server.Init create(InetSocketAddress address, Duration readTimeout) {
+        return new DefaultServer(address, readTimeout);
     }
 
     public static Result<Server.Closed> await(

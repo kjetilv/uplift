@@ -7,32 +7,50 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 
 public record ReqHeader(
     MemorySegment segment,
-    Supplier<MemorySegment> downcasedName,
     int offset,
     int separatorOffset,
     int length
 ) {
 
-    public ReqHeader(MemorySegment segment, int offset, int separatorOffset, int length) {
-        var ref = new AtomicReference<MemorySegment>();
-        Supplier<MemorySegment> supplier = () ->
-            ref.updateAndGet(existing ->
-                existing == null
-                    ? downcase(segment, offset, separatorOffset)
-                    : existing);
-        this(segment, supplier, offset, separatorOffset, length);
-    }
-
     public boolean isContentLength() {
         return is(CONTENT_LENGTH);
     }
 
-    public boolean is(byte[] bytes) {
-        return MemorySegment.ofArray(bytes).mismatch(this.downcasedName().get()) == -1;
+    /// @param lowercaseName Name in lower case
+    /// @return True if this header has the name, ignoring case
+    public boolean is(byte[] lowercaseName) {
+        return is(MemorySegment.ofArray(lowercaseName));
     }
 
-    public boolean is(MemorySegment memorySegment) {
-        return memorySegment.mismatch(this.downcasedName().get()) == -1;
+    /// @param lowercaseName Name in lower case
+    /// @return True if this header has the name, ignoring case
+    public boolean is(MemorySegment lowercaseName) {
+        var length = nameLength();
+        if (lowercaseName.byteSize() != length) {
+            return false;
+        }
+        for (var i = 0; i < length; i++) {
+            if (lowercase(segment.get(JAVA_BYTE, offset + i)) != lowercaseName.get(JAVA_BYTE, i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// @param name Name, in ASCII
+    /// @return True if this header has the name, ignoring case
+    public boolean is(String name) {
+        var length = nameLength();
+        if (name.length() != length) {
+            return false;
+        }
+        for (var i = 0; i < length; i++) {
+            var c = name.charAt(i);
+            if (c >= 0x80 || lowercase(segment.get(JAVA_BYTE, offset + i)) != lowercase((byte) c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String name() {
@@ -62,23 +80,8 @@ public record ReqHeader(
         return b == ' ' || b == '\t';
     }
 
-    private static final char A = 'A';
-
-    private static final char Z = 'Z';
-
-    private static MemorySegment downcase(MemorySegment segment, int offset, int separatorOffset) {
-        var length = separatorOffset - offset;
-        var downcased = ByteBuffer.allocateDirect(length);
-        var input = segment.asSlice(offset, length).asByteBuffer();
-        downcased.put(input);
-        for (var i = 0; i < length; i++) {
-            var c = downcased.get(i);
-            if (A <= c && c <= Z) {
-                downcased.put(i, (byte) (c + 32));
-            }
-        }
-        downcased.flip();
-        return MemorySegment.ofBuffer(downcased);
+    private static byte lowercase(byte b) {
+        return b >= 'A' && b <= 'Z' ? (byte) (b + ('a' - 'A')) : b;
     }
 
     @Override

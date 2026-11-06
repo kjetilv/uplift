@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
-import module java.net.http;
 import com.github.kjetilv.uplift.util.Print;
 import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import org.slf4j.Logger;

@@ -15,6 +15,8 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 /// Bytes read past the end of a request are kept, and parsed as the start of the next request.
 ///
 /// The request line and headers must fit in the buffer.
+///
+/// A request that cannot be served gives an [HttpReqException] with the status to respond with.
 public final class HttpReqReader {
 
     public static HttpReqReader defaultReader() {
@@ -36,10 +38,10 @@ public final class HttpReqReader {
     private boolean eof;
 
     /// Body of the last request read
-    private BodyBytes body;
+    private RequestBody body;
 
-    /// Start of the request after the last request read
-    private int nextStart;
+    /// Start of the body of the last request read
+    private int bodyStart;
 
     public HttpReqReader(MemorySegment segment) {
         this.segment = Objects.requireNonNull(segment, "segment");
@@ -49,9 +51,18 @@ public final class HttpReqReader {
 
     /// @param channel Channel
     /// @return The next request, or null if the channel was closed before a new request started
+    public HttpReq read(ReadableByteChannel channel) {
+        return read(channel, null);
+    }
+
+    /// @param channel      Channel
+    /// @param sendContinue Sends `100 Continue` to the client. Called before the body is first read from the
+    ///                     connection, if the request has `Expect: 100-continue`. May be null.
+    /// @return The next request, or null if the channel was closed before a new request started
+    /// @throws HttpReqException     If the request is not valid, or not supported
     /// @throws IllegalStateException If the request could not be read, or if the body of the previous request
     ///                               was not read from the channel, see [#reusable()]
-    public HttpReq read(ReadableByteChannel channel) {
+    public HttpReq read(ReadableByteChannel channel, Runnable sendContinue) {
         try {
             advance();
             var requestLineFeed = skipEmptyLines(channel);
@@ -60,8 +71,10 @@ public final class HttpReqReader {
             }
             var reqLine = requestLine(lineEnd(0, requestLineFeed));
             var headers = new ReqHeaders(headers(channel, requestLineFeed).toArray(ReqHeader[]::new));
-            this.body = body(channel, headers);
+            this.body = body(channel, headers, sendContinue);
             return new HttpReq(reqLine, headers, body, null);
+        } catch (HttpReqException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read from " + channel, e);
         }
@@ -70,23 +83,16 @@ public final class HttpReqReader {
     /// @return True if the next request can be read. This is false if the body of the last request
     ///     was not fully read, and some of it is still unread on the connection.
     public boolean reusable() {
-        return body == null || body.unreadFromChannel() == 0;
+        return body == null || body.complete();
     }
 
     /// Reads and discards the unread body of the last request, if no more than `limit` bytes of it
-    /// remain on the connection.
+    /// remain on the connection. Does nothing if the client waits for `100 Continue`.
     ///
     /// @param limit Max number of bytes to read
     /// @return True if the next request can be read, see [#reusable()]
     public boolean drain(long limit) {
-        if (reusable()) {
-            return true;
-        }
-        if (body.unreadFromChannel() > limit) {
-            return false;
-        }
-        body.drain();
-        return reusable();
+        return reusable() || body.drain(limit);
     }
 
     private void advance() {
@@ -94,8 +100,18 @@ public final class HttpReqReader {
             if (!reusable()) {
                 throw new IllegalStateException("Body of previous request was not read: " + body);
             }
-            start = nextStart;
+            start = bodyStart + body.bufferedLength();
+            var leftover = body.leftover();
             body = null;
+            if (leftover.hasRemaining()) {
+                compact();
+                if (leftover.remaining() > size - available) {
+                    throw HttpReqException.tooLarge("Request after chunked body exceeds " + size + " bytes");
+                }
+                buffer.limit(size).position(available);
+                available += leftover.remaining();
+                buffer.put(leftover);
+            }
         }
     }
 
@@ -117,14 +133,25 @@ public final class HttpReqReader {
         var urlSpace = indexOf((byte) ' ', 0, end);
         var versionSpace = urlSpace < 0 ? -1 : indexOf((byte) ' ', urlSpace + 1, end);
         if (versionSpace < 0) {
-            throw new IllegalStateException("Malformed request line: " + string(0, end));
+            throw HttpReqException.badRequest("Malformed request line: " + string(0, end));
         }
-        return new ReqLine(segment, urlSpace + 1, versionSpace + 1, end + 1);
+        var reqLine = new ReqLine(segment, urlSpace + 1, versionSpace + 1, end + 1);
+        if (!(reqLine.isHttp11() || reqLine.isHttp10())) {
+            throw reqLine.version().startsWith("HTTP/")
+                ? HttpReqException.versionNotSupported("Version not supported: " + reqLine.version())
+                : HttpReqException.badRequest("Malformed request line: " + string(0, end));
+        }
+        try {
+            reqLine.getMethod();
+        } catch (Exception e) {
+            throw HttpReqException.notImplemented("Method not supported: " + reqLine.method());
+        }
+        return reqLine;
     }
 
     private List<ReqHeader> headers(ReadableByteChannel channel, int requestLineFeed) {
         if (requestLineFeed < 0) {
-            nextStart = available;
+            bodyStart = available;
             return List.of();
         }
         List<ReqHeader> headers = new ArrayList<>();
@@ -133,37 +160,52 @@ public final class HttpReqReader {
             var lineFeed = lineFeed(channel, lineStart);
             var end = lineEnd(lineStart, lineFeed);
             if (end == lineStart) {
-                nextStart = lineFeed < 0 ? available : lineFeed + 1;
+                bodyStart = lineFeed < 0 ? available : lineFeed + 1;
                 return headers;
             }
             var colon = indexOf((byte) ':', lineStart, end);
-            if (colon < 0) {
-                throw new IllegalStateException("Malformed header: " + string(lineStart, end));
+            if (colon <= lineStart) {
+                throw HttpReqException.badRequest("Malformed header: " + string(lineStart, end));
             }
             headers.add(new ReqHeader(segment, lineStart, colon, end - lineStart));
             if (lineFeed < 0) {
-                nextStart = available;
+                bodyStart = available;
                 return headers;
             }
             lineStart = lineFeed + 1;
         }
     }
 
-    private BodyBytes body(ReadableByteChannel channel, ReqHeaders headers) {
-        if (headers.header(TRANSFER_ENCODING) != null) {
-            throw new UnsupportedOperationException("Transfer-Encoding not supported: " + headers);
-        }
+    private RequestBody body(ReadableByteChannel channel, ReqHeaders headers, Runnable sendContinue) {
+        var transferEncoding = headers.header(TRANSFER_ENCODING);
         var contentLength = contentLength(headers);
-        if (contentLength == 0) {
-            return BodyBytes.EMPTY;
+        var expectsContinue = expectsContinue(headers) ? sendContinue : null;
+        if (transferEncoding != null) {
+            if (headers.stream().filter(header -> header.is(TRANSFER_ENCODING)).count() > 1) {
+                throw HttpReqException.badRequest("Several Transfer-Encoding headers");
+            }
+            if (contentLength >= 0) {
+                throw HttpReqException.badRequest("Both Transfer-Encoding and Content-Length");
+            }
+            if (!transferEncoding.strip().equalsIgnoreCase("chunked")) {
+                throw HttpReqException.notImplemented("Transfer-Encoding not supported: " + transferEncoding);
+            }
+            return new ChunkedBody(
+                channel,
+                segment.asSlice(bodyStart, available - bodyStart).asByteBuffer(),
+                size,
+                expectsContinue
+            );
         }
-        var bodyStart = nextStart;
+        if (contentLength <= 0) {
+            return BodyBytes.empty();
+        }
         var buffered = Math.toIntExact(Math.min(available - bodyStart, contentLength));
-        nextStart = bodyStart + buffered;
         return new BodyBytes(
             channel,
             segment.asSlice(bodyStart, buffered).asByteBuffer(),
-            contentLength - buffered
+            contentLength - buffered,
+            expectsContinue
         );
     }
 
@@ -206,7 +248,7 @@ public final class HttpReqReader {
     private boolean fill(ReadableByteChannel channel) {
         while (!eof) {
             if (available == size) {
-                throw new IllegalStateException("Request line and headers exceed " + size + " bytes");
+                throw HttpReqException.tooLarge("Request line and headers exceed " + size + " bytes");
             }
             buffer.limit(size).position(available);
             int read;
@@ -236,22 +278,50 @@ public final class HttpReqReader {
 
     private static final int DEFAULT_SIZE = 1 << 12;
 
-    private static final MemorySegment CONTENT_LENGTH =
-        MemorySegment.ofArray("content-length".getBytes(StandardCharsets.UTF_8));
-
     private static final MemorySegment TRANSFER_ENCODING =
         MemorySegment.ofArray("transfer-encoding".getBytes(StandardCharsets.UTF_8));
 
+    private static final MemorySegment EXPECT =
+        MemorySegment.ofArray("expect".getBytes(StandardCharsets.UTF_8));
+
+    /// Max digits in a content length. 18 digits always fit in a long.
+    private static final int MAX_CONTENT_LENGTH_DIGITS = 18;
+
+    /// @return The content length, or -1 if there is no Content-Length header
+    /// @throws HttpReqException If a value is not a number, or if several headers have different values
     private static long contentLength(ReqHeaders headers) {
-        var header = headers.header(CONTENT_LENGTH);
-        if (header == null || header.isBlank()) {
-            return 0L;
-        }
-        var contentLength = Long.parseLong(header.strip());
-        if (contentLength < 0) {
-            throw new IllegalStateException("Negative content-length: " + contentLength);
+        var contentLength = -1L;
+        for (var header : headers.headers()) {
+            if (header.isContentLength()) {
+                var value = contentLength(header.value());
+                if (contentLength >= 0 && value != contentLength) {
+                    throw HttpReqException.badRequest("Different Content-Length values: " + headers);
+                }
+                contentLength = value;
+            }
         }
         return contentLength;
+    }
+
+    /// @return The value, which must be digits only, see RFC 9110, section 8.6
+    private static long contentLength(String value) {
+        if (value.isEmpty() || value.length() > MAX_CONTENT_LENGTH_DIGITS) {
+            throw HttpReqException.badRequest("Invalid Content-Length: " + value);
+        }
+        var contentLength = 0L;
+        for (var i = 0; i < value.length(); i++) {
+            var c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                throw HttpReqException.badRequest("Invalid Content-Length: " + value);
+            }
+            contentLength = contentLength * 10 + (c - '0');
+        }
+        return contentLength;
+    }
+
+    private static boolean expectsContinue(ReqHeaders headers) {
+        var expect = headers.header(EXPECT);
+        return expect != null && expect.equalsIgnoreCase("100-continue");
     }
 
     @Override

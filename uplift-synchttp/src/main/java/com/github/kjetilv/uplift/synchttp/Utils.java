@@ -43,6 +43,39 @@ public final class Utils {
         return -1;
     }
 
+    /// Decodes a URL query component: `%XX` escapes, and `+` as space. Malformed escapes are kept as they are.
+    ///
+    /// @return Decoded string, from UTF-8
+    public static String decode(MemorySegment segment, long offset, long length) {
+        var start = Math.toIntExact(offset);
+        var count = Math.toIntExact(length);
+        if (indexOf((byte) '%', segment, start, count) < 0 && indexOf((byte) '+', segment, start, count) < 0) {
+            return string(segment, offset, length);
+        }
+        var bytes = segment.asSlice(offset, length).toArray(JAVA_BYTE);
+        var decoded = new byte[bytes.length];
+        var size = 0;
+        for (var i = 0; i < bytes.length; i++) {
+            var b = bytes[i];
+            if (b == '+') {
+                decoded[size++] = ' ';
+            } else if (b == '%' && i + 2 < bytes.length && hex(bytes[i + 1]) >= 0 && hex(bytes[i + 2]) >= 0) {
+                decoded[size++] = (byte) (hex(bytes[i + 1]) << 4 | hex(bytes[i + 2]));
+                i += 2;
+            } else {
+                decoded[size++] = b;
+            }
+        }
+        return new String(decoded, 0, size, UTF_8);
+    }
+
+    /// @return True if the range contains `%` or `+`, which [#decode(MemorySegment, long, long)] would change
+    public static boolean encoded(MemorySegment segment, long offset, long length) {
+        var start = Math.toIntExact(offset);
+        var count = Math.toIntExact(length);
+        return indexOf((byte) '%', segment, start, count) >= 0 || indexOf((byte) '+', segment, start, count) >= 0;
+    }
+
     public static boolean prefixed(String prefix, MemorySegment segment, long offset) {
         var bytes = prefix.getBytes(UTF_8);
         return prefixed(segment, offset, bytes);
@@ -74,6 +107,10 @@ public final class Utils {
     }
 
     private Utils() {
+    }
+
+    private static int hex(byte b) {
+        return Character.digit(b, 16);
     }
 
     private static boolean prefixed(MemorySegment segment, long offset, byte[] bytes) {

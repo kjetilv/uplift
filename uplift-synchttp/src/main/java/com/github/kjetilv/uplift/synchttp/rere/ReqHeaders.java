@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.synchttp.rere;
 
 import module java.base;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
 
@@ -19,8 +18,15 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
         return headers[index];
     }
 
+    /// @param name Name, in ASCII, any case
+    /// @return Value of the first header with the name, or null
     public String header(String name) {
-        return header(bytes(name));
+        for (var header : headers) {
+            if (header.is(name)) {
+                return header.value();
+            }
+        }
+        return null;
     }
 
     public String header(MemorySegment name) {
@@ -39,10 +45,6 @@ public record ReqHeaders(ReqHeader... headers) implements Iterable<ReqHeader> {
             }
         }
         return null;
-    }
-
-    private static byte[] bytes(String name) {
-        return name.toLowerCase(Locale.ROOT).getBytes(UTF_8);
     }
 
     @Override

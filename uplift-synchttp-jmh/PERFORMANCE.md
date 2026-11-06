@@ -1,5 +1,29 @@
 # uplift-synchttp Performance Analysis
 
+## 2026-11-06: review sections A, B and C
+
+Measured on macOS ARM over loopback, JMH 1 fork, 3 x 5 s warmup, 5 x 5 s measurement, `-prof gc`.
+`RawSocketBenchmark` was added: one keep-alive connection with a raw socket client, browser-like
+headers, and a handler that reads headers and query parameters.
+
+| Stage | HttpBenchmark uplift | HttpBenchmark netty | RawSocket requestResponse | RawSocket pipelined | B/op (raw) |
+|---|---|---|---|---|---|
+| After A (correctness) | 14,549 +/- 577 | 18,053 +/- 746 | 26,440 +/- 2,327 | 164,143 +/- 11,083 | 4,680 |
+| After B (protocol) | 14,254 +/- 1,281 | 17,829 +/- 1,855 | 26,717 +/- 872 | 163,511 +/- 8,967 | 5,968 |
+| After C (performance) | 17,102 +/- 946 | 17,990 +/- 1,462 | 38,327 +/- 232 | 231,177 +/- 16,956 | 1,424 |
+
+C combined these changes, measured together, so their separate effects are not known:
+- Header names compared in place. Before, the first lookup by name allocated a direct
+  ByteBuffer, an AtomicReference and a lambda for each header. GC time in `pipelined` fell from
+  6.1 s to 0.012 s per 25 s.
+- Response headers written into the response segment without allocation; precomputed status lines.
+- A body that fits is sent in the same write as the headers; larger bodies use a gathering write.
+- `TCP_NODELAY` on accepted sockets.
+- Channel bodies copied through the response segment instead of a new direct buffer.
+
+The sections below describe earlier work.
+
+
 Benchmark: uplift-synchttp vs Netty 4.1.118, JMH 1.37, Java 25, GraalVM, single-threaded client.
 
 ## Results

@@ -12,14 +12,14 @@ class HttpResCallbackImplTest {
     void writeSimple() {
         var baos = new ByteArrayOutputStream();
         var channel = Channels.newChannel(baos);
-        var callback = new HttpResCallbackImpl(channel, ByteBuffer.allocate(8192));
+        var callback = new HttpResCallbackImpl(channel, ByteBuffer.allocate(8192), false);
 
         callback.status(200)
             .header("foo", "bar")
             .nobody();
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200\r
+                HTTP/1.1 200 OK\r
                 foo: bar\r
                 content-length: 0\r
                 \r
@@ -37,7 +37,7 @@ class HttpResCallbackImplTest {
             baos = new ByteArrayOutputStream();
             var out = Channels.newChannel(baos);
 
-            var callback = new HttpResCallbackImpl(out, ByteBuffer.allocate(8192));
+            var callback = new HttpResCallbackImpl(out, ByteBuffer.allocate(8192), false);
             callback.status(200)
                 .header("foo", "bar")
                 .contentLength(13)
@@ -45,7 +45,7 @@ class HttpResCallbackImplTest {
         }
         assertThat(baos.toString(UTF_8)).isEqualTo(
             """
-                HTTP/1.1 200\r
+                HTTP/1.1 200 OK\r
                 foo: bar\r
                 content-length: 13\r
                 \r

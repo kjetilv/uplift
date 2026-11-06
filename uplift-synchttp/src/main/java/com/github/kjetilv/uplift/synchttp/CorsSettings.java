@@ -62,10 +62,6 @@ public record CorsSettings(
         return this.origins.stream().anyMatch(origin::equals);
     }
 
-    public String toHeaderSection() {
-        return null;
-    }
-
     String headersValue() {
         return value(headers());
     }

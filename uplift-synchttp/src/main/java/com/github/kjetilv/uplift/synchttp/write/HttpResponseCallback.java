@@ -9,7 +9,16 @@ import java.util.function.Consumer;
 public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
 
     static HttpResponseCallback create(WritableByteChannel out, ByteBuffer buffer) {
-        return new HttpResCallbackImpl(out, buffer);
+        return create(out, buffer, false);
+    }
+
+    /// @param out             Connection
+    /// @param buffer          Buffer for the status line and headers
+    /// @param closeConnection True if the connection will be closed after the response. Adds `connection: close`,
+    ///                        unless the handler sets a connection header.
+    /// @return Callback
+    static HttpResponseCallback create(WritableByteChannel out, ByteBuffer buffer, boolean closeConnection) {
+        return new HttpResCallbackImpl(out, buffer, closeConnection);
     }
 
     /// Responds with a status and no body.

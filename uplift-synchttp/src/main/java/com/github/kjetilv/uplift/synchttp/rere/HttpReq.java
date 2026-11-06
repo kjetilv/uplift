@@ -7,6 +7,9 @@ import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import static com.github.kjetilv.uplift.synchttp.HttpMethod.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/// A request. Its line, headers and body point into the connection's request buffer, which is reused
+/// for the next request on the connection. A request, and anything read from it without copying, is
+/// only valid until the [handler][com.github.kjetilv.uplift.synchttp.HttpHandler] returns.
 @SuppressWarnings("unused")
 public record HttpReq(
     ReqLine reqLine,
@@ -29,15 +32,14 @@ public record HttpReq(
         return new String(bodyBytes(), charset == null ? UTF_8 : charset);
     }
 
-    /// @return The body, or an empty array if the request has no content-length
+    /// @return The body. Empty if the request has no body.
     @SuppressWarnings("resource")
     public byte[] bodyBytes() {
         var header = headers.header(CONTENT_LENGTH);
-        if (header == null || header.isBlank()) {
-            return NO_BYTES;
-        }
         try {
-            return bodyStream().readNBytes(Integer.parseInt(header.strip()));
+            return header == null
+                ? bodyStream().readAllBytes()
+                : bodyStream().readNBytes(Integer.parseInt(header.strip()));
         } catch (Exception e) {
             throw new IllegalStateException("Could not read body", e);
         }
@@ -63,6 +65,9 @@ public record HttpReq(
         return new HttpReq(reqLine.withQueryParameters(), headers, body, closer);
     }
 
+    /// Parses the query parameters. Each call parses again, so keep the result if it is used more than once.
+    ///
+    /// @return Query parameters
     public QueryParameters queryParameters() {
         return reqLine.withQueryParameters().queryParameters();
     }
@@ -121,8 +126,6 @@ public record HttpReq(
     private String get(MemorySegment name) {
         return headers.header(name);
     }
-
-    private static final byte[] NO_BYTES = new byte[0];
 
     private static final MemorySegment ORIGIN = ms("origin");
 
