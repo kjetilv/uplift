@@ -59,7 +59,7 @@ public class HttpResWriter {
         var buffer = ByteBuffer.allocateDirect(8192);
         while (Utils.didRead(body, buffer)) {
             written += write(buffer);
-            buffer.position(0);
+            buffer.clear();
         }
         return written;
     }

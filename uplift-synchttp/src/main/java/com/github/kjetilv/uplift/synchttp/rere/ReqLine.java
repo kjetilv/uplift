@@ -69,16 +69,6 @@ public record ReqLine(
             return this;
         }
         var queryParameters = parseQueryParameters();
-        if (queryParameters.isEmpty()) {
-            return new ReqLine(
-                segment,
-                urlIndex,
-                urlLength,
-                versionIndex,
-                lineBreak,
-                queryParameters
-            );
-        }
         var urlLength = queryParameters.startIndex() - urlIndex;
         return new ReqLine(
             segment,

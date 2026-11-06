@@ -25,11 +25,10 @@ record FlambdaHandler(
         switch (httpReq.method()) {
             case GET -> {
                 var lambdaReq = flambdaState.fetchRequest();
-                var body = toString(lambdaReq.out());
-                var contentLength = length(body);
+                var body = bytes(toString(lambdaReq.out()));
                 callback.status(200)
                     .headers(idHeaders(lambdaReq))
-                    .contentLength(contentLength)
+                    .contentLength(body.length)
                     .body(body);
             }
             case POST -> {
@@ -80,8 +79,8 @@ record FlambdaHandler(
         );
     }
 
-    private static int length(String body) {
-        return body == null || body.isEmpty() ? 0 : body.length();
+    private static byte[] bytes(String body) {
+        return body == null ? new byte[0] : body.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override

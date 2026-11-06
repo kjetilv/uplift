@@ -1,7 +1,7 @@
 package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
-import module jdk.incubator.vector;
+import com.github.kjetilv.uplift.synchttp.Utils;
 import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import com.github.kjetilv.uplift.synchttp.rere.ReqHeader;
 import com.github.kjetilv.uplift.synchttp.rere.ReqHeaders;
@@ -227,21 +227,7 @@ public final class HttpReqReader {
 
     /// @return Offset of the first `b` in `[from, to)`, or -1
     private int indexOf(byte b, int from, int to) {
-        var offset = from;
-        for (; offset + LENGTH <= to; offset += LENGTH) {
-            var position = ByteVector.fromMemorySegment(SPECIES, segment, offset, BYTE_ORDER)
-                .compare(VectorOperators.EQ, b)
-                .firstTrue();
-            if (position < LENGTH) {
-                return offset + position;
-            }
-        }
-        for (; offset < to; offset++) {
-            if (segment.get(JAVA_BYTE, offset) == b) {
-                return offset;
-            }
-        }
-        return -1;
+        return Utils.indexOf(b, segment, from, to - from);
     }
 
     private String string(int from, int to) {
@@ -249,12 +235,6 @@ public final class HttpReqReader {
     }
 
     private static final int DEFAULT_SIZE = 1 << 12;
-
-    private static final VectorSpecies<Byte> SPECIES = VectorSpecies.ofPreferred(byte.class);
-
-    private static final int LENGTH = SPECIES.length();
-
-    private static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 
     private static final MemorySegment CONTENT_LENGTH =
         MemorySegment.ofArray("content-length".getBytes(StandardCharsets.UTF_8));

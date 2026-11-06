@@ -104,11 +104,12 @@ final class HttpResCallbackImpl implements
     @Override
     public void body(byte[] bytes) {
         complete(() -> {
-            flushHeaders();
             if (bytes == null || bytes.length == 0) {
                 checkZeroLength();
+                flushHeaders();
             } else {
-                checkDeclaredLength();
+                checkDeclaredLength(bytes.length);
+                flushHeaders();
                 var written = stream(ByteBuffer.wrap(bytes));
                 checkWrittenLength(written);
             }
@@ -118,8 +119,8 @@ final class HttpResCallbackImpl implements
     @Override
     public void body(ReadableByteChannel channel) {
         complete(() -> {
-            flushHeaders();
             checkDeclaredLength();
+            flushHeaders();
             var written = transferFrom(channel);
             checkWrittenLength(written);
         });
@@ -163,6 +164,12 @@ final class HttpResCallbackImpl implements
         }
     }
 
+    private void checkDeclaredLength(int length) {
+        if (contentLength != length) {
+            throw new IllegalStateException("Content-length is " + contentLength + ", but body is " + length + " bytes");
+        }
+    }
+
     private void checkWrittenLength(WriteResult written) {
         if (written.terminated()) {
             log.warn("Wrote {} bytes (terminated)", written.count());
@@ -174,8 +181,9 @@ final class HttpResCallbackImpl implements
     private WriteResult transferFrom(ReadableByteChannel body) {
         var written = new WriteResult();
         var buffer = ByteBuffer.allocateDirect(8192);
-        while (Utils.didRead(body, buffer)) {
+        while (!written.terminated() && Utils.didRead(body, buffer)) {
             written = written.add(stream(buffer));
+            buffer.clear();
         }
         return written;
     }
@@ -243,7 +251,7 @@ final class HttpResCallbackImpl implements
         public WriteResult add(WriteResult stream) {
             return terminated
                 ? this
-                : new WriteResult(count + stream.count(), false);
+                : new WriteResult(count + stream.count(), stream.terminated());
         }
     }
 

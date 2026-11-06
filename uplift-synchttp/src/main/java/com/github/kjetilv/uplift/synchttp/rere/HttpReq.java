@@ -95,13 +95,14 @@ public record HttpReq(
         return get(ORIGIN);
     }
 
+    /// @return Headers by name. Values of headers with the same name are joined with `,`.
     public Map<String, Object> headerMap() {
         return headers.stream()
-            .map(header ->
-                Map.entry(header.name(), header.value()))
             .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue
+                ReqHeader::name,
+                ReqHeader::value,
+                (value1, value2) -> value1 + "," + value2,
+                LinkedHashMap::new
             ));
     }
 

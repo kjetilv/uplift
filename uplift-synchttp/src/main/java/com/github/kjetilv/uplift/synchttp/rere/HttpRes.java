@@ -23,11 +23,12 @@ public record HttpRes(
     }
 
     public HttpRes(int statusCode, String body) {
+        var bytes = body.getBytes(UTF_8);
         this(
             statusCode,
-            body.length(),
+            bytes.length,
             (ResHeader[]) null,
-            Channels.newChannel(new ByteArrayInputStream(body.getBytes(UTF_8)))
+            Channels.newChannel(new ByteArrayInputStream(bytes))
         );
     }
 

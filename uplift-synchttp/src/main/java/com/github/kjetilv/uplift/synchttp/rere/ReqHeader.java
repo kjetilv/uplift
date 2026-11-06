@@ -3,6 +3,8 @@ package com.github.kjetilv.uplift.synchttp.rere;
 import module java.base;
 import com.github.kjetilv.uplift.synchttp.Utils;
 
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+
 public record ReqHeader(
     MemorySegment segment,
     Supplier<MemorySegment> downcasedName,
@@ -37,27 +39,28 @@ public record ReqHeader(
         return Utils.string(segment, offset, nameLength());
     }
 
+    /// @return The value, without spaces and tabs before and after it
     public String value() {
-        return Utils.string(segment, valueOffset(), valueLength());
+        var start = separatorOffset + 1;
+        var end = offset + length;
+        while (start < end && isWhitespace(segment.get(JAVA_BYTE, start))) {
+            start++;
+        }
+        while (end > start && isWhitespace(segment.get(JAVA_BYTE, end - 1))) {
+            end--;
+        }
+        return start == end ? "" : Utils.string(segment, start, end - start);
     }
 
     private int nameLength() {
         return separatorOffset - offset;
     }
 
-    private int valueLength() {
-        return length - (valueOffset() - offset);
-    }
-
-    private int valueOffset() {
-        return separatorOffset + 2;
-    }
-
-    private int valueLength(int valueOffset) {
-        return length - (valueOffset - offset);
-    }
-
     private static final MemorySegment CONTENT_LENGTH = MemorySegment.ofArray("content-length".getBytes());
+
+    private static boolean isWhitespace(byte b) {
+        return b == ' ' || b == '\t';
+    }
 
     private static final char A = 'A';
 

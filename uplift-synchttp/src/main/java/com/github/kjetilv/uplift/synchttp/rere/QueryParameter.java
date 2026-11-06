@@ -10,7 +10,7 @@ public record QueryParameter(MemorySegment segment, long offset, long eqOffset, 
     }
 
     public String value() {
-        return Utils.string(segment, valueOffset(), length);
+        return length == 0 ? "" : Utils.string(segment, valueOffset(), length);
     }
 
     public long nameLength() {

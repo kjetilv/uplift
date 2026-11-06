@@ -80,16 +80,15 @@ handler failures):
 - `HttpResponseCallback.finish()`: a handler that set a status but did not complete
   the response gets it sent with no body. No status, or a declared length with no
   body, gives 500 and close. A handler exception gives 500 only if nothing was written
+- Query parameters are parsed with the bounded `Utils.indexOf` (vector loop plus scalar
+  tail, never past the range). `name` without `=` has value `""`; empty parameters are
+  skipped. `headerMap()` and `queryParametersMap()` join duplicate names with `,`
+- Header values are trimmed of spaces and tabs
 - Both pools are closed when `HttpCallbackProcessor.close()` is called
 - `HttpResCallbackImpl` buffers all header writes into a ByteBuffer, then flushes
-  once via `flushHeaders()` when transitioning to body writing (`headersComplete` flag)
-- `contentLength(0)` skips the content-length header but still writes the CRLF
-  separator to terminate headers
-
-### Pre-existing issue
-
-`uplift-flambda` has a compilation error unrelated to keep-alive:
-`CorsSettings.applyTo()` signature mismatch at `Flambda.java:147`.
+  once via `flushHeaders()` when transitioning to body writing. `body(byte[])` and
+  `body(String)` check the declared length against the body before writing anything
+- `nobody()` and `contentLength(0)` write `content-length: 0`
 
 ## Build & test
 

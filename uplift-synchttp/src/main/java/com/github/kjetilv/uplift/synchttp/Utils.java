@@ -2,7 +2,6 @@ package com.github.kjetilv.uplift.synchttp;
 
 import module java.base;
 import jdk.incubator.vector.ByteVector;
-import jdk.incubator.vector.VectorMask;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
@@ -24,20 +23,24 @@ public final class Utils {
         );
     }
 
+    /// @return Offset of the first `b` in `[offset, offset + length)`, or -1
     public static int indexOf(byte b, MemorySegment segment, int offset, int length) {
+        var end = offset + length;
         var walker = offset;
-        while (true) {
-            var byteVector = vectorFrom(segment, walker);
-            var vectorMask = byteVector.compare(VectorOperators.EQ, b);
-            var position = vectorMask.firstTrue();
-            if (position != BYTE_VECTOR_LENGTH) {
+        for (; walker + BYTE_VECTOR_LENGTH <= end; walker += BYTE_VECTOR_LENGTH) {
+            var position = vectorFrom(segment, walker)
+                .compare(VectorOperators.EQ, b)
+                .firstTrue();
+            if (position < BYTE_VECTOR_LENGTH) {
                 return walker + position;
             }
-            if (walker >= length) {
-                return -1;
-            }
-            walker += BYTE_VECTOR_LENGTH;
         }
+        for (; walker < end; walker++) {
+            if (segment.get(JAVA_BYTE, walker) == b) {
+                return walker;
+            }
+        }
+        return -1;
     }
 
     public static boolean prefixed(String prefix, MemorySegment segment, long offset) {
@@ -68,10 +71,6 @@ public final class Utils {
 
     public static ByteVector vectorFrom(MemorySegment segment, long offset) {
         return ByteVector.fromMemorySegment(BYTE_SPECIES, segment, offset, BYTE_ORDER);
-    }
-
-    public static VectorMask<Byte> unset(VectorMask<Byte> mask, int pos) {
-        return mask.indexInRange(-pos, BYTE_VECTOR_LENGTH - pos);
     }
 
     private Utils() {
