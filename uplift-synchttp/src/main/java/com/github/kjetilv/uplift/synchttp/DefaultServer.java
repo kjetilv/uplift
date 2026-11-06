@@ -5,7 +5,6 @@ import com.github.kjetilv.uplift.util.Virtuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("StatementWithEmptyBody")
 final class DefaultServer implements Server.Open, Server.Init {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServer.class);
@@ -162,10 +161,9 @@ final class DefaultServer implements Server.Open, Server.Init {
         }
         threadFactory.newThread(() -> {
             try {
-                while (channel.isOpen() && processor.process(channel, channel)) {
-                }
+                processor.serve(channel, channel);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to process " + channel, e);
+                log.error("{} failed to serve {}", this, channel, e);
             } finally {
                 try {
                     channel.close();

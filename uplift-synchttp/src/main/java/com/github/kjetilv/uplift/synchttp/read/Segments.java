@@ -2,16 +2,14 @@ package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
 
-/// A simple pool of [memory segments][MemorySegment].
+/// A simple, thread-safe pool of [memory segments][MemorySegment].
 public final class Segments {
 
     private final long baseSize;
 
-    private final MemorySegment memorySegment;
-
-    private final boolean[] allocations;
-
     private final long basePoolSize;
+
+    private final Deque<Pooled> free;
 
     public Segments(Arena arena) {
         this(arena, 0L, 0);
@@ -23,29 +21,25 @@ public final class Segments {
         if (this.basePoolSize % this.baseSize != 0) {
             throw new IllegalArgumentException("Base pool size must be multiple of base size");
         }
-
-        this.memorySegment = Objects.requireNonNull(arena, "arena")
+        var memorySegment = Objects.requireNonNull(arena, "arena")
             .allocate(this.basePoolSize);
-        this.allocations = new boolean[Math.toIntExact(this.basePoolSize / this.baseSize)];
+        this.free = IntStream.range(0, Math.toIntExact(this.basePoolSize / this.baseSize))
+            .mapToObj(i ->
+                new Pooled(memorySegment.asSlice(i * this.baseSize, this.baseSize), this.baseSize, i))
+            .collect(Collectors.toCollection(ConcurrentLinkedDeque::new));
     }
 
     public Pooled acquire() {
-        for (var i = 0; i < allocations.length; i++) {
-            if (!allocations[i]) {
-                allocations[i] = true;
-                return new Pooled(
-                    memorySegment.asSlice(i * baseSize, baseSize),
-                    baseSize,
-                    i
-                );
-            }
+        var pooled = free.pollFirst();
+        if (pooled == null) {
+            throw new IllegalStateException("No more segments available: " + this);
         }
-        throw new IllegalStateException("No more segments available");
+        return pooled;
     }
 
     public void release(Pooled pooled) {
         if (pooled != null) {
-            allocations[pooled.index()] = false;
+            free.offerFirst(pooled);
         }
     }
 

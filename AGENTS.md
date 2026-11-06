@@ -62,11 +62,24 @@ NIO on virtual threads, plus Netty's optimized buffer pooling and zero-copy pipe
 
 ### Architecture notes
 
-- `HttpCallbackProcessor` owns two `Segments` pools: `reqSegments` for request
-  parsing and `resSegments` for response header buffering
-- Request segments are released via the `HttpReq.close()` callback (Runnable closer)
-- Response segments are released explicitly via `resSegments.release(pooled)` in
-  the finally block of `HttpCallbackProcessor.process()`
+Updated 2026-11-06 (correctness fixes: pool race, split reads, pipelining, body limits,
+handler failures):
+
+- `Server.Processor.serve(in, out)` serves one whole connection, on its own thread.
+  `DefaultServer` calls it once per connection, then closes the socket
+- `HttpCallbackProcessor` owns two `Segments` pools (thread-safe): `reqSegments` for
+  request parsing and `resSegments` for response header buffering. Each connection
+  holds one segment from each pool until it closes
+- `HttpReqReader` is per connection. It keeps bytes read past the end of a request
+  and parses them as the next request (pipelining). It searches only bytes already read
+- The request body (`BodyBytes`) is limited to `Content-Length`. No `Content-Length`
+  means no body. `Transfer-Encoding` is rejected
+- After the handler: an unread body of up to 64 KiB is drained; a larger one, or one
+  with `Expect: 100-continue`, closes the connection with a lingering close
+  (shutdown output, discard input up to 1 s / 1 MiB) to avoid TCP reset losing the response
+- `HttpResponseCallback.finish()`: a handler that set a status but did not complete
+  the response gets it sent with no body. No status, or a declared length with no
+  body, gives 500 and close. A handler exception gives 500 only if nothing was written
 - Both pools are closed when `HttpCallbackProcessor.close()` is called
 - `HttpResCallbackImpl` buffers all header writes into a ByteBuffer, then flushes
   once via `flushHeaders()` when transitioning to body writing (`headersComplete` flag)

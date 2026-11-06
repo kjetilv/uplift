@@ -95,11 +95,10 @@ class HttpReqReaderTest {
     }
 
     @Test
-    void shortRequestW2LineBreaksBody() throws Exception {
+    void shortRequestW2LineBreaksNoBody() throws Exception {
         try (var channel = channel(HTTP_2_LINE_BREAKS)) {
             var request = parse(channel);
             try (var reader = reader(request)) {
-                assertThat(reader.readLine()).isEqualTo("");
                 assertThat(reader.readLine()).isNull();
             }
         }
@@ -122,6 +121,8 @@ class HttpReqReaderTest {
                     hdr,
                     "veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x"
                 ));
+            assertThat(httpRequest.header(4)).isNotNull().satisfies(hdr ->
+                assertHeader(hdr, "Content-Length: 10"));
             try (var linesReader = reader(httpRequest)) {
                 assertThat(linesReader.readLine()).isEqualTo("sdf");
                 assertThat(linesReader.readLine()).isEqualTo("sdf");
@@ -188,6 +189,7 @@ class HttpReqReaderTest {
         zipp: zoot\r
         Content-Type: application:json\r
         veryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeaderveryLongHeader: x\r
+        Content-Length: 10\r
         \r
         sdf
         sdf

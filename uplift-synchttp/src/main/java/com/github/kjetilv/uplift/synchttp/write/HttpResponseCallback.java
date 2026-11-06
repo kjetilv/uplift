@@ -12,11 +12,23 @@ public sealed interface HttpResponseCallback permits HttpResCallbackImpl {
         return new HttpResCallbackImpl(out, buffer);
     }
 
+    /// Responds with a status and no body.
+    ///
+    /// @param status Status code
     default void just(int status) {
-        status(status);
+        status(status).nobody();
     }
 
     Headers status(int statusCode);
+
+    /// @return True if any part of the response has been written to the connection
+    boolean committed();
+
+    /// Called by the server after the handler returns. If the handler set a status, but did not declare a
+    /// content length or complete the response, the response is sent with no body.
+    ///
+    /// @return True if the response is complete, and was written without failure
+    boolean finish();
 
     interface Headers {
 

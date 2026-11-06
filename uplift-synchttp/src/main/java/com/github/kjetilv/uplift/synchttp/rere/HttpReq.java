@@ -29,12 +29,15 @@ public record HttpReq(
         return new String(bodyBytes(), charset == null ? UTF_8 : charset);
     }
 
+    /// @return The body, or an empty array if the request has no content-length
     @SuppressWarnings("resource")
     public byte[] bodyBytes() {
+        var header = headers.header(CONTENT_LENGTH);
+        if (header == null || header.isBlank()) {
+            return NO_BYTES;
+        }
         try {
-            var stream = bodyStream();
-            var length = contentLength();
-            return stream.readNBytes(length);
+            return bodyStream().readNBytes(Integer.parseInt(header.strip()));
         } catch (Exception e) {
             throw new IllegalStateException("Could not read body", e);
         }
@@ -117,6 +120,8 @@ public record HttpReq(
     private String get(MemorySegment name) {
         return headers.header(name);
     }
+
+    private static final byte[] NO_BYTES = new byte[0];
 
     private static final MemorySegment ORIGIN = ms("origin");
 

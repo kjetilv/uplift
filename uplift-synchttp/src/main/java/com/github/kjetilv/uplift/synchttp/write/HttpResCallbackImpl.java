@@ -19,7 +19,13 @@ final class HttpResCallbackImpl implements
 
     private long contentLength = -1;
 
+    private boolean started;
+
+    private boolean committed;
+
     private boolean done;
+
+    private boolean failed;
 
     HttpResCallbackImpl(WritableByteChannel out, ByteBuffer buffer) {
         this.out = Objects.requireNonNull(out, "out");
@@ -28,6 +34,7 @@ final class HttpResCallbackImpl implements
 
     @Override
     public Headers status(int statusCode) {
+        started = true;
         try {
             buffer(ByteBuffer.wrap(VERSION));
             buffer(statusCode(statusCode));
@@ -36,6 +43,19 @@ final class HttpResCallbackImpl implements
         } catch (Exception e) {
             throw new IllegalStateException("Failed to respond " + statusCode, e);
         }
+    }
+
+    @Override
+    public boolean committed() {
+        return committed;
+    }
+
+    @Override
+    public boolean finish() {
+        if (started && !done && contentLength == -1) {
+            nobody();
+        }
+        return done && !failed;
     }
 
     @Override
@@ -123,6 +143,9 @@ final class HttpResCallbackImpl implements
         }
         try {
             action.run();
+        } catch (RuntimeException e) {
+            failed = true;
+            throw e;
         } finally {
             done = true;
         }
@@ -160,6 +183,7 @@ final class HttpResCallbackImpl implements
     private void flushHeaders() {
         buffer(ByteBuffer.wrap(CRLF));
         buffer.flip();
+        committed = true;
         stream(buffer);
     }
 

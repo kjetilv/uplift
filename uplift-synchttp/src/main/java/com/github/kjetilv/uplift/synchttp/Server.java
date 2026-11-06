@@ -53,7 +53,12 @@ public interface Server {
 
     interface Processor extends RuntimeCloseable {
 
-        boolean process(
+        /// Serves one connection, until it should be closed. Called once per connection, on a thread
+        /// that serves only that connection. The caller closes the connection afterwards.
+        ///
+        /// @param in  Input
+        /// @param out Output
+        void serve(
             ReadableByteChannel in,
             WritableByteChannel out
         );

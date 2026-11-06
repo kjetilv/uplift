@@ -34,11 +34,11 @@ public class HttpResWriter {
                 write(header.buffer());
             }
 
+            if (!wroteContentLength) {
+                write(response.contentLengthHeader().buffer());
+            }
+            write(ByteBuffer.wrap(LN));
             if (body != null) {
-                if (!wroteContentLength) {
-                    write(response.contentLengthHeader().buffer());
-                }
-                write(ByteBuffer.wrap(LN));
                 var written = writeBody(body);
                 if (written != response.contentLength()) {
                     throw new IllegalStateException(
