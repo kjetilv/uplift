@@ -13,7 +13,7 @@ final class TestConnections {
 
     static String withServer(Duration readTimeout, HttpHandler handler, Function<Server.Open, String> action) {
         var address = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        try (var server = Servers.create(address, readTimeout).open(new HttpCallbackProcessor(handler))) {
+        try (var server = Servers.create(address, ServerSettings.DEFAULT.withReadTimeout(readTimeout)).open(new HttpCallbackProcessor(handler))) {
             return action.apply(server);
         }
     }

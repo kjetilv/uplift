@@ -21,6 +21,10 @@ final class NettyServer implements AutoCloseable {
     private final int port;
 
     NettyServer(byte[] responseBody) {
+        this(responseBody, 128);
+    }
+
+    NettyServer(byte[] responseBody, int backlog) {
         var ioHandlerFactory = NioIoHandler.newFactory();
         this.bossGroup = new MultiThreadIoEventLoopGroup(ioHandlerFactory);
         this.workerGroup = new MultiThreadIoEventLoopGroup(ioHandlerFactory);
@@ -37,7 +41,7 @@ final class NettyServer implements AutoCloseable {
                             .addLast(new NettyHandler(responseBody));
                     }
                 })
-                .option(ChannelOption.SO_BACKLOG, 128)
+                .option(ChannelOption.SO_BACKLOG, backlog)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             this.channel = bootstrap.bind(0).sync().channel();

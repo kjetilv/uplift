@@ -24,16 +24,16 @@ final class DefaultServer implements Server.Open, Server.Init {
 
     private final ThreadFactory threadFactory;
 
-    private final Duration readTimeout;
+    private final ServerSettings settings;
 
     private final Set<Connection> connections = ConcurrentHashMap.newKeySet();
 
     private final Thread shutdownHook;
 
-    DefaultServer(InetSocketAddress address, Duration readTimeout) {
+    DefaultServer(InetSocketAddress address, ServerSettings settings) {
         this(
             Objects.requireNonNull(address, "address"),
-            readTimeout,
+            Objects.requireNonNull(settings, "settings"),
             null,
             null
         );
@@ -41,15 +41,13 @@ final class DefaultServer implements Server.Open, Server.Init {
 
     private DefaultServer(
         InetSocketAddress address,
-        Duration readTimeout,
+        ServerSettings settings,
         ServerSocketChannel serverSocketChannel,
         Processor processor
     ) {
         var name = "server@" + address.getPort();
         this.address = address;
-        this.readTimeout = readTimeout == null || readTimeout.isNegative() || readTimeout.isZero()
-            ? DEFAULT_READ_TIMEOUT
-            : readTimeout;
+        this.settings = settings;
         this.threadFactory = Virtuals.virtualThreadFactory(name);
         if (serverSocketChannel == null) {
             this.serverSocketChannel = null;
@@ -99,7 +97,7 @@ final class DefaultServer implements Server.Open, Server.Init {
                         this.address.getAddress(),
                         channel.socket().getLocalPort()
                     ),
-                    readTimeout,
+                    settings,
                     channel,
                     processor
                 ));
@@ -137,7 +135,7 @@ final class DefaultServer implements Server.Open, Server.Init {
     @SuppressWarnings("resource")
     private Servers.Result<ServerSocketChannel> openNewChannel() {
         try {
-            return new Servers.Result.OK<>(ServerSocketChannel.open().bind(address));
+            return new Servers.Result.OK<>(ServerSocketChannel.open().bind(address, settings.backlog()));
         } catch (BindException e) {
             if (e.getMessage() != null && e.getMessage().contains("Permission denied")) {
                 return new Servers.Result.Denied<>(address);
@@ -200,7 +198,7 @@ final class DefaultServer implements Server.Open, Server.Init {
 
     /// Closes connections where a read has waited longer than the read timeout
     private void closeTimedOut() {
-        var timeout = readTimeout.toNanos();
+        var timeout = settings.readTimeout().toNanos();
         var interval = Duration.ofNanos(Math.min(timeout / 4, Duration.ofSeconds(1).toNanos()));
         while (!closed.get()) {
             pause(interval);
@@ -231,8 +229,6 @@ final class DefaultServer implements Server.Open, Server.Init {
         }
         return this;
     }
-
-    private static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(60);
 
     private static final Duration ACCEPT_FAILURE_PAUSE = Duration.ofMillis(100);
 

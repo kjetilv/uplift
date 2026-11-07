@@ -21,6 +21,110 @@ C combined these changes, measured together, so their separate effects are not k
 - `TCP_NODELAY` on accepted sockets.
 - Channel bodies copied through the response segment instead of a new direct buffer.
 
+## 2026-11-07: does synchttp scale because of virtual threads?
+
+### Setup
+
+One macOS ARM machine, 14 cores, 48 GB, over loopback. Client and server share the cores.
+Java 25, `-Xms2g -Xmx2g -XX:+UseG1GC`, same flags for every server. `kern.ipc.somaxconn` set
+to 1024, and every server bound with a backlog of 1024.
+
+Servers, each in its own JVM, started with `ScalingServer <mode> <delay ms> [backlog]`:
+
+| Mode | What it is |
+|---|---|
+| `virtual` | synchttp as shipped (`Servers.create`, one virtual thread per connection) |
+| `virtual-raw` | plain accept loop, one virtual thread per connection, same `HttpCallbackProcessor` |
+| `platform` | the same accept loop, one platform thread per connection |
+| `netty` | the Netty comparison server (`NettyServer`) |
+
+`virtual-raw` and `platform` differ only in thread type. The handler returns "Hello, World!",
+optionally after `Thread.sleep(delay)` to stand in for blocking I/O such as an S3 call.
+
+Load: `h2load --h1`, up to 100 connections per process, processes started 0.25 s apart, with
+warm-up periods that end together so all processes measure the same 10 s window. Connections
+are opened gradually because `h2load` does not retry a connection that fails, and a burst larger
+than the listen queue loses clients. The established connection count was read from the server
+with `lsof` during each run. Latency percentiles come from `h2load --log-file`. CPU per request
+is cumulative server process CPU time over the window, divided by requests.
+
+### E1: trivial handler
+
+All servers reach 86k-97k req/s up to 4,096 connections. That limit is the client and loopback,
+so this test compares CPU and latency only.
+
+| Connections | CPU/request virtual | platform | netty | p99.9 virtual / platform / netty |
+|---|---|---|---|---|
+| 1 | 14.4 us | 7.6 us | 9.4 us | 0.1 / 0.06 / 0.09 ms |
+| 64 | 31 us | 16 us | 18 us | 2.8 / 3.4 / 5.0 ms |
+| 1,024 | 33 us | 15 us | 16 us | 18 / 14 / 15 ms |
+| 4,096 | 32 us | 15 us | 16 us | 229 / 68 / 202 ms |
+
+At one connection: virtual 30k req/s, platform 38k, netty 34k. Platform threads held 4,096 and
+10,000 connections (4,127 and 10,031 OS threads) without trouble.
+
+### E2: handler that blocks for 10 ms
+
+Throughput as a fraction of the ideal, connections / 10 ms. Two runs each, order reversed.
+
+| Connections | virtual | virtual-raw | platform |
+|---|---|---|---|
+| 64 | 0.74-0.80, 93-97 us/req | 0.80, 86-95 us/req | 0.89, 50-52 us/req |
+| 256 | 0.81-0.89, 79-126 us/req | 0.88, 81-86 us/req | 0.89, 37-38 us/req |
+| 1,024 | 0.69-0.71, 100-112 us/req | 0.69-0.72, 106-110 us/req | 0.66, 127-131 us/req |
+| 4,096 | 80k-82k req/s, p99 59 ms, 4,096 served | 80k-82k req/s, p99 57-59 ms | 52k-53k req/s, p99 154-193 ms, 3,000-3,500 served |
+
+At 4,096 the platform server did not get all connections established: creating a thread per
+accepted connection slows the accept loop under load.
+
+### E3: idle connections
+
+10,000 keep-alive connections, opened one at a time, server RSS after `GC.run`:
+
+| | virtual | platform | netty |
+|---|---|---|---|
+| RSS per connection | 9-12 KB | 41-43 KB | 3 KB |
+| OS threads | ~40 | ~10,030 | ~60 |
+| Time to open 10,000 connections | 1.4 s | 13 s | 1.6 s |
+
+Above about 10,230 connections both thread types failed with "Too many open files": the JVM caps
+open files at 10,240 on macOS. So the macOS limit of 12,288 threads per process was never reached.
+
+### Pinning
+
+JFR `jdk.VirtualThreadPinned` with a 0 ms threshold, during E2 at 4,096 connections: 323 events,
+all in the first second, from class loading and class initialization (157 ms in total), plus one
+0.75 us event inside JFR itself. No pinning in steady state.
+
+### Listen backlog
+
+Burst of simultaneous connects from 4 `h2load` threads, connections established:
+
+| Burst | backlog 50 (Java default) | backlog 1024 | netty, backlog 128 |
+|---|---|---|---|
+| 1,024 | 14-16% | 100% | 49-56% |
+| 4,096 | 51-72% | 71-86% | 24-62% |
+
+The default is now 1024 (`ServerSettings`). The OS caps it at `somaxconn` (128 on macOS by
+default, usually 4096 on Linux).
+
+### Conclusion
+
+- `virtual` and `virtual-raw` perform the same, so synchttp's own code adds no measurable cost.
+- Up to about 256 connections, platform threads are better: half the CPU per request, and about
+  1 ms lower latency with blocking handlers.
+- From about 1,024 blocked handlers, virtual threads cost less CPU per request. At 4,096 they give
+  1.5x the throughput, a third of the p99 latency, and accept every connection.
+- Virtual threads use about a quarter of the memory per idle connection, and a fixed number of
+  OS threads. Netty uses less memory still.
+- At 10,000 active connections every server, Netty included, falls to p99 above 1 s. That point
+  measures this machine, not the servers.
+
+Limits: one machine, loopback, client on the same cores; `Thread.sleep` instead of real I/O
+(a sleeping virtual thread uses a timer, not the I/O poller); client ports were cleared with a
+fixed 35 s wait between runs, not checked; E1 latencies are from one run each. Linux has
+different thread limits and uses epoll.
+
 The sections below describe earlier work.
 
 

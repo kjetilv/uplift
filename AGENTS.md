@@ -85,9 +85,12 @@ Connections (`DefaultServer`, `Connection`):
   `DefaultServer` wraps each socket in a `Connection`, sets `TCP_NODELAY`, and closes it
   afterwards with a lingering close (shutdown output, discard input up to 1 s / 1 MiB),
   so that a TCP reset does not lose the last response
-- Read timeout (default 60 s, `Servers.create(address, readTimeout)`): `Connection`
-  records when a blocking read starts; a background thread closes connections whose
-  read has waited too long. Covers idle keep-alive and slow clients
+- `ServerSettings(readTimeout, backlog)`, passed to `Servers.create(address, settings)`:
+  - Read timeout (default 60 s): `Connection` records when a blocking read starts; a
+    background thread closes connections whose read has waited too long. Covers idle
+    keep-alive and slow clients
+  - Listen backlog (default 1024, capped by the OS `somaxconn`: 128 on macOS, usually 4096
+    on Linux). Java's default of 50 lost most of a burst of simultaneous connects
 - The accept loop logs failures and continues after a pause
 - `Servers.create` removes its shutdown hook on close
 
