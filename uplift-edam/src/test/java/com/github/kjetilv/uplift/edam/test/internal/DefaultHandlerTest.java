@@ -56,7 +56,7 @@ class DefaultHandlerTest {
     void setUp() {
         arena = Arena.ofConfined();
         var window = new Window(Duration.ofSeconds(30), 10);
-        handler = Throwables.offHeap(
+        handler = Throwables.OffHeap.create(
             arena,
             now::get,
             window,

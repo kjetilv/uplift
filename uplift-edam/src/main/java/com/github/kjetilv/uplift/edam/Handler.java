@@ -26,44 +26,6 @@ public interface Handler<T, P extends Info<T, H>, H extends HashKind<H>> {
 
     Handling<T, P, H> handling(T item);
 
-    private static <T, P extends Info<T, K>, K extends HashKind<K>> void none(
-        Results<T, K> results,
-        Handling<T, P, K> handling
-    ) {
-        results.singleOccurrence(handling.payload().source());
-    }
-
-    private static <T, P extends Info<T, K>, K extends HashKind<K>> void simple(
-        Results<T, K> results,
-        Handling<T, P, K> handling,
-        List<Occurrence<K>> occurrences
-    ) {
-        results.multipleOccurrences(handling.payload().source(), occurrences);
-    }
-
-    private static <T, P extends Info<T, K>, K extends HashKind<K>> void simple(
-        Results<T, K> results,
-        Handling<T, P, K> handling,
-        Analysis.Patterns<K> patterns
-    ) {
-        patterns.simpleMatch()
-            .ifPresent(match ->
-                results.multipleOccurrences(
-                    handling.payload().source(),
-                    match.occurrences()
-                ));
-    }
-
-    private static <T, P extends Info<T, K>, K extends HashKind<K>> void combined(
-        Results<T, K> results,
-        Handling<T, P, K> handling,
-        Analysis.Patterns<K> patterns
-    ) {
-        patterns.combinedMatches()
-            .forEach(match ->
-                results.patternOccurred(handling.payload().source(), match.occurrences()));
-    }
-
     @FunctionalInterface
     interface With<T, P extends Info<T, K>, K extends HashKind<K>> {
 

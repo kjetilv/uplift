@@ -10,9 +10,12 @@ import static com.github.kjetilv.uplift.util.Time.UTC_CLOCK;
 
 class FlambdaServer {
 
-    void main(String[] args) {
+    static {
         Flogs.initialize(LogLevel.DEBUG);
+    }
 
+    @SuppressWarnings("MethodMayBeStatic")
+    void main(String[] args) {
         int lambdaPort = Arrays.stream(args)
             .map(Integer::parseInt)
             .findFirst().orElse(LAMBDA_PORT);

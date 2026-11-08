@@ -19,7 +19,7 @@ public final class Main {
     static void main() {
         var window = new Window(Duration.ofMinutes(1), 128);
         try (var arena = Arena.ofConfined()) {
-            var handler = Throwables.offHeap(
+            var handler = Throwables.OffHeap.create(
                 arena,
                 window,
                 K256,

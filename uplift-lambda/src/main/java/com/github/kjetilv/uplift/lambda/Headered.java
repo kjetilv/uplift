@@ -5,10 +5,16 @@ import module java.base;
 interface Headered {
 
     default Optional<String> header(String name) {
-        var headers = headers();
-        return Optional.ofNullable(headers.get(name))
-            .or(() -> caseInsensitive(headers, name))
+        return maybeHeaders()
+            .map(map -> map.get(name))
+            .or(() ->
+                maybeHeaders().map(map ->
+                    caseInsensitive(map, name)))
             .map(String::valueOf);
+    }
+
+    default Optional<Map<String, Object>> maybeHeaders() {
+        return Optional.ofNullable(headers());
     }
 
     Map<String, Object> headers();
