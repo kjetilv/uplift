@@ -39,7 +39,12 @@ public final class NativeImage {
      *                           can say which upstream tasks or modules were consulted
      */
     public Path build(String emptyClasspathHint) {
-        Dist dist = Dist.verified(spec.javaDist());
+        Dist dist;
+        try {
+            dist = Dist.verified(spec.javaDist());
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not resolve dist from " + spec.javaDist(), e);
+        }
         List<Path> classPath = spec.classPath();
 
         if (classPath.isEmpty()) {
@@ -56,7 +61,7 @@ public final class NativeImage {
         log.info("Created new DockerFile for " + spec.buildsite());
 
         if (dist.type() == FILE) {
-            FileIO.copyTo(dist.path(), upliftDir, "dist.tar.gz");
+            FileIO.copyTo(Path.of(dist.uri()), upliftDir, "dist.tar.gz");
         }
 
         docker.run(upliftDir, "build --tag " + spec.buildsite() + ":latest " + upliftDir);

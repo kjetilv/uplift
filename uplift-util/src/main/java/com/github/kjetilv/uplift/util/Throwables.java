@@ -11,15 +11,31 @@ public final class Throwables {
                 Collectors.joining(" -> "));
     }
 
-    public static Stream<Throwable> chain(Throwable throwable) {
-        return Stream.iterate(throwable, Objects::nonNull, Throwables::next);
-    }
-
     public static boolean clientFailure(Exception e) {
         return chain(e)
             .filter(IOException.class::isInstance)
             .map(Throwable::getMessage)
             .anyMatch(clientFailure());
+    }
+
+    public static Stream<Throwable> chain(Throwable t) {
+        return chain(t, false);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    public static Stream<Throwable> chain(Throwable throwable, boolean simple) {
+        if (throwable == null) {
+            return Stream.empty();
+        }
+        var chain = Stream.iterate(throwable, Throwables::hasNext, Throwable::getCause);
+        if (simple) {
+            return chain;
+        }
+        return chain.flatMap(element ->
+            Stream.concat(
+                Stream.of(element),
+                suppressed(element).flatMap(Throwables::chain)
+            ));
     }
 
     private Throwables() {
@@ -31,9 +47,8 @@ public final class Throwables {
         "Connection reset"
     );
 
-    private static Throwable next(Throwable walker) {
-        var cause = walker.getCause();
-        return cause == walker ? null : cause;
+    private static boolean hasNext(Throwable throwable) {
+        return throwable != null && throwable.getCause() != throwable;
     }
 
     private static Predicate<String> clientFailure() {
@@ -42,5 +57,9 @@ public final class Throwables {
             return (firstChar == 'B' || firstChar == 'C') &&
                    IO_EXCEPTION_MESSAGES.contains(msg);
         };
+    }
+
+    private static Stream<Throwable> suppressed(Throwable throwable) {
+        return Stream.ofNullable(throwable.getSuppressed()).flatMap(Arrays::stream);
     }
 }

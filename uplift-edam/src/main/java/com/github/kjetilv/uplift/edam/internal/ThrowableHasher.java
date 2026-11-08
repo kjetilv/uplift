@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashBuilder;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Bytes;
+import com.github.kjetilv.uplift.util.Throwables;
 
 public final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Throwable, H> {
 
@@ -28,7 +29,7 @@ public final class ThrowableHasher<H extends HashKind<H>> implements Hasher<Thro
     @Override
     public Hash<H> hash(Throwable throwable) {
         Objects.requireNonNull(throwable, "throwable");
-        var chain = Utils.ThrowableUtils.chain(throwable).toList();
+        var chain = Throwables.chain(throwable).toList();
         lock.lock();
         try {
             return hash(chain);

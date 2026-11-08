@@ -7,47 +7,55 @@ import module java.net.http;
  * The GraalVM distribution can be given as a local file or as a download URL. The template
  * branches on which, so the type is resolved and verified up front.
  */
-public final class Dist {
+public record Dist(Type type, URI uri) {
 
     public static Dist verified(URI uri) {
-        Dist dist = new Dist(typeOf(uri), uri);
-        dist.verify();
-        return dist;
-    }
-
-    private final Type type;
-
-    private final URI uri;
-
-    private Dist(Type type, URI uri) {
-        this.type = type;
-        this.uri = uri;
-    }
-
-    public Type type() {
-        return type;
-    }
-
-    public URI uri() {
-        return uri;
+        return new Dist(typeOf(uri), uri);
     }
 
     public String uriString() {
         return uri().toASCIIString();
     }
 
-    public Path path() {
-        return Path.of(uri);
+    private static void fail(
+        HttpRequest request,
+        HttpResponse<Void> response,
+        Exception cause
+    ) {
+        throw new IllegalStateException(
+            "Failed to verify " + request.uri() + ", " + request.method() + " failed: " +
+            request + " -> " + response,
+            cause
+        );
     }
 
-    private void verify() {
-        switch (type) {
-            case FILE -> {
-                if (!Files.exists(path())) {
+    private static Type typeOf(URI uri) {
+        if (uri.getScheme() == null) {
+            throw new IllegalStateException("property must be file/http/https URI: " + uri);
+        }
+        var type = switch (uri.getScheme().toLowerCase(Locale.ROOT)) {
+            case "file" -> Type.FILE;
+            case "http", "https" -> Type.HTTP;
+            default -> throw new IllegalStateException(
+                "javaDist property must be file/http/https URI: " + uri);
+        };
+        return type.verified(uri);
+    }
+
+    public enum Type {
+
+        FILE {
+            @Override
+            Type verified(URI uri) {
+                if (!Files.exists(Path.of(uri))) {
                     throw new IllegalStateException("Failed to locate file: " + uri);
                 }
+                return this;
             }
-            case HTTP -> {
+        },
+        HTTP {
+            @Override
+            Type verified(URI uri) {
                 HttpRequest request = HttpRequest.newBuilder(uri)
                     .method("HEAD", HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -69,37 +77,10 @@ public final class Dist {
                 } catch (Exception e) {
                     fail(request, response, e);
                 }
+                return this;
             }
-        }
-    }
-
-    private static void fail(
-        HttpRequest request,
-        HttpResponse<Void> response,
-        Exception cause
-    ) {
-        throw new IllegalStateException(
-            "Failed to verify " + request.uri() + ", " + request.method() + " failed: " +
-            request + " -> " + response,
-            cause
-        );
-    }
-
-    private static Type typeOf(URI uri) {
-        if (uri.getScheme() == null) {
-            throw new IllegalStateException("javaDist property must be file/http/https URI: " + uri);
-        }
-        return switch (uri.getScheme().toLowerCase(Locale.ROOT)) {
-            case "file" -> Type.FILE;
-            case "http", "https" -> Type.HTTP;
-            default -> throw new IllegalStateException(
-                "javaDist property must be file/http/https URI: " + uri);
         };
-    }
 
-    public enum Type {
-
-        FILE,
-        HTTP
+        abstract Type verified(URI uri);
     }
 }

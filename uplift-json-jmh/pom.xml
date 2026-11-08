@@ -133,7 +133,6 @@
                 </executions>
             </plugin>
 
-            <!-- Replaces the Gradle JavaExec task: mvn -Pjmh exec:exec runs the benchmarks. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -142,7 +141,7 @@
                     <executable>java</executable>
                     <arguments>
                         <argument>--add-modules</argument>
-                        <argument>${uplift.addModules}</argument>
+                        <argument>${jvm.addModules}</argument>
                         <argument>-classpath</argument>
                         <classpath/>
                         <argument>org.openjdk.jmh.Main</argument>

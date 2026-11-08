@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
-import com.github.kjetilv.uplift.synchttp.rere.HttpReq;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -9,11 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ChunkedBodyTest {
-
-    private static final String REQUEST =
-        "POST /c HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n" +
-        "5\r\nhello\r\nA;name=value\r\n, chunked!\r\n0\r\nX-Trailer: yes\r\n\r\n" +
-        "GET /next HTTP/1.1\r\nA: 1\r\n\r\n";
 
     @Test
     void decodesAndKeepsNextRequest() {
@@ -26,12 +20,15 @@ class ChunkedBodyTest {
 
     @Test
     void splitAtEveryPosition() {
-        IntStream.range(1, REQUEST.length()).forEach(split -> {
-            var reader = HttpReqReader.defaultReader();
-            var channel = chunks(REQUEST.substring(0, split), REQUEST.substring(split));
-            assertThat(reader.read(channel).bodyString()).describedAs("split %d", split).isEqualTo("hello, chunked!");
-            assertThat(reader.read(channel).reqLine()).describedAs("split %d", split).hasToString("GET /next HTTP/1.1");
-        });
+        IntStream.range(1, REQUEST.length())
+            .forEach(split -> {
+                var reader = HttpReqReader.defaultReader();
+                var channel = chunks(REQUEST.substring(0, split), REQUEST.substring(split));
+                assertThat(reader.read(channel).bodyString()).describedAs("split %d", split)
+                    .isEqualTo("hello, chunked!");
+                assertThat(reader.read(channel).reqLine()).describedAs("split %d", split).hasToString(
+                    "GET /next HTTP/1.1");
+            });
     }
 
     @Test
@@ -67,11 +64,29 @@ class ChunkedBodyTest {
     @Test
     void invalidChunks() {
         for (var chunked : List.of(
-            "zz\r\nhello\r\n0\r\n\r\n",
-            "\r\nhello\r\n0\r\n\r\n",
-            "5\r\nhelloXX0\r\n\r\n",
-            "1000000000000000\r\n",
-            "5\r\nhel"
+            """
+                zz\r
+                hello\r
+                0\r
+                \r
+                """,
+            """
+                \r
+                hello\r
+                0\r
+                \r
+                """,
+            """
+                5\r
+                helloXX0\r
+                \r
+                """,
+            """
+                1000000000000000\r
+                """,
+            """
+                5\r
+                hel"""
         )) {
             var req = HttpReqReader.defaultReader()
                 .read(chunks("POST /c HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n" + chunked));
@@ -87,14 +102,44 @@ class ChunkedBodyTest {
         var sent = new AtomicInteger();
         var reader = HttpReqReader.defaultReader();
         var channel = chunks(
-            "POST /c HTTP/1.1\r\nTransfer-Encoding: chunked\r\nExpect: 100-continue\r\n\r\n",
-            "5\r\nhello\r\n0\r\n\r\n"
+            //language=http
+            """
+                POST /c HTTP/1.1\r
+                Transfer-Encoding: chunked\r
+                Expect: 100-continue\r
+                \r
+                """,
+            """
+                5\r
+                hello\r
+                0\r
+                \r
+                """
         );
-        HttpReq req = reader.read(channel, sent::incrementAndGet);
+        var req = reader.read(channel, sent::incrementAndGet);
         assertThat(sent).hasValue(0);
-        assertThat(req.bodyString()).isEqualTo("hello");
+        assertThat(req).isNotNull().satisfies(r ->
+            assertThat(r.bodyString()).isEqualTo("hello"));
         assertThat(sent).hasValue(1);
     }
+
+    private static final String REQUEST =
+        //language=http
+        """
+            POST /c HTTP/1.1\r
+            Transfer-Encoding: chunked\r
+            \r
+            5\r
+            hello\r
+            A;name=value\r
+            , chunked!\r
+            0\r
+            X-Trailer: yes\r
+            \r
+            GET /next HTTP/1.1\r
+            A: 1\r
+            \r
+            """;
 
     /// A channel that returns one chunk per read, then end of stream.
     private static ReadableByteChannel chunks(String... chunks) {

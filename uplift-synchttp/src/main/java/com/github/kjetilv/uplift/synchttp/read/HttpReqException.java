@@ -2,8 +2,8 @@ package com.github.kjetilv.uplift.synchttp.read;
 
 import module java.base;
 
-/// A request that cannot be served, because of an error by the client or an unsupported feature.
-/// The server responds with [#status()], and closes the connection.
+/// Exceptions for reqeusts that cannot be served, because of an error by the client or an unsupported feature.
+/// The server responds with [#status()], then closes the connection.
 public final class HttpReqException extends RuntimeException {
 
     /// @param throwable Throwable
@@ -15,31 +15,47 @@ public final class HttpReqException extends RuntimeException {
             .findFirst();
     }
 
+    static HttpReqException badRequest(String message) {
+        return badRequest(message, null);
+    }
+
+    static HttpReqException badRequest(String message, Throwable cause) {
+        return new HttpReqException(400, message, cause);
+    }
+
+    static HttpReqException tooLarge(String message) {
+        return tooLarge(message, null);
+    }
+
+    static HttpReqException tooLarge(String message, Throwable cause) {
+        return new HttpReqException(431, message, cause);
+    }
+
+    static HttpReqException notImplemented(String message) {
+        return notImplemented(message, null);
+    }
+
+    static HttpReqException notImplemented(String message, Throwable cause) {
+        return new HttpReqException(501, message, cause);
+    }
+
+    static HttpReqException versionNotSupported(String message) {
+        return versionNotSupported(message, null);
+    }
+
+    static HttpReqException versionNotSupported(String message, Throwable cause) {
+        return new HttpReqException(505, message, cause);
+    }
+
     private final int status;
 
-    HttpReqException(int status, String message) {
-        super(message);
+    HttpReqException(int status, String message, Throwable cause) {
+        super(message, cause);
         this.status = status;
     }
 
     public int status() {
         return status;
-    }
-
-    static HttpReqException badRequest(String message) {
-        return new HttpReqException(400, message);
-    }
-
-    static HttpReqException tooLarge(String message) {
-        return new HttpReqException(431, message);
-    }
-
-    static HttpReqException notImplemented(String message) {
-        return new HttpReqException(501, message);
-    }
-
-    static HttpReqException versionNotSupported(String message) {
-        return new HttpReqException(505, message);
     }
 
     @Override

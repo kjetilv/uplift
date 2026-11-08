@@ -19,6 +19,7 @@ import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 /// A request that cannot be served gives an [HttpReqException] with the status to respond with.
 public final class HttpReqReader {
 
+    @SuppressWarnings("resource")
     public static HttpReqReader defaultReader() {
         return new HttpReqReader(Arena.ofAuto().allocate(DEFAULT_SIZE));
     }
@@ -136,17 +137,17 @@ public final class HttpReqReader {
             throw HttpReqException.badRequest("Malformed request line: " + string(0, end));
         }
         var reqLine = new ReqLine(segment, urlSpace + 1, versionSpace + 1, end + 1);
-        if (!(reqLine.isHttp11() || reqLine.isHttp10())) {
-            throw reqLine.version().startsWith("HTTP/")
-                ? HttpReqException.versionNotSupported("Version not supported: " + reqLine.version())
-                : HttpReqException.badRequest("Malformed request line: " + string(0, end));
+        if (reqLine.isHttp11() || reqLine.isHttp10()) {
+            try {
+                reqLine.getMethod();
+            } catch (Exception e) {
+                throw HttpReqException.notImplemented("Method not supported: " + reqLine.method(), e);
+            }
+            return reqLine;
         }
-        try {
-            reqLine.getMethod();
-        } catch (Exception e) {
-            throw HttpReqException.notImplemented("Method not supported: " + reqLine.method());
-        }
-        return reqLine;
+        throw reqLine.version().startsWith("HTTP/")
+            ? HttpReqException.versionNotSupported("Version not supported: " + reqLine.version())
+            : HttpReqException.badRequest("Malformed request line: " + string(0, end));
     }
 
     private List<ReqHeader> headers(ReadableByteChannel channel, int requestLineFeed) {

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.edam.internal;
 
 import module java.base;
+import com.github.kjetilv.uplift.util.Throwables;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -68,35 +69,12 @@ public final class Utils {
                 .toList();
         }
 
-        static Stream<Throwable> chain(Throwable t) {
-            return chain(t, false);
-        }
-
-        @SuppressWarnings("SameParameterValue")
-        static Stream<Throwable> chain(Throwable throwable, boolean simple) {
-            if (throwable == null) {
-                return Stream.empty();
-            }
-            var chain = Stream.iterate(
-                throwable,
-                ThrowableUtils::hasNext,
-                Throwable::getCause
-            );
-            return simple
-                ? chain
-                : chain.flatMap(element ->
-                    Stream.concat(
-                        Stream.of(element),
-                        suppressed(element).flatMap(ThrowableUtils::chain)
-                    ));
-        }
-
         private ThrowableUtils() {
         }
 
         private static String print(Throwable throwable, int limit) {
             if (limit > 0) {
-                var chain = chain(throwable, true);
+                var chain = Throwables.chain(throwable, true);
                 var sb = new StringBuilder();
                 chain.forEach(t -> {
                     if (!sb.isEmpty()) {
@@ -130,14 +108,6 @@ public final class Utils {
 
         private static PrintWriter pw(OutputStream baos) {
             return new PrintWriter(baos, false, UTF_8);
-        }
-
-        private static boolean hasNext(Throwable throwable) {
-            return !(throwable == null || throwable.getCause() == throwable);
-        }
-
-        private static Stream<Throwable> suppressed(Throwable throwable) {
-            return Stream.ofNullable(throwable.getSuppressed()).flatMap(Arrays::stream);
         }
     }
 
