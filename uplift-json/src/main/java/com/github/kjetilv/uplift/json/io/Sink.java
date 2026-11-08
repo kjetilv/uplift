@@ -51,16 +51,25 @@ public sealed interface Sink extends RuntimeCloseable
         accept(bool ? TRUE : FALSE);
     }
 
-    /// Integral boxed types go to [#accept(long)], which sinks may write without allocating. Other
-    /// numbers are written by their `toString`.
+    /// Writes a number. This is the only place numbers are formatted:
+    ///
+    /// * Integral boxed types go to [#accept(long)], which sinks may write without allocating
+    /// * Doubles and floats go to [#accept(double)] and [#accept(float)], which reject NaN and infinity
+    /// * Other numbers, such as [BigDecimal] and [BigInteger], are written by their `toString`. For
+    ///   [BigDecimal], this uses exponent notation for large and small exponents, so the output stays
+    ///   proportional to the number of digits. [BigDecimal#toPlainString()] would write `1e1000000` as a
+    ///   million characters.
     ///
     /// @param number Number
+    /// @throws IllegalArgumentException If the number is NaN or infinite
     default void accept(Number number) {
         switch (number) {
             case Long l -> accept(l.longValue());
             case Integer i -> accept(i.longValue());
             case Short s -> accept(s.longValue());
             case Byte b -> accept(b.longValue());
+            case Double d -> accept(d.doubleValue());
+            case Float f -> accept(f.floatValue());
             default -> accept(number.toString());
         }
     }
@@ -68,6 +77,24 @@ public sealed interface Sink extends RuntimeCloseable
     /// @param value Value, written in decimal
     default void accept(long value) {
         accept(Long.toString(value));
+    }
+
+    /// @param value Value, written as [Double#toString(double)] does
+    /// @throws IllegalArgumentException If the value is NaN or infinite, which JSON cannot represent
+    default void accept(double value) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Not a JSON number: " + value);
+        }
+        accept(Double.toString(value));
+    }
+
+    /// @param value Value, written as [Float#toString(float)] does
+    /// @throws IllegalArgumentException If the value is NaN or infinite, which JSON cannot represent
+    default void accept(float value) {
+        if (!Float.isFinite(value)) {
+            throw new IllegalArgumentException("Not a JSON number: " + value);
+        }
+        accept(Float.toString(value));
     }
 
     /// @param c A character

@@ -239,7 +239,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         openArray(field);
         for (var i = 0; i < values.length; i++) {
             comma(i);
-            sink.accept(Double.toString(values[i]));
+            sink.accept(values[i]);
         }
         return closeArray();
     }
@@ -252,7 +252,7 @@ public final class DefaultFieldEvents implements FieldEvents {
         openArray(field);
         for (var i = 0; i < values.length; i++) {
             comma(i);
-            sink.accept(Float.toString(values[i]));
+            sink.accept(values[i]);
         }
         return closeArray();
     }

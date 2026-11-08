@@ -10,8 +10,6 @@ public final class JsonWrites {
         switch (object) {
             case null -> writeNull(sink);
             case String s -> writeString(sink, s);
-            case BigDecimal d -> writeDecimal(sink, d);
-            case BigInteger i -> writeInteger(sink, i);
             case Boolean b -> writeBool(sink, b);
             case Number n -> sink.accept(n);
             case Optional<?> o -> o.ifPresentOrElse(
@@ -75,14 +73,6 @@ public final class JsonWrites {
         sink.accept(bool
             ? Canonical.TRUE
             : Canonical.FALSE);
-    }
-
-    private static void writeDecimal(Sink sink, BigDecimal dec) {
-        sink.accept(dec.toPlainString());
-    }
-
-    private static void writeInteger(Sink sink, BigInteger inte) {
-        sink.accept(inte.toString(10));
     }
 
     /// Writes the entries that do not [count as null][#writesNull(Object)]. With no such entries, the map
