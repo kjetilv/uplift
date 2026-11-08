@@ -21,7 +21,7 @@ record ReqsImpl(URI uri) implements Reqs {
         return execute(
             method,
             body,
-            looksJsony(body.trim())
+            body != null && looksJsony(body.trim())
         );
     }
 
@@ -50,16 +50,17 @@ record ReqsImpl(URI uri) implements Reqs {
                 builder.header("Content-Type", "application/json");
             }
 
-            try (var build = HttpClient.newBuilder().build()) {
-                return build.sendAsync(
-                    builder.build(),
-                    HttpResponse.BodyHandlers.ofString()
-                );
-            }
+            return CLIENT.sendAsync(
+                builder.build(),
+                HttpResponse.BodyHandlers.ofString()
+            );
         } catch (Exception e) {
             throw new IllegalStateException("Failed to execute " + method + " " + uri, e);
         }
     }
+
+    /// Shared by all instances. Closing a client waits for its requests, which made every call synchronous.
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     private URI resolve(URI uri) {
         return uri == null ? uri() : uri().resolve(uri);

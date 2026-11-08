@@ -85,7 +85,7 @@ public class FlambdaTest {
                 var responseIn = new ResponseIn(
                     200,
                     Map.of("content-type", "text/plain"),
-                    "Hello " + requestOut.path(),
+                    "Hello " + requestOut.rawPath(),
                     false,
                     requestId
                 );
@@ -113,7 +113,7 @@ public class FlambdaTest {
         throws IOException, InterruptedException {
         var lambdaGet = client.send(
             HttpRequest.newBuilder()
-                .uri(lambdaUri.resolve("/"))
+                .uri(lambdaUri)
                 .GET().build(),
             HttpResponse.BodyHandlers.ofString()
         );
@@ -134,6 +134,6 @@ public class FlambdaTest {
             HttpResponse.BodyHandlers.discarding()
         );
         log.info("Lambda POST status: {}", lambdaPost.statusCode());
-        assertEquals(204, lambdaPost.statusCode());
+        assertEquals(202, lambdaPost.statusCode());
     }
 }

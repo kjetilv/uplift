@@ -5,14 +5,20 @@ import com.github.kjetilv.uplift.json.anno.JsonRecord;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/// A Lambda response for API Gateway. `cookies` is payload format 2.0: each becomes a `set-cookie` header.
 @JsonRecord
 public record ResponseIn(
     int statusCode,
     Map<String, Object> headers,
+    List<String> cookies,
     String body,
     boolean isBase64Encoded,
     String reqId
 ) implements Headered {
+
+    public ResponseIn(int statusCode, Map<String, Object> headers, String body, boolean isBase64Encoded, String reqId) {
+        this(statusCode, headers, null, body, isBase64Encoded, reqId);
+    }
 
     public byte[] bytes() {
         if (body == null || body.isEmpty()) {

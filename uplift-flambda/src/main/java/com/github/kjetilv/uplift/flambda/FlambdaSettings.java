@@ -1,7 +1,6 @@
 package com.github.kjetilv.uplift.flambda;
 
 import module java.base;
-
 import com.github.kjetilv.uplift.synchttp.CorsSettings;
 import com.github.kjetilv.uplift.util.Non;
 import org.slf4j.Logger;
@@ -9,12 +8,23 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
+/// Settings for [Flambda].
+///
+/// @param name           Function name, used in the function ARN
+/// @param address        Address to bind both servers to. Default loopback.
+/// @param lambdaPort     Runtime API port. Null or 0 for any free port.
+/// @param apiPort        API port. Null or 0 for any free port.
+/// @param maxRequestSize Max API request body, in bytes. Larger requests get 413. Default 6 MiB, Lambda's limit.
+/// @param queueLength    Max requests waiting for a Lambda. More get 429. Default 10.
+/// @param timeout        Max time an API request waits for a Lambda response. Then 504. Default 1 minute.
+/// @param cors           CORS settings. CORS headers from the Lambda are ignored.
+/// @param time           Time for event timestamps and the invocation deadline. Default system time.
 public record FlambdaSettings(
     String name,
     InetAddress address,
     Integer lambdaPort,
     Integer apiPort,
-    int requestBufferSize,
+    int maxRequestSize,
     int queueLength,
     Duration timeout,
     CorsSettings cors,
@@ -22,6 +32,11 @@ public record FlambdaSettings(
 ) {
 
     private static final Logger log = LoggerFactory.getLogger(FlambdaSettings.class);
+
+    /// Lambda's limit for synchronous invocation payloads
+    public static final int DEFAULT_MAX_REQUEST_SIZE = 6 * 1024 * 1024;
+
+    public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
 
     public FlambdaSettings(String name, CorsSettings cors) {
         this(name, cors, null);
@@ -33,7 +48,7 @@ public record FlambdaSettings(
 
     public FlambdaSettings(
         String name,
-        int requestBufferSize,
+        int maxRequestSize,
         int queueLength,
         CorsSettings cors,
         InstantSource time
@@ -43,7 +58,7 @@ public record FlambdaSettings(
             null,
             null,
             null,
-            requestBufferSize,
+            maxRequestSize,
             queueLength,
             null,
             cors,
@@ -55,7 +70,7 @@ public record FlambdaSettings(
         String name,
         Integer lambdaPort,
         Integer apiPort,
-        int requestBufferSize,
+        int maxRequestSize,
         int queueLength,
         CorsSettings cors,
         InstantSource time
@@ -65,7 +80,7 @@ public record FlambdaSettings(
             null,
             lambdaPort,
             apiPort,
-            requestBufferSize,
+            maxRequestSize,
             queueLength,
             null,
             cors,
@@ -78,7 +93,7 @@ public record FlambdaSettings(
         InetAddress address,
         Integer lambdaPort,
         Integer apiPort,
-        int requestBufferSize,
+        int maxRequestSize,
         int queueLength,
         Duration timeout,
         CorsSettings cors,
@@ -90,9 +105,9 @@ public record FlambdaSettings(
             : address;
         this.lambdaPort = lambdaPort;
         this.apiPort = apiPort;
-        this.requestBufferSize = Non.negative(requestBufferSize, "requestBufferSize") == 0
-            ? DEFAULT_REQUEST_LENGTH
-            : requestBufferSize;
+        this.maxRequestSize = Non.negative(maxRequestSize, "maxRequestSize") == 0
+            ? DEFAULT_MAX_REQUEST_SIZE
+            : maxRequestSize;
         this.queueLength = Non.negative(queueLength, "queueLength") == 0
             ? DEFAULT_QUEUE_LENGTH
             : queueLength;
@@ -104,15 +119,11 @@ public record FlambdaSettings(
         log.info("{} created", this);
     }
 
-    private Object print(Integer port) {
-        return port == null || port == 0 ? "<?>" : port;
-    }
-
-    private static final int DEFAULT_REQUEST_LENGTH = 1_024;
-
     private static final int DEFAULT_QUEUE_LENGTH = 10;
 
-    public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
+    private static Object print(Integer port) {
+        return port == null || port == 0 ? "<?>" : port;
+    }
 
     @Override
     public String toString() {

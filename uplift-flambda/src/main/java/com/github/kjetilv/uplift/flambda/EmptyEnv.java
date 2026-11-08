@@ -3,8 +3,6 @@ package com.github.kjetilv.uplift.flambda;
 import module java.base;
 import com.github.kjetilv.uplift.kernel.Env;
 
-import java.net.URI;
-
 @SuppressWarnings({"NewExceptionWithoutArguments", "unused"})
 public class EmptyEnv implements Env {
 

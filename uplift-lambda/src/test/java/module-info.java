@@ -7,6 +7,8 @@ module uplift.lambda.test {
     requires org.assertj.core;
     requires uplift.util;
     requires uplift.lambda;
+    requires uplift.json.gen;
+    requires uplift.json;
 
     opens com.github.kjetilv.uplift.lambda.test to org.junit.platform.commons;
 }

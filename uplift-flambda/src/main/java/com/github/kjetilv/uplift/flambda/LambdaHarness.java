@@ -28,6 +28,8 @@ public class LambdaHarness implements RuntimeCloseable {
 
     private final LambdaHandler handler;
 
+    private final ExecutorService executor;
+
     public LambdaHarness(String name, LambdaHandler lambdaHandler) {
         this(
             name,
@@ -90,14 +92,16 @@ public class LambdaHarness implements RuntimeCloseable {
         );
 
         this.looper = managed.looper(name);
-        Virtuals.executor(name).submit(this.looper);
+        this.executor = Virtuals.executor(name);
+        this.executor.submit(this.looper);
         this.reqs = flambda.reqs();
     }
 
     @Override
     public void close() {
-        this.flambda.close();
         this.looper.close();
+        this.flambda.close();
+        this.executor.shutdown();
     }
 
     public Reqs reqs() {

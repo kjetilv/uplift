@@ -44,6 +44,33 @@ class LambdaPayloadTest {
     }
 
     @Test
+    void parsesVer2Fields() {
+        var event = com.github.kjetilv.uplift.lambda.RequestOutRW.INSTANCE.stringReader().read(VER_2);
+        assertThat(event.version()).isEqualTo("2.0");
+        assertThat(event.routeKey()).isEqualTo("$default");
+        assertThat(event.rawPath()).isEqualTo("/my/path");
+        assertThat(event.rawQueryString()).isEqualTo("parameter1=value1&parameter1=value2&parameter2=value");
+        assertThat(event.cookies()).containsExactly("cookie1", "cookie2");
+        var context = event.requestContext();
+        assertThat(context.accountId()).isEqualTo("123456789012");
+        assertThat(context.requestId()).isEqualTo("id");
+        assertThat(context.stage()).isEqualTo("$default");
+        assertThat(context.time()).isEqualTo("12/Mar/2020:19:03:58 +0000");
+        assertThat(context.timeEpoch()).isEqualTo(1583348638390L);
+        assertThat(context.http().protocol()).isEqualTo("HTTP/1.1");
+        assertThat(context.http().sourceIp()).isEqualTo("192.0.2.1");
+        assertThat(context.http().userAgent()).isEqualTo("agent");
+    }
+
+    @Test
+    void parsesResponseCookies() {
+        var response = com.github.kjetilv.uplift.lambda.ResponseInRW.INSTANCE.stringReader().read(
+            "{\"statusCode\":200,\"cookies\":[\"a=1\",\"b=2\"],\"body\":\"x\"}");
+        assertThat(response.cookies()).containsExactly("a=1", "b=2");
+        assertThat(response.statusCode()).isEqualTo(200);
+    }
+
+    @Test
     void canParseVer2() {
         var payload = LambdaPayload.parse(VER_2);
         assertThat(payload.path()).isEqualTo("/my/path");

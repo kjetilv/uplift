@@ -1,6 +1,7 @@
 package uplift.examples.helloweb;
 
 import module java.base;
+import com.github.kjetilv.uplift.lambda.Lambda;
 import com.github.kjetilv.uplift.lambda.LambdaHandler;
 import com.github.kjetilv.uplift.lambda.LambdaPayload;
 import com.github.kjetilv.uplift.lambda.LambdaResult;
@@ -12,6 +13,10 @@ public final class HelloWeb implements LambdaHandler {
         var name = path(lambdaPayload);
         var greeting = Greeter.greet(name);
         return LambdaResult.json(greeting);
+    }
+
+    void main() {
+        Lambda.simply("lambda", new HelloWeb());
     }
 
     private static String path(LambdaPayload lambdaPayload) {
