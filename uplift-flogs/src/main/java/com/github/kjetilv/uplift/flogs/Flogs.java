@@ -123,6 +123,13 @@ public final class Flogs {
             : existing);
     }
 
+    /// @return The configured level, or [LogLevel#DEFAULT] if flogs is not initialized yet. Does not
+    ///     initialize flogs.
+    public static LogLevel logLevel() {
+        var current = settings.get();
+        return current == null ? LogLevel.DEFAULT : current.logLevel();
+    }
+
     public static Logger get(Class<?> source) {
         return get(requireNonNull(source, "source").getName());
     }
@@ -141,9 +148,9 @@ public final class Flogs {
     private static final AtomicReference<Floggers> floggersRef = new AtomicReference<>();
 
     private static final Supplier<Floggers> floggers = () ->
-        floggersRef.updateAndGet(existing -> {
-            if (existing != null) {
-                return existing;
+        floggersRef.updateAndGet(existingRef -> {
+            if (existingRef != null) {
+                return existingRef;
             }
             var settings = Flogs.settings.updateAndGet(existingSettings ->
                 existingSettings == null
@@ -151,10 +158,6 @@ public final class Flogs {
                     : existingSettings);
             return new Floggers(settings.printer(), settings);
         });
-
-    static {
-        FjulFormatter.init();
-    }
 
     private static Flogger flogger(String name) {
         return floggers.get().create(name);

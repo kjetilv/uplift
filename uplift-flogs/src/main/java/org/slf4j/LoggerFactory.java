@@ -26,7 +26,7 @@ public final class LoggerFactory {
     }
 
     @SuppressWarnings("StaticCollection")
-    private static final Map<String, Logger> LOGGERS = new HashMap<>();
+    private static final Map<String, Logger> LOGGERS = new ConcurrentHashMap<>();
 
     static {
         Flogs.initialize(LogLevel.INFO);

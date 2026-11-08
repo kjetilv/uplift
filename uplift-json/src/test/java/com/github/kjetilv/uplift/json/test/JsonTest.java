@@ -598,7 +598,6 @@ class JsonTest {
             .hasSize(2);
     }
 
-    @Disabled("Not yet")
     @Test
     void testUnicode() {
         //language=JSON
@@ -611,7 +610,7 @@ class JsonTest {
         );
         assertThat(roundtrip)
             .asInstanceOf(MAP)
-            .hasSize(2);
+            .hasSize(1);
     }
 
     @Test

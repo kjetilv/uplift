@@ -19,6 +19,8 @@ public record LogEntry(
     Boolean virtual
 ) {
 
+    /// Creates an entry for the current thread. A null message is logged as `null`, and null arguments as
+    /// no arguments.
     @SuppressWarnings("deprecation")
     static LogEntry create(
         Instant time,
@@ -29,28 +31,27 @@ public record LogEntry(
         Object[] args
     ) {
         var thread = Thread.currentThread();
-        var argumentThrowable = argumentThrowable(args);
-        var id = thread.getId();
-        var logEntry = new LogEntry(
+        var arguments = args == null ? NO_ARGS : args;
+        var argumentThrowable = argumentThrowable(arguments);
+        return new LogEntry(
             time,
             name,
             shortName,
             level,
-            msg,
+            String.valueOf(msg),
             argumentThrowable,
-            args,
+            arguments,
             argumentThrowable != null,
-            id,
-            id == 1 ? null : thread.getName(),
+            thread.getId(),
+            thread.getName(),
             thread.isVirtual()
         );
-        return logEntry;
     }
 
     public LogEntry {
         requireNonNull(time, "time");
         requireNonNull(name, "name");
-        requireNonNull(name, "shortName");
+        requireNonNull(shortName, "shortName");
         requireNonNull(logLevel, "logLevel");
         requireNonNull(msg, "msg");
         requireNonNull(args, "args");
@@ -60,8 +61,13 @@ public record LogEntry(
         }
     }
 
+    /// @return The thread name, with common pool workers and virtual threads marked, or an empty string if
+    ///     not known
     @Override
     public String threadName() {
+        if (threadName == null) {
+            return "";
+        }
         return threadName.startsWith(WORKER)
             ? POOL + threadName.substring(WORKER.length())
             : (virtual != null && virtual ? GHOST : "") + threadName;
@@ -74,6 +80,8 @@ public record LogEntry(
     boolean hasLevel() {
         return logLevel != null;
     }
+
+    private static final Object[] NO_ARGS = {};
 
     private static final String WORKER = "ForkJoinPool.commonPool-worker-";
 

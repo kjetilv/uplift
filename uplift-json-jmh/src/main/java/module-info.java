@@ -31,7 +31,7 @@ module uplift.json.jmh {
     requires java.compiler;
     requires jdk.incubator.vector;
 
-    exports com.github.kjetilv.uplift.jmh to uplift.json.jmh.test;
+    exports com.github.kjetilv.uplift.jmh;
     exports com.github.kjetilv.uplift.jmh.jmh_generated to jmh.core;
 
     opens com.github.kjetilv.uplift.jmh to tools.jackson.databind;

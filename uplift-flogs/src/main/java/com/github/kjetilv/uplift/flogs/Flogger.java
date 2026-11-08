@@ -51,26 +51,29 @@ final class Flogger implements Logger {
         return settings.isEnabled(logLevel);
     }
 
+    /// Logs a message. Logging never throws to the caller: a failure to create or format the entry is reported
+    /// on stderr, and a fallback line is written instead.
+    ///
+    /// @param level Level
+    /// @param msg   Message, may be null
+    /// @param args  Arguments, may be null
     @Override
     public void log(LogLevel level, String msg, Object... args) {
         if (settings.isEnabled(level)) {
-            var logEntry = entry(level, msg, args);
-            var logLine = logLine(logEntry);
-            write(logLine);
+            write(logLine(level, msg, args));
         }
     }
 
-    private LogEntry entry(LogLevel level, String msg, Object[] args) {
-        return LogEntry.create(settings.time().instant(), name, shortName, level, msg, args);
-    }
-
-    private String logLine(LogEntry logEntry) {
+    private String logLine(LogLevel level, String msg, Object[] args) {
         try {
-            return settings.formatter().format(logEntry);
+            return settings.formatter().format(
+                LogEntry.create(settings.time().instant(), name, shortName, level, msg, args)
+            );
         } catch (Exception e) {
-            STDERR.println("Logging failed: " + logEntry);
+            var description = level + " " + name + ": " + msg + " " + Arrays.deepToString(args);
+            STDERR.println("Logging failed: " + description);
             e.printStackTrace(STDERR);
-            return "FATAL " + logEntry + ": " + e;
+            return "FATAL " + description + ": " + e;
         }
     }
 

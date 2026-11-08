@@ -5,37 +5,33 @@ import module java.base;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+/// A [java.util.logging] formatter that writes records in the flogs format. Configure it for a handler, for
+/// example `java.util.logging.ConsoleHandler.formatter = com.github.kjetilv.uplift.flogs.FjulFormatter$Default`.
+///
+/// The message is formatted by [Formatter#formatMessage(LogRecord)], so JUL's own `{0}` parameters and
+/// resource bundles apply. Levels are mapped to the nearest [LogLevel].
 @SuppressWarnings("unused")
 public abstract sealed class FjulFormatter extends Formatter {
-
-    static void init() {
-        if (inited.compareAndSet(false, true) && System.getProperty(CONFIG_FILE) == null) {
-            Optional.ofNullable(Thread.currentThread().getContextClassLoader())
-                .map(classLoader -> classLoader.getResource(LOGGING_PROPERTIES))
-                .map(URL::getFile)
-                .ifPresent(resource ->
-                    System.setProperty(CONFIG_FILE, resource));
-        }
-    }
 
     private final LogFormatter<LogEntry> formatter;
 
     protected FjulFormatter(LogFormatter<LogEntry> formatter) {
-        this.formatter = formatter;
+        this.formatter = Objects.requireNonNull(formatter, "formatter");
     }
 
     @Override
     public String format(LogRecord record) {
+        var name = record.getLoggerName() == null ? "" : record.getLoggerName();
         return formatter.format(
             new LogEntry(
                 record.getInstant(),
-                record.getLoggerName(),
-                record.getLoggerName(),
-                LogLevel.valueOf(record.getLevel().getName()),
-                record.getMessage(),
+                name,
+                name.substring(name.lastIndexOf('.') + 1),
+                JulLevels.toFlogs(record.getLevel()),
+                String.valueOf(formatMessage(record)),
                 record.getThrown(),
-                record.getParameters(),
-                record.getThrown() != null,
+                NO_ARGS,
+                false,
                 record.getLongThreadID(),
                 String.valueOf(record.getLongThreadID()),
                 null
@@ -43,15 +39,7 @@ public abstract sealed class FjulFormatter extends Formatter {
         );
     }
 
-    private static final String CONFIG_FILE = "java.util.logging.config.file";
-
-    private static final String LOGGING_PROPERTIES = "logging.properties";
-
-    private static final AtomicBoolean inited = new AtomicBoolean();
-
-    static {
-        init();
-    }
+    private static final Object[] NO_ARGS = {};
 
     public static final class Default extends FjulFormatter {
         public Default() {

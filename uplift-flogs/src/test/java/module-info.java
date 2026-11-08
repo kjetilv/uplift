@@ -4,6 +4,7 @@
 /// @jenesis.bom pin-test.properties
 /// @jenesis.release 25
 module uplift.flogs.test {
+    requires java.logging;
     requires org.junit.jupiter.api;
     requires org.assertj.core;
 
