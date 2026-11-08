@@ -7,6 +7,21 @@ import com.github.kjetilv.uplift.json.BytesSource;
 /// changed. A buffer backed by an array is scanned in place.
 public final class ByteBufferIntsBytesSource extends AbstractIntsBytesSource {
 
+    /// Creates a source for the buffer: in place for an array-backed buffer, otherwise copying in chunks
+    ///
+    /// @param bytes Buffer
+    /// @return Source
+    public static BytesSource of(ByteBuffer bytes) {
+        if (bytes.hasArray()) {
+            return new ByteArrayIntsBytesSource(
+                bytes.array(),
+                bytes.arrayOffset() + bytes.position(),
+                bytes.remaining()
+            );
+        }
+        return new ByteBufferIntsBytesSource(bytes);
+    }
+
     private final ByteBuffer bytes;
 
     private int next;
@@ -14,16 +29,6 @@ public final class ByteBufferIntsBytesSource extends AbstractIntsBytesSource {
     public ByteBufferIntsBytesSource(ByteBuffer bytes) {
         this.bytes = bytes.slice();
         super();
-    }
-
-    /// Creates a source for the buffer: in place for an array-backed buffer, otherwise copying in chunks
-    ///
-    /// @param bytes Buffer
-    /// @return Source
-    public static BytesSource of(ByteBuffer bytes) {
-        return bytes.hasArray()
-            ? new ByteArrayIntsBytesSource(bytes.array(), bytes.arrayOffset() + bytes.position(), bytes.remaining())
-            : new ByteBufferIntsBytesSource(bytes);
     }
 
     @Override

@@ -12,13 +12,11 @@ import tools.jackson.databind.ObjectMapper;
 
 import static com.github.kjetilv.uplift.hash.HashKind.K128;
 
+@SuppressWarnings("MethodMayBeStatic")
 @Fork
 @Warmup(iterations = 1, time = 10)
 @Measurement(iterations = 1, time = 10)
 public class CacheBenchmark {
-//    static void main() throws Exception {
-//        new CacheBenchmark().readJsonCached();
-//    }
 
     @Benchmark
     public Object readJsonCached() throws Exception {
@@ -60,6 +58,7 @@ public class CacheBenchmark {
 
     private static final Path tmp = toTemp("iso_deliverables_metadata.jsonl.gz");
 
+    @SuppressWarnings("SameParameterValue")
     private static Path toTemp(String resource) {
         var url = Thread.currentThread().getContextClassLoader().getResource(resource);
         if (url == null) {
