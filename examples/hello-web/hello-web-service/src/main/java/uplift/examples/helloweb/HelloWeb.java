@@ -15,7 +15,7 @@ public final class HelloWeb implements LambdaHandler {
         return LambdaResult.json(greeting);
     }
 
-    void main() {
+    static void main() {
         Lambda.simply("lambda", new HelloWeb());
     }
 

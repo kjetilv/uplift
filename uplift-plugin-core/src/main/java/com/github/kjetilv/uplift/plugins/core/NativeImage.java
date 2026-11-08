@@ -69,7 +69,7 @@ public final class NativeImage {
         return zip(upliftDir.resolve(spec.identifier()), spec.zipFile());
     }
 
-    private Map<String, String> parameters(Dist dist, List<Path> classPath) {
+    private SequencedMap<String, String> parameters(Dist dist, List<Path> classPath) {
         var distLines = switch (dist.type()) {
             case FILE -> Templates.renderResource(
                 TEMPLATE_DISTFILE,
@@ -80,7 +80,7 @@ public final class NativeImage {
                 Map.of("disturi", dist.uriString())
             );
         };
-        Map<String, String> parameters = new LinkedHashMap<>();
+        SequencedMap<String, String> parameters = LinkedHashMap.newLinkedHashMap(9);
         parameters.put("buildsite", spec.buildsite());
         parameters.put("target", spec.identifier());
         parameters.put("arch", spec.arch());

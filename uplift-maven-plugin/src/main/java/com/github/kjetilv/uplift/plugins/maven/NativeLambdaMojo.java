@@ -32,10 +32,6 @@ import java.util.List;
 )
 public class NativeLambdaMojo extends AbstractMojo {
 
-    private static final String GRAAL_DIST =
-        "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.2.4/"
-        + "graalvm-community-jdk-25i2-25.0.4_linux-aarch64_bin.tar.gz";
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
@@ -160,4 +156,7 @@ public class NativeLambdaMojo extends AbstractMojo {
             throw new IllegalStateException("Failed to create " + path, e);
         }
     }
+
+    private static final String GRAAL_DIST =
+        "https://gds.oracle.com/download/graal/25i5/latest/graalvm-jdk-25i5-25_linux-aarch64_bin.tar.gz";
 }

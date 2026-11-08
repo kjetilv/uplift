@@ -44,34 +44,45 @@ public final class Dist {
         switch (type) {
             case FILE -> {
                 if (!Files.exists(path())) {
-                    throw new IllegalStateException("Failed to locate file " + uri);
+                    throw new IllegalStateException("Failed to locate file: " + uri);
                 }
             }
             case HTTP -> {
+                HttpRequest request = HttpRequest.newBuilder(uri)
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                    .build();
+                HttpResponse<Void> response = null;
                 try (
                     HttpClient client = HttpClient.newBuilder()
                         .followRedirects(HttpClient.Redirect.ALWAYS)
                         .build()
                 ) {
-                    HttpRequest request = HttpRequest.newBuilder(uri)
-                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                        .build();
-                    HttpResponse<Void> response =
-                        client.send(request, HttpResponse.BodyHandlers.discarding());
+                    response = client.send(request, HttpResponse.BodyHandlers.discarding());
                     if (response.statusCode() >= 400) {
-                        throw new IllegalStateException(
-                            response.statusCode() + ": Failed to fetch: " + request + " -> " + response);
+                        fail(request, response, null);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted verifying " + uri, e);
+                    fail(request, response, e);
                 } catch (IllegalStateException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new IllegalStateException("Failed to fetch: " + uri, e);
+                    fail(request, response, e);
                 }
             }
         }
+    }
+
+    private static void fail(
+        HttpRequest request,
+        HttpResponse<Void> response,
+        Exception cause
+    ) {
+        throw new IllegalStateException(
+            "Failed to verify " + request.uri() + ", " + request.method() + " failed: " +
+            request + " -> " + response,
+            cause
+        );
     }
 
     private static Type typeOf(URI uri) {
@@ -87,6 +98,7 @@ public final class Dist {
     }
 
     public enum Type {
+
         FILE,
         HTTP
     }

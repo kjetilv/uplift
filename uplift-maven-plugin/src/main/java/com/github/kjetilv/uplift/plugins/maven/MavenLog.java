@@ -13,7 +13,7 @@ final class MavenLog implements Log {
 
     @Override
     public void info(String message) {
-        log.debug(message);
+        log.info(message);
     }
 
     @Override
