@@ -13,6 +13,8 @@ public final class BytesSourceTokens implements Tokens {
 
     private final TokenResolver knownTokens;
 
+    private final BytesSource.LexemeParser<java.lang.Number> numberParser = this::parseNumber;
+
     private char[] buffer = new char[0];
 
     public BytesSourceTokens(BytesSource bytesSource, TokenResolver knownTokens) {
@@ -56,23 +58,21 @@ public final class BytesSourceTokens implements Tokens {
     }
 
     private Token fieldToken(boolean canonical) {
-        var lexeme = bytesSource.spoolField();
         if (canonical) {
-            var resolved = knownTokens.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
+            var resolved = bytesSource.spoolField(knownTokens);
             return resolved == null ? Token.SKIP_FIELD : resolved;
         }
-        return TokenResolver.DEFAULT.get(lexeme.bytes(), lexeme.offset(), lexeme.length());
+        return bytesSource.spoolField(TokenResolver.DEFAULT);
     }
 
     private Token.Str stringToken() {
-        return new Token.Str(bytesSource.spoolString().string());
+        return new Token.Str(bytesSource.spoolStringValue());
     }
 
     private Token numberToken() {
-        var lexeme = bytesSource.spoolNumber();
-        var number = parseNumber(lexeme.bytes(), lexeme.offset(), lexeme.length());
+        var number = bytesSource.spoolNumber(numberParser);
         if (number == null) {
-            throw new ReadException("Invalid number", "<" + lexeme.string() + ">", bytesSource.position());
+            throw new ReadException("Invalid number", "<" + bytesSource.lexeme().string() + ">", bytesSource.position());
         }
         return new Token.Number(number);
     }

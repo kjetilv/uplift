@@ -2,6 +2,11 @@ package com.github.kjetilv.uplift.json;
 
 import module java.base;
 
+/// Writes a map as a JSON object. Strings, numbers, booleans and maps are written through the matching
+/// [FieldEvents] methods. Other values are written by [FieldEvents#value(String, Object)].
+///
+/// Entries with values that
+/// [count as null][com.github.kjetilv.uplift.json.io.JsonWrites#writesNull(Object)] are left out.
 public final class MapWriter implements ObjectWriter<Map<?, ?>> {
 
     @Override
@@ -11,15 +16,14 @@ public final class MapWriter implements ObjectWriter<Map<?, ?>> {
         return calls;
     }
 
-    private static void resolve(Object key, Object value, FieldEvents calls) {
+    private void resolve(Object key, Object value, FieldEvents calls) {
+        var field = String.valueOf(key);
         switch (value) {
-            case String string -> calls.string(key.toString(), string);
-            case Number number -> calls.number(key.toString(), number);
-            case Boolean bool -> calls.bool(key.toString(), bool);
-            case Map<?, ?> map -> new MapWriter().write(map, calls);
-            default -> throw new IllegalStateException(
-                "Not supported: " + value.getClass() + "(" + key + " -> " + value + ")"
-            );
+            case String string -> calls.string(field, string);
+            case Number number -> calls.number(field, number);
+            case Boolean bool -> calls.bool(field, bool);
+            case Map<?, ?> map -> calls.map(field, map, this);
+            case null, default -> calls.value(field, value);
         }
     }
 }

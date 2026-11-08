@@ -71,5 +71,15 @@ public interface FieldEvents {
 
     <T> FieldEvents boolArray(String field, List<? extends T> value, Function<T, Boolean> toBool);
 
+    /// Writes a value of any type that [com.github.kjetilv.uplift.json.io.JsonWrites] supports, such as
+    /// lists, maps and optionals. Values that
+    /// [count as null][com.github.kjetilv.uplift.json.io.JsonWrites#writesNull(Object)] are left out, as
+    /// nulls are by the other methods.
+    ///
+    /// @param field Field name
+    /// @param value Value, may be null
+    /// @return This
+    FieldEvents value(String field, Object value);
+
     void done();
 }

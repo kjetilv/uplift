@@ -2,17 +2,15 @@ package com.github.kjetilv.uplift.json.io;
 
 import module java.base;
 
+/// Writes to a channel through a buffer. The buffer is written when the next write does not fit, and on
+/// [#close()]. A write larger than the buffer goes straight to the channel, after the buffer.
 public final class BufferedByteChannelSink extends AbstractBufferedSink {
 
     private final WritableByteChannel byteChannel;
 
-    private final Charset charset;
-
-    private final LongAdder bytesWritten = new LongAdder();
-
-    private final int bufferSize;
-
     private final ByteBuffer buffer;
+
+    private long length;
 
     public BufferedByteChannelSink(
         WritableByteChannel byteChannel,
@@ -20,56 +18,56 @@ public final class BufferedByteChannelSink extends AbstractBufferedSink {
         int bufferSize
     ) {
         super(charset, bufferSize);
-        this.byteChannel = byteChannel;
-        this.charset = charset == null ? StandardCharsets.UTF_8 : charset;
-        this.bufferSize = bufferSize;
+        this.byteChannel = Objects.requireNonNull(byteChannel, "byteChannel");
         this.buffer = ByteBuffer.allocateDirect(bufferSize());
     }
 
     @Override
     public void close() {
-        flush(buffer);
+        flush();
     }
 
     @Override
     public void accept(String string) {
-        var bytes = string.getBytes(charset);
-        if (bytes.length > bufferSize) {
-            bytesWritten.add(
-                flush(buffer) +
-                flush(ByteBuffer.wrap(bytes))
-            );
-        } else if (bytes.length > buffer.remaining()) {
-            var written = flush(buffer);
-            buffer.put(bytes);
-            bytesWritten.add(written);
+        var bytes = string.getBytes(charset());
+        length += bytes.length;
+        if (bytes.length > buffer.remaining()) {
+            flush();
+        }
+        if (bytes.length > buffer.capacity()) {
+            write(ByteBuffer.wrap(bytes));
         } else {
             buffer.put(bytes);
         }
     }
 
+    /// @return Bytes accepted so far, written or buffered
     @Override
     public long length() {
-        return bytesWritten.longValue() + buffer.position();
+        return length;
     }
 
-    private int flush(ByteBuffer buffer) {
+    private void flush() {
         buffer.flip();
-        var written = 0;
         try {
-            while (buffer.hasRemaining()) {
-                written += byteChannel.write(buffer);
-            }
-            return written;
-        } catch (Exception e) {
-            throw new IllegalStateException(this + " failed to flush buffer", e);
+            write(buffer);
         } finally {
             buffer.clear();
         }
     }
 
+    private void write(ByteBuffer source) {
+        try {
+            while (source.hasRemaining()) {
+                byteChannel.write(source);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(this + " failed to write", e);
+        }
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + bytesWritten + "->" + byteChannel + "]";
+        return getClass().getSimpleName() + "[" + length + "->" + byteChannel + "]";
     }
 }

@@ -5,77 +5,95 @@ import module java.base;
 import static java.lang.System.arraycopy;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/// Writes to a channel in HTTP chunked transfer coding. Each chunk is buffered, with space reserved in front
+/// for its size line.
+///
+/// A write that does not fit in the current chunk starts a new one. A write larger than a chunk is split
+/// over several. [#close()] writes the last chunk and the terminating empty chunk.
 public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
 
     private final WritableByteChannel byteChannel;
 
-    private final LongAdder bytesWritten = new LongAdder();
-
     private final ByteBuffer buffer;
 
+    /// Space reserved for the size line: hex digits of the largest chunk, and CRLF
     private final int maxHeader;
+
+    private long length;
 
     public ChunkedTransferByteChannelSink(WritableByteChannel byteChannel, Charset charset, int bufferSize) {
         super(charset, bufferSize);
-        this.byteChannel = byteChannel;
-        this.maxHeader = Integer.numberOfTrailingZeros(Integer.highestOneBit(bufferSize));
-        this.buffer = ByteBuffer.allocateDirect(maxHeader + CRLF.length + this.bufferSize() + CRLF.length);
+        this.byteChannel = Objects.requireNonNull(byteChannel, "byteChannel");
+        this.maxHeader = Integer.toHexString(maxChunk()).length() + CRLF.length;
+        this.buffer = ByteBuffer.allocateDirect(maxHeader + maxChunk() + CRLF.length);
         this.buffer.position(maxHeader);
     }
 
     @Override
     public void accept(String string) {
         var bytes = string.getBytes(charset());
-        if (bytes.length > bufferSize()) {
-            bytesWritten.add(
-                flush(buffer) +
-                flush(ByteBuffer.wrap(bytes))
-            );
-        } else if (bytes.length > buffer.remaining() - CRLF.length) {
-            var written = flush(buffer);
-            buffer.put(bytes);
-            bytesWritten.add(written);
-        } else {
-            buffer.put(bytes);
+        length += bytes.length;
+        if (bytes.length > available()) {
+            flush();
         }
+        var offset = 0;
+        while (bytes.length - offset > available()) {
+            var part = available();
+            buffer.put(bytes, offset, part);
+            offset += part;
+            flush();
+        }
+        buffer.put(bytes, offset, bytes.length - offset);
     }
 
+    /// @return Bytes accepted so far, written or buffered, not counting chunk framing
     @Override
     public long length() {
-        return bytesWritten.longValue() + buffer.position();
+        return length;
     }
 
     @Override
     public void close() {
-        if (buffer.position() > maxHeader) {
-            flush(buffer);
-        }
+        flush();
         write(ByteBuffer.wrap(TAIL));
     }
 
-    private int flush(ByteBuffer buffer) {
-        chunk(header(buffer), buffer);
-        var written = 0;
+    /// Room for chunk data. The buffer holds [#bufferSize()] plus the length of CRLF, as it always has.
+    private int maxChunk() {
+        return bufferSize() + CRLF.length;
+    }
+
+    private int available() {
+        return buffer.limit() - CRLF.length - buffer.position();
+    }
+
+    /// Writes the buffered data as one chunk, unless it is empty: an empty chunk ends the stream.
+    private void flush() {
+        if (buffer.position() == maxHeader) {
+            return;
+        }
+        chunk(header());
         try {
             while (buffer.hasRemaining()) {
-                written += write(buffer);
+                write(buffer);
             }
-            return written;
         } finally {
             buffer.clear();
             buffer.position(maxHeader);
         }
     }
 
-    private int write(ByteBuffer buffer) {
+    private void write(ByteBuffer source) {
         try {
-            return byteChannel.write(buffer);
+            while (source.hasRemaining()) {
+                byteChannel.write(source);
+            }
         } catch (Exception e) {
-            throw new IllegalStateException(this + " failed to write " + buffer, e);
+            throw new IllegalStateException(this + " failed to write " + source, e);
         }
     }
 
-    private byte[] header(ByteBuffer buffer) {
+    private byte[] header() {
         var chunkSize = buffer.position() - maxHeader;
         var countBytes = Integer.toHexString(chunkSize).getBytes(UTF_8);
         var header = new byte[countBytes.length + CRLF.length];
@@ -84,15 +102,10 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
         return header;
     }
 
-    private void chunk(byte[] header, ByteBuffer buffer) {
+    private void chunk(byte[] header) {
         var index = maxHeader - header.length;
-        buffer.put(ByteBuffer.wrap(CRLF))
-            .put(
-                index,
-                header,
-                0,
-                header.length
-            )
+        buffer.put(CRLF)
+            .put(index, header, 0, header.length)
             .flip()
             .position(index);
     }
@@ -105,6 +118,6 @@ public final class ChunkedTransferByteChannelSink extends AbstractBufferedSink {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + bytesWritten + "->" + byteChannel + "]";
+        return getClass().getSimpleName() + "[" + length + "->" + byteChannel + "]";
     }
 }

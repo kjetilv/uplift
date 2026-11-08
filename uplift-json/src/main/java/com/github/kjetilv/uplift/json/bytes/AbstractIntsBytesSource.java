@@ -2,6 +2,8 @@ package com.github.kjetilv.uplift.json.bytes;
 
 import module java.base;
 import com.github.kjetilv.uplift.json.BytesSource;
+import com.github.kjetilv.uplift.json.Token;
+import com.github.kjetilv.uplift.json.TokenResolver;
 import com.github.kjetilv.uplift.json.io.ReadException;
 import com.github.kjetilv.uplift.util.Bytes;
 
@@ -14,6 +16,9 @@ import com.github.kjetilv.uplift.util.Bytes;
 /// Lexemes are returned as views into the window where possible: a string without escapes, or a number,
 /// that lies within the window. Otherwise they are collected in a separate buffer. A lexeme is valid until the
 /// next call to this source.
+///
+/// The current lexeme is held as an array range, not as a [Bytes] instance, so that the methods that
+/// return a string, a field or a number do not allocate one. [#lexeme()] creates it on demand.
 public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private final byte[] buf;
@@ -33,7 +38,11 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     private int index;
 
-    private Bytes lexeme = EMPTY;
+    private byte[] lexemeBytes = NO_BYTES;
+
+    private int lexemeOffset;
+
+    private int lexemeLength;
 
     /// Streaming source: input is supplied by [#read(byte\[\], int, int)]
     protected AbstractIntsBytesSource() {
@@ -59,7 +68,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     @Override
     public int chomp() {
-        lexeme = EMPTY;
+        lexemeLength = 0;
         while (true) {
             var c = peek();
             switch (c) {
@@ -92,39 +101,40 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     @Override
     public Bytes spoolField() {
-        return spoolQuoted();
+        spoolQuoted();
+        return lexeme();
     }
 
     @Override
     public Bytes spoolString() {
-        return spoolQuoted();
+        spoolQuoted();
+        return lexeme();
+    }
+
+    @Override
+    public String spoolStringValue() {
+        spoolQuoted();
+        return new String(lexemeBytes, lexemeOffset, lexemeLength, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public Token.Field spoolField(TokenResolver resolver) {
+        spoolQuoted();
+        return resolver.get(lexemeBytes, lexemeOffset, lexemeLength);
+    }
+
+    @Override
+    public <T> T spoolNumber(LexemeParser<T> parser) {
+        scanNumber();
+        return parser.parse(lexemeBytes, lexemeOffset, lexemeLength);
     }
 
     /// Collects the characters of a number, starting with the character returned by the last [#chomp()].
     /// The grammar is checked by the caller.
     @Override
     public Bytes spoolNumber() {
-        index = 0;
-        var start = pos - 1;
-        var prev = buf[start];
-        while (true) {
-            var i = pos;
-            while (i < limit && isNumberPart(buf[i], prev)) {
-                prev = buf[i];
-                i++;
-            }
-            pos = i;
-            if (i < limit || !streaming) {
-                return lexeme = index == 0
-                    ? new Bytes(buf, start, i - start)
-                    : collect(start, i);
-            }
-            collect(start, i);
-            if (!fill()) {
-                return lexeme;
-            }
-            start = pos;
-        }
+        scanNumber();
+        return lexeme();
     }
 
     @Override
@@ -139,7 +149,7 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     @Override
     public Bytes lexeme() {
-        return lexeme;
+        return lexemeLength == 0 ? EMPTY : new Bytes(lexemeBytes, lexemeOffset, lexemeLength);
     }
 
     /// @return Approximate byte offset of the next unread byte
@@ -158,20 +168,42 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         return -1;
     }
 
+    /// Scans the characters of a number into the lexeme, starting with the character returned by the last
+    /// [#chomp()]
+    private void scanNumber() {
+        index = 0;
+        var start = pos - 1;
+        var prev = buf[start];
+        while (true) {
+            var i = pos;
+            while (i < limit && isNumberPart(buf[i], prev)) {
+                prev = buf[i];
+                i++;
+            }
+            pos = i;
+            if (i < limit || !streaming) {
+                if (index == 0) {
+                    lexeme(buf, start, i - start);
+                } else {
+                    collect(start, i);
+                }
+                return;
+            }
+            collect(start, i);
+            if (!fill()) {
+                return;
+            }
+            start = pos;
+        }
+    }
+
     /// Reads a string after the opening quote, up to and including the closing quote. Escapes are decoded:
     /// the lexeme holds the UTF-8 bytes of the decoded string.
-    private Bytes spoolQuoted() {
+    private void spoolQuoted() {
         index = 0;
         var start = pos;
         while (true) {
-            var i = pos;
-            while (i < limit) {
-                var b = buf[i];
-                if (b == '"' || b == '\\' || b >= 0 && b < 0x20) {
-                    break;
-                }
-                i++;
-            }
+            var i = plain(pos);
             if (i == limit) {
                 append(start, i);
                 pos = i;
@@ -184,9 +216,12 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
             var b = buf[i];
             if (b == '"') {
                 pos = i + 1;
-                return lexeme = index == 0
-                    ? new Bytes(buf, start, i - start)
-                    : collect(start, i);
+                if (index == 0) {
+                    lexeme(buf, start, i - start);
+                } else {
+                    collect(start, i);
+                }
+                return;
             }
             append(start, i);
             if (b == '\\') {
@@ -198,6 +233,30 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
                 fail("Unescaped control character " + b);
             }
         }
+    }
+
+    /// Finds the end of plain string content: the first quote, backslash or control character.
+    ///
+    /// Eight bytes are tested at a time, as a little-endian long. Reads stay below [#limit], since a source
+    /// may scan part of a caller's array.
+    ///
+    /// @param from Index to start at
+    /// @return Index of the first special byte, or [#limit] if there is none
+    private int plain(int from) {
+        var i = from;
+        var buf = this.buf;
+        var limit = this.limit;
+        while (i <= limit - Long.BYTES) {
+            var special = special((long) LONGS.get(buf, i));
+            if (special != 0) {
+                return i + (Long.numberOfTrailingZeros(special) >>> 3);
+            }
+            i += Long.BYTES;
+        }
+        while (i < limit && !special(buf[i])) {
+            i++;
+        }
+        return i;
     }
 
     /// Decodes the escape sequence after a backslash. A malformed unicode escape is an error.
@@ -320,12 +379,19 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
         index += length;
     }
 
-    /// Appends a range of the window to the collected bytes.
-    ///
-    /// @return The collected bytes, as the lexeme
-    private Bytes collect(int from, int to) {
+    /// Appends a range of the window to the collected bytes, and makes the collected bytes the lexeme
+    private void collect(int from, int to) {
         append(from, to);
-        return lexeme = new Bytes(collected, 0, index);
+        lexeme(collected, 0, index);
+    }
+
+    /// Sets the lexeme. The array reference is written only when it changes, since this runs for every token.
+    private void lexeme(byte[] bytes, int offset, int length) {
+        if (lexemeBytes != bytes) {
+            lexemeBytes = bytes;
+        }
+        lexemeOffset = offset;
+        lexemeLength = length;
     }
 
     private void add(byte b) {
@@ -381,6 +447,37 @@ public abstract class AbstractIntsBytesSource implements BytesSource {
 
     @SuppressWarnings("NumericCastThatLosesPrecision")
     private static final byte BOM_3 = (byte) 0xBF;
+
+    private static final VarHandle LONGS = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.LITTLE_ENDIAN);
+
+    private static final long ONES = 0x0101010101010101L;
+
+    private static final long HIGH_BITS = 0x8080808080808080L;
+
+    private static final long QUOTES = '"' * ONES;
+
+    private static final long BACKSLASHES = '\\' * ONES;
+
+    private static final long SPACES = ' ' * ONES;
+
+    /// Marks the bytes of a word that are a quote, a backslash or a control character, by setting their high
+    /// bits. Each test is the classic "has zero byte" or "has byte less than" bit trick. A test can also mark a
+    /// byte after a true match, through a borrow, but never before the first true match. The lowest mark is
+    /// therefore always the first special byte.
+    ///
+    /// @param word Eight bytes, the first in the lowest bits
+    /// @return Marks, or 0 if no byte is special
+    private static long special(long word) {
+        var quotes = word ^ QUOTES;
+        var backslashes = word ^ BACKSLASHES;
+        return (quotes - ONES & ~quotes |
+                backslashes - ONES & ~backslashes |
+                word - SPACES & ~word) & HIGH_BITS;
+    }
+
+    private static boolean special(byte b) {
+        return b == '"' || b == '\\' || b >= 0 && b < 0x20;
+    }
 
     /// Number characters: digits, `.`, `e`, `E`, and `+` or `-` right after `e` or `E`. A `-` elsewhere ends the
     /// number, so that `5-5` is read as two numbers.

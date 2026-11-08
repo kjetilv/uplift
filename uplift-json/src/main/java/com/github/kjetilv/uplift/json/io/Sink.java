@@ -51,8 +51,28 @@ public sealed interface Sink extends RuntimeCloseable
         accept(bool ? TRUE : FALSE);
     }
 
+    /// Integral boxed types go to [#accept(long)], which sinks may write without allocating. Other
+    /// numbers are written by their `toString`.
+    ///
+    /// @param number Number
     default void accept(Number number) {
-        accept(number.toString());
+        switch (number) {
+            case Long l -> accept(l.longValue());
+            case Integer i -> accept(i.longValue());
+            case Short s -> accept(s.longValue());
+            case Byte b -> accept(b.longValue());
+            default -> accept(number.toString());
+        }
+    }
+
+    /// @param value Value, written in decimal
+    default void accept(long value) {
+        accept(Long.toString(value));
+    }
+
+    /// @param c A character
+    default void accept(char c) {
+        accept(JsonStrings.string(c));
     }
 
     default Mark mark() {
@@ -61,8 +81,25 @@ public sealed interface Sink extends RuntimeCloseable
             previous != length();
     }
 
+    /// Writes the string as JSON string content, escaped, without quotes.
+    ///
+    /// @param string String
+    default void acceptEscaped(String string) {
+        accept(JsonStrings.escape(string));
+    }
+
+    /// Writes the string as a JSON string, escaped and quoted.
+    ///
+    /// @param string String
     default void acceptQuoted(String string) {
         accept(quoted(string));
+    }
+
+    /// Writes the field name of an object member: escaped and quoted, followed by a colon.
+    ///
+    /// @param field Field name
+    default void acceptField(String field) {
+        accept("\"" + JsonStrings.escape(field) + "\":");
     }
 
     @Override

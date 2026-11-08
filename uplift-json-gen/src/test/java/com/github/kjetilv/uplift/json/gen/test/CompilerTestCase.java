@@ -61,6 +61,28 @@ public class CompilerTestCase {
         }
     }
 
+    /// Verify what is written after reading into the record: the written JSON has the same values as the
+    /// expected JSON, as read by the plain parser.
+    ///
+    /// @param java     Java code
+    /// @param json     JSON to read
+    /// @param expected JSON with the values expected to be written
+    protected void verifyWritten(String java, String json, String expected) {
+        for (var source : List.of(
+            withImports(java),
+            addPackage(withImports(java))
+        )) {
+            session = compilerSession(source);
+            assertThat(session.compilationFailed())
+                .describedAs("Compilation failed:\n%s", session.compileError())
+                .isFalse();
+            var written = session.write(session.read(json));
+            assertThat(Json.instance().read(written))
+                .describedAs("Written from %s: %s", json, written)
+                .isEqualTo(Json.instance().read(expected));
+        }
+    }
+
     /// Verify that values survive reading into the record and writing back: the written JSON has the same
     /// values as the input, as read by the plain parser.
     ///

@@ -67,13 +67,116 @@ public class RicherCasesCompilerTest extends CompilerTestCase {
             //language=json
             """
                 {
-                    "map": {}
+                    "map": null
+                }
+                """
+        );
+    }
+
+    @Test
+    void emptyMapsAreNull() {
+        var java = //language=java
+            """
+                public record FooMap(String before, Map<String, ?> map) {
+                }
+                """;
+        verifyWritten(java, """
+            {"before": "b", "map": {}}
+            """, """
+            {"before": "b"}
+            """);
+        verifyWritten(java, """
+            {"before": "b", "map": {"a": null, "b": {}, "c": {"d": null}}}
+            """, """
+            {"before": "b"}
+            """);
+    }
+
+    @Test
+    void nestedMaps() {
+        verifyWritten(//language=java
+            """
+                public record FooMap(String before, Map<String, ?> map, String after) {
                 }
                 """,
             //language=json
             """
                 {
-                    "map": null
+                    "before": "b",
+                    "map": {
+                      "a": "x",
+                      "nested": {
+                        "n": 1,
+                        "deeper": {
+                          "t": true
+                        },
+                        "empty": {}
+                      },
+                      "z": 2
+                    },
+                    "after": "a"
+                }
+                """,
+            //language=json
+            """
+                {
+                    "before": "b",
+                    "map": {
+                      "a": "x",
+                      "nested": {
+                        "n": 1,
+                        "deeper": {
+                          "t": true
+                        }
+                      },
+                      "z": 2
+                    },
+                    "after": "a"
+                }
+                """
+        );
+    }
+
+    @Test
+    void mapsWithNullsAndLists() {
+        verifyWritten(//language=java
+            """
+                public record FooMap(String before, Map<String, ?> map, String after) {
+                }
+                """,
+            //language=json
+            """
+                {
+                    "before": "b",
+                    "map": {
+                      "nothing": null,
+                      "list": [1, "two", 3.5, true, null],
+                      "empty": [],
+                      "objects": [{"k": "v", "n": null}, {}, {"n": null}],
+                      "lists": [[1, 2], ["a\\"b"]],
+                      "nested": {
+                        "list": [{"deep": [false]}],
+                        "nothing": null,
+                        "allNull": {"x": null, "y": {"z": null}}
+                      }
+                    },
+                    "after": "a"
+                }
+                """,
+            //language=json
+            """
+                {
+                    "before": "b",
+                    "map": {
+                      "list": [1, "two", 3.5, true, null],
+                      "empty": [],
+                      "objects": [{"k": "v"}, null, null],
+                      "lists": [[1, 2], ["a\\"b"]],
+                      "nested": {
+                        "list": [{"deep": [false]}]
+                      }
+                    },
+                    "after": "a"
                 }
                 """
         );

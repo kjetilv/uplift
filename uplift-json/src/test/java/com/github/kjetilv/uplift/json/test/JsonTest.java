@@ -12,8 +12,10 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -721,7 +723,7 @@ class JsonTest {
             """.trim();
         var parsed = JSON.map(bytesSource);
         var expected = JSON.write(parsed);
-        assertThat(expected).isEqualTo(bytesSource);
+        assertThat(expected).isEqualTo(bytesSource.replace(",\"oops\":null", ""));
         var actual = JSON.write(written);
         assertThat(actual).isEqualTo(expected);
     }
@@ -777,9 +779,30 @@ class JsonTest {
         var bytes = bytesSource.getBytes(StandardCharsets.UTF_8);
         var json2 =
             JSON.read(new ByteArrayInputStream(bytes));
-        assertEquals(json, JSON.read(source2));
-        assertEquals(json2, JSON.read(source2));
+        assertEquals(withoutNulls(json), JSON.read(source2));
+        assertEquals(withoutNulls(json2), JSON.read(source2));
         return json;
+    }
+
+    /// What survives writing: map entries that count as null are left out, and maps with no other entries
+    /// are null. List elements keep their positions.
+    private static Object withoutNulls(Object value) {
+        return switch (value) {
+            case Map<?, ?> map -> {
+                var kept = new LinkedHashMap<Object, Object>();
+                map.forEach((key, entry) -> {
+                    var cleaned = withoutNulls(entry);
+                    if (cleaned != null) {
+                        kept.put(key, cleaned);
+                    }
+                });
+                yield kept.isEmpty() ? null : kept;
+            }
+            case List<?> list -> list.stream()
+                .map(JsonTest::withoutNulls)
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            case null, default -> value;
+        };
     }
 
     enum Enum {
