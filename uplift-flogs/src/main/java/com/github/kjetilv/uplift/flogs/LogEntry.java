@@ -16,11 +16,12 @@ public record LogEntry(
     boolean lastArgThrowable,
     long threadId,
     String threadName,
-    Boolean virtual
+    Boolean virtual,
+    Map<String, String> context
 ) {
 
-    /// Creates an entry for the current thread. A null message is logged as `null`, and null arguments as
-    /// no arguments.
+    /// Creates an entry for the current thread, with the [FlogsContext] of the thread. A null message is
+    /// logged as `null`, and null arguments as no arguments.
     @SuppressWarnings("deprecation")
     static LogEntry create(
         Instant time,
@@ -44,10 +45,12 @@ public record LogEntry(
             argumentThrowable != null,
             thread.getId(),
             thread.getName(),
-            thread.isVirtual()
+            thread.isVirtual(),
+            FlogsContext.get()
         );
     }
 
+    /// The context map is not copied. A null context is the same as an empty context.
     public LogEntry {
         requireNonNull(time, "time");
         requireNonNull(name, "name");
@@ -59,6 +62,7 @@ public record LogEntry(
             throw new IllegalArgumentException(
                 "No args, yet last arg should be throwable, msg was: `" + msg + "`", throwable);
         }
+        context = context == null ? Map.of() : context;
     }
 
     /// @return The thread name, with common pool workers and virtual threads marked, or an empty string if

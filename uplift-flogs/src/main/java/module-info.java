@@ -7,6 +7,7 @@ module uplift.flogs {
     exports org.slf4j;
     exports org.slf4j.event;
     exports org.slf4j.helpers;
+    exports org.slf4j.spi;
     exports org.apache.commons.logging;
     exports com.github.kjetilv.uplift.flogs;
 

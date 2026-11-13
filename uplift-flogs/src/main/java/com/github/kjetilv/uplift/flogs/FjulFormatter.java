@@ -10,6 +10,10 @@ import java.util.logging.LogRecord;
 ///
 /// The message is formatted by [Formatter#formatMessage(LogRecord)], so JUL's own `{0}` parameters and
 /// resource bundles apply. Levels are mapped to the nearest [LogLevel].
+///
+/// The [FlogsContext] is read when the record is formatted. The standard JUL handlers format on the thread
+/// that logs, so the line gets the context of that thread. A handler that formats on an other thread gives
+/// the line the context of that other thread.
 @SuppressWarnings("unused")
 public abstract sealed class FjulFormatter extends Formatter {
 
@@ -34,7 +38,8 @@ public abstract sealed class FjulFormatter extends Formatter {
                 false,
                 record.getLongThreadID(),
                 String.valueOf(record.getLongThreadID()),
-                null
+                null,
+                FlogsContext.get()
             )
         );
     }

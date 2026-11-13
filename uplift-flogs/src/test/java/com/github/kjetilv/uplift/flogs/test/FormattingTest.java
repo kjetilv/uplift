@@ -82,7 +82,7 @@ class FormattingTest {
     @Test
     void acceptsUnknownThreadName() {
         var entry = new LogEntry(
-            Instant.now(), "n", "n", LogLevel.INFO, "m", null, new Object[0], false, 1L, null, null
+            Instant.now(), "n", "n", LogLevel.INFO, "m", null, new Object[0], false, 1L, null, null, null
         );
         assertThat(entry.threadName()).isEmpty();
         assertThat(format(entry)).contains("m");
@@ -141,7 +141,7 @@ class FormattingTest {
     private static LogEntry entry(String message, Object... args) {
         var throwable = args.length > 0 && args[args.length - 1] instanceof Throwable t ? t : null;
         return new LogEntry(
-            Instant.now(), "Name", "Name", LogLevel.INFO, message, throwable, args, throwable != null, 7L, "t", false
+            Instant.now(), "Name", "Name", LogLevel.INFO, message, throwable, args, throwable != null, 7L, "t", false, null
         );
     }
 

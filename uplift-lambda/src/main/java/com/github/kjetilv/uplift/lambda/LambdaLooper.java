@@ -5,6 +5,7 @@ import com.github.kjetilv.uplift.util.RuntimeCloseable;
 import com.github.kjetilv.uplift.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
@@ -120,6 +121,8 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
         }
     }
 
+    /// Runs the handler. The log context ([MDC]) of the thread is cleared afterwards, so that context that the
+    /// handler sets does not stay for the next invocation on the same thread.
     private Invocation executeLambda(Invocation invocation) {
         try {
             return invocation.result(
@@ -141,6 +144,7 @@ public final class LambdaLooper implements Runnable, RuntimeCloseable {
                 lastTime.set(invocation.created());
             } finally {
                 initiated.increment();
+                MDC.clear();
             }
         }
     }

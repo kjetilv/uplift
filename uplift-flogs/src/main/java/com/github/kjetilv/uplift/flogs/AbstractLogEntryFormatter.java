@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.flogs;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,8 +33,9 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
                 .append(name(entry))
                 .append(BOLD_OFF)
                 .append(": ")
-                .append(formattedMessage)
-                .append(" ")
+                .append(formattedMessage);
+            appendContext(sb, entry.context());
+            sb.append(" ")
                 .append(BOLD_ON)
                 .append(THREAD_ICON)
                 .append(BOLD_OFF)
@@ -45,8 +47,9 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
                 .append(' ')
                 .append(name(entry))
                 .append(" ")
-                .append(formattedMessage)
-                .append(" ")
+                .append(formattedMessage);
+            appendContext(sb, entry.context());
+            sb.append(" ")
                 .append(THREAD_ICON)
                 .append(entry.threadName());
         }
@@ -96,6 +99,24 @@ public abstract class AbstractLogEntryFormatter extends AbstractFormatter<LogEnt
         .toCharArray();
 
     public static final String THREAD_ICON = "🧵 ";
+
+    /// Appends the context as ` {k1=v1, k2=v2}`, in the order of the map. Appends nothing for an empty
+    /// context.
+    private static void appendContext(StringBuilder sb, Map<String, String> context) {
+        if (context.isEmpty()) {
+            return;
+        }
+        sb.append(" {");
+        var first = true;
+        for (var entry : context.entrySet()) {
+            if (!first) {
+                sb.append(", ");
+            }
+            sb.append(entry.getKey()).append('=').append(entry.getValue());
+            first = false;
+        }
+        sb.append('}');
+    }
 
     private static char[] color(LogLevel level) {
         return switch (level) {
