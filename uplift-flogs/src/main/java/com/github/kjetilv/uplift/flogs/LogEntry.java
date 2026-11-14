@@ -20,8 +20,8 @@ public record LogEntry(
     Map<String, String> context
 ) {
 
-    /// Creates an entry for the current thread, with the [FlogsContext] of the thread. A null message is
-    /// logged as `null`, and null arguments as no arguments.
+    /// Creates an entry for the current thread, with the [FlogsContext] in effect. A null message is logged as
+    /// `null`, and null arguments as no arguments.
     @SuppressWarnings("deprecation")
     static LogEntry create(
         Instant time,

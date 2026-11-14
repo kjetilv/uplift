@@ -12,8 +12,8 @@ import java.util.logging.LogRecord;
 /// resource bundles apply. Levels are mapped to the nearest [LogLevel].
 ///
 /// The [FlogsContext] is read when the record is formatted. The standard JUL handlers format on the thread
-/// that logs, so the line gets the context of that thread. A handler that formats on an other thread gives
-/// the line the context of that other thread.
+/// that logs, so the line gets the context in effect where the record is logged. A handler that formats on an
+/// other thread gives the line the context of that other thread.
 @SuppressWarnings("unused")
 public abstract sealed class FjulFormatter extends Formatter {
 

@@ -1,6 +1,7 @@
 package com.github.kjetilv.uplift.lambda.test;
 
 import module java.base;
+import com.github.kjetilv.uplift.flogs.FlogsContext;
 import com.github.kjetilv.uplift.lambda.*;
 import com.github.kjetilv.uplift.util.Virtuals;
 import org.junit.jupiter.api.Test;
@@ -20,19 +21,27 @@ class LambdaLoopTest {
     void flow() {
         Collection<String> responses = new ArrayList<>();
         var failed = new AtomicReference<Throwable>();
+        var handlerRequestIds = new CopyOnWriteArrayList<String>();
+        var resolverRequestIds = new CopyOnWriteArrayList<Map.Entry<String, String>>();
         var request = HttpRequest.newBuilder(URI.create("http://localhost")).GET().build();
         try (var executor = Virtuals.executor("test")) {
             var test = LambdaLoopers.looper(
                 "test",
                 invocationSource(responses, request, executor),
-                _ ->
-                    new LambdaResult(
+                _ -> {
+                    handlerRequestIds.add(FlogsContext.get(LambdaLooper.REQUEST_ID));
+                    return new LambdaResult(
                         200,
                         Collections.emptyMap(),
                         "OK".getBytes(UTF_8),
                         false
-                    ),
+                    );
+                },
                 invocation -> {
+                    resolverRequestIds.add(Map.entry(
+                        invocation.id(),
+                        FlogsContext.get(LambdaLooper.REQUEST_ID)
+                    ));
                     var uri = invocation.request().uri();
                     var resolve = uri.resolve("/bar/" + invocation.id() + "/foo");
                     return HttpRequest.newBuilder(resolve).GET().build();
@@ -59,6 +68,11 @@ class LambdaLoopTest {
         }
         assertThat(responses.size()).isGreaterThanOrEqualTo(3);
         assertThat(failed.get()).isNull();
+        assertThat(resolverRequestIds).hasSameSizeAs(responses)
+            .allSatisfy(ids -> assertThat(ids.getValue()).isEqualTo(ids.getKey()));
+        assertThat(handlerRequestIds)
+            .containsExactlyInAnyOrderElementsOf(resolverRequestIds.stream().map(Map.Entry::getKey).toList());
+        assertThat(FlogsContext.get()).isEmpty();
     }
 
     private static final String REQ =

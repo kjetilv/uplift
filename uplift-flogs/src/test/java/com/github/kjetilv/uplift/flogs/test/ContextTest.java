@@ -6,7 +6,6 @@ import com.github.kjetilv.uplift.flogs.FlogsContext;
 import com.github.kjetilv.uplift.flogs.LogEntry;
 import com.github.kjetilv.uplift.flogs.LogFormatter;
 import com.github.kjetilv.uplift.flogs.LogLevel;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
@@ -14,105 +13,111 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/// The log context is kept per thread, changed through [MDC] or [FlogsContext], and written after the message.
+/// The log context is bound for a scope, read through [MDC] or [FlogsContext], and written after the message.
 class ContextTest {
 
-    @AfterEach
-    void clear() {
-        FlogsContext.clear();
+    @Test
+    void isEmptyOutsideScope() {
+        assertThat(FlogsContext.get()).isEmpty();
+        assertThat(MDC.get("a")).isNull();
     }
 
     @Test
-    void putsGetsAndRemoves() {
-        MDC.put("a", "1");
-        MDC.put("b", "2");
-        assertThat(MDC.get("a")).isEqualTo("1");
-        assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"), Map.entry("b", "2"));
-        MDC.remove("a");
-        assertThat(MDC.get("a")).isNull();
-        assertThat(FlogsContext.get()).containsExactly(Map.entry("b", "2"));
-        MDC.clear();
+    void isBoundForTheScopeOnly() {
+        FlogsContext.where("a", "1").where("b", "2").run(() -> {
+            assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"), Map.entry("b", "2"));
+            assertThat(MDC.get("a")).isEqualTo("1");
+        });
         assertThat(FlogsContext.get()).isEmpty();
+    }
+
+    @Test
+    void nestedScopesAddReplaceAndRemove() {
+        FlogsContext.where("a", "1").where("b", "2").run(() -> {
+            FlogsContext.where("b", "3").where("c", "4").where("a", null).run(() ->
+                assertThat(FlogsContext.get()).containsExactly(Map.entry("b", "3"), Map.entry("c", "4")));
+            assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"), Map.entry("b", "2"));
+        });
     }
 
     @Test
     void keepsInsertionOrder() {
-        MDC.put("z", "1");
-        MDC.put("a", "2");
-        MDC.put("m", "3");
-        MDC.put("z", "4");
-        assertThat(FlogsContext.get().keySet()).containsExactly("z", "a", "m");
-        assertThat(MDC.get("z")).isEqualTo("4");
+        var context = new LinkedHashMap<String, String>();
+        context.put("z", "1");
+        context.put("a", "2");
+        context.put("m", "3");
+        FlogsContext.where(context).run(() ->
+            assertThat(FlogsContext.get().keySet()).containsExactly("z", "a", "m"));
     }
 
     @Test
-    void nullValueRemovesAndNullKeyIsRejected() {
-        MDC.put("a", "1");
-        MDC.put("a", null);
-        assertThat(FlogsContext.get()).isEmpty();
-        assertThatThrownBy(() -> MDC.put(null, "x")).isInstanceOf(IllegalArgumentException.class);
-        assertThat(MDC.get(null)).isNull();
-        MDC.remove(null);
+    void callReturnsValueAndPassesException() {
+        assertThat(FlogsContext.where("a", "1").call(() -> MDC.get("a"))).isEqualTo("1");
+        assertThatThrownBy(() -> FlogsContext.where("a", "1").call(() -> {
+            throw new IOException("boom");
+        })).isInstanceOf(IOException.class);
     }
 
     @Test
-    void contextIsUnmodifiableAndReplacedOnChange() {
-        MDC.put("a", "1");
-        var before = FlogsContext.get();
-        MDC.put("b", "2");
-        assertThat(before).containsExactly(Map.entry("a", "1"));
-        assertThatThrownBy(() -> FlogsContext.get().put("c", "3"))
-            .isInstanceOf(UnsupportedOperationException.class);
+    void rejectsNullKey() {
+        assertThatThrownBy(() -> FlogsContext.where(null, "x")).isInstanceOf(IllegalArgumentException.class);
+        var context = new HashMap<String, String>();
+        context.put(null, "x");
+        assertThatThrownBy(() -> FlogsContext.where(context)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(FlogsContext.get(null)).isNull();
     }
 
     @Test
-    void copiesAndSetsContextMap() {
-        MDC.put("a", "1");
-        var copy = MDC.getCopyOfContextMap();
-        copy.put("b", "2");
-        assertThat(MDC.get("b")).isNull();
+    void scopeIsNotChangedByItsInput() {
         var input = new LinkedHashMap<String, String>();
-        input.put("x", "1");
-        input.put("y", null);
-        MDC.setContextMap(input);
-        input.put("z", "3");
-        assertThat(FlogsContext.get()).containsExactly(Map.entry("x", "1"));
-        MDC.setContextMap(null);
-        assertThat(FlogsContext.get()).isEmpty();
+        input.put("a", "1");
+        var scope = FlogsContext.where(input);
+        input.put("b", "2");
+        scope.run(() -> {
+            assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"));
+            assertThatThrownBy(() -> FlogsContext.get().put("c", "3"))
+                .isInstanceOf(UnsupportedOperationException.class);
+        });
     }
 
     @Test
-    void closeableRemovesKey() {
-        MDC.put("keep", "1");
-        try (var _ = MDC.putCloseable("tmp", "2")) {
-            assertThat(MDC.get("tmp")).isEqualTo("2");
-        }
-        assertThat(FlogsContext.get()).containsExactly(Map.entry("keep", "1"));
-    }
-
-    @Test
-    void adapterUsesSameContext() {
-        var adapter = MDC.getMDCAdapter();
-        adapter.put("a", "1");
-        assertThat(MDC.get("a")).isEqualTo("1");
-        adapter.clear();
-        assertThat(FlogsContext.get()).isEmpty();
-    }
-
-    @Test
-    void contextStaysOnItsThread() throws Exception {
-        MDC.put("a", "1");
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var other = executor.submit(() -> {
-                var seen = FlogsContext.get();
+    void mdcChangesHaveNoEffect() {
+        FlogsContext.where("a", "1").run(() -> {
+            assertThatCode(() -> {
                 MDC.put("b", "2");
-                return seen;
-            }).get();
-            assertThat(other).isEmpty();
-        }
-        assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"));
+                MDC.remove("a");
+                MDC.setContextMap(Map.of("c", "3"));
+                try (var _ = MDC.putCloseable("d", "4")) {
+                    MDC.getMDCAdapter().put("e", "5");
+                }
+                MDC.clear();
+            }).doesNotThrowAnyException();
+            assertThat(FlogsContext.get()).containsExactly(Map.entry("a", "1"));
+        });
+    }
+
+    @Test
+    void mdcCopyIsModifiable() {
+        FlogsContext.where("a", "1").run(() -> {
+            var copy = MDC.getCopyOfContextMap();
+            copy.put("b", "2");
+            assertThat(copy).containsExactly(Map.entry("a", "1"), Map.entry("b", "2"));
+            assertThat(MDC.get("b")).isNull();
+        });
+    }
+
+    @Test
+    void executorTasksDoNotGetContext() {
+        FlogsContext.where("a", "1").run(() -> {
+            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                assertThat(executor.submit(() -> FlogsContext.get()).get()).isEmpty();
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        });
     }
 
     @Test
@@ -130,11 +135,11 @@ class ContextTest {
     }
 
     @Test
-    void julFormatterUsesContextOfThread() {
-        MDC.put("req", "r1");
+    void julFormatterUsesContextInEffect() {
         var record = new LogRecord(Level.INFO, "jul");
         record.setLoggerName("jul.Logger");
-        assertThat(new FjulFormatter.Default().format(record)).contains("jul {req=r1} 🧵");
+        FlogsContext.where("req", "r1").run(() ->
+            assertThat(new FjulFormatter.Default().format(record)).contains("jul {req=r1} 🧵"));
     }
 
     private static String format(Map<String, String> context) {

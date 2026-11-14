@@ -5,6 +5,7 @@ module uplift.lambda.test {
     requires java.net.http;
     requires org.junit.jupiter.api;
     requires org.assertj.core;
+    requires uplift.flogs;
     requires uplift.util;
     requires uplift.lambda;
     requires uplift.json.gen;

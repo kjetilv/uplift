@@ -1,46 +1,56 @@
 package org.slf4j;
 
 import module java.base;
+import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.FlogsContext;
+import com.github.kjetilv.uplift.flogs.LogLevel;
 import org.slf4j.spi.MDCAdapter;
 
-/// SLF4J's mapped diagnostic context. The values are kept in [FlogsContext], and flogs adds them to each line
-/// that the thread logs. A null value removes the key.
+/// SLF4J's mapped diagnostic context, as a read-only view of [FlogsContext]. Flogs keeps the context in a
+/// [ScopedValue], which cannot change. Use [FlogsContext#where(String, String)] to set it.
+///
+/// [#get(String)] and [#getCopyOfContextMap()] read the context in effect. The operations that change the
+/// context ([#put(String, String)], [#putCloseable(String, String)], [#remove(String)], [#clear()] and
+/// [#setContextMap(Map)]) have no effect. Each of them logs a warning, one time for each operation and calling
+/// class.
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class MDC {
 
-    /// @throws IllegalArgumentException If the key is null
+    /// Has no effect. Logs a warning.
     public static void put(String key, String val) {
-        FlogsContext.put(key, val);
+        ignored("put", key);
     }
 
-    /// @return A [MDCCloseable] that removes the key when closed
-    /// @throws IllegalArgumentException If the key is null
+    /// Has no effect. Logs a warning.
+    ///
+    /// @return A [MDCCloseable] that has no effect when closed
     public static MDCCloseable putCloseable(String key, String val) {
-        put(key, val);
-        return new MDCCloseable(key);
+        ignored("putCloseable", key);
+        return NO_OP_CLOSEABLE;
     }
 
     public static String get(String key) {
         return FlogsContext.get(key);
     }
 
+    /// Has no effect. Logs a warning.
     public static void remove(String key) {
-        FlogsContext.remove(key);
+        ignored("remove", key);
     }
 
+    /// Has no effect. Logs a warning.
     public static void clear() {
-        FlogsContext.clear();
+        ignored("clear", null);
     }
 
-    /// @return A modifiable copy of the context of this thread, in insertion order
+    /// @return A modifiable copy of the context in effect, in insertion order
     public static Map<String, String> getCopyOfContextMap() {
         return new LinkedHashMap<>(FlogsContext.get());
     }
 
-    /// @param contextMap Context. Null or empty clears the context.
+    /// Has no effect. Logs a warning.
     public static void setContextMap(Map<String, String> contextMap) {
-        FlogsContext.set(contextMap);
+        ignored("setContextMap", null);
     }
 
     public static MDCAdapter getMDCAdapter() {
@@ -50,17 +60,43 @@ public final class MDC {
     private MDC() {
     }
 
+    private static final MDCCloseable NO_OP_CLOSEABLE = new MDCCloseable();
+
+    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
+
+    private static final StackWalker WALKER = StackWalker.getInstance();
+
+    private static final String MDC_CLASS = MDC.class.getName();
+
+    private static void ignored(String operation, String key) {
+        var caller = caller();
+        if (WARNED.add(operation + " " + caller)) {
+            Flogs.get(MDC.class).log(
+                LogLevel.WARN,
+                "MDC.{}({}) from {} has no effect: the log context can only be set with FlogsContext.where(...)",
+                operation,
+                key == null ? "" : key,
+                caller
+            );
+        }
+    }
+
+    /// @return The first class in the stack that is not this class or one of its nested classes
+    private static String caller() {
+        return WALKER.walk(frames -> frames
+            .map(StackWalker.StackFrame::getClassName)
+            .filter(name -> !(name.equals(MDC_CLASS) || name.startsWith(MDC_CLASS + "$")))
+            .findFirst()
+            .orElse("unknown"));
+    }
+
     public static final class MDCCloseable implements Closeable {
 
-        private final String key;
-
-        private MDCCloseable(String key) {
-            this.key = key;
+        private MDCCloseable() {
         }
 
         @Override
         public void close() {
-            remove(key);
         }
     }
 
