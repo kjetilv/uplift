@@ -345,9 +345,6 @@
                         <goals>
                             <goal>resolve</goal>
                         </goals>
-                        <configuration>
-                            <usedDependencies>true</usedDependencies>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
