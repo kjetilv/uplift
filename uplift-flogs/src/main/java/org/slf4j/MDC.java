@@ -1,9 +1,8 @@
 package org.slf4j;
 
 import module java.base;
-import com.github.kjetilv.uplift.flogs.Flogs;
 import com.github.kjetilv.uplift.flogs.FlogsContext;
-import com.github.kjetilv.uplift.flogs.LogLevel;
+import com.github.kjetilv.uplift.flogs.internal.IgnoredContextChanges;
 import org.slf4j.spi.MDCAdapter;
 
 /// SLF4J's mapped diagnostic context, as a read-only view of [FlogsContext]. Flogs keeps the context in a
@@ -62,32 +61,8 @@ public final class MDC {
 
     private static final MDCCloseable NO_OP_CLOSEABLE = new MDCCloseable();
 
-    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
-
-    private static final StackWalker WALKER = StackWalker.getInstance();
-
-    private static final String MDC_CLASS = MDC.class.getName();
-
     private static void ignored(String operation, String key) {
-        var caller = caller();
-        if (WARNED.add(operation + " " + caller)) {
-            Flogs.get(MDC.class).log(
-                LogLevel.WARN,
-                "MDC.{}({}) from {} has no effect: the log context can only be set with FlogsContext.where(...)",
-                operation,
-                key == null ? "" : key,
-                caller
-            );
-        }
-    }
-
-    /// @return The first class in the stack that is not this class or one of its nested classes
-    private static String caller() {
-        return WALKER.walk(frames -> frames
-            .map(StackWalker.StackFrame::getClassName)
-            .filter(name -> !(name.equals(MDC_CLASS) || name.startsWith(MDC_CLASS + "$")))
-            .findFirst()
-            .orElse("unknown"));
+        IgnoredContextChanges.report(MDC.class, operation, key);
     }
 
     public static final class MDCCloseable implements Closeable {
