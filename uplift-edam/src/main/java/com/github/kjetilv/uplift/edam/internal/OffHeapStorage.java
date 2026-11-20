@@ -14,9 +14,9 @@ import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 public final class OffHeapStorage<H extends HashKind<H>> extends AbstractStorage<H> {
 
-    public static <K extends HashKind<K>> Storage<K> create(
+    public static <H extends HashKind<H>> Storage<Occurrence<H>, H> create(
         Window window,
-        Indexer<Hash<K>> indexer,
+        Indexer<Hash<H>> indexer,
         Arena arena
     ) {
         return new OffHeapStorage<>(window, indexer, arena);

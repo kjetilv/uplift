@@ -15,7 +15,7 @@ final class AnalyzerImpl<T, H extends HashKind<H>> implements Analyzer<T, H> {
 
     private SequenceTracker<H> sequenceTracker;
 
-    AnalyzerImpl(Hasher<T, H> hasher, Storage<H> storage, InstantSource now, int maxLength) {
+    AnalyzerImpl(Hasher<T, H> hasher, Storage<Occurrence<H>, H> storage, InstantSource now, int maxLength) {
         this.hasher = Objects.requireNonNull(hasher, "hasher");
         this.now = Objects.requireNonNull(now, "now");
         this.sequenceTracker = new SequenceTracker<>(storage, new Detector(maxLength));

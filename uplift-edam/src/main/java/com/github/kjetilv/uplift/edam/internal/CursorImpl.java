@@ -5,7 +5,7 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-final class CursorImpl<H extends HashKind<H>> implements Storage.Cursor<H> {
+final class CursorImpl<H extends HashKind<H>> implements Storage.Cursor<Occurrence<H>, H> {
 
     private long index;
 

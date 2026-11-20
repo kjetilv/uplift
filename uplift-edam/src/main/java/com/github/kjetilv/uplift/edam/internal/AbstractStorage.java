@@ -6,7 +6,7 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
+abstract class AbstractStorage<H extends HashKind<H>> implements Storage<Occurrence<H>, H> {
 
     private long index;
 
@@ -29,7 +29,7 @@ abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
     }
 
     @Override
-    public final Storage<H> store(Collection<Occurrence<H>> occurrences) {
+    public final Storage<Occurrence<H>, H> store(Collection<Occurrence<H>> occurrences) {
         for (var occurrence : occurrences) {
             try {
                 storeTo(index, occurrence);
@@ -57,17 +57,17 @@ abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
     }
 
     @Override
-    public final Cursor<H> rewind() {
+    public final Cursor<Occurrence<H>, H> rewind() {
         return rewind(null);
     }
 
     @Override
-    public final Cursor<H> forward() {
+    public final Cursor<Occurrence<H>, H> forward() {
         return forward(null);
     }
 
     @Override
-    public final Cursor<H> rewind(Hash<H> hash) {
+    public final Cursor<Occurrence<H>, H> rewind(Hash<H> hash) {
         var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
@@ -79,7 +79,7 @@ abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
     }
 
     @Override
-    public final Cursor<H> forward(Hash<H> hash) {
+    public final Cursor<Occurrence<H>, H> forward(Hash<H> hash) {
         var count = count();
         return count == 0 ? NullCursor.create() : cursor(
             hash,
@@ -99,7 +99,7 @@ abstract class AbstractStorage<H extends HashKind<H>> implements Storage<H> {
 
     protected abstract void storeTo(long index, Occurrence<H> occurrence);
 
-    private Cursor<H> cursor(
+    private Cursor<Occurrence<H>, H> cursor(
         Hash<H> hash,
         long index,
         LongPredicate indexCutoff,

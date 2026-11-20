@@ -5,52 +5,52 @@ import com.github.kjetilv.uplift.edam.patterns.Occurrence;
 import com.github.kjetilv.uplift.hash.Hash;
 import com.github.kjetilv.uplift.hash.HashKind;
 
-public interface Storage<H extends HashKind<H>> extends LongFunction<Occurrence<H>> {
+public interface Storage<T extends Supplier<Hash<H>>, H extends HashKind<H>> extends LongFunction<Occurrence<H>> {
 
-    Occurrence<H> get(long index);
+    T get(long index);
 
-    default Storage<H> store(Occurrence<H> occurrence) {
+    default Storage<T, H> store(T occurrence) {
         return store(List.of(occurrence));
     }
 
-    Storage<H> store(Collection<Occurrence<H>> occurrences);
+    Storage<T, H> store(Collection<T> occurrences);
 
-    Occurrence<H> getFirst();
+    T getFirst();
 
-    Occurrence<H> getLast();
+    T getLast();
 
     boolean isEmpty();
 
-    Cursor<H> rewind();
+    Cursor<T, H> rewind();
 
-    Cursor<H> forward();
+    Cursor<T, H> forward();
 
-    Cursor<H> rewind(Hash<H> hash);
+    Cursor<T, H> rewind(Hash<H> hash);
 
-    Cursor<H> forward(Hash<H> hash);
+    Cursor<T, H> forward(Hash<H> hash);
 
     long count();
 
-    interface Cursor<K extends HashKind<K>>
-        extends Iterable<Occurrence<K>>, Supplier<Occurrence<K>> {
+    interface Cursor<T extends Supplier<Hash<H>>, H extends HashKind<H>>
+        extends Iterable<T>, Supplier<T> {
 
         @Override
-        default Occurrence<K> get() {
+        default T get() {
             return next().orElse(null);
         }
 
         @Override
-        default Iterator<Occurrence<K>> iterator() {
+        default Iterator<T> iterator() {
             return spool().iterator();
         }
 
-        default Stream<Occurrence<K>> spool() {
+        default Stream<T> spool() {
             return stream(this::next, _ -> true);
         }
 
-        default Stream<Occurrence<K>> stream(
-            Supplier<Optional<Occurrence<K>>> next,
-            Predicate<Occurrence<K>> timeCutoff
+        default Stream<T> stream(
+            Supplier<Optional<T>> next,
+            Predicate<T> timeCutoff
         ) {
             return Stream.generate(next)
                 .takeWhile(Optional::isPresent)
@@ -58,8 +58,8 @@ public interface Storage<H extends HashKind<H>> extends LongFunction<Occurrence<
                 .takeWhile(timeCutoff);
         }
 
-        Stream<Occurrence<K>> spool(Instant limit);
+        Stream<T> spool(Instant limit);
 
-        Optional<Occurrence<K>> next();
+        Optional<T> next();
     }
 }

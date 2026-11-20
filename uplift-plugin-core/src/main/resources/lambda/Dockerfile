@@ -14,9 +14,16 @@ CMD /graalvm/*/bin/native-image ⎨main⎬ \
  -H:+UnlockExperimentalVMOptions \
  -H:+ReportExceptionStackTraces \
  --enable-url-protocols=https \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.DefaultLogEntryFormatter \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.Flogs\$Settings \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.Flogger \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.FloggerFinder \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.FloggerFinder\$SystemFlogger \
+ --initialize-at-build-time=com.github.kjetilv.uplift.flogs.LogLevel \
  ⎨enablepreview⎬ \
  ⎨addmodules⎬ \
  ⎨otheroptions⎬ \
  --target=linux-⎨arch⎬ \
  --class-path ⎨classpath⎬ \
- -o /out/⎨target⎬
+ -o \
+ /out/⎨target⎬
