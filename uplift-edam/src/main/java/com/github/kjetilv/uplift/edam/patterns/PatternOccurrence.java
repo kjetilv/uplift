@@ -10,8 +10,13 @@ import static java.util.Objects.requireNonNull;
 /// @param hashPattern     A pattern
 /// @param occurrences Actual occurrences following the pattern
 @SuppressWarnings("unused")
-public record PatternOccurrence<H extends HashKind<H>>(HashPattern<H> hashPattern, List<Occurrence<H>> occurrences)
-    implements Spanning, Comparable<PatternOccurrence<H>>, Iterable<Occurrence<H>> {
+public record PatternOccurrence<H extends HashKind<H>>(
+    HashPattern<H> hashPattern,
+    List<Occurrence<H>> occurrences
+) implements
+    Spanning,
+    Comparable<PatternOccurrence<H>>,
+    Iterable<Occurrence<H>> {
 
     public PatternOccurrence(HashPattern<H> hashPattern) {
         this(hashPattern, new ArrayList<>());

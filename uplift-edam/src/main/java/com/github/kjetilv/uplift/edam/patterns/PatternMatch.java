@@ -14,9 +14,12 @@ public record PatternMatch<H extends HashKind<H>>(
     HashPattern<H> hashPattern,
     List<PatternOccurrence<H>> occurrences,
     Timespan timespan
-) implements Timelined, Comparable<PatternMatch<H>>, Iterable<PatternOccurrence<H>> {
+) implements
+    Timelined,
+    Comparable<PatternMatch<H>>,
+    Iterable<PatternOccurrence<H>> {
 
-    public static <K extends HashKind<K>>String toShortString(List<PatternMatch<K>> sequenceOccurrences) {
+    public static <K extends HashKind<K>> String toShortString(List<PatternMatch<K>> sequenceOccurrences) {
         return toShortString(sequenceOccurrences, null);
     }
 
@@ -85,7 +88,7 @@ public record PatternMatch<H extends HashKind<H>>(
     }
 
     public String toShortString() {
-        return occurrences.size() + "x" + hashPattern.toShortString() ;
+        return occurrences.size() + "x" + hashPattern.toShortString();
     }
 
     public Optional<List<Occurrence<H>>> singleOccurrence() {

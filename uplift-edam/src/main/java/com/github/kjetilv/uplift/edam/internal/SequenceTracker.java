@@ -12,7 +12,10 @@ import static com.github.kjetilv.uplift.edam.Analysis.Patterns;
 import static com.github.kjetilv.uplift.edam.Analysis.Repeats;
 import static java.util.Objects.requireNonNull;
 
-record SequenceTracker<H extends HashKind<H>>(Storage<Occurrence<H>, H> storage, Detector detector) {
+record SequenceTracker<H extends HashKind<H>>(
+    Storage<Occurrence<H>, H> storage,
+    Detector detector
+) {
 
     SequenceTracker {
         requireNonNull(storage, "storage");

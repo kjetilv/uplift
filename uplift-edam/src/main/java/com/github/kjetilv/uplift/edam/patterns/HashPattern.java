@@ -9,8 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 /// @param hashes Hashes in this pattern
 @SuppressWarnings("unused")
-public record HashPattern<H extends HashKind<H>>(List<Hash<H>> hashes)
-    implements Comparable<HashPattern<H>>, Iterable<Hash<H>> {
+public record HashPattern<H extends HashKind<H>>(
+    List<Hash<H>> hashes
+) implements
+    Comparable<HashPattern<H>>,
+    Iterable<Hash<H>> {
 
     @SafeVarargs
     @SuppressWarnings("unused")

@@ -4,7 +4,7 @@ package com.github.kjetilv.uplift.edam.internal;
 /// later [retrieval][#exchange(long)] of the object.
 ///
 /// @param <T>
-interface Indexer<T> {
+public interface Indexer<T> {
 
     /// @param t Object to map
     /// @return Unique long for the given object

@@ -7,8 +7,10 @@ import com.github.kjetilv.uplift.edam.throwables.ThrowableInfo;
 import com.github.kjetilv.uplift.hash.HashKind;
 import com.github.kjetilv.uplift.util.Throwables;
 
-record ThrowableInfoProvider<H extends HashKind<H>>(int briefCount)
-    implements InfoProvider<Throwable, ThrowableInfo<H>, H> {
+record ThrowableInfoProvider<H extends HashKind<H>>(
+    int briefCount
+) implements
+    InfoProvider<Throwable, ThrowableInfo<H>, H> {
 
     ThrowableInfoProvider() {
         this(1);

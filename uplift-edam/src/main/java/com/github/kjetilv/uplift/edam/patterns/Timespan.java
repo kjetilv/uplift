@@ -3,7 +3,12 @@ package com.github.kjetilv.uplift.edam.patterns;
 import module java.base;
 
 @SuppressWarnings("unused")
-public record Timespan(Instant start, Instant end) implements Spanning, Comparable<Timespan> {
+public record Timespan(
+    Instant start,
+    Instant end
+) implements
+    Spanning,
+    Comparable<Timespan> {
 
     public static Timespan of(Spanning... spannings) {
         return of(Stream.of(spannings));
@@ -42,12 +47,12 @@ public record Timespan(Instant start, Instant end) implements Spanning, Comparab
         return start.compareTo(other.start());
     }
 
-    boolean isInstant() {
-        return Objects.equals(start, end);
-    }
-
     public Duration duration() {
         return Duration.between(start, end);
+    }
+
+    boolean isInstant() {
+        return Objects.equals(start, end);
     }
 
     Timespan and(Timespan timespan) {
