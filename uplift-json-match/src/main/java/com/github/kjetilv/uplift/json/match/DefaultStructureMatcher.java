@@ -66,7 +66,7 @@ record DefaultStructureMatcher<T>(T main, Structure<T> str, Structures.ArrayStra
             return str.mapNamedFields(
                 part, (name, subpart) ->
                     pointersIn(subpart).map(pointer ->
-                        new Pointer.Node<>(name, pointer, str))
+                        Pointer.node(name, pointer, str))
             );
         }
         if (str.isArray(part)) {
@@ -78,7 +78,7 @@ record DefaultStructureMatcher<T>(T main, Structure<T> str, Structures.ArrayStra
             return str.mapArrayElements(
                 part, element ->
                     pointersIn(element).map(pointer ->
-                        new Pointer.Array<>(nextIndex.get(), pointer, str))
+                         Pointer.array(nextIndex.get(), pointer, str))
             );
         }
         return empty();
@@ -122,7 +122,7 @@ record DefaultStructureMatcher<T>(T main, Structure<T> str, Structures.ArrayStra
         return paths.map(path -> new Paths.Subset<>(path, str));
     }
 
-    private static final Pointer.Leaf<?> EMPTY_LEAF = new Pointer.Leaf<>();
+    private static final Pointer.Leaf<?> EMPTY_LEAF = Pointer.leaf();
 
     private static <T> Stream<Pointer<T>> empty() {
         return Stream.of(emptyLeaf());

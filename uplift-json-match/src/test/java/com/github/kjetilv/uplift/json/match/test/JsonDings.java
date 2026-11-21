@@ -1,4 +1,4 @@
-package com.github.kjetilv.uplift.json.match;
+package com.github.kjetilv.uplift.json.match.test;
 
 import com.github.kjetilv.uplift.json.Json;
 

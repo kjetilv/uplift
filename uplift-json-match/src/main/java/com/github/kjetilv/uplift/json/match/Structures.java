@@ -7,19 +7,33 @@ public final class Structures {
         return matcher(obj, structure, null);
     }
 
-    public static <T> StructureMatcher<T> matcher(T obj, Structure<T> structure, ArrayStrategy arrayStrategy) {
+    public static <T> StructureMatcher<T> matcher(
+        T obj,
+        Structure<T> structure,
+        ArrayStrategy arrayStrategy
+    ) {
         return new DefaultStructureMatcher<>(obj, structure, arrayStrategy);
     }
 
-    public static <T> StructureExtractor<T> extractor(T obj, Structure<T> structure) {
+    public static <T> StructureExtractor<T> extractor(
+        T obj,
+        Structure<T> structure
+    ) {
         return defaultImpl(obj, structure, null);
     }
 
-    public static <T> StructureDiffer<T> differ(T obj, Structure<T> structure) {
+    public static <T> StructureDiffer<T> differ(
+        T obj,
+        Structure<T> structure
+    ) {
         return defaultImpl(obj, structure, null);
     }
 
-    public static <T> StructureExtractor<T> extractor(T obj, Structure<T> structure, ArrayStrategy arrayStrategy) {
+    public static <T> StructureExtractor<T> extractor(
+        T obj,
+        Structure<T> structure,
+        ArrayStrategy arrayStrategy
+    ) {
         return defaultImpl(obj, structure, arrayStrategy);
     }
 

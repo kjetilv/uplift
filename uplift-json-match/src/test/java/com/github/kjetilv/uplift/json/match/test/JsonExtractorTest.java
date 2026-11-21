@@ -1,5 +1,10 @@
-package com.github.kjetilv.uplift.json.match;
+package com.github.kjetilv.uplift.json.match.test;
 
+import com.github.kjetilv.uplift.json.match.StructureDiffer;
+import com.github.kjetilv.uplift.json.match.StructureExtractor;
+import com.github.kjetilv.uplift.json.match.StructureMatcher;
+import com.github.kjetilv.uplift.json.match.Structures;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.match;
 
 import module java.base;
 
-public final class Combine {
+final class Combine {
 
     public static Map<?, ?> maps(Map<?, ?> one, Map<?, ?> two) {
         if (one == null || one.isEmpty()) {

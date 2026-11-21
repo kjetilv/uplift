@@ -2,7 +2,7 @@ package com.github.kjetilv.uplift.json.match;
 
 import module java.base;
 
-final class MapsStructure implements Structure<Object> {
+public final class MapsStructure implements Structure<Object> {
 
     @Override
     public boolean isNull(Object object) {

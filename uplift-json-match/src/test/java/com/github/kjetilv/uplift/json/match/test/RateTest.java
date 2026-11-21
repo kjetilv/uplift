@@ -1,14 +1,14 @@
-package com.github.kjetilv.uplift.json.match;
+package com.github.kjetilv.uplift.json.match.test;
 
+import com.github.kjetilv.uplift.json.match.Rate;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RateTest {
 
     @Test
     public void test() {
-        assertEquals(
+        Assertions.assertEquals(
             Rate.of(7, 72),
             Rate.of(2, 48).plus(Rate.of(1, 18))
         );

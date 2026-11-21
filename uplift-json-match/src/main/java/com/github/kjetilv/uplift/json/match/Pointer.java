@@ -4,108 +4,37 @@ import module java.base;
 
 public sealed interface Pointer<T> extends Comparable<Pointer<T>> {
 
+    static <T> Node<T> node(String name, Pointer<T> next, Structure<T> structure) {
+        return new PointerNodeImpl<>(name, next, structure);
+    }
+
+    static <T> Array<T> array(int index, Pointer<T> pointer, Structure<T> structure) {
+        return new PointerArrayImpl<>(index, pointer, structure);
+    }
+
+    @SuppressWarnings("unchecked") // Yeah yeah
+    static <T> Leaf<T> leaf() {
+        return (Leaf<T>) PointerLeafImpl.INSTANCE;
+    }
+
     Optional<T> get(T main);
 
     Object map(Object leaf);
 
-    record Node<T>(String name, Pointer<T> next, Structure<T> structure) implements Pointer<T>, NameChain {
+    non-sealed interface Node<T> extends Pointer<T> {
 
-        @Override
-        public Optional<T> get(T main) {
-            return structure.get(main, name).flatMap(next::get);
-        }
+        String name();
 
-        @Override
-        public Map<String, ?> map(Object leaf) {
-            return Map.of(name, next.map(leaf));
-        }
-
-        @Override
-        public Stream<String> get() {
-            return Stream.concat(
-                Stream.of(name()),
-                next() instanceof NameChain nameChain ? nameChain.get() : Stream.empty()
-            );
-        }
-
-        @Override
-        public int compareTo(Pointer<T> pointer) {
-            if (pointer instanceof NameChain chain) {
-                return path().compareTo(chain.path());
-            }
-            return 1;
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + name + ": " + next + "]";
-        }
+        Pointer<T> next();
     }
 
-    record Array<T>(int index, Pointer<T> elem, Structure<T> structure) implements Pointer<T>, NameChain {
+    non-sealed interface Array<T> extends Pointer<T> {
 
-        @Override
-        public Optional<T> get(T main) {
-            return structure.get(main, index);
-        }
+        int index();
 
-        @Override
-        public Object map(Object leaf) {
-            List<Object> list = new ArrayList<>(index + 1);
-            if (index > 0) {
-                for (var i = 0; i < index; i++) {
-                    list.add(null);
-                }
-            }
-            list.add(elem.map(leaf));
-            return list;
-        }
-
-        @Override
-        public Stream<String> get() {
-            return elem instanceof NameChain nameChain
-                ? Stream.concat(elementStream(), nameChain.get())
-                : elementStream();
-        }
-
-        @Override
-        public int compareTo(Pointer<T> pointer) {
-            return pointer instanceof Pointer.Array<T> array
-                ? Integer.compare(index(), array.index())
-                : -1;
-        }
-
-        private Stream<String> elementStream() {
-            return IntStream.of(index).mapToObj(Integer::toString);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + index + ": " + elem + "]";
-        }
+        Pointer<T> elem();
     }
 
-    record Leaf<T>() implements Pointer<T> {
-
-        @Override
-        public Optional<T> get(T t) {
-            return Optional.of(t);
-        }
-
-        @Override
-        public Object map(Object leaf) {
-            return leaf;
-        }
-
-        @SuppressWarnings("ComparatorMethodParameterNotUsed")
-        @Override
-        public int compareTo(Pointer<T> pointer) {
-            return -1;
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[]";
-        }
+    non-sealed interface Leaf<T> extends Pointer<T> {
     }
 }
